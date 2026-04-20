@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <title>Pro Camera - Reçus & Scan</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #0f0f17; --primary: #4b4be6; --success: #2ecc71; --danger: #e74c3c; }
+        body, html { margin: 0; padding: 0; height: 100dvh; background: #000; font-family: 'Poppins', sans-serif; overflow: hidden; color: white; }
+        .app-container { display: flex; flex-direction: column; height: 100dvh; }
+        .header-logo {
+            position: absolute; top: 15px; left: 50%; transform: translateX(-50%); z-index: 20;
+            display: flex; align-items: center; gap: 10px; padding: 5px 15px; border-radius: 40px;
+            background: linear-gradient(120deg, #4b4be6, #32a852, #e64be6, #a88a32); background-size: 300% 300%;
+            animation: gradientMove 8s ease infinite; border: 1px solid rgba(255,255,255,0.4);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); white-space: nowrap; text-decoration: none; color: white; cursor: pointer;
+        }
+        @keyframes gradientMove { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+        .logo-icon { font-size: 20px; }
+        .logo-text-stack { display: flex; flex-direction: column; line-height: 1; }
+        .logo-text-stack span:first-child { font-size: 11px; font-weight: 900; text-transform: uppercase; }
+        .logo-text-stack span:last-child { font-size: 9px; font-weight: 700; text-transform: uppercase; opacity: 0.9; }
+        .viewport { position: relative; flex: 1; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        #video-preview { width: 100%; height: 100%; object-fit: cover; }
+        #photo-canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: none; z-index: 5; background: #000; }
+        .scan-overlay { position: absolute; inset: 0; z-index: 2; pointer-events: none; display: flex; align-items: center; justify-content: center; }
+        .scan-region { width: 85%; height: 70%; border: 1px solid rgba(255,255,255,0.2); border-radius: 15px; position: relative; box-shadow: 0 0 0 1000px rgba(0,0,0,0.3); }
+        .scan-region::before, .scan-region::after { content: ''; position: absolute; width: 40px; height: 40px; border: 3px solid var(--primary); }
+        .scan-region::before { top: -2px; left: -2px; border-right: 0; border-bottom: 0; border-radius: 12px 0 0 0; }
+        .scan-region::after { bottom: -2px; right: -2px; border-left: 0; border-top: 0; border-radius: 0 0 12px 0; }
+        .top-bar { position: absolute; top: 15px; left: 15px; right: 15px; z-index: 10; display: flex; justify-content: space-between; align-items: center; }
+        .icon-btn { background: rgba(0,0,0,0.6); color: white; border: 1px solid rgba(255,255,255,0.2); padding: 12px; border-radius: 15px; backdrop-filter: blur(5px); font-size: 16px; min-width: 45px; cursor: pointer; }
+        .controls { background: #16161e; padding: 20px; border-radius: 25px 25px 0 0; z-index: 10; box-shadow: 0 -10px 30px rgba(0,0,0,0.5); }
+        .btn { width: 100%; padding: 18px; border-radius: 15px; border: none; font-weight: 700; font-size: 16px; cursor: pointer; transition: 0.2s; }
+        .btn-main { background: var(--primary); color: white; }
+        .form-group { display: none; margin-bottom: 15px; }
+
+        /* DATE PICKER */
+        .date-row { display: flex; gap: 6px; margin-bottom: 10px; }
+        .date-chip { flex: 1; padding: 9px 4px; background: #0a0a0f; border: 1px solid #333; color: #aaa; border-radius: 10px; font-size: 11px; font-weight: 700; text-align: center; cursor: pointer; transition: 0.2s; }
+        .date-chip.active { background: var(--primary); border-color: var(--primary); color: white; }
+        #manual-date-wrap { display: none; margin-bottom: 10px; }
+
+        .input-row { display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 10px; }
+        .input-pro { width: 100%; padding: 14px; background: #0a0a0f; border: 1px solid #333; color: white; border-radius: 12px; box-sizing: border-box; font-size: 15px; }
+
+        /* SHOP AUTOCOMPLETE */
+        .shop-wrap { position: relative; margin-bottom: 10px; }
+        #capture-shop { width: 100%; padding: 14px; background: #0a0a0f; border: 1px solid #333; color: white; border-radius: 12px; box-sizing: border-box; font-size: 15px; }
+        .autocomplete-list { position: absolute; bottom: 100%; left: 0; right: 0; background: #1e1e2e; border: 1px solid #444; border-radius: 12px; margin-bottom: 4px; overflow: hidden; z-index: 50; display: none; }
+        .autocomplete-item { padding: 12px 14px; font-size: 14px; cursor: pointer; border-bottom: 1px solid #2a2a3a; display: flex; align-items: center; gap: 8px; }
+        .autocomplete-item:last-child { border-bottom: none; }
+        .autocomplete-item:hover, .autocomplete-item.selected { background: rgba(75,75,230,0.3); }
+        .ac-freq { font-size: 11px; color: #888; margin-left: auto; }
+
+        /* DATE DISPLAY */
+        .date-display { display: flex; align-items: center; gap: 8px; background: rgba(75,75,230,0.15); border: 1px solid rgba(75,75,230,0.4); border-radius: 10px; padding: 9px 14px; margin-bottom: 10px; }
+        .date-display-label { font-size: 11px; color: #aaa; font-weight: 600; text-transform: uppercase; }
+        .date-display-value { font-size: 15px; font-weight: 700; color: white; margin-left: auto; letter-spacing: 0.5px; }
+
+        /* AMOUNT */
+        .amount-row { display: grid; grid-template-columns: 1fr; margin-bottom: 10px; }
+
+        /* ALERT BADGE (ancien, gardé pour compatibilité) */
+        .alert-badge { position: absolute; top: -6px; right: -6px; background: #e74c3c; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; font-weight: 900; display: flex; align-items: center; justify-content: center; }
+        .icon-btn-wrap { position: relative; display: inline-block; }
+
+        /* WIDGET COMPTEUR PERMANENT */
+        .file-counter-widget {
+            position: absolute;
+            bottom: 18px;
+            left: 15px;
+            z-index: 10;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            background: rgba(231, 76, 60, 0.92);
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 14px;
+            padding: 8px 14px;
+            backdrop-filter: blur(6px);
+            cursor: pointer;
+            animation: pulseWidget 2.5s ease-in-out infinite;
+        }
+        .file-counter-widget.ok {
+            background: rgba(30,30,46,0.82);
+            animation: none;
+            border-color: rgba(255,255,255,0.1);
+        }
+        @keyframes pulseWidget {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(231,76,60,0.5); }
+            50% { box-shadow: 0 0 0 7px rgba(231,76,60,0); }
+        }
+        .file-counter-icon { font-size: 16px; }
+        .file-counter-text { display: flex; flex-direction: column; line-height: 1.2; }
+        .file-counter-num { font-size: 15px; font-weight: 900; color: white; }
+        .file-counter-label { font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.8); text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* ALERT MODAL */
+        .alert-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 300; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .alert-box { background: #1e1e2e; border-radius: 20px; padding: 30px; text-align: center; border: 1px solid #e74c3c; max-width: 320px; width: 100%; }
+        .alert-box h3 { margin: 0 0 10px; font-size: 22px; }
+        .alert-box p { color: #aaa; font-size: 14px; margin: 0 0 20px; }
+        .alert-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+        .history-panel { position: fixed; inset: 0; background: var(--bg); z-index: 100; display: none; flex-direction: column; padding: 20px; }
+        .history-list { flex: 1; overflow-y: auto; margin: 15px 0; }
+        .item { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; margin-bottom: 10px; display: flex; align-items: center; border: 1px solid #222; }
+        .item.selected { border-color: var(--primary); background: rgba(75,75,230,0.1); }
+        .check { width: 20px; height: 20px; border: 2px solid #555; border-radius: 6px; margin-right: 15px; flex-shrink: 0; }
+        .selected .check { background: var(--primary); border-color: var(--primary); position: relative; }
+        .selected .check::after { content: '✓'; color: white; font-size: 14px; position: absolute; top: -2px; left: 3px; }
+        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--success); padding: 10px 20px; border-radius: 20px; z-index: 200; display: none; white-space: nowrap; }
+    </style>
+</head>
+<body>
+
+<div id="toast" class="toast">Enregistré !</div>
+
+<div id="alert-modal" class="alert-modal">
+    <div class="alert-box">
+        <div style="font-size:40px; margin-bottom:10px;">🔔</div>
+        <h3><span id="alert-count">10</span> reçus dans vos archives !</h3>
+        <p>Pensez à envoyer vos fichiers pour ne pas les perdre.</p>
+        <div class="alert-actions">
+            <button class="btn" style="background:#333;color:white;padding:12px;" onclick="dismissAlert()">Plus tard</button>
+            <button class="btn btn-main" style="padding:12px;" onclick="goToHistory()">📤 Envoyer</button>
+        </div>
+    </div>
+</div>
+
+<div class="app-container">
+    <div class="viewport" onclick="applyFocus()">
+        <a href="https://es-d-0544653420260421-019d9d77-1ff4-7528-927f-7dea15c4d92a.codepen.dev/" class="header-logo">
+            <span class="logo-icon">🧰</span>
+            <div class="logo-text-stack"><span>Outils</span><span>Online</span></div>
+        </a>
+        <div class="top-bar">
+            <button class="icon-btn" id="torch-btn" onclick="toggleTorch(event)">🔦</button>
+            <div class="icon-btn-wrap">
+                <button class="icon-btn" onclick="openHistory(event)">📜</button>
+                <div id="alert-dot" class="alert-badge" style="display:none">!</div>
+            </div>
+        </div>
+        <div class="scan-overlay" id="scan-overlay">
+            <div class="scan-region"></div>
+        </div>
+
+        <!-- WIDGET COMPTEUR PERMANENT -->
+        <div id="file-counter-widget" class="file-counter-widget" onclick="openHistory(event)">
+            <span class="file-counter-icon">📁</span>
+            <div class="file-counter-text">
+                <span class="file-counter-num" id="file-counter-num">0</span>
+                <span class="file-counter-label" id="file-counter-label">fichiers</span>
+            </div>
+        </div>
+        <video id="video-preview" autoplay playsinline></video>
+        <canvas id="photo-canvas"></canvas>
+    </div>
+
+    <div class="controls">
+        <div id="form-ui" class="form-group">
+
+            <!-- DATE CHIPS -->
+            <div class="date-row">
+                <div class="date-chip active" id="chip-today" onclick="selectDateChip('today')">📅 Aujourd'hui</div>
+                <div class="date-chip" id="chip-prev" onclick="selectDateChip('prev')">⏮ Précédent</div>
+                <div class="date-chip" id="chip-manual" onclick="selectDateChip('manual')">✏️ Manuelle</div>
+            </div>
+            <div id="manual-date-wrap" style="position:absolute; width:0; height:0; overflow:hidden;">
+                <input type="date" id="capture-date" style="opacity:0; width:1px; height:1px;" oninput="refreshDateDisplay()" onchange="refreshDateDisplay()">
+            </div>
+
+            <!-- DATE AFFICHÉE -->
+            <div class="date-display">
+                <span>📅</span>
+                <span class="date-display-label">Date du reçu</span>
+                <span class="date-display-value" id="date-display-value">—</span>
+            </div>
+
+            <!-- MONTANT -->
+            <div class="amount-row">
+                <input type="number" id="capture-amount" placeholder="Montant €" class="input-pro">
+            </div>
+
+            <!-- SHOP AUTOCOMPLETE -->
+            <div class="shop-wrap">
+                <div id="autocomplete-list" class="autocomplete-list"></div>
+                <input type="text" id="capture-shop" placeholder="Nom du magasin" class="input-pro" autocomplete="off"
+                    oninput="onShopInput()" onkeydown="onShopKey(event)" onfocus="onShopInput()">
+            </div>
+        </div>
+
+        <button id="snap-btn" class="btn btn-main" onclick="processCapture()">📸 CAPTURER LE REÇU</button>
+        <div id="post-snap-ui" style="display:none; gap:10px;">
+            <button class="btn" style="background:#333;color:white;flex:1;" onclick="resetUI()">ANNULER</button>
+            <button id="save-btn" class="btn" style="background:var(--success);color:white;flex:2;opacity:0.4;pointer-events:none;" onclick="confirmSave()">💾 SAUVEGARDER</button>
+        </div>
+    </div>
+</div>
+
+<div id="history-panel" class="history-panel">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+        <h2 style="margin:0;">Mes Archives</h2>
+        <button onclick="closeHistory()" style="background:none;border:none;color:white;font-size:28px;cursor:pointer;">✕</button>
+    </div>
+    <button id="select-all-btn" class="btn" style="background:#222;color:white;margin:15px 0 5px;border:1px solid #444;padding:10px;" onclick="toggleSelectAll()">✅ TOUT SÉLECTIONNER</button>
+    <div id="history-list" class="history-list"></div>
+    <button class="btn" style="background:var(--danger);color:white;margin-bottom:15px;padding:12px;font-size:14px;" onclick="clearAllHistory()">⚠️ TOUT SUPPRIMER L'HISTORIQUE</button>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <button class="btn btn-main" onclick="shareSelected()">📤 ENVOYER</button>
+        <button class="btn" style="background:#333;color:white;" onclick="deleteSelected()">🗑️ SUPPRIMER</button>
+    </div>
+</div>
+
+<script>
+let stream, track, db, torch = false, selectedIds = new Set();
+let dateMode = 'today';
+let prevScanDate = null;
+let acIndex = -1;
+
+const request = indexedDB.open("ReceiptsDB", 2);
+request.onupgradeneeded = e => e.target.result.createObjectStore("receipts", { keyPath: "id", autoIncrement: true });
+request.onsuccess = e => { db = e.target.result; initCamera(); checkAlertDot(); };
+
+async function initCamera() {
+    document.getElementById('capture-date').value = new Date().toISOString().split('T')[0];
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 4096 }, height: { ideal: 2160 } } });
+        const video = document.getElementById('video-preview');
+        video.srcObject = stream;
+        video.onloadedmetadata = () => { track = stream.getVideoTracks()[0]; };
+    } catch(e) { alert("Accès caméra impossible"); }
+}
+
+function formatDateDisplay(val) {
+    if (!val) return '—';
+    const [y, m, d] = val.split('-');
+    return `${d}/${m}/${y}`;
+}
+
+function refreshDateDisplay() {
+    const val = document.getElementById('capture-date').value;
+    const disp = document.getElementById('date-display-value');
+    if (val) {
+        disp.textContent = formatDateDisplay(val);
+        disp.style.color = 'white';
+    } else {
+        disp.textContent = '— choisir une date';
+        disp.style.color = '#e74c3c';
+    }
+    updateSaveBtn();
+}
+
+function updateSaveBtn() {
+    const hasDate = !!document.getElementById('capture-date').value;
+    const btn = document.getElementById('save-btn');
+    if (!btn) return;
+    btn.style.opacity = hasDate ? '1' : '0.4';
+    btn.style.pointerEvents = hasDate ? 'auto' : 'none';
+}
+
+/* --- DATE CHIPS --- */
+function selectDateChip(mode) {
+    dateMode = mode;
+    ['today','prev','manual'].forEach(m => document.getElementById('chip-'+m).classList.toggle('active', m === mode));
+    const manWrap = document.getElementById('manual-date-wrap');
+    if (mode === 'today') {
+        document.getElementById('capture-date').value = new Date().toISOString().split('T')[0];
+        refreshDateDisplay();
+    } else if (mode === 'prev') {
+        if (prevScanDate) {
+            document.getElementById('capture-date').value = prevScanDate;
+            refreshDateDisplay();
+        } else {
+            getLastSavedDate(d => {
+                document.getElementById('capture-date').value = d || new Date().toISOString().split('T')[0];
+                refreshDateDisplay();
+            });
+        }
+    } else {
+        const inp = document.getElementById('capture-date');
+        if (!inp.value) inp.value = new Date().toISOString().split('T')[0];
+        refreshDateDisplay();
+        setTimeout(() => { try { inp.showPicker(); } catch(e) { inp.click(); } }, 50);
+    }
+}
+
+function getLastSavedDate(cb) {
+    if (!db) { cb(null); return; }
+    db.transaction("receipts").objectStore("receipts").getAll().onsuccess = e => {
+        const results = e.target.result;
+        if (results.length === 0) { cb(null); return; }
+        const last = results[results.length - 1];
+        const parts = last.name.split('_')[0];
+        if (parts && parts.length === 10) {
+            cb(parts.replace(/\./g, '-'));
+        } else { cb(null); }
+    };
+}
+
+function getSelectedDate() {
+    return document.getElementById('capture-date').value;
+}
+
+/* --- SHOP AUTOCOMPLETE --- */
+function getShopHistory() {
+    try { return JSON.parse(localStorage.getItem('shopHistory') || '{}'); } catch(e) { return {}; }
+}
+
+function saveShopUsage(name) {
+    if (!name) return;
+    const h = getShopHistory();
+    h[name.toUpperCase()] = (h[name.toUpperCase()] || 0) + 1;
+    localStorage.setItem('shopHistory', JSON.stringify(h));
+}
+
+function onShopInput() {
+    const val = document.getElementById('capture-shop').value.toUpperCase();
+    const h = getShopHistory();
+    const list = document.getElementById('autocomplete-list');
+    acIndex = -1;
+    const matches = Object.entries(h)
+        .filter(([k]) => k.startsWith(val) && k !== val)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
+    if (matches.length === 0 || (val.length === 0 && Object.keys(h).length === 0)) {
+        list.style.display = 'none'; return;
+    }
+    list.innerHTML = matches.map(([name, freq], i) =>
+        `<div class="autocomplete-item" data-name="${name}" onmousedown="pickShop('${name}')" onmouseover="acIndex=${i}">
+            <span>🏪</span> ${name} <span class="ac-freq">${freq}×</span>
+        </div>`
+    ).join('');
+    list.style.display = 'block';
+}
+
+function pickShop(name) {
+    document.getElementById('capture-shop').value = name;
+    document.getElementById('autocomplete-list').style.display = 'none';
+}
+
+function onShopKey(e) {
+    const items = document.querySelectorAll('.autocomplete-item');
+    if (e.key === 'ArrowDown') { acIndex = Math.min(acIndex + 1, items.length - 1); highlightAc(items); }
+    else if (e.key === 'ArrowUp') { acIndex = Math.max(acIndex - 1, 0); highlightAc(items); }
+    else if (e.key === 'Enter' && acIndex >= 0) { pickShop(items[acIndex].dataset.name); e.preventDefault(); }
+    else if (e.key === 'Escape') { document.getElementById('autocomplete-list').style.display = 'none'; }
+}
+
+function highlightAc(items) {
+    items.forEach((el, i) => el.classList.toggle('selected', i === acIndex));
+    if (acIndex >= 0) document.getElementById('capture-shop').value = items[acIndex].dataset.name;
+}
+
+/* --- WIDGET COMPTEUR --- */
+function updateWidgetCount(n) {
+    const dot = document.getElementById('alert-dot');
+    dot.style.display = n >= 10 ? 'flex' : 'none';
+    dot.textContent = n;
+
+    const widget = document.getElementById('file-counter-widget');
+    const num = document.getElementById('file-counter-num');
+    const label = document.getElementById('file-counter-label');
+    num.textContent = n;
+    if (n === 0) {
+        widget.style.display = 'none';
+    } else {
+        widget.style.display = 'flex';
+        if (n >= 10) {
+            widget.classList.remove('ok');
+            label.textContent = '⚠️ à envoyer';
+        } else {
+            widget.classList.add('ok');
+            label.textContent = 'fichier' + (n > 1 ? 's' : '');
+        }
+    }
+}
+
+function checkAlertDot() {
+    if (!db) return;
+    const req = db.transaction("receipts").objectStore("receipts").count();
+    req.onsuccess = () => updateWidgetCount(req.result);
+}
+function resetCaptureCount() { /* no-op, count vient de la DB */ }
+
+/* --- CAMERA & CAPTURE --- */
+async function toggleTorch(e) {
+    e.stopPropagation();
+    if (!track) return;
+    torch = !torch;
+    try {
+        await track.applyConstraints({ advanced: [{ torch: torch }] });
+        document.getElementById('torch-btn').style.background = torch ? 'var(--primary)' : 'rgba(0,0,0,0.6)';
+    } catch(e) {}
+}
+
+function applyFocus() {
+    if (track) track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }).catch(()=>{});
+}
+
+function processCapture() {
+    const video = document.getElementById('video-preview');
+    const canvas = document.getElementById('photo-canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    if (torch) {
+        ctx.filter = 'brightness(0.85) contrast(1.1) grayscale(1)';
+        ctx.drawImage(video, 0, 0);
+        ctx.globalCompositeOperation = 'multiply';
+        ctx.filter = 'contrast(1.4) brightness(1.1)';
+        ctx.drawImage(canvas, 0, 0);
+        ctx.globalCompositeOperation = 'source-over';
+    } else {
+        ctx.filter = 'contrast(1.15) brightness(1.02) saturate(0)';
+        ctx.drawImage(video, 0, 0);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        for (let i = 0; i < data.length; i += 4) {
+            let lum = data[i] * 0.3 + data[i+1] * 0.59 + data[i+2] * 0.11;
+            data[i] = data[i+1] = data[i+2] = lum < 130 ? lum * 0.92 : Math.min(255, lum * 1.03);
+        }
+        ctx.putImageData(imageData, 0, 0);
+    }
+    canvas.style.display = 'block';
+    document.getElementById('scan-overlay').style.display = 'none';
+    document.getElementById('form-ui').style.display = 'block';
+    document.getElementById('post-snap-ui').style.display = 'flex';
+    document.getElementById('snap-btn').style.display = 'none';
+    // Réinitialise le choix de date — l'utilisateur doit choisir explicitement
+    dateMode = null;
+    ['today','prev','manual'].forEach(m => document.getElementById('chip-'+m).classList.remove('active'));
+    document.getElementById('manual-date-wrap').style.display = 'none';
+    document.getElementById('capture-date').value = '';
+    document.getElementById('date-display-value').textContent = '— choisir une date';
+    document.getElementById('date-display-value').style.color = '#e74c3c';
+    updateSaveBtn();
+}
+
+function resetUI() {
+    document.getElementById('photo-canvas').style.display = 'none';
+    document.getElementById('scan-overlay').style.display = 'flex';
+    document.getElementById('form-ui').style.display = 'none';
+    document.getElementById('post-snap-ui').style.display = 'none';
+    document.getElementById('snap-btn').style.display = 'block';
+    document.getElementById('capture-shop').value = '';
+    document.getElementById('capture-amount').value = '';
+    document.getElementById('autocomplete-list').style.display = 'none';
+}
+
+function confirmSave() {
+    const dateVal = getSelectedDate();
+    if (!dateVal) { showToast("⚠️ Choisissez une date !"); return; }
+    const canvas = document.getElementById('photo-canvas');
+    const shopVal = document.getElementById('capture-shop').value.toUpperCase() || 'RECU';
+    const priceVal = document.getElementById('capture-amount').value || '0';
+    const fileName = `${dateVal.replace(/-/g,'.')}_${shopVal}_${priceVal}€.jpg`;
+    saveShopUsage(shopVal);
+    prevScanDate = dateVal;
+    canvas.toBlob(blob => {
+        const tx = db.transaction("receipts", "readwrite");
+        tx.objectStore("receipts").add({ name: fileName, blob: blob, date: Date.now() });
+        tx.oncomplete = () => {
+            showToast("Enregistré !");
+            resetUI();
+            const countReq = db.transaction("receipts").objectStore("receipts").count();
+            countReq.onsuccess = () => {
+                const n = countReq.result;
+                updateWidgetCount(n);
+                if (n >= 10) {
+                    setTimeout(() => {
+                        document.getElementById('alert-count').textContent = n;
+                        document.getElementById('alert-modal').style.display = 'flex';
+                    }, 500);
+                }
+            };
+        };
+    }, 'image/jpeg', 0.92);
+}
+
+/* --- ALERT MODAL --- */
+function dismissAlert() {
+    document.getElementById('alert-modal').style.display = 'none';
+}
+function goToHistory() {
+    document.getElementById('alert-modal').style.display = 'none';
+    openHistory({ stopPropagation: ()=>{} });
+}
+
+/* --- HISTORY --- */
+function openHistory(e) {
+    e.stopPropagation();
+    document.getElementById('history-panel').style.display = 'flex';
+    renderHistory();
+}
+function closeHistory() { document.getElementById('history-panel').style.display = 'none'; }
+
+function renderHistory() {
+    const list = document.getElementById('history-list');
+    list.innerHTML = '';
+    selectedIds.clear();
+    document.getElementById('select-all-btn').innerText = '✅ TOUT SÉLECTIONNER';
+    db.transaction("receipts").objectStore("receipts").getAll().onsuccess = e => {
+        const results = e.target.result;
+        results.reverse().forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'item';
+            div.onclick = () => {
+                div.classList.toggle('selected');
+                selectedIds.has(item.id) ? selectedIds.delete(item.id) : selectedIds.add(item.id);
+                const btn = document.getElementById('select-all-btn');
+                btn.innerText = (selectedIds.size === results.length) ? '❌ TOUT DÉSELECTIONNER' : '✅ TOUT SÉLECTIONNER';
+            };
+            div.innerHTML = `<div class="check"></div><div style="font-size:12px;">${item.name}</div>`;
+            list.appendChild(div);
+        });
+    };
+}
+
+function toggleSelectAll() {
+    const items = document.querySelectorAll('.history-list .item');
+    const btn = document.getElementById('select-all-btn');
+    db.transaction("receipts").objectStore("receipts").getAll().onsuccess = e => {
+        const all = e.target.result;
+        if (selectedIds.size === all.length && all.length > 0) {
+            selectedIds.clear();
+            items.forEach(div => div.classList.remove('selected'));
+            btn.innerText = '✅ TOUT SÉLECTIONNER';
+        } else {
+            selectedIds.clear();
+            all.forEach(item => selectedIds.add(item.id));
+            items.forEach(div => div.classList.add('selected'));
+            btn.innerText = '❌ TOUT DÉSELECTIONNER';
+        }
+    };
+}
+
+function clearAllHistory() {
+    if (confirm("⚠️ Effacer TOUT l'historique ?")) {
+        const tx = db.transaction("receipts", "readwrite");
+        tx.objectStore("receipts").clear().onsuccess = () => { renderHistory(); checkAlertDot(); showToast("Historique vidé !"); };
+    }
+}
+
+async function shareSelected() {
+    if (selectedIds.size === 0) return;
+    const files = [];
+    const store = db.transaction("receipts").objectStore("receipts");
+    for (let id of selectedIds) {
+        const item = await new Promise(r => store.get(id).onsuccess = e => r(e.target.result));
+        files.push(new File([item.blob], item.name, { type: 'image/jpeg' }));
+    }
+    if (navigator.share) await navigator.share({ files });
+}
+
+function deleteSelected() {
+    if (selectedIds.size > 0 && confirm("Supprimer la sélection ?")) {
+        const tx = db.transaction("receipts", "readwrite");
+        selectedIds.forEach(id => tx.objectStore("receipts").delete(id));
+        tx.oncomplete = () => { renderHistory(); checkAlertDot(); };
+    }
+}
+
+function showToast(m) {
+    const t = document.getElementById('toast');
+    t.innerText = m; t.style.display = 'block';
+    setTimeout(() => t.style.display = 'none', 2000);
+}
+</script>
+</body>
+</html>

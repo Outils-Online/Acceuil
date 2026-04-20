@@ -131,6 +131,10 @@
     <button class="close-iframe" onclick="closeIframe('iframe_minuteur')">FERMER X</button>
     <iframe src="https://es-d-0544653420260421-019da784-8528-73d9-b9de-3f2eb3988b3e.codepen.dev/"></iframe>
 </div>
+<div id="iframe_sign_pdf" class="iframe-container">
+    <button class="close-iframe" onclick="closeIframe('iframe_sign_pdf')">FERMER X</button>
+    <iframe src="sign-pdf.html"></iframe>
+</div>
 
 <div class="nav-shell">
     <div class="logo-box">
@@ -152,7 +156,7 @@
 </div>
 
 <div class="grid" id="mainGrid">
-    <button class="btn-3d btn-purple" data-id="sign-pdf" data-main="bureau" data-tags="admin" data-url="https://es-d-0544653420260421-019da498-abf3-75e8-86bc-f3f4231c65d5.codepen.dev/" onclick="handleTool(this)">
+    <button class="btn-3d btn-purple" data-id="sign-pdf" data-main="bureau" data-tags="admin" onclick="openIframe('iframe_sign_pdf', this)">
         <div class="btn-star">★</div><div class="favicon-badge">✍️</div><div>Sign PDF</div><div class="count-badge">0</div>
     </button>
     <button class="btn-3d btn-purple" data-id="organise-pdf" data-main="bureau" data-tags="admin" data-url="https://www.ilovepdf.com/fr/organiser-pdf" onclick="handleTool(this)">
@@ -221,6 +225,15 @@
         <h3 style="margin-bottom:15px">Nouveau Lien Perso</h3>
         <input type="text" id="newTitle" placeholder="Nom" class="cam-input">
         <input type="text" id="newUrl" placeholder="URL (ex: google.com)" class="cam-input">
+        <input type="text" id="newIcon" placeholder="Icône (emoji)" class="cam-input" value="🔗">
+        <select id="newColor" class="cam-input">
+            <option value="btn-purple">Violet</option>
+            <option value="btn-blue">Bleu</option>
+            <option value="btn-green">Vert</option>
+            <option value="btn-orange">Orange</option>
+            <option value="btn-red">Rouge</option>
+            <option value="btn-google">Google</option>
+        </select>
         <button class="btn-3d btn-blue" style="min-height:50px; width:100%" onclick="addNewTool()">Enregistrer</button>
         <button onclick="closeTool('addModal')" style="margin-top:15px; background:none; border:none; color:#777; width:100%; cursor:pointer">Annuler</button>
     </div>
@@ -332,7 +345,7 @@
         document.querySelectorAll('.btn-3d[data-id]').forEach(btn => {
             const bMain = btn.dataset.main || 'custom';
             const bTags = btn.dataset.tags || '';
-            let show = (mode === bMain);
+            let show = (mode === bMain || (mode === 'perso' && bMain === 'custom'));
             if (selectedTags.length > 0 && !selectedTags.some(t => bTags.includes(t))) show = false;
             if (favOnly && !favs.includes(btn.dataset.id)) show = false;
             btn.classList.toggle('hidden', !show);
@@ -341,9 +354,11 @@
 
     function addNewTool() {
         let t = document.getElementById('newTitle').value, u = document.getElementById('newUrl').value;
+        let i = document.getElementById('newIcon').value || '🔗';
+        let c = document.getElementById('newColor').value || 'btn-purple';
         if(!t || !u) return;
         u = u.startsWith('http') ? u : 'https://' + u;
-        customTools.push({ id: 'c-'+Date.now(), title: t, url: u, tags: 'custom' });
+        customTools.push({ id: 'c-'+Date.now(), title: t, url: u, tags: 'custom', icon: i, color: c });
         localStorage.setItem('customTools', JSON.stringify(customTools));
         location.reload();
     }
@@ -351,13 +366,13 @@
     function renderCustomTools() {
         customTools.forEach(t => {
             const b = document.createElement('button'); 
-            b.className = 'btn-3d btn-purple';
-            b.dataset.id = t.id; b.dataset.tags = t.tags; b.dataset.url = t.url; 
+            b.className = 'btn-3d ' + (t.color || 'btn-purple');
+            b.dataset.id = t.id; b.dataset.tags = t.tags; b.dataset.url = t.url; b.dataset.main = 'perso';
             b.onclick = () => handleTool(b);
             b.innerHTML = `
                 <div class="btn-del" onclick="deleteTool('${t.id}')">🗑️</div>
                 <div class="btn-star">★</div>
-                <div class="favicon-badge">🔗</div>
+                <div class="favicon-badge">${t.icon || '🔗'}</div>
                 <div>${t.title}</div>
                 <div class="count-badge">0</div>`;
             document.getElementById('mainGrid').insertBefore(b, document.getElementById('btnAddPerso'));
