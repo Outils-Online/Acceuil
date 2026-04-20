@@ -133,7 +133,11 @@
 </div>
 <div id="iframe_sign_pdf" class="iframe-container">
     <button class="close-iframe" onclick="closeIframe('iframe_sign_pdf')">FERMER X</button>
-    <iframe src="sign-pdf.html"></iframe>
+    <iframe src="sign-pdf.html" allow="camera; microphone"></iframe>
+</div>
+<div id="iframe_photo_recu" class="iframe-container">
+    <button class="close-iframe" onclick="closeIframe('iframe_photo_recu')">FERMER X</button>
+    <iframe src="photo-recu.html" allow="camera; microphone"></iframe>
 </div>
 
 <div class="nav-shell">
@@ -168,7 +172,7 @@
     <button class="btn-3d btn-google" data-id="gmail-admin" data-main="bureau" data-tags="admin" data-url="https://drive.google.com/drive/u/0/" onclick="handleTool(this)">
         <div class="btn-star">★</div><div class="favicon-badge">✉️</div><div>Gmail</div><div class="count-badge">0</div>
     </button>
-    <button class="btn-3d btn-green" data-id="photo-recu" data-main="bureau" data-tags="compta" data-url="https://es-d-0544653420260421-019da660-fa02-7d5f-8202-c341c0f7f463.codepen.dev/" onclick="handleTool(this)">
+    <button class="btn-3d btn-green" data-id="photo-recu" data-main="bureau" data-tags="compta" onclick="openIframe('iframe_photo_recu', this)">
         <div class="btn-star">★</div><div class="favicon-badge">📷</div><div>Photo Reçu</div><div class="count-badge">0</div>
     </button>
     <button class="btn-3d btn-green" data-id="calculette" data-main="bureau" data-tags="compta" onclick="openIframe('iframe_calculette', this)">
