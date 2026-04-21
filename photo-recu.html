@@ -10,61 +10,34 @@
         body, html { margin: 0; padding: 0; height: 100dvh; background: #000; font-family: 'Poppins', sans-serif; overflow: hidden; color: white; }
         .app-container { display: flex; flex-direction: column; height: 100dvh; }
 
-        /* ── TOP BAR : 4 éléments sur une seule ligne ── */
-        .top-bar {
-            position: absolute;
-            top: 12px;
-            left: 12px;
-            right: 12px;
-            z-index: 20;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-        }
-
-        /* Logo inline (plus de position:absolute) */
+        /* LOGO : petit, centré, position absolute original */
         .header-logo {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 7px 10px;
-            border-radius: 40px;
-            background: linear-gradient(120deg, #4b4be6, #32a852, #e64be6, #a88a32);
-            background-size: 300% 300%;
-            animation: gradientMove 8s ease infinite;
-            border: 1px solid rgba(255,255,255,0.4);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            white-space: nowrap;
-            text-decoration: none;
-            color: white;
-            cursor: pointer;
-            min-width: 0;
-            overflow: hidden;
+            position: absolute; top: 15px; left: 50%; transform: translateX(-50%); z-index: 20;
+            display: flex; align-items: center; gap: 10px; padding: 5px 15px; border-radius: 40px;
+            background: linear-gradient(120deg, #4b4be6, #32a852, #e64be6, #a88a32); background-size: 300% 300%;
+            animation: gradientMove 8s ease infinite; border: 1px solid rgba(255,255,255,0.4);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); white-space: nowrap; text-decoration: none; color: white; cursor: pointer;
         }
         @keyframes gradientMove { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
-        .logo-icon { font-size: 16px; flex-shrink: 0; }
+        .logo-icon { font-size: 20px; }
         .logo-text-stack { display: flex; flex-direction: column; line-height: 1; }
-        .logo-text-stack span:first-child { font-size: 10px; font-weight: 900; text-transform: uppercase; }
-        .logo-text-stack span:last-child { font-size: 8px; font-weight: 700; text-transform: uppercase; opacity: 0.9; }
+        .logo-text-stack span:first-child { font-size: 11px; font-weight: 900; text-transform: uppercase; }
+        .logo-text-stack span:last-child { font-size: 9px; font-weight: 700; text-transform: uppercase; opacity: 0.9; }
+
+        /* TOP BAR : X gauche | flash + historique droite */
+        .top-bar {
+            position: absolute; top: 12px; left: 12px; right: 12px; z-index: 20;
+            display: flex; align-items: center; justify-content: space-between;
+            pointer-events: none;
+        }
+        .top-bar > * { pointer-events: auto; }
+        .top-bar-right { display: flex; align-items: center; gap: 8px; }
 
         .icon-btn {
-            background: rgba(0,0,0,0.6);
-            color: white;
-            border: 1px solid rgba(255,255,255,0.2);
-            padding: 0;
-            border-radius: 13px;
-            backdrop-filter: blur(5px);
-            font-size: 15px;
-            width: 42px;
-            height: 42px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            cursor: pointer;
+            background: rgba(0,0,0,0.6); color: white; border: 1px solid rgba(255,255,255,0.2);
+            padding: 0; border-radius: 13px; backdrop-filter: blur(5px); font-size: 15px;
+            width: 42px; height: 42px; display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; cursor: pointer;
         }
         .icon-btn-wrap { position: relative; display: inline-flex; flex-shrink: 0; }
 
@@ -85,11 +58,8 @@
         .date-row { display: flex; gap: 6px; margin-bottom: 10px; }
         .date-chip { flex: 1; padding: 9px 4px; background: #0a0a0f; border: 1px solid #333; color: #aaa; border-radius: 10px; font-size: 11px; font-weight: 700; text-align: center; cursor: pointer; transition: 0.2s; }
         .date-chip.active { background: var(--primary); border-color: var(--primary); color: white; }
-        #manual-date-wrap { display: none; margin-bottom: 10px; }
 
-        .input-row { display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 10px; }
         .input-pro { width: 100%; padding: 14px; background: #0a0a0f; border: 1px solid #333; color: white; border-radius: 12px; box-sizing: border-box; font-size: 15px; }
-
         .shop-wrap { position: relative; margin-bottom: 10px; }
         #capture-shop { width: 100%; padding: 14px; background: #0a0a0f; border: 1px solid #333; color: white; border-radius: 12px; box-sizing: border-box; font-size: 15px; }
         .autocomplete-list { position: absolute; bottom: 100%; left: 0; right: 0; background: #1e1e2e; border: 1px solid #444; border-radius: 12px; margin-bottom: 4px; overflow: hidden; z-index: 50; display: none; }
@@ -101,32 +71,17 @@
         .date-display { display: flex; align-items: center; gap: 8px; background: rgba(75,75,230,0.15); border: 1px solid rgba(75,75,230,0.4); border-radius: 10px; padding: 9px 14px; margin-bottom: 10px; }
         .date-display-label { font-size: 11px; color: #aaa; font-weight: 600; text-transform: uppercase; }
         .date-display-value { font-size: 15px; font-weight: 700; color: white; margin-left: auto; letter-spacing: 0.5px; }
-
         .amount-row { display: grid; grid-template-columns: 1fr; margin-bottom: 10px; }
 
         .alert-badge { position: absolute; top: -6px; right: -6px; background: #e74c3c; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; font-weight: 900; display: flex; align-items: center; justify-content: center; }
 
         .file-counter-widget {
-            position: absolute;
-            bottom: 18px;
-            left: 15px;
-            z-index: 10;
-            display: none;
-            align-items: center;
-            gap: 8px;
-            background: rgba(231, 76, 60, 0.92);
-            border: 1px solid rgba(255,255,255,0.25);
-            border-radius: 14px;
-            padding: 8px 14px;
-            backdrop-filter: blur(6px);
-            cursor: pointer;
-            animation: pulseWidget 2.5s ease-in-out infinite;
+            position: absolute; bottom: 18px; left: 15px; z-index: 10; display: none;
+            align-items: center; gap: 8px; background: rgba(231,76,60,0.92);
+            border: 1px solid rgba(255,255,255,0.25); border-radius: 14px; padding: 8px 14px;
+            backdrop-filter: blur(6px); cursor: pointer; animation: pulseWidget 2.5s ease-in-out infinite;
         }
-        .file-counter-widget.ok {
-            background: rgba(30,30,46,0.82);
-            animation: none;
-            border-color: rgba(255,255,255,0.1);
-        }
+        .file-counter-widget.ok { background: rgba(30,30,46,0.82); animation: none; border-color: rgba(255,255,255,0.1); }
         @keyframes pulseWidget {
             0%, 100% { box-shadow: 0 0 0 0 rgba(231,76,60,0.5); }
             50% { box-shadow: 0 0 0 7px rgba(231,76,60,0); }
@@ -142,14 +97,15 @@
         .alert-box p { color: #aaa; font-size: 14px; margin: 0 0 20px; }
         .alert-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
-        .history-panel { position: fixed; inset: 0; background: var(--bg); z-index: 100; display: none; flex-direction: column; padding: 20px; }
+        /* history z-index 200 > tout le reste (top-bar=20, logo=20) */
+        .history-panel { position: fixed; inset: 0; background: var(--bg); z-index: 200; display: none; flex-direction: column; padding: 20px; }
         .history-list { flex: 1; overflow-y: auto; margin: 15px 0; }
         .item { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; margin-bottom: 10px; display: flex; align-items: center; border: 1px solid #222; }
         .item.selected { border-color: var(--primary); background: rgba(75,75,230,0.1); }
         .check { width: 20px; height: 20px; border: 2px solid #555; border-radius: 6px; margin-right: 15px; flex-shrink: 0; }
         .selected .check { background: var(--primary); border-color: var(--primary); position: relative; }
         .selected .check::after { content: '✓'; color: white; font-size: 14px; position: absolute; top: -2px; left: 3px; }
-        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--success); padding: 10px 20px; border-radius: 20px; z-index: 200; display: none; white-space: nowrap; }
+        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--success); padding: 10px 20px; border-radius: 20px; z-index: 400; display: none; white-space: nowrap; }
     </style>
 </head>
 <body>
@@ -171,23 +127,21 @@
 <div class="app-container">
     <div class="viewport" onclick="applyFocus()">
 
-        <!-- ── BARRE DU HAUT : ✕ | logo | 🔦 | 📜 ── -->
+        <!-- LOGO centré indépendant (position absolute) -->
+        <a href="https://es-d-0544653420260421-019d9d77-1ff4-7528-927f-7dea15c4d92a.codepen.dev/" class="header-logo">
+            <span class="logo-icon">🧰</span>
+            <div class="logo-text-stack"><span>Outils</span><span>Online</span></div>
+        </a>
+
+        <!-- TOP BAR : X gauche | flash + historique droite -->
         <div class="top-bar">
             <button class="icon-btn" onclick="window.parent.closeIframe('iframe_photo_recu')">✕</button>
-
-            <a href="https://es-d-0544653420260421-019d9d77-1ff4-7528-927f-7dea15c4d92a.codepen.dev/" class="header-logo">
-                <span class="logo-icon">🧰</span>
-                <div class="logo-text-stack">
-                    <span>Outils</span>
-                    <span>Online</span>
+            <div class="top-bar-right">
+                <button class="icon-btn" id="torch-btn" onclick="toggleTorch(event)">🔦</button>
+                <div class="icon-btn-wrap">
+                    <button class="icon-btn" onclick="openHistory(event)">📜</button>
+                    <div id="alert-dot" class="alert-badge" style="display:none">!</div>
                 </div>
-            </a>
-
-            <button class="icon-btn" id="torch-btn" onclick="toggleTorch(event)">🔦</button>
-
-            <div class="icon-btn-wrap">
-                <button class="icon-btn" onclick="openHistory(event)">📜</button>
-                <div id="alert-dot" class="alert-badge" style="display:none">!</div>
             </div>
         </div>
 
@@ -195,7 +149,6 @@
             <div class="scan-region"></div>
         </div>
 
-        <!-- WIDGET COMPTEUR PERMANENT -->
         <div id="file-counter-widget" class="file-counter-widget" onclick="openHistory(event)">
             <span class="file-counter-icon">📁</span>
             <div class="file-counter-text">
@@ -209,8 +162,6 @@
 
     <div class="controls">
         <div id="form-ui" class="form-group">
-
-            <!-- DATE CHIPS -->
             <div class="date-row">
                 <div class="date-chip active" id="chip-today" onclick="selectDateChip('today')">📅 Aujourd'hui</div>
                 <div class="date-chip" id="chip-prev" onclick="selectDateChip('prev')">⏮ Précédent</div>
@@ -219,27 +170,20 @@
             <div id="manual-date-wrap" style="position:absolute; width:0; height:0; overflow:hidden;">
                 <input type="date" id="capture-date" style="opacity:0; width:1px; height:1px;" oninput="refreshDateDisplay()" onchange="refreshDateDisplay()">
             </div>
-
-            <!-- DATE AFFICHÉE -->
             <div class="date-display">
                 <span>📅</span>
                 <span class="date-display-label">Date du reçu</span>
                 <span class="date-display-value" id="date-display-value">—</span>
             </div>
-
-            <!-- MONTANT -->
             <div class="amount-row">
                 <input type="number" id="capture-amount" placeholder="Montant €" class="input-pro">
             </div>
-
-            <!-- SHOP AUTOCOMPLETE -->
             <div class="shop-wrap">
                 <div id="autocomplete-list" class="autocomplete-list"></div>
                 <input type="text" id="capture-shop" placeholder="Nom du magasin" class="input-pro" autocomplete="off"
                     oninput="onShopInput()" onkeydown="onShopKey(event)" onfocus="onShopInput()">
             </div>
         </div>
-
         <button id="snap-btn" class="btn btn-main" onclick="processCapture()">📸 CAPTURER LE REÇU</button>
         <div id="post-snap-ui" style="display:none; gap:10px;">
             <button class="btn" style="background:#333;color:white;flex:1;" onclick="resetUI()">ANNULER</button>
@@ -248,6 +192,7 @@
     </div>
 </div>
 
+<!-- HISTORIQUE couvre tout (z-index 200) -->
 <div id="history-panel" class="history-panel">
     <div style="display:flex;justify-content:space-between;align-items:center;">
         <h2 style="margin:0;">Mes Archives</h2>
@@ -256,17 +201,16 @@
     <button id="select-all-btn" class="btn" style="background:#222;color:white;margin:15px 0 5px;border:1px solid #444;padding:10px;" onclick="toggleSelectAll()">✅ TOUT SÉLECTIONNER</button>
     <div id="history-list" class="history-list"></div>
     <button class="btn" style="background:var(--danger);color:white;margin-bottom:15px;padding:12px;font-size:14px;" onclick="clearAllHistory()">⚠️ TOUT SUPPRIMER L'HISTORIQUE</button>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px;">
         <button class="btn btn-main" onclick="shareSelected()">📤 ENVOYER</button>
         <button class="btn" style="background:#333;color:white;" onclick="deleteSelected()">🗑️ SUPPRIMER</button>
     </div>
+    <button id="pdf-btn" class="btn" style="background:#c0392b;color:white;padding:14px;font-size:15px;" onclick="compilePdf()">📄 COMPILER EN PDF</button>
 </div>
 
 <script>
 let stream, track, db, torch = false, selectedIds = new Set();
-let dateMode = 'today';
-let prevScanDate = null;
-let acIndex = -1;
+let dateMode = 'today', prevScanDate = null, acIndex = -1;
 
 const request = indexedDB.open("ReceiptsDB", 2);
 request.onupgradeneeded = e => e.target.result.createObjectStore("receipts", { keyPath: "id", autoIncrement: true });
@@ -288,20 +232,13 @@ function formatDateDisplay(val) {
     const [y, m, d] = val.split('-');
     return `${d}/${m}/${y}`;
 }
-
 function refreshDateDisplay() {
     const val = document.getElementById('capture-date').value;
     const disp = document.getElementById('date-display-value');
-    if (val) {
-        disp.textContent = formatDateDisplay(val);
-        disp.style.color = 'white';
-    } else {
-        disp.textContent = '— choisir une date';
-        disp.style.color = '#e74c3c';
-    }
+    if (val) { disp.textContent = formatDateDisplay(val); disp.style.color = 'white'; }
+    else { disp.textContent = '— choisir une date'; disp.style.color = '#e74c3c'; }
     updateSaveBtn();
 }
-
 function updateSaveBtn() {
     const hasDate = !!document.getElementById('capture-date').value;
     const btn = document.getElementById('save-btn');
@@ -317,15 +254,8 @@ function selectDateChip(mode) {
         document.getElementById('capture-date').value = new Date().toISOString().split('T')[0];
         refreshDateDisplay();
     } else if (mode === 'prev') {
-        if (prevScanDate) {
-            document.getElementById('capture-date').value = prevScanDate;
-            refreshDateDisplay();
-        } else {
-            getLastSavedDate(d => {
-                document.getElementById('capture-date').value = d || new Date().toISOString().split('T')[0];
-                refreshDateDisplay();
-            });
-        }
+        if (prevScanDate) { document.getElementById('capture-date').value = prevScanDate; refreshDateDisplay(); }
+        else getLastSavedDate(d => { document.getElementById('capture-date').value = d || new Date().toISOString().split('T')[0]; refreshDateDisplay(); });
     } else {
         const inp = document.getElementById('capture-date');
         if (!inp.value) inp.value = new Date().toISOString().split('T')[0];
@@ -333,68 +263,44 @@ function selectDateChip(mode) {
         setTimeout(() => { try { inp.showPicker(); } catch(e) { inp.click(); } }, 50);
     }
 }
-
 function getLastSavedDate(cb) {
     if (!db) { cb(null); return; }
     db.transaction("receipts").objectStore("receipts").getAll().onsuccess = e => {
         const results = e.target.result;
-        if (results.length === 0) { cb(null); return; }
-        const last = results[results.length - 1];
-        const parts = last.name.split('_')[0];
-        if (parts && parts.length === 10) {
-            cb(parts.replace(/\./g, '-'));
-        } else { cb(null); }
+        if (!results.length) { cb(null); return; }
+        const parts = results[results.length-1].name.split('_')[0];
+        cb(parts && parts.length === 10 ? parts.replace(/\./g, '-') : null);
     };
 }
+function getSelectedDate() { return document.getElementById('capture-date').value; }
 
-function getSelectedDate() {
-    return document.getElementById('capture-date').value;
-}
-
-function getShopHistory() {
-    try { return JSON.parse(localStorage.getItem('shopHistory') || '{}'); } catch(e) { return {}; }
-}
-
+function getShopHistory() { try { return JSON.parse(localStorage.getItem('shopHistory') || '{}'); } catch(e) { return {}; } }
 function saveShopUsage(name) {
     if (!name) return;
     const h = getShopHistory();
     h[name.toUpperCase()] = (h[name.toUpperCase()] || 0) + 1;
     localStorage.setItem('shopHistory', JSON.stringify(h));
 }
-
 function onShopInput() {
     const val = document.getElementById('capture-shop').value.toUpperCase();
     const h = getShopHistory();
     const list = document.getElementById('autocomplete-list');
     acIndex = -1;
-    const matches = Object.entries(h)
-        .filter(([k]) => k.startsWith(val) && k !== val)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5);
-    if (matches.length === 0 || (val.length === 0 && Object.keys(h).length === 0)) {
-        list.style.display = 'none'; return;
-    }
-    list.innerHTML = matches.map(([name, freq], i) =>
-        `<div class="autocomplete-item" data-name="${name}" onmousedown="pickShop('${name}')" onmouseover="acIndex=${i}">
-            <span>🏪</span> ${name} <span class="ac-freq">${freq}×</span>
-        </div>`
+    const matches = Object.entries(h).filter(([k]) => k.startsWith(val) && k !== val).sort((a,b) => b[1]-a[1]).slice(0,5);
+    if (!matches.length || (!val.length && !Object.keys(h).length)) { list.style.display = 'none'; return; }
+    list.innerHTML = matches.map(([name, freq]) =>
+        `<div class="autocomplete-item" data-name="${name}" onmousedown="pickShop('${name}')"><span>🏪</span> ${name} <span class="ac-freq">${freq}x</span></div>`
     ).join('');
     list.style.display = 'block';
 }
-
-function pickShop(name) {
-    document.getElementById('capture-shop').value = name;
-    document.getElementById('autocomplete-list').style.display = 'none';
-}
-
+function pickShop(name) { document.getElementById('capture-shop').value = name; document.getElementById('autocomplete-list').style.display = 'none'; }
 function onShopKey(e) {
     const items = document.querySelectorAll('.autocomplete-item');
-    if (e.key === 'ArrowDown') { acIndex = Math.min(acIndex + 1, items.length - 1); highlightAc(items); }
-    else if (e.key === 'ArrowUp') { acIndex = Math.max(acIndex - 1, 0); highlightAc(items); }
+    if (e.key === 'ArrowDown') { acIndex = Math.min(acIndex+1, items.length-1); highlightAc(items); }
+    else if (e.key === 'ArrowUp') { acIndex = Math.max(acIndex-1, 0); highlightAc(items); }
     else if (e.key === 'Enter' && acIndex >= 0) { pickShop(items[acIndex].dataset.name); e.preventDefault(); }
     else if (e.key === 'Escape') { document.getElementById('autocomplete-list').style.display = 'none'; }
 }
-
 function highlightAc(items) {
     items.forEach((el, i) => el.classList.toggle('selected', i === acIndex));
     if (acIndex >= 0) document.getElementById('capture-shop').value = items[acIndex].dataset.name;
@@ -404,25 +310,13 @@ function updateWidgetCount(n) {
     const dot = document.getElementById('alert-dot');
     dot.style.display = n >= 10 ? 'flex' : 'none';
     dot.textContent = n;
-
     const widget = document.getElementById('file-counter-widget');
-    const num = document.getElementById('file-counter-num');
-    const label = document.getElementById('file-counter-label');
-    num.textContent = n;
-    if (n === 0) {
-        widget.style.display = 'none';
-    } else {
-        widget.style.display = 'flex';
-        if (n >= 10) {
-            widget.classList.remove('ok');
-            label.textContent = '⚠️ à envoyer';
-        } else {
-            widget.classList.add('ok');
-            label.textContent = 'fichier' + (n > 1 ? 's' : '');
-        }
-    }
+    document.getElementById('file-counter-num').textContent = n;
+    if (n === 0) { widget.style.display = 'none'; return; }
+    widget.style.display = 'flex';
+    if (n >= 10) { widget.classList.remove('ok'); document.getElementById('file-counter-label').textContent = 'a envoyer'; }
+    else { widget.classList.add('ok'); document.getElementById('file-counter-label').textContent = 'fichier' + (n > 1 ? 's' : ''); }
 }
-
 function checkAlertDot() {
     if (!db) return;
     const req = db.transaction("receipts").objectStore("receipts").count();
@@ -433,37 +327,26 @@ async function toggleTorch(e) {
     e.stopPropagation();
     if (!track) return;
     torch = !torch;
-    try {
-        await track.applyConstraints({ advanced: [{ torch: torch }] });
-        document.getElementById('torch-btn').style.background = torch ? 'var(--primary)' : 'rgba(0,0,0,0.6)';
-    } catch(e) {}
+    try { await track.applyConstraints({ advanced: [{ torch }] }); document.getElementById('torch-btn').style.background = torch ? 'var(--primary)' : 'rgba(0,0,0,0.6)'; } catch(e) {}
 }
-
-function applyFocus() {
-    if (track) track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }).catch(()=>{});
-}
+function applyFocus() { if (track) track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }).catch(()=>{}); }
 
 function processCapture() {
     const video = document.getElementById('video-preview');
     const canvas = document.getElementById('photo-canvas');
     const ctx = canvas.getContext('2d');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+    canvas.width = video.videoWidth; canvas.height = video.videoHeight;
     if (torch) {
-        ctx.filter = 'brightness(0.85) contrast(1.1) grayscale(1)';
-        ctx.drawImage(video, 0, 0);
-        ctx.globalCompositeOperation = 'multiply';
-        ctx.filter = 'contrast(1.4) brightness(1.1)';
-        ctx.drawImage(canvas, 0, 0);
+        ctx.filter = 'brightness(0.85) contrast(1.1) grayscale(1)'; ctx.drawImage(video, 0, 0);
+        ctx.globalCompositeOperation = 'multiply'; ctx.filter = 'contrast(1.4) brightness(1.1)'; ctx.drawImage(canvas, 0, 0);
         ctx.globalCompositeOperation = 'source-over';
     } else {
-        ctx.filter = 'contrast(1.15) brightness(1.02) saturate(0)';
-        ctx.drawImage(video, 0, 0);
+        ctx.filter = 'contrast(1.15) brightness(1.02) saturate(0)'; ctx.drawImage(video, 0, 0);
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const data = imageData.data;
         for (let i = 0; i < data.length; i += 4) {
-            let lum = data[i] * 0.3 + data[i+1] * 0.59 + data[i+2] * 0.11;
-            data[i] = data[i+1] = data[i+2] = lum < 130 ? lum * 0.92 : Math.min(255, lum * 1.03);
+            let lum = data[i]*0.3 + data[i+1]*0.59 + data[i+2]*0.11;
+            data[i] = data[i+1] = data[i+2] = lum < 130 ? lum*0.92 : Math.min(255, lum*1.03);
         }
         ctx.putImageData(imageData, 0, 0);
     }
@@ -474,7 +357,6 @@ function processCapture() {
     document.getElementById('snap-btn').style.display = 'none';
     dateMode = null;
     ['today','prev','manual'].forEach(m => document.getElementById('chip-'+m).classList.remove('active'));
-    document.getElementById('manual-date-wrap').style.display = 'none';
     document.getElementById('capture-date').value = '';
     document.getElementById('date-display-value').textContent = '— choisir une date';
     document.getElementById('date-display-value').style.color = '#e74c3c';
@@ -494,16 +376,16 @@ function resetUI() {
 
 function confirmSave() {
     const dateVal = getSelectedDate();
-    if (!dateVal) { showToast("⚠️ Choisissez une date !"); return; }
+    if (!dateVal) { showToast("Choisissez une date !"); return; }
     const canvas = document.getElementById('photo-canvas');
     const shopVal = document.getElementById('capture-shop').value.toUpperCase() || 'RECU';
     const priceVal = document.getElementById('capture-amount').value || '0';
-    const fileName = `${dateVal.replace(/-/g,'.')}_${shopVal}_${priceVal}€.jpg`;
+    const fileName = `${dateVal.replace(/-/g,'.')}_${shopVal}_${priceVal}EUR.jpg`;
     saveShopUsage(shopVal);
     prevScanDate = dateVal;
     canvas.toBlob(blob => {
         const tx = db.transaction("receipts", "readwrite");
-        tx.objectStore("receipts").add({ name: fileName, blob: blob, date: Date.now() });
+        tx.objectStore("receipts").add({ name: fileName, blob, date: Date.now() });
         tx.oncomplete = () => {
             showToast("Enregistré !");
             resetUI();
@@ -511,37 +393,32 @@ function confirmSave() {
             countReq.onsuccess = () => {
                 const n = countReq.result;
                 updateWidgetCount(n);
-                if (n >= 10) {
-                    setTimeout(() => {
-                        document.getElementById('alert-count').textContent = n;
-                        document.getElementById('alert-modal').style.display = 'flex';
-                    }, 500);
-                }
+                if (n >= 10) setTimeout(() => { document.getElementById('alert-count').textContent = n; document.getElementById('alert-modal').style.display = 'flex'; }, 500);
             };
         };
     }, 'image/jpeg', 0.92);
 }
 
-function dismissAlert() {
-    document.getElementById('alert-modal').style.display = 'none';
-}
-function goToHistory() {
-    document.getElementById('alert-modal').style.display = 'none';
-    openHistory({ stopPropagation: ()=>{} });
-}
+function dismissAlert() { document.getElementById('alert-modal').style.display = 'none'; }
+function goToHistory() { document.getElementById('alert-modal').style.display = 'none'; openHistory({ stopPropagation: ()=>{} }); }
 
 function openHistory(e) {
     e.stopPropagation();
     document.getElementById('history-panel').style.display = 'flex';
+    document.querySelector('.top-bar').style.visibility = 'hidden';
+    document.querySelector('.header-logo').style.visibility = 'hidden';
     renderHistory();
 }
-function closeHistory() { document.getElementById('history-panel').style.display = 'none'; }
+function closeHistory() {
+    document.getElementById('history-panel').style.display = 'none';
+    document.querySelector('.top-bar').style.visibility = 'visible';
+    document.querySelector('.header-logo').style.visibility = 'visible';
+}
 
 function renderHistory() {
     const list = document.getElementById('history-list');
-    list.innerHTML = '';
-    selectedIds.clear();
-    document.getElementById('select-all-btn').innerText = '✅ TOUT SÉLECTIONNER';
+    list.innerHTML = ''; selectedIds.clear();
+    document.getElementById('select-all-btn').innerText = 'TOUT SELECTIONNER';
     db.transaction("receipts").objectStore("receipts").getAll().onsuccess = e => {
         const results = e.target.result;
         results.reverse().forEach(item => {
@@ -550,8 +427,7 @@ function renderHistory() {
             div.onclick = () => {
                 div.classList.toggle('selected');
                 selectedIds.has(item.id) ? selectedIds.delete(item.id) : selectedIds.add(item.id);
-                const btn = document.getElementById('select-all-btn');
-                btn.innerText = (selectedIds.size === results.length) ? '❌ TOUT DÉSELECTIONNER' : '✅ TOUT SÉLECTIONNER';
+                document.getElementById('select-all-btn').innerText = selectedIds.size === results.length ? 'TOUT DESELECTIONNER' : 'TOUT SELECTIONNER';
             };
             div.innerHTML = `<div class="check"></div><div style="font-size:12px;">${item.name}</div>`;
             list.appendChild(div);
@@ -565,27 +441,22 @@ function toggleSelectAll() {
     db.transaction("receipts").objectStore("receipts").getAll().onsuccess = e => {
         const all = e.target.result;
         if (selectedIds.size === all.length && all.length > 0) {
-            selectedIds.clear();
-            items.forEach(div => div.classList.remove('selected'));
-            btn.innerText = '✅ TOUT SÉLECTIONNER';
+            selectedIds.clear(); items.forEach(div => div.classList.remove('selected')); btn.innerText = 'TOUT SELECTIONNER';
         } else {
-            selectedIds.clear();
-            all.forEach(item => selectedIds.add(item.id));
-            items.forEach(div => div.classList.add('selected'));
-            btn.innerText = '❌ TOUT DÉSELECTIONNER';
+            selectedIds.clear(); all.forEach(item => selectedIds.add(item.id)); items.forEach(div => div.classList.add('selected')); btn.innerText = 'TOUT DESELECTIONNER';
         }
     };
 }
 
 function clearAllHistory() {
-    if (confirm("⚠️ Effacer TOUT l'historique ?")) {
+    if (confirm("Effacer TOUT l'historique ?")) {
         const tx = db.transaction("receipts", "readwrite");
-        tx.objectStore("receipts").clear().onsuccess = () => { renderHistory(); checkAlertDot(); showToast("Historique vidé !"); };
+        tx.objectStore("receipts").clear().onsuccess = () => { renderHistory(); checkAlertDot(); showToast("Historique vide !"); };
     }
 }
 
 async function shareSelected() {
-    if (selectedIds.size === 0) return;
+    if (!selectedIds.size) return;
     const files = [];
     const store = db.transaction("receipts").objectStore("receipts");
     for (let id of selectedIds) {
@@ -596,7 +467,7 @@ async function shareSelected() {
 }
 
 function deleteSelected() {
-    if (selectedIds.size > 0 && confirm("Supprimer la sélection ?")) {
+    if (selectedIds.size > 0 && confirm("Supprimer la selection ?")) {
         const tx = db.transaction("receipts", "readwrite");
         selectedIds.forEach(id => tx.objectStore("receipts").delete(id));
         tx.oncomplete = () => { renderHistory(); checkAlertDot(); };
@@ -607,6 +478,92 @@ function showToast(m) {
     const t = document.getElementById('toast');
     t.innerText = m; t.style.display = 'block';
     setTimeout(() => t.style.display = 'none', 2000);
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+async function compilePdf() {
+    if (!selectedIds.size) { showToast("Aucun reçu sélectionné !"); return; }
+    
+    // Vérification de la lib (certaines versions utilisent window.jsPDF au lieu de window.jspdf.jsPDF)
+    const jsPDFLib = window.jspdf ? window.jspdf.jsPDF : window.jsPDF;
+    if (!jsPDFLib) { showToast("Librairie PDF manquante"); return; }
+
+    const btn = document.getElementById('pdf-btn');
+    btn.textContent = '⏳ Génération...';
+    btn.style.pointerEvents = 'none';
+
+    try {
+        const ids = Array.from(selectedIds);
+        console.log("IDs sélectionnés :", ids);
+
+        // 1. Récupération des items
+        const items = await new Promise((resolve, reject) => {
+            const transaction = db.transaction("receipts", "readonly");
+            const store = transaction.objectStore("receipts");
+            const request = store.getAll();
+
+            request.onsuccess = (e) => {
+                // On compare les IDs en les forçant en String pour éviter les erreurs de type
+                const filtered = e.target.result.filter(it => ids.map(String).includes(String(it.id)));
+                resolve(filtered);
+            };
+            request.onerror = () => reject("Erreur lors de la lecture IndexedDB");
+        });
+
+        if (items.length === 0) {
+            throw new Error("Aucun item trouvé dans la base pour ces IDs");
+        }
+
+        let pdf = null;
+
+        // 2. Traitement des images
+        for (let i = 0; i < items.length; i++) {
+            const blobUrl = URL.createObjectURL(items[i].blob);
+            
+            const img = await new Promise((res, rej) => {
+                const im = new Image();
+                im.onload = () => res(im);
+                im.onerror = () => rej("Erreur chargement image");
+                im.src = blobUrl;
+            });
+
+            const iw = img.naturalWidth, ih = img.naturalHeight;
+            const landscape = iw > ih;
+            const orientation = landscape ? 'l' : 'p';
+            
+            // Format A4 (en mm)
+            const pw = landscape ? 297 : 210;
+            const ph = landscape ? 210 : 297;
+
+            if (i === 0) {
+                pdf = new jsPDFLib({ orientation, unit: 'mm', format: 'a4' });
+            } else {
+                pdf.addPage('a4', orientation);
+            }
+
+            const ratio = Math.min(pw / iw, ph / ih);
+            const w = iw * ratio, h = ih * ratio;
+            const x = (pw - w) / 2;
+            const y = (ph - h) / 2;
+
+            // On ajoute l'image directement sans passer par canvas (plus stable)
+            pdf.addImage(img, 'JPEG', x, y, w, h);
+            
+            URL.revokeObjectURL(blobUrl); // Libère la mémoire
+        }
+
+        const date = new Date().toISOString().split('T')[0].replace(/-/g,'.');
+        pdf.save(`recus_${date}.pdf`);
+        showToast("PDF téléchargé !");
+
+    } catch(e) {
+        showToast("Erreur PDF : " + e.message);
+        console.error("Détails de l'erreur :", e);
+    } finally {
+        btn.textContent = '📄 COMPILER EN PDF';
+        btn.style.pointerEvents = 'auto';
+    }
 }
 </script>
 </body>
