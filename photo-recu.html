@@ -9,18 +9,65 @@
         :root { --bg: #0f0f17; --primary: #4b4be6; --success: #2ecc71; --danger: #e74c3c; }
         body, html { margin: 0; padding: 0; height: 100dvh; background: #000; font-family: 'Poppins', sans-serif; overflow: hidden; color: white; }
         .app-container { display: flex; flex-direction: column; height: 100dvh; }
+
+        /* ── TOP BAR : 4 éléments sur une seule ligne ── */
+        .top-bar {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            right: 12px;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        /* Logo inline (plus de position:absolute) */
         .header-logo {
-            position: absolute; top: 15px; left: 50%; transform: translateX(-50%); z-index: 20;
-            display: flex; align-items: center; gap: 10px; padding: 5px 15px; border-radius: 40px;
-            background: linear-gradient(120deg, #4b4be6, #32a852, #e64be6, #a88a32); background-size: 300% 300%;
-            animation: gradientMove 8s ease infinite; border: 1px solid rgba(255,255,255,0.4);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5); white-space: nowrap; text-decoration: none; color: white; cursor: pointer;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 7px 10px;
+            border-radius: 40px;
+            background: linear-gradient(120deg, #4b4be6, #32a852, #e64be6, #a88a32);
+            background-size: 300% 300%;
+            animation: gradientMove 8s ease infinite;
+            border: 1px solid rgba(255,255,255,0.4);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            white-space: nowrap;
+            text-decoration: none;
+            color: white;
+            cursor: pointer;
+            min-width: 0;
+            overflow: hidden;
         }
         @keyframes gradientMove { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
-        .logo-icon { font-size: 20px; }
+        .logo-icon { font-size: 16px; flex-shrink: 0; }
         .logo-text-stack { display: flex; flex-direction: column; line-height: 1; }
-        .logo-text-stack span:first-child { font-size: 11px; font-weight: 900; text-transform: uppercase; }
-        .logo-text-stack span:last-child { font-size: 9px; font-weight: 700; text-transform: uppercase; opacity: 0.9; }
+        .logo-text-stack span:first-child { font-size: 10px; font-weight: 900; text-transform: uppercase; }
+        .logo-text-stack span:last-child { font-size: 8px; font-weight: 700; text-transform: uppercase; opacity: 0.9; }
+
+        .icon-btn {
+            background: rgba(0,0,0,0.6);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 0;
+            border-radius: 13px;
+            backdrop-filter: blur(5px);
+            font-size: 15px;
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .icon-btn-wrap { position: relative; display: inline-flex; flex-shrink: 0; }
+
         .viewport { position: relative; flex: 1; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         #video-preview { width: 100%; height: 100%; object-fit: cover; }
         #photo-canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: none; z-index: 5; background: #000; }
@@ -29,14 +76,12 @@
         .scan-region::before, .scan-region::after { content: ''; position: absolute; width: 40px; height: 40px; border: 3px solid var(--primary); }
         .scan-region::before { top: -2px; left: -2px; border-right: 0; border-bottom: 0; border-radius: 12px 0 0 0; }
         .scan-region::after { bottom: -2px; right: -2px; border-left: 0; border-top: 0; border-radius: 0 0 12px 0; }
-        .top-bar { position: absolute; top: 15px; left: 15px; right: 15px; z-index: 10; display: flex; justify-content: space-between; align-items: center; }
-        .icon-btn { background: rgba(0,0,0,0.6); color: white; border: 1px solid rgba(255,255,255,0.2); padding: 12px; border-radius: 15px; backdrop-filter: blur(5px); font-size: 16px; min-width: 45px; cursor: pointer; }
+
         .controls { background: #16161e; padding: 20px; border-radius: 25px 25px 0 0; z-index: 10; box-shadow: 0 -10px 30px rgba(0,0,0,0.5); }
         .btn { width: 100%; padding: 18px; border-radius: 15px; border: none; font-weight: 700; font-size: 16px; cursor: pointer; transition: 0.2s; }
         .btn-main { background: var(--primary); color: white; }
         .form-group { display: none; margin-bottom: 15px; }
 
-        /* DATE PICKER */
         .date-row { display: flex; gap: 6px; margin-bottom: 10px; }
         .date-chip { flex: 1; padding: 9px 4px; background: #0a0a0f; border: 1px solid #333; color: #aaa; border-radius: 10px; font-size: 11px; font-weight: 700; text-align: center; cursor: pointer; transition: 0.2s; }
         .date-chip.active { background: var(--primary); border-color: var(--primary); color: white; }
@@ -45,7 +90,6 @@
         .input-row { display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 10px; }
         .input-pro { width: 100%; padding: 14px; background: #0a0a0f; border: 1px solid #333; color: white; border-radius: 12px; box-sizing: border-box; font-size: 15px; }
 
-        /* SHOP AUTOCOMPLETE */
         .shop-wrap { position: relative; margin-bottom: 10px; }
         #capture-shop { width: 100%; padding: 14px; background: #0a0a0f; border: 1px solid #333; color: white; border-radius: 12px; box-sizing: border-box; font-size: 15px; }
         .autocomplete-list { position: absolute; bottom: 100%; left: 0; right: 0; background: #1e1e2e; border: 1px solid #444; border-radius: 12px; margin-bottom: 4px; overflow: hidden; z-index: 50; display: none; }
@@ -54,19 +98,14 @@
         .autocomplete-item:hover, .autocomplete-item.selected { background: rgba(75,75,230,0.3); }
         .ac-freq { font-size: 11px; color: #888; margin-left: auto; }
 
-        /* DATE DISPLAY */
         .date-display { display: flex; align-items: center; gap: 8px; background: rgba(75,75,230,0.15); border: 1px solid rgba(75,75,230,0.4); border-radius: 10px; padding: 9px 14px; margin-bottom: 10px; }
         .date-display-label { font-size: 11px; color: #aaa; font-weight: 600; text-transform: uppercase; }
         .date-display-value { font-size: 15px; font-weight: 700; color: white; margin-left: auto; letter-spacing: 0.5px; }
 
-        /* AMOUNT */
         .amount-row { display: grid; grid-template-columns: 1fr; margin-bottom: 10px; }
 
-        /* ALERT BADGE (ancien, gardé pour compatibilité) */
         .alert-badge { position: absolute; top: -6px; right: -6px; background: #e74c3c; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; font-weight: 900; display: flex; align-items: center; justify-content: center; }
-        .icon-btn-wrap { position: relative; display: inline-block; }
 
-        /* WIDGET COMPTEUR PERMANENT */
         .file-counter-widget {
             position: absolute;
             bottom: 18px;
@@ -97,7 +136,6 @@
         .file-counter-num { font-size: 15px; font-weight: 900; color: white; }
         .file-counter-label { font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.8); text-transform: uppercase; letter-spacing: 0.5px; }
 
-        /* ALERT MODAL */
         .alert-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 300; display: none; align-items: center; justify-content: center; padding: 20px; }
         .alert-box { background: #1e1e2e; border-radius: 20px; padding: 30px; text-align: center; border: 1px solid #e74c3c; max-width: 320px; width: 100%; }
         .alert-box h3 { margin: 0 0 10px; font-size: 22px; }
@@ -132,17 +170,27 @@
 
 <div class="app-container">
     <div class="viewport" onclick="applyFocus()">
-        <a href="https://es-d-0544653420260421-019d9d77-1ff4-7528-927f-7dea15c4d92a.codepen.dev/" class="header-logo">
-            <span class="logo-icon">🧰</span>
-            <div class="logo-text-stack"><span>Outils</span><span>Online</span></div>
-        </a>
+
+        <!-- ── BARRE DU HAUT : ✕ | logo | 🔦 | 📜 ── -->
         <div class="top-bar">
+            <button class="icon-btn" onclick="window.parent.closeIframe('iframe_photo_recu')">✕</button>
+
+            <a href="https://es-d-0544653420260421-019d9d77-1ff4-7528-927f-7dea15c4d92a.codepen.dev/" class="header-logo">
+                <span class="logo-icon">🧰</span>
+                <div class="logo-text-stack">
+                    <span>Outils</span>
+                    <span>Online</span>
+                </div>
+            </a>
+
             <button class="icon-btn" id="torch-btn" onclick="toggleTorch(event)">🔦</button>
+
             <div class="icon-btn-wrap">
                 <button class="icon-btn" onclick="openHistory(event)">📜</button>
                 <div id="alert-dot" class="alert-badge" style="display:none">!</div>
             </div>
         </div>
+
         <div class="scan-overlay" id="scan-overlay">
             <div class="scan-region"></div>
         </div>
@@ -262,11 +310,9 @@ function updateSaveBtn() {
     btn.style.pointerEvents = hasDate ? 'auto' : 'none';
 }
 
-/* --- DATE CHIPS --- */
 function selectDateChip(mode) {
     dateMode = mode;
     ['today','prev','manual'].forEach(m => document.getElementById('chip-'+m).classList.toggle('active', m === mode));
-    const manWrap = document.getElementById('manual-date-wrap');
     if (mode === 'today') {
         document.getElementById('capture-date').value = new Date().toISOString().split('T')[0];
         refreshDateDisplay();
@@ -305,7 +351,6 @@ function getSelectedDate() {
     return document.getElementById('capture-date').value;
 }
 
-/* --- SHOP AUTOCOMPLETE --- */
 function getShopHistory() {
     try { return JSON.parse(localStorage.getItem('shopHistory') || '{}'); } catch(e) { return {}; }
 }
@@ -355,7 +400,6 @@ function highlightAc(items) {
     if (acIndex >= 0) document.getElementById('capture-shop').value = items[acIndex].dataset.name;
 }
 
-/* --- WIDGET COMPTEUR --- */
 function updateWidgetCount(n) {
     const dot = document.getElementById('alert-dot');
     dot.style.display = n >= 10 ? 'flex' : 'none';
@@ -384,9 +428,7 @@ function checkAlertDot() {
     const req = db.transaction("receipts").objectStore("receipts").count();
     req.onsuccess = () => updateWidgetCount(req.result);
 }
-function resetCaptureCount() { /* no-op, count vient de la DB */ }
 
-/* --- CAMERA & CAPTURE --- */
 async function toggleTorch(e) {
     e.stopPropagation();
     if (!track) return;
@@ -430,7 +472,6 @@ function processCapture() {
     document.getElementById('form-ui').style.display = 'block';
     document.getElementById('post-snap-ui').style.display = 'flex';
     document.getElementById('snap-btn').style.display = 'none';
-    // Réinitialise le choix de date — l'utilisateur doit choisir explicitement
     dateMode = null;
     ['today','prev','manual'].forEach(m => document.getElementById('chip-'+m).classList.remove('active'));
     document.getElementById('manual-date-wrap').style.display = 'none';
@@ -481,7 +522,6 @@ function confirmSave() {
     }, 'image/jpeg', 0.92);
 }
 
-/* --- ALERT MODAL --- */
 function dismissAlert() {
     document.getElementById('alert-modal').style.display = 'none';
 }
@@ -490,7 +530,6 @@ function goToHistory() {
     openHistory({ stopPropagation: ()=>{} });
 }
 
-/* --- HISTORY --- */
 function openHistory(e) {
     e.stopPropagation();
     document.getElementById('history-panel').style.display = 'flex';
