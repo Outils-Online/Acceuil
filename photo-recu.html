@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <title>Pro Camera - Reçus & Scan</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='80'>🧰</text></svg>">
+    <meta name="theme-color" content="#4b4be6">
     <style>
         :root { --bg: #0f0f17; --primary: #4b4be6; --success: #2ecc71; --danger: #e74c3c; }
         body, html { margin: 0; padding: 0; height: 100dvh; background: #000; font-family: 'Poppins', sans-serif; overflow: hidden; color: white; }
@@ -203,28 +205,29 @@
     </div>
 </div>
 
-<!-- MODAL CHOIX EXPORT (sans "Sans PDF", sans modal intermédiaire) -->
+<!-- MODAL CHOIX EXPORT - Trois boutons : Mail, Message, Zip -->
 <div id="export-modal" class="alert-modal">
-    <div class="alert-box" style="max-width:350px; border-color:#4b4be6;">
-        <div style="font-size:40px; margin-bottom:10px;">📦</div>
-        <h3>Que voulez-vous envoyer ?</h3>
-        <p style="font-size:13px; margin:15px 0;">Choisissez les formats à inclure dans le ZIP</p>
-        <div style="display:grid;gap:8px;margin:20px 0;">
-            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px;background:rgba(75,75,230,0.1);border-radius:10px;border:1px solid #444;">
-                <input type="checkbox" id="send-excel" checked> 📊 Récapitulatif CSV
+    <div class="alert-box" style="max-width:400px; border-color:#4b4be6;">
+        <div style="font-size:40px; margin-bottom:10px;">📤</div>
+        <h3>Comment partager ?</h3>
+        <p style="font-size:13px; margin:15px 0;">Sélectionnez le mode d'envoi et le format PDF</p>
+        
+        <div style="margin:15px 0; padding:12px; background:rgba(75,75,230,0.1); border-radius:10px; border:1px solid rgba(75,75,230,0.3);">
+            <div style="font-size:12px; font-weight:700; margin-bottom:10px; color:#aaa;">Format PDF :</div>
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:8px;margin-bottom:6px;">
+                <input type="radio" name="pdf-format" id="pdf-separate" value="separate"> 📄 Séparés (nommés correctement)
             </label>
-            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px;background:rgba(75,75,230,0.1);border-radius:10px;border:1px solid #444;">
-                <input type="radio" name="pdf-option" id="pdf-separate" value="separate"> 📄 PDFs séparés
-            </label>
-            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px;background:rgba(75,75,230,0.1);border-radius:10px;border:1px solid #444;">
-                <input type="radio" name="pdf-option" id="pdf-compiled" value="compiled" checked> 📄 PDF compilé
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:8px;">
+                <input type="radio" name="pdf-format" id="pdf-compiled" value="compiled" checked> 📦 Compilé (avec timestamp)
             </label>
         </div>
-        <div class="alert-actions" style="display: flex; gap: 8px; margin-top: 15px; flex-wrap: wrap;">
-    <button class="btn" style="background:#333; color:white; flex: 1; min-width: 80px;" onclick="closeExportModal()">Annuler</button>
-    <button class="btn" style="background:var(--primary); color:white; flex: 1; min-width: 80px;" onclick="actionDownloadZip()">📥 ZIP</button>
-    <button class="btn btn-main" style="flex: 2; min-width: 120px;" onclick="actionNativeShare()">📤 PARTAGER</button>
-</div>
+        
+        <div style="display:grid;gap:8px;margin:20px 0;">
+            <button class="btn" style="background:rgba(75,75,230,0.2); color:white; padding:14px; border-radius:10px; border:1px solid #4b4be6; font-weight:700;" onclick="actionSendMail()">✉️ MAIL<br/><span style="font-size:11px; opacity:0.8; font-weight:500;">PDF + CSV</span></button>
+            <button class="btn" style="background:rgba(75,75,230,0.2); color:white; padding:14px; border-radius:10px; border:1px solid #4b4be6; font-weight:700;" onclick="actionSendMessage()">💬 MESSAGE<br/><span style="font-size:11px; opacity:0.8; font-weight:500;">PDFs seulement</span></button>
+            <button class="btn" style="background:rgba(75,75,230,0.2); color:white; padding:14px; border-radius:10px; border:1px solid #4b4be6; font-weight:700;" onclick="actionDownloadZip()">📥 ZIP<br/><span style="font-size:11px; opacity:0.8; font-weight:500;">PDF + CSV</span></button>
+        </div>
+        <button class="btn" style="background:#333; color:white; width:100%; margin-top:15px;" onclick="closeExportModal()">Annuler</button>
     </div>
 </div>
 
@@ -854,7 +857,6 @@ function shareSelected() {
 
 function closeExportModal() { document.getElementById('export-modal').style.display = 'none'; }
 
-// ─── ENVOI & PARTAGE NATIF ────────────────────────────────────────────────────
 // ─── UTILITAIRES DE NOMMAGE ET RÉCUPÉRATION ───────────────────────────────────
 
 // Génère un timestamp type 20231027_143005
@@ -879,11 +881,130 @@ async function getSelectedItems() {
     return items;
 }
 
-// ─── ACTION 1 : TÉLÉCHARGEMENT ZIP (Local + CSV) ──────────────────────────────
+// Génère le CSV récapitulatif
+async function generateCSV(items) {
+    let csv = 'Date,Magasin,Prix\n';
+    items.forEach(item => {
+        const p = parseFileName(item.name);
+        if (p) csv += `"${p.date}","${p.shop}","${p.price}"\n`;
+    });
+    return csv;
+}
+
+// ─── ACTION 1 : MAIL (PDF + CSV) ────────────────────────────────────
+async function actionSendMail() {
+    const pdfFormat = document.querySelector('input[name="pdf-format"]:checked').value;
+    closeExportModal();
+    showToast("Préparation du fichier...");
+
+    try {
+        const items = await getSelectedItems();
+        if (!items.length) { showToast("Aucun fichier sélectionné"); return; }
+        
+        const timeStr = getExactTimeStr();
+        let filesToShare = [];
+        
+        // Génération du CSV
+        const csv = await generateCSV(items);
+        const csvFile = new File([csv], `Recapitulatif_${timeStr}.csv`, { type: 'text/csv' });
+        filesToShare.push(csvFile);
+        
+        // Génération des PDFs selon le format
+        if (pdfFormat === 'separate') {
+            // PDFs séparés nommés correctement
+            for (let item of items) {
+                const pdfBlob = await buildSinglePDF(item.imgData);
+                filesToShare.push(new File([pdfBlob], `${item.name}.pdf`, { type: 'application/pdf' }));
+            }
+        } else {
+            // PDF compilé avec timestamp
+            const pdfBlob = await buildCompiledPDF(items);
+            filesToShare.push(new File([pdfBlob], `Recus_${timeStr}.pdf`, { type: 'application/pdf' }));
+        }
+        
+        // Tentative partage natif
+        if (navigator.canShare && navigator.canShare({ files: filesToShare })) {
+            await navigator.share({
+                files: filesToShare,
+                title: 'Mes Reçus',
+                text: 'Voici mes reçus en PDF et le récapitulatif CSV.'
+            });
+            showToast("Mail ouvert !");
+        } else {
+            // Fallback : créer un zip
+            showToast("Création d'un ZIP...");
+            const zip = new JSZip();
+            for (let file of filesToShare) {
+                const blob = await file.arrayBuffer();
+                zip.file(file.name, blob);
+            }
+            const zipBlob = await zip.generateAsync({ type: 'blob' });
+            fallbackDownloadZip(zipBlob, `Export_${timeStr}.zip`);
+        }
+
+    } catch(err) {
+        if (err.name !== 'AbortError') {
+            showToast("Erreur: " + err.message);
+            console.error(err);
+        }
+    }
+}
+
+// ─── ACTION 2 : MESSAGE (PDFs seulement) ─────────────────────────────────────
+async function actionSendMessage() {
+    const pdfFormat = document.querySelector('input[name="pdf-format"]:checked').value;
+    closeExportModal();
+    showToast("Préparation des fichiers...");
+
+    try {
+        const items = await getSelectedItems();
+        if (!items.length) { showToast("Aucun fichier sélectionné"); return; }
+        
+        const timeStr = getExactTimeStr();
+        let filesToShare = [];
+
+        // Génération des PDFs selon le format (sans CSV)
+        if (pdfFormat === 'separate') {
+            // PDFs séparés nommés correctement
+            for (let item of items) {
+                const pdfBlob = await buildSinglePDF(item.imgData);
+                filesToShare.push(new File([pdfBlob], `${item.name}.pdf`, { type: 'application/pdf' }));
+            }
+        } else {
+            // PDF compilé avec timestamp
+            const pdfBlob = await buildCompiledPDF(items);
+            filesToShare.push(new File([pdfBlob], `Recus_${timeStr}.pdf`, { type: 'application/pdf' }));
+        }
+
+        // Tentative de partage natif (SMS / Message)
+        if (navigator.canShare && navigator.canShare({ files: filesToShare })) {
+            await navigator.share({
+                files: filesToShare,
+                title: 'Mes Reçus',
+                text: 'Voici mes reçus en PDF.'
+            });
+            showToast("Message ouvert !");
+        } else {
+            showToast("Partage direct impossible, création d'un ZIP...");
+            const zip = new JSZip();
+            for (let file of filesToShare) {
+                const blob = await file.arrayBuffer();
+                zip.file(file.name, blob);
+            }
+            const zipBlob = await zip.generateAsync({ type: 'blob' });
+            fallbackDownloadZip(zipBlob, `Export_${timeStr}.zip`);
+        }
+
+    } catch(err) {
+        if (err.name !== 'AbortError') {
+            showToast("Erreur: " + err.message);
+            console.error(err);
+        }
+    }
+}
+
+// ─── ACTION 3 : ZIP (PDF compilé + CSV) ─────────────────────────────────────
 async function actionDownloadZip() {
-    const sendExcel = document.getElementById('send-excel').checked;
-    const pdfOption = document.querySelector('input[name="pdf-option"]:checked').value;
-    
     closeExportModal();
     showToast("Préparation du ZIP...");
 
@@ -895,100 +1016,29 @@ async function actionDownloadZip() {
         const zip = new JSZip();
         const timeStr = getExactTimeStr();
 
-        // Ajout du CSV
-        if (sendExcel) {
-            let csv = 'Date,Magasin,Prix\n';
-            items.forEach(item => {
-                const p = parseFileName(item.name);
-                if (p) csv += `"${p.date}","${p.shop}","${p.price}"\n`;
-            });
-            zip.file(`Recapitulatif_${timeStr}.csv`, csv);
-        }
+        // Ajout du PDF compilé
+        const pdfBlob = await buildCompiledPDF(items);
+        zip.file(`Recus_Compiles_${timeStr}.pdf`, pdfBlob);
 
-        // Ajout des PDFs
-        if (pdfOption === 'separate') {
-            for (let item of items) {
-                const pdfBlob = await buildSinglePDF(item.imgData);
-                zip.file(`${item.name}.pdf`, pdfBlob);
-            }
-        } else {
-            const pdfBlob = await buildCompiledPDF(items);
-            zip.file(`Recus_Groupes_${timeStr}.pdf`, pdfBlob);
-        }
+        // Ajout du CSV
+        const csv = await generateCSV(items);
+        zip.file(`Recapitulatif_${timeStr}.csv`, csv);
 
         const zipBlob = await zip.generateAsync({ type: 'blob' });
-        const file = new File([zipBlob], `Export_${timeStr}.zip`, { type: 'application/zip' });
-        fallbackDownload(file);
+        fallbackDownloadZip(zipBlob, `Export_${timeStr}.zip`);
 
     } catch(err) {
         showToast("Erreur ZIP: " + err.message);
     }
 }
 
-// ─── ACTION 2 : PARTAGE NATIF (PDFs directs, sans ZIP) ────────────────────────
-async function actionNativeShare() {
-    const pdfOption = document.querySelector('input[name="pdf-option"]:checked').value;
-    
-    closeExportModal();
-    showToast("Préparation du partage...");
-
-    try {
-        const items = await getSelectedItems();
-        if (!items.length) { showToast("Sélection vide"); return; }
-        
-        const timeStr = getExactTimeStr();
-        let filesToShare = [];
-
-        // On génère les fichiers PDF sans les zipper
-        if (pdfOption === 'compiled') {
-            const pdfBlob = await buildCompiledPDF(items);
-            filesToShare.push(new File([pdfBlob], `Recus_Compiles_${timeStr}.pdf`, { type: 'application/pdf' }));
-        } else {
-            for (let item of items) {
-                const pdfBlob = await buildSinglePDF(item.imgData);
-                filesToShare.push(new File([pdfBlob], `${item.name}.pdf`, { type: 'application/pdf' }));
-            }
-        }
-
-        // Tentative de partage Android / iOS
-        if (navigator.canShare && navigator.canShare({ files: filesToShare })) {
-            await navigator.share({
-                files: filesToShare,
-                title: 'Mes Reçus PDF',
-                text: 'Voici mes reçus exportés.'
-            });
-            showToast("Partage ouvert !");
-        } else {
-            // Si le partage natif échoue (ex: trop de fichiers), on bascule sur le ZIP
-            showToast("Partage direct impossible, création d'un ZIP...");
-            actionDownloadZip();
-        }
-
-    } catch(err) {
-        if (err.name !== 'AbortError') {
-            showToast("Erreur partage: " + err.message);
-            console.error(err);
-        }
-    }
-}
-
-function fallbackDownload(file) {
-    const url = URL.createObjectURL(file);
+function fallbackDownloadZip(blob, filename) {
+    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = file.name;
+    a.download = filename;
     document.body.appendChild(a); 
     a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-
-function fallbackDownload(file) {
-    const url = URL.createObjectURL(file);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = file.name;
-    document.body.appendChild(a); a.click();
     document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(url), 1000);
     showToast("Fichier téléchargé !");
