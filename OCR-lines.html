@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <title>OCR Niveaux de Gris - Double Check</title>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <style>
+        :root { --primary: #4b4be6; --bg: #000; }
+        body, html { margin: 0; padding: 0; height: 100dvh; background: var(--bg); font-family: sans-serif; overflow: hidden; color: white; }
+        .app-container { display: flex; flex-direction: column; height: 100dvh; }
+        #viewport { position: relative; flex: 1; background: #000; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+        video, #photoCanvas, #selectionCanvas { position: absolute; max-width: 100%; max-height: 100%; object-fit: contain; }
+        #selectionCanvas { z-index: 10; touch-action: none; }
+        .controls { background: #16161e; padding: 15px 10px 35px 10px; border-top: 1px solid #333; display: flex; gap: 15px; justify-content: center; z-index: 100; }
+        button { padding: 18px; border-radius: 12px; border: none; font-weight: 800; font-size: 14px; cursor: pointer; min-width: 120px; text-transform: uppercase; }
+        .btn-snap { background: #e74c3c; color: white; }
+        .btn-export { background: #2ecc71; color: white; }
+        #confirmModal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; color: #333; padding: 15px; border-radius: 15px; width: 88%; max-width: 400px; z-index: 200; box-shadow: 0 10px 40px rgba(0,0,0,0.6); box-sizing: border-box; }
+        #ocrEditArea { width: 100%; height: 110px; background: #f0f2f5; border: 1px solid #ddd; border-radius: 10px; padding: 10px; font-size: 15px; font-weight: 600; margin-bottom: 12px; color: #000; box-sizing: border-box; resize: none; outline: none; }
+        #pageInput { width: 100%; padding: 12px; font-size: 16px; border: 2px solid #eee; border-radius: 10px; text-align: center; margin-bottom: 12px; box-sizing: border-box; }
+        .modal-btns { display: flex; gap: 10px; width: 100%; }
+        .modal-btns button { min-width: 0; flex: 1; padding: 14px; }
+        #loader { display: none; position: absolute; top: 20px; width: 100%; text-align: center; z-index: 50; }
+        .badge { background: var(--primary); padding: 8px 20px; border-radius: 30px; font-size: 12px; font-weight: bold;}
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div id="loader"><span class="badge">ANALYSE COMPARATIVE...</span></div>
+    <div id="viewport">
+        <video id="video" autoplay playsinline></video>
+        <canvas id="photoCanvas" style="display:none;"></canvas>
+        <canvas id="selectionCanvas"></canvas>
+    </div>
+    <div class="controls">
+        <button class="btn-export" onclick="exportJSON()">Export</button>
+        <button class="btn-snap" id="btnSnap" onclick="toggleSnap()">Figer</button>
+    </div>
+</div>
+
+<div id="confirmModal">
+    <textarea id="ocrEditArea"></textarea>
+    <input type="number" id="pageInput" placeholder="N° Page" inputmode="numeric">
+    <div class="modal-btns">
+        <button onclick="closeModal()" style="background:#eee; color:#333;">Annuler</button>
+        <button onclick="saveResult()" style="background:var(--primary); color:white;">Valider</button>
+    </div>
+</div>
+
+<script>
+    const video = document.getElementById('video');
+    const photoCanvas = document.getElementById('photoCanvas');
+    const selectCanvas = document.getElementById('selectionCanvas');
+    const sctx = selectCanvas.getContext('2d');
+    const confirmModal = document.getElementById('confirmModal');
+    const ocrEditArea = document.getElementById('ocrEditArea');
+    const loader = document.getElementById('loader');
+    
+    let isFrozen = false, isDrawing = false, startX, startY, historyData = [];
+
+    window.onload = () => { initCamera(); };
+
+    async function initCamera() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: 'environment', width: { ideal: 4096 }, height: { ideal: 2160 } } 
+            });
+            video.srcObject = stream;
+            video.onloadedmetadata = () => {
+                photoCanvas.width = video.videoWidth; photoCanvas.height = video.videoHeight;
+                selectCanvas.width = video.videoWidth; selectCanvas.height = video.videoHeight;
+            };
+        } catch(e) { alert("Caméra bloquée."); }
+    }
+
+    function toggleSnap() {
+        if (!isFrozen) {
+            const ctx = photoCanvas.getContext('2d');
+            ctx.drawImage(video, 0, 0);
+            
+            // TRAITEMENT "PARFAIT" EN NIVEAUX DE GRIS
+            const imgData = ctx.getImageData(0, 0, photoCanvas.width, photoCanvas.height);
+            const d = imgData.data;
+            for (let i = 0; i < d.length; i += 4) {
+                // Calcul de luminance standard
+                let lum = d[i]*0.3 + d[i+1]*0.59 + d[i+2]*0.11;
+                // Application du profil de contraste doux (Grayscale)
+                let final = lum < 130 ? lum*0.92 : Math.min(255, lum*1.03);
+                d[i] = d[i+1] = d[i+2] = final;
+            }
+            ctx.putImageData(imgData, 0, 0);
+
+            video.style.visibility = 'hidden';
+            photoCanvas.style.display = 'block';
+            document.getElementById('btnSnap').innerText = "Reprendre";
+            isFrozen = true;
+        } else { reset(); }
+    }
+
+    function reset() {
+        video.style.visibility = 'visible'; photoCanvas.style.display = 'none';
+        sctx.clearRect(0, 0, selectCanvas.width, selectCanvas.height);
+        document.getElementById('btnSnap').innerText = "Figer";
+        confirmModal.style.display = 'none'; isFrozen = false;
+    }
+
+    function getPos(e) {
+        const r = selectCanvas.getBoundingClientRect();
+        const ev = e.touches ? e.touches[0] : e;
+        return { x: ((ev.clientX - r.left) / r.width) * selectCanvas.width, y: ((ev.clientY - r.top) / r.height) * selectCanvas.height };
+    }
+
+    selectCanvas.addEventListener('touchstart', (e) => { if(!isFrozen) return; const p = getPos(e); startX = p.x; startY = p.y; isDrawing = true; });
+    selectCanvas.addEventListener('touchmove', (e) => { 
+        if(!isDrawing) return; const p = getPos(e); 
+        sctx.clearRect(0,0,selectCanvas.width,selectCanvas.height); 
+        sctx.strokeStyle = "#4b4be6"; sctx.lineWidth = 10; 
+        sctx.strokeRect(startX, startY, p.x-startX, p.y-startY); 
+    });
+
+    selectCanvas.addEventListener('touchend', async (e) => {
+        if(!isDrawing) return; isDrawing = false;
+        const p = getPos(e.changedTouches[0]);
+        let w = Math.abs(p.x-startX), h = Math.abs(p.y-startY), x = Math.min(startX, p.x), y = Math.min(startY, p.y);
+        
+        if(w > 20) {
+            loader.style.display = 'block';
+            
+            const c1 = document.createElement('canvas'); const c2 = document.createElement('canvas');
+            c1.width = c2.width = w; c1.height = c2.height = h;
+            const ctx1 = c1.getContext('2d'); const ctx2 = c2.getContext('2d');
+
+            // OCR 1 : Basé sur le Gris "Parfait"
+            ctx1.drawImage(photoCanvas, x, y, w, h, 0, 0, w, h);
+            
+            // OCR 2 : Basé sur un Gris plus sombre (pour compenser si c'est trop pâle)
+            ctx2.filter = 'brightness(0.9) contrast(1.2)';
+            ctx2.drawImage(photoCanvas, x, y, w, h, 0, 0, w, h);
+
+            try {
+                const [r1, r2] = await Promise.all([
+                    Tesseract.recognize(c1, 'fra'),
+                    Tesseract.recognize(c2, 'fra')
+                ]);
+
+                const clean = (t) => t.replace(/-\s+/g, '').replace(/\s+/g, ' ').trim();
+                let t1 = clean(r1.data.text);
+                let t2 = clean(r2.data.text);
+
+                // Choix du texte le plus riche + Double espace supprimé (règle OCR)
+                ocrEditArea.value = (t1.length >= t2.length) ? t1 : t2;
+                confirmModal.style.display = 'block';
+            } catch(e) { alert("Erreur OCR"); }
+            loader.style.display = 'none';
+        }
+    });
+
+    function saveResult() {
+        const p = document.getElementById('pageInput').value;
+        if(!p) return alert("Indiquez la page.");
+        // Sécurité finale : aucun double espace
+        const finalTexte = ocrEditArea.value.replace(/\s\s+/g, ' ').trim();
+        historyData.push({ page: p, texte: finalTexte });
+        document.getElementById('pageInput').value = ""; closeModal();
+    }
+
+    function closeModal() { confirmModal.style.display = 'none'; sctx.clearRect(0,0,selectCanvas.width,selectCanvas.height); }
+
+    function exportJSON() {
+        if(!historyData.length) return alert("Vide.");
+        const b = new Blob([JSON.stringify(historyData, null, 2)], { type: 'application/json' });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(b); a.download = "extraction.json"; a.click();
+    }
+</script>
+</body>
+</html>

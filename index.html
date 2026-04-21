@@ -21,11 +21,15 @@
 </div>
 <div id="iframe_sign_pdf" class="iframe-container">
     <button class="close-iframe" onclick="closeIframe('iframe_sign_pdf')">FERMER X</button>
-    <iframe src="sign-pdf.html" allow="camera; microphone"></iframe>
+    <iframe src="pages/sign-pdf.html" allow="camera; microphone"></iframe>
 </div>
 <div id="iframe_photo_recu" class="iframe-container">
     <button class="close-iframe" onclick="closeIframe('iframe_photo_recu')">FERMER X</button>
-    <iframe src="photo-recu.html" allow="camera; microphone"></iframe>
+    <iframe src="pages/photo-recu.html" allow="camera; microphone"></iframe>
+</div>
+<div id="iframe_ocr_lines" class="iframe-container">
+    <button class="close-iframe" onclick="closeIframe('iframe_ocr_lines')">FERMER X</button>
+    <iframe src="pages/OCR-lines.html"></iframe>
 </div>
 
 <div class="nav-shell">
@@ -83,6 +87,9 @@
     </button>
     <button class="btn-3d btn-blue" data-id="minuteur" data-main="bureau" data-tags="recherche" onclick="openIframe('iframe_minuteur', this)">
         <div class="btn-star">★</div><div class="favicon-badge">⏲️</div><div>Minuteur</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-blue" data-id="ocr-lines" data-main="bureau" data-tags="recherche" onclick="openIframe('iframe_ocr_lines', this)">
+        <div class="btn-star">★</div><div class="favicon-badge">🔍</div><div>OCR-lines</div><div class="count-badge">0</div>
     </button>
 
     <button class="btn-3d btn-orange" data-id="yt-mp4" data-main="creative" data-tags="video" data-url="https://fr.ssyoutube.com/" onclick="handleTool(this)">
