@@ -10,7 +10,6 @@
         body, html { margin: 0; padding: 0; height: 100dvh; background: #000; font-family: 'Poppins', sans-serif; overflow: hidden; color: white; }
         .app-container { display: flex; flex-direction: column; height: 100dvh; }
 
-        /* LOGO : petit, centré, position absolute original */
         .header-logo {
             position: absolute; top: 15px; left: 50%; transform: translateX(-50%); z-index: 20;
             display: flex; align-items: center; gap: 10px; padding: 5px 15px; border-radius: 40px;
@@ -24,7 +23,6 @@
         .logo-text-stack span:first-child { font-size: 11px; font-weight: 900; text-transform: uppercase; }
         .logo-text-stack span:last-child { font-size: 9px; font-weight: 700; text-transform: uppercase; opacity: 0.9; }
 
-        /* TOP BAR : X gauche | flash + historique droite */
         .top-bar {
             position: absolute; top: 12px; left: 12px; right: 12px; z-index: 20;
             display: flex; align-items: center; justify-content: space-between;
@@ -97,7 +95,6 @@
         .alert-box p { color: #aaa; font-size: 14px; margin: 0 0 20px; }
         .alert-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
-        /* history z-index 200 > tout le reste (top-bar=20, logo=20) */
         .history-panel { position: fixed; inset: 0; background: var(--bg); z-index: 200; display: none; flex-direction: column; padding: 20px; }
         .history-list { flex: 1; overflow-y: auto; margin: 15px 0; }
         .item { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; margin-bottom: 10px; display: flex; align-items: center; border: 1px solid #222; }
@@ -112,6 +109,7 @@
 
 <div id="toast" class="toast">Enregistré !</div>
 
+<!-- MODAL ALERTE 10 REÇUS -->
 <div id="alert-modal" class="alert-modal">
     <div class="alert-box">
         <div style="font-size:40px; margin-bottom:10px;">🔔</div>
@@ -127,13 +125,11 @@
 <div class="app-container">
     <div class="viewport" onclick="applyFocus()">
 
-        <!-- LOGO centré indépendant (position absolute) -->
         <a href="https://es-d-0544653420260421-019d9d77-1ff4-7528-927f-7dea15c4d92a.codepen.dev/" class="header-logo">
             <span class="logo-icon">🧰</span>
             <div class="logo-text-stack"><span>Outils</span><span>Online</span></div>
         </a>
 
-        <!-- TOP BAR : X gauche | flash + historique droite -->
         <div class="top-bar">
             <button class="icon-btn" onclick="window.parent.closeIframe('iframe_photo_recu')">✕</button>
             <div class="top-bar-right">
@@ -156,6 +152,7 @@
                 <span class="file-counter-label" id="file-counter-label">fichiers</span>
             </div>
         </div>
+
         <video id="video-preview" autoplay playsinline></video>
         <canvas id="photo-canvas"></canvas>
     </div>
@@ -192,7 +189,7 @@
     </div>
 </div>
 
-<!-- HISTORIQUE couvre tout (z-index 200) -->
+<!-- HISTORIQUE -->
 <div id="history-panel" class="history-panel">
     <div style="display:flex;justify-content:space-between;align-items:center;">
         <h2 style="margin:0;">Mes Archives</h2>
@@ -200,13 +197,45 @@
     </div>
     <button id="select-all-btn" class="btn" style="background:#222;color:white;margin:15px 0 5px;border:1px solid #444;padding:10px;" onclick="toggleSelectAll()">✅ TOUT SÉLECTIONNER</button>
     <div id="history-list" class="history-list"></div>
-    <button class="btn" style="background:var(--danger);color:white;margin-bottom:15px;padding:12px;font-size:14px;" onclick="clearAllHistory()">⚠️ TOUT SUPPRIMER L'HISTORIQUE</button>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px;">
         <button class="btn btn-main" onclick="shareSelected()">📤 ENVOYER</button>
-        <button class="btn" style="background:#333;color:white;" onclick="deleteSelected()">🗑️ SUPPRIMER</button>
+        <button class="btn" style="background:#333;color:white;" onclick="deleteSelected()">🗑️ TOUT SUP.</button>
     </div>
-    <button id="pdf-btn" class="btn" style="background:#c0392b;color:white;padding:14px;font-size:15px;" onclick="compilePdf()">📄 COMPILER EN PDF</button>
 </div>
+
+<!-- MODAL CHOIX EXPORT (sans "Sans PDF", sans modal intermédiaire) -->
+<div id="export-modal" class="alert-modal">
+    <div class="alert-box" style="max-width:350px; border-color:#4b4be6;">
+        <div style="font-size:40px; margin-bottom:10px;">📦</div>
+        <h3>Que voulez-vous envoyer ?</h3>
+        <p style="font-size:13px; margin:15px 0;">Choisissez les formats à inclure dans le ZIP</p>
+        <div style="display:grid;gap:8px;margin:20px 0;">
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px;background:rgba(75,75,230,0.1);border-radius:10px;border:1px solid #444;">
+                <input type="checkbox" id="send-excel" checked> 📊 Récapitulatif CSV
+            </label>
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px;background:rgba(75,75,230,0.1);border-radius:10px;border:1px solid #444;">
+                <input type="radio" name="pdf-option" id="pdf-separate" value="separate"> 📄 PDFs séparés
+            </label>
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px;background:rgba(75,75,230,0.1);border-radius:10px;border:1px solid #444;">
+                <input type="radio" name="pdf-option" id="pdf-compiled" value="compiled" checked> 📄 PDF compilé
+            </label>
+        </div>
+        <div class="alert-actions" style="display: flex; gap: 8px; margin-top: 15px; flex-wrap: wrap;">
+    <button class="btn" style="background:#333; color:white; flex: 1; min-width: 80px;" onclick="closeExportModal()">Annuler</button>
+    <button class="btn" style="background:var(--primary); color:white; flex: 1; min-width: 80px;" onclick="actionDownloadZip()">📥 ZIP</button>
+    <button class="btn btn-main" style="flex: 2; min-width: 120px;" onclick="actionNativeShare()">📤 PARTAGER</button>
+</div>
+    </div>
+</div>
+
+<!-- Librairies chargées en premier -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+    if (window.jspdf && window.jspdf.jsPDF) {
+        window.jsPDF = window.jspdf.jsPDF;
+    }
+</script>
 
 <script>
 let stream, track, db, torch = false, selectedIds = new Set();
@@ -327,7 +356,10 @@ async function toggleTorch(e) {
     e.stopPropagation();
     if (!track) return;
     torch = !torch;
-    try { await track.applyConstraints({ advanced: [{ torch }] }); document.getElementById('torch-btn').style.background = torch ? 'var(--primary)' : 'rgba(0,0,0,0.6)'; } catch(e) {}
+    try {
+        await track.applyConstraints({ advanced: [{ torch }] });
+        document.getElementById('torch-btn').style.background = torch ? 'var(--primary)' : 'rgba(0,0,0,0.6)';
+    } catch(e) {}
 }
 function applyFocus() { if (track) track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }).catch(()=>{}); }
 
@@ -374,18 +406,30 @@ function resetUI() {
     document.getElementById('autocomplete-list').style.display = 'none';
 }
 
-function confirmSave() {
+// ─── SAUVEGARDE DIRECTEMENT EN PDF ───────────────────────────────────────────
+async function confirmSave() {
     const dateVal = getSelectedDate();
     if (!dateVal) { showToast("Choisissez une date !"); return; }
+    if (!window.jsPDF) { showToast("Erreur : jsPDF non chargé"); return; }
+
     const canvas = document.getElementById('photo-canvas');
     const shopVal = document.getElementById('capture-shop').value.toUpperCase() || 'RECU';
     const priceVal = document.getElementById('capture-amount').value || '0';
-    const fileName = `${dateVal.replace(/-/g,'.')}_${shopVal}_${priceVal}EUR.jpg`;
+    const fileName = `${dateVal.replace(/-/g,'.')}_${shopVal}_${priceVal}EUR.pdf`;
+
     saveShopUsage(shopVal);
     prevScanDate = dateVal;
-    canvas.toBlob(blob => {
+    showToast("Enregistrement PDF...");
+
+    try {
+        const pdf = new window.jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const imgData = canvas.toDataURL('image/jpeg', 0.92);
+        const { x, y, w, h } = fitA4(canvas.width, canvas.height);
+        pdf.addImage(imgData, 'JPEG', x, y, w, h);
+        const pdfBlob = pdf.output('blob');
+
         const tx = db.transaction("receipts", "readwrite");
-        tx.objectStore("receipts").add({ name: fileName, blob, date: Date.now() });
+        tx.objectStore("receipts").add({ name: fileName, blob: pdfBlob, date: Date.now() });
         tx.oncomplete = () => {
             showToast("Enregistré !");
             resetUI();
@@ -393,10 +437,16 @@ function confirmSave() {
             countReq.onsuccess = () => {
                 const n = countReq.result;
                 updateWidgetCount(n);
-                if (n >= 10) setTimeout(() => { document.getElementById('alert-count').textContent = n; document.getElementById('alert-modal').style.display = 'flex'; }, 500);
+                if (n >= 10) setTimeout(() => {
+                    document.getElementById('alert-count').textContent = n;
+                    document.getElementById('alert-modal').style.display = 'flex';
+                }, 500);
             };
         };
-    }, 'image/jpeg', 0.92);
+    } catch(err) {
+        showToast("Erreur PDF : " + err.message);
+        console.error(err);
+    }
 }
 
 function dismissAlert() { document.getElementById('alert-modal').style.display = 'none'; }
@@ -415,24 +465,40 @@ function closeHistory() {
     document.querySelector('.header-logo').style.visibility = 'visible';
 }
 
+function parseFileName(fileName) {
+    const parts = fileName.split('_');
+    if (parts.length < 3) return null;
+    const [y, m, d] = parts[0].split('.');
+    const price = parts[2].replace('EUR.pdf', '').replace('EUR', '');
+    return { date: `${d}/${m}/${y}`, shop: parts[1], price };
+}
+
 function renderHistory() {
     const list = document.getElementById('history-list');
     list.innerHTML = ''; selectedIds.clear();
     document.getElementById('select-all-btn').innerText = 'TOUT SELECTIONNER';
+    updateDeleteBtn();
     db.transaction("receipts").objectStore("receipts").getAll().onsuccess = e => {
         const results = e.target.result;
-        results.reverse().forEach(item => {
+        results.reverse();
+        results.forEach(item => {
             const div = document.createElement('div');
             div.className = 'item';
             div.onclick = () => {
                 div.classList.toggle('selected');
                 selectedIds.has(item.id) ? selectedIds.delete(item.id) : selectedIds.add(item.id);
                 document.getElementById('select-all-btn').innerText = selectedIds.size === results.length ? 'TOUT DESELECTIONNER' : 'TOUT SELECTIONNER';
+                updateDeleteBtn();
             };
             div.innerHTML = `<div class="check"></div><div style="font-size:12px;">${item.name}</div>`;
             list.appendChild(div);
         });
     };
+}
+
+function updateDeleteBtn() {
+    const btn = document.querySelector('button[onclick="deleteSelected()"]');
+    if (btn) btn.innerText = selectedIds.size > 0 ? '🗑️ SUPPRIMER' : '🗑️ TOUT SUP.';
 }
 
 function toggleSelectAll() {
@@ -445,125 +511,534 @@ function toggleSelectAll() {
         } else {
             selectedIds.clear(); all.forEach(item => selectedIds.add(item.id)); items.forEach(div => div.classList.add('selected')); btn.innerText = 'TOUT DESELECTIONNER';
         }
+        updateDeleteBtn();
     };
 }
 
-function clearAllHistory() {
-    if (confirm("Effacer TOUT l'historique ?")) {
-        const tx = db.transaction("receipts", "readwrite");
-        tx.objectStore("receipts").clear().onsuccess = () => { renderHistory(); checkAlertDot(); showToast("Historique vide !"); };
+function deleteSelected() {
+    if (!selectedIds.size) {
+        if (confirm("Effacer TOUT l'historique ?")) {
+            const tx = db.transaction("receipts", "readwrite");
+            tx.objectStore("receipts").clear().onsuccess = () => { renderHistory(); checkAlertDot(); showToast("Historique vide !"); };
+        }
+    } else {
+        if (confirm("Supprimer la sélection ?")) {
+            const tx = db.transaction("receipts", "readwrite");
+            selectedIds.forEach(id => tx.objectStore("receipts").delete(id));
+            tx.oncomplete = () => { renderHistory(); checkAlertDot(); };
+        }
     }
 }
 
-async function shareSelected() {
-    if (!selectedIds.size) return;
-    const files = [];
+function shareSelected() {
+    if (!selectedIds.size) { showToast("Veuillez sélectionner des fichiers !"); return; }
+    document.getElementById('export-modal').style.display = 'flex';
+}
+
+function closeExportModal() { document.getElementById('export-modal').style.display = 'none'; }
+
+// ─── ENVOI DIRECT via navigator.share — pas de modal intermédiaire ────────────
+// ─── UTILITAIRES DE NOMMAGE ET RÉCUPÉRATION ───────────────────────────────────
+
+// Génère un timestamp type 20231027_143005
+function getExactTimeStr() {
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    return d.getFullYear() +
+           pad(d.getMonth() + 1) +
+           pad(d.getDate()) + "_" +
+           pad(d.getHours()) +
+           pad(d.getMinutes()) +
+           pad(d.getSeconds());
+}
+
+async function getSelectedItems() {
     const store = db.transaction("receipts").objectStore("receipts");
+    const items = [];
     for (let id of selectedIds) {
         const item = await new Promise(r => store.get(id).onsuccess = e => r(e.target.result));
-        files.push(new File([item.blob], item.name, { type: 'image/jpeg' }));
+        if (item && item.imgData) items.push(item);
     }
-    if (navigator.share) await navigator.share({ files });
+    return items;
+}
+
+// ─── ACTION 1 : TÉLÉCHARGEMENT ZIP (Local + CSV) ──────────────────────────────
+async function actionDownloadZip() {
+    const sendExcel = document.getElementById('send-excel').checked;
+    const pdfOption = document.querySelector('input[name="pdf-option"]:checked').value;
+    
+    closeExportModal();
+    showToast("Préparation du ZIP...");
+
+    try {
+        const items = await getSelectedItems();
+        if (!items.length) { showToast("Aucun fichier sélectionné"); return; }
+        if (typeof JSZip === 'undefined') { showToast("JSZip non chargé"); return; }
+        
+        const zip = new JSZip();
+        const timeStr = getExactTimeStr();
+
+        // Ajout du CSV
+        if (sendExcel) {
+            let csv = 'Date,Magasin,Prix\n';
+            items.forEach(item => {
+                const p = parseFileName(item.name);
+                if (p) csv += `"${p.date}","${p.shop}","${p.price}"\n`;
+            });
+            zip.file(`Recapitulatif_${timeStr}.csv`, csv);
+        }
+
+        // Ajout des PDFs
+        if (pdfOption === 'separate') {
+            for (let item of items) {
+                const pdfBlob = await buildSinglePDF(item.imgData);
+                zip.file(`${item.name}.pdf`, pdfBlob);
+            }
+        } else {
+            const pdfBlob = await buildCompiledPDF(items);
+            zip.file(`Recus_Groupes_${timeStr}.pdf`, pdfBlob);
+        }
+
+        const zipBlob = await zip.generateAsync({ type: 'blob' });
+        const file = new File([zipBlob], `Export_${timeStr}.zip`, { type: 'application/zip' });
+        fallbackDownload(file);
+
+    } catch(err) {
+        showToast("Erreur ZIP: " + err.message);
+    }
+}
+
+// ─── ACTION 2 : PARTAGE NATIF (PDFs directs, sans ZIP) ────────────────────────
+async function actionNativeShare() {
+    const pdfOption = document.querySelector('input[name="pdf-option"]:checked').value;
+    
+    closeExportModal();
+    showToast("Préparation du partage...");
+
+    try {
+        const items = await getSelectedItems();
+        if (!items.length) { showToast("Sélection vide"); return; }
+        
+        const timeStr = getExactTimeStr();
+        let filesToShare = [];
+
+        // On génère les fichiers PDF sans les zipper
+        if (pdfOption === 'compiled') {
+            const pdfBlob = await buildCompiledPDF(items);
+            filesToShare.push(new File([pdfBlob], `Recus_Compiles_${timeStr}.pdf`, { type: 'application/pdf' }));
+        } else {
+            for (let item of items) {
+                const pdfBlob = await buildSinglePDF(item.imgData);
+                filesToShare.push(new File([pdfBlob], `${item.name}.pdf`, { type: 'application/pdf' }));
+            }
+        }
+
+        // Tentative de partage Android / iOS
+        if (navigator.canShare && navigator.canShare({ files: filesToShare })) {
+            await navigator.share({
+                files: filesToShare,
+                title: 'Mes Reçus PDF',
+                text: 'Voici mes reçus exportés.'
+            });
+            showToast("Partage ouvert !");
+        } else {
+            // Si le partage natif échoue (ex: trop de fichiers), on bascule sur le ZIP
+            showToast("Partage direct impossible, création d'un ZIP...");
+            actionDownloadZip();
+        }
+
+    } catch(err) {
+        if (err.name !== 'AbortError') {
+            showToast("Erreur partage: " + err.message);
+            console.error(err);
+        }
+    }
+}
+
+function fallbackDownload(file) {
+    const url = URL.createObjectURL(file);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = file.name;
+    document.body.appendChild(a); 
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function fallbackDownload(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    showToast("ZIP téléchargé !");
+}
+
+// ─── FONCTIONS PDF ────────────────────────────────────────────────────────────
+// Les blobs sauvegardés sont déjà des PDFs.
+// Pour le PDF compilé on recrée un PDF page par page depuis les images canvas.
+// On passe par une image intermédiaire extraite du PDF blob via canvas.
+async function compilePDFs(items) {
+    const pdf = new window.jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    for (let i = 0; i < items.length; i++) {
+        const imgData = await pdfBlobToImageData(items[i].blob);
+        const { x, y, w, h } = fitA4(imgData.width, imgData.height);
+        if (i > 0) pdf.addPage('a4', 'portrait');
+        pdf.addImage(imgData.dataUrl, 'JPEG', x, y, w, h);
+    }
+    return pdf.output('blob');
+}
+
+async function pdfBlobToImageData(pdfBlob) {
+    // Charger le PDF via URL objet et le rendre dans un canvas via un iframe image trick
+    // Méthode simple : utiliser un <img> avec object URL — les PDF blobs sont en fait des JPEG encapsulés
+    // On utilise createImageBitmap si disponible, sinon canvas Image
+    const url = URL.createObjectURL(pdfBlob);
+    return new Promise((res, rej) => {
+        const img = new Image();
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.naturalWidth || 1200;
+            canvas.height = img.naturalHeight || 1600;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+            URL.revokeObjectURL(url);
+            res({ dataUrl, width: canvas.width, height: canvas.height });
+        };
+        img.onerror = () => {
+            URL.revokeObjectURL(url);
+            rej(new Error("Impossible de lire le PDF blob comme image"));
+        };
+        img.src = url;
+    });
+}
+
+function fitA4(iw, ih) {
+    const pw = 210, ph = 297;
+    const ratio = Math.min(pw / iw, ph / ih);
+    const w = iw * ratio, h = ih * ratio;
+    return { x: (pw - w) / 2, y: (ph - h) / 2, w, h };
+}
+
+// ─── SAUVEGARDE EN BASE (Génération PDF repoussée à l'export) ──────────────
+async function confirmSave() {
+    const dateVal = getSelectedDate();
+    if (!dateVal) { showToast("Choisissez une date !"); return; }
+    if (!window.jsPDF) { showToast("Erreur : jsPDF non chargé"); return; }
+
+    const canvas = document.getElementById('photo-canvas');
+    const shopVal = document.getElementById('capture-shop').value.toUpperCase() || 'RECU';
+    const priceVal = document.getElementById('capture-amount').value || '0';
+    // On ne met plus .pdf dans le nom stocké en base
+    const fileNameBase = `${dateVal.replace(/-/g,'.')}_${shopVal}_${priceVal}EUR`;
+
+    saveShopUsage(shopVal);
+    prevScanDate = dateVal;
+    showToast("Enregistrement...");
+
+    try {
+        // ASTUCE : On sauvegarde l'image pure en base de données
+        const imgData = canvas.toDataURL('image/jpeg', 0.92);
+        const tx = db.transaction("receipts", "readwrite");
+        tx.objectStore("receipts").add({ name: fileNameBase, imgData: imgData, date: Date.now() });
+        
+        tx.oncomplete = () => {
+            showToast("Enregistré !");
+            resetUI();
+            const countReq = db.transaction("receipts").objectStore("receipts").count();
+            countReq.onsuccess = () => {
+                const n = countReq.result;
+                updateWidgetCount(n);
+                if (n >= 10) setTimeout(() => {
+                    document.getElementById('alert-count').textContent = n;
+                    document.getElementById('alert-modal').style.display = 'flex';
+                }, 500);
+            };
+        };
+    } catch(err) {
+        showToast("Erreur : " + err.message);
+        console.error(err);
+    }
+}
+
+function dismissAlert() { document.getElementById('alert-modal').style.display = 'none'; }
+function goToHistory() { document.getElementById('alert-modal').style.display = 'none'; openHistory({ stopPropagation: ()=>{} }); }
+
+function openHistory(e) {
+    e.stopPropagation();
+    document.getElementById('history-panel').style.display = 'flex';
+    document.querySelector('.top-bar').style.visibility = 'hidden';
+    document.querySelector('.header-logo').style.visibility = 'hidden';
+    renderHistory();
+}
+function closeHistory() {
+    document.getElementById('history-panel').style.display = 'none';
+    document.querySelector('.top-bar').style.visibility = 'visible';
+    document.querySelector('.header-logo').style.visibility = 'visible';
+}
+
+function parseFileName(fileName) {
+    const parts = fileName.split('_');
+    if (parts.length < 3) return null;
+    const [y, m, d] = parts[0].split('.');
+    const price = parts[2].replace('EUR', '');
+    return { date: `${d}/${m}/${y}`, shop: parts[1], price };
+}
+
+function renderHistory() {
+    const list = document.getElementById('history-list');
+    list.innerHTML = ''; selectedIds.clear();
+    document.getElementById('select-all-btn').innerText = 'TOUT SELECTIONNER';
+    updateDeleteBtn();
+    db.transaction("receipts").objectStore("receipts").getAll().onsuccess = e => {
+        const results = e.target.result;
+        results.reverse();
+        results.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'item';
+            div.onclick = () => {
+                div.classList.toggle('selected');
+                selectedIds.has(item.id) ? selectedIds.delete(item.id) : selectedIds.add(item.id);
+                document.getElementById('select-all-btn').innerText = selectedIds.size === results.length ? 'TOUT DESELECTIONNER' : 'TOUT SELECTIONNER';
+                updateDeleteBtn();
+            };
+            div.innerHTML = `<div class="check"></div><div style="font-size:12px;">${item.name}</div>`;
+            list.appendChild(div);
+        });
+    };
+}
+
+function updateDeleteBtn() {
+    const btn = document.querySelector('button[onclick="deleteSelected()"]');
+    if (btn) btn.innerText = selectedIds.size > 0 ? '🗑️ SUPPRIMER' : '🗑️ TOUT SUP.';
+}
+
+function toggleSelectAll() {
+    const items = document.querySelectorAll('.history-list .item');
+    const btn = document.getElementById('select-all-btn');
+    db.transaction("receipts").objectStore("receipts").getAll().onsuccess = e => {
+        const all = e.target.result;
+        if (selectedIds.size === all.length && all.length > 0) {
+            selectedIds.clear();
+            items.forEach(div => div.classList.remove('selected')); btn.innerText = 'TOUT SELECTIONNER';
+        } else {
+            selectedIds.clear();
+            all.forEach(item => selectedIds.add(item.id)); items.forEach(div => div.classList.add('selected')); btn.innerText = 'TOUT DESELECTIONNER';
+        }
+        updateDeleteBtn();
+    };
 }
 
 function deleteSelected() {
-    if (selectedIds.size > 0 && confirm("Supprimer la selection ?")) {
-        const tx = db.transaction("receipts", "readwrite");
-        selectedIds.forEach(id => tx.objectStore("receipts").delete(id));
-        tx.oncomplete = () => { renderHistory(); checkAlertDot(); };
+    if (!selectedIds.size) {
+        if (confirm("Effacer TOUT l'historique ?")) {
+            const tx = db.transaction("receipts", "readwrite");
+            tx.objectStore("receipts").clear().onsuccess = () => { renderHistory(); checkAlertDot(); showToast("Historique vide !"); };
+        }
+    } else {
+        if (confirm("Supprimer la sélection ?")) {
+            const tx = db.transaction("receipts", "readwrite");
+            selectedIds.forEach(id => tx.objectStore("receipts").delete(id));
+            tx.oncomplete = () => { renderHistory(); checkAlertDot(); };
+        }
     }
+}
+
+function shareSelected() {
+    if (!selectedIds.size) { showToast("Veuillez sélectionner des fichiers !"); return; }
+    document.getElementById('export-modal').style.display = 'flex';
+}
+
+function closeExportModal() { document.getElementById('export-modal').style.display = 'none'; }
+
+// ─── ENVOI & PARTAGE NATIF ────────────────────────────────────────────────────
+// ─── UTILITAIRES DE NOMMAGE ET RÉCUPÉRATION ───────────────────────────────────
+
+// Génère un timestamp type 20231027_143005
+function getExactTimeStr() {
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    return d.getFullYear() +
+           pad(d.getMonth() + 1) +
+           pad(d.getDate()) + "_" +
+           pad(d.getHours()) +
+           pad(d.getMinutes()) +
+           pad(d.getSeconds());
+}
+
+async function getSelectedItems() {
+    const store = db.transaction("receipts").objectStore("receipts");
+    const items = [];
+    for (let id of selectedIds) {
+        const item = await new Promise(r => store.get(id).onsuccess = e => r(e.target.result));
+        if (item && item.imgData) items.push(item);
+    }
+    return items;
+}
+
+// ─── ACTION 1 : TÉLÉCHARGEMENT ZIP (Local + CSV) ──────────────────────────────
+async function actionDownloadZip() {
+    const sendExcel = document.getElementById('send-excel').checked;
+    const pdfOption = document.querySelector('input[name="pdf-option"]:checked').value;
+    
+    closeExportModal();
+    showToast("Préparation du ZIP...");
+
+    try {
+        const items = await getSelectedItems();
+        if (!items.length) { showToast("Aucun fichier sélectionné"); return; }
+        if (typeof JSZip === 'undefined') { showToast("JSZip non chargé"); return; }
+        
+        const zip = new JSZip();
+        const timeStr = getExactTimeStr();
+
+        // Ajout du CSV
+        if (sendExcel) {
+            let csv = 'Date,Magasin,Prix\n';
+            items.forEach(item => {
+                const p = parseFileName(item.name);
+                if (p) csv += `"${p.date}","${p.shop}","${p.price}"\n`;
+            });
+            zip.file(`Recapitulatif_${timeStr}.csv`, csv);
+        }
+
+        // Ajout des PDFs
+        if (pdfOption === 'separate') {
+            for (let item of items) {
+                const pdfBlob = await buildSinglePDF(item.imgData);
+                zip.file(`${item.name}.pdf`, pdfBlob);
+            }
+        } else {
+            const pdfBlob = await buildCompiledPDF(items);
+            zip.file(`Recus_Groupes_${timeStr}.pdf`, pdfBlob);
+        }
+
+        const zipBlob = await zip.generateAsync({ type: 'blob' });
+        const file = new File([zipBlob], `Export_${timeStr}.zip`, { type: 'application/zip' });
+        fallbackDownload(file);
+
+    } catch(err) {
+        showToast("Erreur ZIP: " + err.message);
+    }
+}
+
+// ─── ACTION 2 : PARTAGE NATIF (PDFs directs, sans ZIP) ────────────────────────
+async function actionNativeShare() {
+    const pdfOption = document.querySelector('input[name="pdf-option"]:checked').value;
+    
+    closeExportModal();
+    showToast("Préparation du partage...");
+
+    try {
+        const items = await getSelectedItems();
+        if (!items.length) { showToast("Sélection vide"); return; }
+        
+        const timeStr = getExactTimeStr();
+        let filesToShare = [];
+
+        // On génère les fichiers PDF sans les zipper
+        if (pdfOption === 'compiled') {
+            const pdfBlob = await buildCompiledPDF(items);
+            filesToShare.push(new File([pdfBlob], `Recus_Compiles_${timeStr}.pdf`, { type: 'application/pdf' }));
+        } else {
+            for (let item of items) {
+                const pdfBlob = await buildSinglePDF(item.imgData);
+                filesToShare.push(new File([pdfBlob], `${item.name}.pdf`, { type: 'application/pdf' }));
+            }
+        }
+
+        // Tentative de partage Android / iOS
+        if (navigator.canShare && navigator.canShare({ files: filesToShare })) {
+            await navigator.share({
+                files: filesToShare,
+                title: 'Mes Reçus PDF',
+                text: 'Voici mes reçus exportés.'
+            });
+            showToast("Partage ouvert !");
+        } else {
+            // Si le partage natif échoue (ex: trop de fichiers), on bascule sur le ZIP
+            showToast("Partage direct impossible, création d'un ZIP...");
+            actionDownloadZip();
+        }
+
+    } catch(err) {
+        if (err.name !== 'AbortError') {
+            showToast("Erreur partage: " + err.message);
+            console.error(err);
+        }
+    }
+}
+
+function fallbackDownload(file) {
+    const url = URL.createObjectURL(file);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = file.name;
+    document.body.appendChild(a); 
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function fallbackDownload(file) {
+    const url = URL.createObjectURL(file);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = file.name;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    showToast("Fichier téléchargé !");
+}
+
+// ─── CRÉATION DES PDFS À LA VOLÉE ─────────────────────────────────────────────
+
+async function buildSinglePDF(imgDataUrl) {
+    const pdf = new window.jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+            const { x, y, w, h } = fitA4(img.width, img.height);
+            pdf.addImage(imgDataUrl, 'JPEG', x, y, w, h);
+            resolve(pdf.output('blob'));
+        };
+        img.src = imgDataUrl;
+    });
+}
+
+async function buildCompiledPDF(items) {
+    const pdf = new window.jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        await new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => {
+                const { x, y, w, h } = fitA4(img.width, img.height);
+                if (i > 0) pdf.addPage('a4', 'portrait');
+                pdf.addImage(item.imgData, 'JPEG', x, y, w, h);
+                resolve();
+            };
+            img.src = item.imgData;
+        });
+    }
+    return pdf.output('blob');
+}
+
+function fitA4(iw, ih) {
+    const pw = 210, ph = 297;
+    const ratio = Math.min(pw / iw, ph / ih);
+    const w = iw * ratio, h = ih * ratio;
+    return { x: (pw - w) / 2, y: (ph - h) / 2, w, h };
 }
 
 function showToast(m) {
     const t = document.getElementById('toast');
     t.innerText = m; t.style.display = 'block';
-    setTimeout(() => t.style.display = 'none', 2000);
-}
-</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script>
-async function compilePdf() {
-    if (!selectedIds.size) { showToast("Aucun reçu sélectionné !"); return; }
-    
-    // Vérification de la lib (certaines versions utilisent window.jsPDF au lieu de window.jspdf.jsPDF)
-    const jsPDFLib = window.jspdf ? window.jspdf.jsPDF : window.jsPDF;
-    if (!jsPDFLib) { showToast("Librairie PDF manquante"); return; }
-
-    const btn = document.getElementById('pdf-btn');
-    btn.textContent = '⏳ Génération...';
-    btn.style.pointerEvents = 'none';
-
-    try {
-        const ids = Array.from(selectedIds);
-        console.log("IDs sélectionnés :", ids);
-
-        // 1. Récupération des items
-        const items = await new Promise((resolve, reject) => {
-            const transaction = db.transaction("receipts", "readonly");
-            const store = transaction.objectStore("receipts");
-            const request = store.getAll();
-
-            request.onsuccess = (e) => {
-                // On compare les IDs en les forçant en String pour éviter les erreurs de type
-                const filtered = e.target.result.filter(it => ids.map(String).includes(String(it.id)));
-                resolve(filtered);
-            };
-            request.onerror = () => reject("Erreur lors de la lecture IndexedDB");
-        });
-
-        if (items.length === 0) {
-            throw new Error("Aucun item trouvé dans la base pour ces IDs");
-        }
-
-        let pdf = null;
-
-        // 2. Traitement des images
-        for (let i = 0; i < items.length; i++) {
-            const blobUrl = URL.createObjectURL(items[i].blob);
-            
-            const img = await new Promise((res, rej) => {
-                const im = new Image();
-                im.onload = () => res(im);
-                im.onerror = () => rej("Erreur chargement image");
-                im.src = blobUrl;
-            });
-
-            const iw = img.naturalWidth, ih = img.naturalHeight;
-            const landscape = iw > ih;
-            const orientation = landscape ? 'l' : 'p';
-            
-            // Format A4 (en mm)
-            const pw = landscape ? 297 : 210;
-            const ph = landscape ? 210 : 297;
-
-            if (i === 0) {
-                pdf = new jsPDFLib({ orientation, unit: 'mm', format: 'a4' });
-            } else {
-                pdf.addPage('a4', orientation);
-            }
-
-            const ratio = Math.min(pw / iw, ph / ih);
-            const w = iw * ratio, h = ih * ratio;
-            const x = (pw - w) / 2;
-            const y = (ph - h) / 2;
-
-            // On ajoute l'image directement sans passer par canvas (plus stable)
-            pdf.addImage(img, 'JPEG', x, y, w, h);
-            
-            URL.revokeObjectURL(blobUrl); // Libère la mémoire
-        }
-
-        const date = new Date().toISOString().split('T')[0].replace(/-/g,'.');
-        pdf.save(`recus_${date}.pdf`);
-        showToast("PDF téléchargé !");
-
-    } catch(e) {
-        showToast("Erreur PDF : " + e.message);
-        console.error("Détails de l'erreur :", e);
-    } finally {
-        btn.textContent = '📄 COMPILER EN PDF';
-        btn.style.pointerEvents = 'auto';
-    }
+    clearTimeout(t._to);
+    t._to = setTimeout(() => t.style.display = 'none', 2500);
 }
 </script>
 </body>
