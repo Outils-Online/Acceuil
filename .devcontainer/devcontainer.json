@@ -1,0 +1,10 @@
+{
+  "name": "Configuration Automatique",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.live-server"
+      ]
+    }
+  }
+}
