@@ -105,6 +105,107 @@
         .selected .check { background: var(--primary); border-color: var(--primary); position: relative; }
         .selected .check::after { content: '✓'; color: white; font-size: 14px; position: absolute; top: -2px; left: 3px; }
         .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--success); padding: 10px 20px; border-radius: 20px; z-index: 400; display: none; white-space: nowrap; }
+
+        /* ── EXPORT MODAL REDESIGN ─────────────────────────── */
+        .export-overlay {
+            position: fixed; inset: 0; z-index: 300; display: none;
+            align-items: flex-end; justify-content: center;
+            background: rgba(0,0,0,0.7);
+            padding: 0 12px 12px;
+        }
+        .export-sheet {
+            width: 100%; max-width: 480px;
+            background: #1a1a26;
+            border-radius: 22px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .export-handle {
+            width: 36px; height: 4px; background: rgba(255,255,255,0.2);
+            border-radius: 2px; margin: 12px auto 0;
+        }
+        .export-header {
+            padding: 14px 20px 0;
+            text-align: center;
+        }
+        .export-header h3 {
+            margin: 8px 0 4px; font-size: 17px; font-weight: 800; color: white;
+        }
+        .export-header p {
+            margin: 0 0 14px; font-size: 12px; color: rgba(255,255,255,0.45);
+        }
+
+        /* PDF format selector */
+        .pdf-format-row {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 8px; padding: 0 16px 14px;
+        }
+        .pdf-format-label {
+            font-size: 10px; font-weight: 800; letter-spacing: 0.6px;
+            text-transform: uppercase; color: rgba(255,255,255,0.4);
+            padding: 0 16px; margin-bottom: 8px;
+        }
+        .pdf-opt {
+            position: relative; cursor: pointer;
+        }
+        .pdf-opt input[type="radio"] {
+            position: absolute; opacity: 0; width: 0; height: 0;
+        }
+        .pdf-opt-card {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 4px; padding: 12px 8px;
+            border: 1.5px solid rgba(255,255,255,0.12);
+            border-radius: 14px;
+            background: rgba(255,255,255,0.04);
+            transition: 0.15s;
+            text-align: center;
+        }
+        .pdf-opt input:checked + .pdf-opt-card {
+            border-color: var(--primary);
+            background: rgba(75,75,230,0.18);
+        }
+        .pdf-opt-icon { font-size: 18px; }
+        .pdf-opt-title { font-size: 12px; font-weight: 800; color: white; }
+        .pdf-opt-sub { font-size: 10px; color: rgba(255,255,255,0.45); }
+
+        /* Divider */
+        .export-divider {
+            height: 1px; background: rgba(255,255,255,0.07); margin: 0 16px 14px;
+        }
+
+        /* Send method buttons */
+        .send-methods { padding: 0 12px 12px; display: flex; flex-direction: column; gap: 8px; }
+        .send-btn {
+            display: flex; align-items: center;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 14px 16px;
+            cursor: pointer;
+            transition: background 0.15s;
+            text-align: left;
+            width: 100%;
+            color: white;
+            gap: 14px;
+        }
+        .send-btn:active { background: rgba(75,75,230,0.2); }
+        .send-btn-icon {
+            font-size: 22px; width: 40px; height: 40px;
+            background: rgba(255,255,255,0.08); border-radius: 11px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .send-btn-text { flex: 1; }
+        .send-btn-title { font-size: 15px; font-weight: 800; display: block; }
+        .send-btn-sub { font-size: 11px; color: rgba(255,255,255,0.45); margin-top: 2px; display: block; }
+        .send-btn-arrow { font-size: 14px; color: rgba(255,255,255,0.3); }
+
+        .export-cancel {
+            display: block; width: 100%; padding: 14px;
+            background: none; border: none; border-top: 1px solid rgba(255,255,255,0.07);
+            color: rgba(255,255,255,0.5); font-size: 14px; font-weight: 700;
+            cursor: pointer; font-family: 'Poppins', sans-serif;
+        }
     </style>
 </head>
 <body>
@@ -205,39 +306,81 @@
     </div>
 </div>
 
-<!-- MODAL CHOIX EXPORT - Trois boutons : Mail, Message, Zip -->
-<div id="export-modal" class="alert-modal">
-    <div class="alert-box" style="max-width:400px; border-color:#4b4be6;">
-        <div style="font-size:40px; margin-bottom:10px;">📤</div>
-        <h3>Comment partager ?</h3>
-        <p style="font-size:13px; margin:15px 0;">Sélectionnez le mode d'envoi et le format PDF</p>
-        
-        <div style="margin:15px 0; padding:12px; background:rgba(75,75,230,0.1); border-radius:10px; border:1px solid rgba(75,75,230,0.3);">
-            <div style="font-size:12px; font-weight:700; margin-bottom:10px; color:#aaa;">Format PDF :</div>
-            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:8px;margin-bottom:6px;">
-                <input type="radio" name="pdf-format" id="pdf-separate" value="separate"> 📄 Séparés (nommés correctement)
+<!-- ── EXPORT MODAL REDESIGNÉ ────────────────────────────────────────────── -->
+<div id="export-modal" class="export-overlay" onclick="handleOverlayClick(event)">
+    <div class="export-sheet" id="export-sheet">
+
+        <div class="export-handle"></div>
+
+        <div class="export-header">
+            <h3>Exporter les reçus</h3>
+            <p>Choisissez le format et le mode d'envoi</p>
+        </div>
+
+        <!-- Format PDF -->
+        <div class="pdf-format-label">Format PDF</div>
+        <div class="pdf-format-row">
+            <label class="pdf-opt">
+                <input type="radio" name="pdf-format" value="separate">
+                <div class="pdf-opt-card">
+                    <span class="pdf-opt-icon">📄</span>
+                    <span class="pdf-opt-title">Séparés</span>
+                    <span class="pdf-opt-sub">Un PDF par reçu<br>nommé correctement</span>
+                </div>
             </label>
-            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:8px;">
-                <input type="radio" name="pdf-format" id="pdf-compiled" value="compiled" checked> 📦 Compilé (avec timestamp)
+            <label class="pdf-opt">
+                <input type="radio" name="pdf-format" value="compiled" checked>
+                <div class="pdf-opt-card">
+                    <span class="pdf-opt-icon">📦</span>
+                    <span class="pdf-opt-title">Compilé</span>
+                    <span class="pdf-opt-sub">Tous en un seul PDF<br>avec horodatage</span>
+                </div>
             </label>
         </div>
-        
-        <div style="display:grid;gap:8px;margin:20px 0;">
-            <button class="btn" style="background:rgba(75,75,230,0.2); color:white; padding:14px; border-radius:10px; border:1px solid #4b4be6; font-weight:700;" onclick="actionSendMail()">✉️ MAIL<br/><span style="font-size:11px; opacity:0.8; font-weight:500;">PDF + CSV</span></button>
-            <button class="btn" style="background:rgba(75,75,230,0.2); color:white; padding:14px; border-radius:10px; border:1px solid #4b4be6; font-weight:700;" onclick="actionSendMessage()">💬 MESSAGE<br/><span style="font-size:11px; opacity:0.8; font-weight:500;">PDFs seulement</span></button>
-            <button class="btn" style="background:rgba(75,75,230,0.2); color:white; padding:14px; border-radius:10px; border:1px solid #4b4be6; font-weight:700;" onclick="actionDownloadZip()">📥 ZIP<br/><span style="font-size:11px; opacity:0.8; font-weight:500;">PDF + CSV</span></button>
+
+        <div class="export-divider"></div>
+
+        <!-- Boutons d'envoi -->
+        <div class="send-methods">
+
+            <button class="send-btn" onclick="actionSendMail()">
+                <div class="send-btn-icon">✉️</div>
+                <div class="send-btn-text">
+                    <span class="send-btn-title">Mail</span>
+                    <span class="send-btn-sub">PDF + récapitulatif CSV</span>
+                </div>
+                <span class="send-btn-arrow">›</span>
+            </button>
+
+            <button class="send-btn" onclick="actionSendMessage()">
+                <div class="send-btn-icon">💬</div>
+                <div class="send-btn-text">
+                    <span class="send-btn-title">Message</span>
+                    <span class="send-btn-sub">PDF(s) uniquement</span>
+                </div>
+                <span class="send-btn-arrow">›</span>
+            </button>
+
+            <button class="send-btn" onclick="actionDownloadZip()">
+                <div class="send-btn-icon">📥</div>
+                <div class="send-btn-text">
+                    <span class="send-btn-title">Télécharger ZIP</span>
+                    <span class="send-btn-sub">PDF compilé + CSV dans une archive</span>
+                </div>
+                <span class="send-btn-arrow">›</span>
+            </button>
+
         </div>
-        <button class="btn" style="background:#333; color:white; width:100%; margin-top:15px;" onclick="closeExportModal()">Annuler</button>
+
+        <button class="export-cancel" onclick="closeExportModal()">Annuler</button>
     </div>
 </div>
 
-<!-- Librairies chargées en premier -->
+<!-- Librairies -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script>
-    if (window.jspdf && window.jspdf.jsPDF) {
-        window.jsPDF = window.jspdf.jsPDF;
-    }
+    if (window.jspdf && window.jspdf.jsPDF) { window.jsPDF = window.jspdf.jsPDF; }
 </script>
 
 <script>
@@ -409,30 +552,21 @@ function resetUI() {
     document.getElementById('autocomplete-list').style.display = 'none';
 }
 
-// ─── SAUVEGARDE DIRECTEMENT EN PDF ───────────────────────────────────────────
 async function confirmSave() {
     const dateVal = getSelectedDate();
     if (!dateVal) { showToast("Choisissez une date !"); return; }
     if (!window.jsPDF) { showToast("Erreur : jsPDF non chargé"); return; }
-
     const canvas = document.getElementById('photo-canvas');
     const shopVal = document.getElementById('capture-shop').value.toUpperCase() || 'RECU';
     const priceVal = document.getElementById('capture-amount').value || '0';
-    const fileName = `${dateVal.replace(/-/g,'.')}_${shopVal}_${priceVal}EUR.pdf`;
-
+    const fileNameBase = `${dateVal.replace(/-/g,'.')}_${shopVal}_${priceVal}EUR`;
     saveShopUsage(shopVal);
     prevScanDate = dateVal;
-    showToast("Enregistrement PDF...");
-
+    showToast("Enregistrement...");
     try {
-        const pdf = new window.jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
         const imgData = canvas.toDataURL('image/jpeg', 0.92);
-        const { x, y, w, h } = fitA4(canvas.width, canvas.height);
-        pdf.addImage(imgData, 'JPEG', x, y, w, h);
-        const pdfBlob = pdf.output('blob');
-
         const tx = db.transaction("receipts", "readwrite");
-        tx.objectStore("receipts").add({ name: fileName, blob: pdfBlob, date: Date.now() });
+        tx.objectStore("receipts").add({ name: fileNameBase, imgData: imgData, date: Date.now() });
         tx.oncomplete = () => {
             showToast("Enregistré !");
             resetUI();
@@ -446,10 +580,7 @@ async function confirmSave() {
                 }, 500);
             };
         };
-    } catch(err) {
-        showToast("Erreur PDF : " + err.message);
-        console.error(err);
-    }
+    } catch(err) { showToast("Erreur : " + err.message); console.error(err); }
 }
 
 function dismissAlert() { document.getElementById('alert-modal').style.display = 'none'; }
@@ -472,7 +603,7 @@ function parseFileName(fileName) {
     const parts = fileName.split('_');
     if (parts.length < 3) return null;
     const [y, m, d] = parts[0].split('.');
-    const price = parts[2].replace('EUR.pdf', '').replace('EUR', '');
+    const price = parts[2].replace('EUR', '');
     return { date: `${d}/${m}/${y}`, shop: parts[1], price };
 }
 
@@ -512,8 +643,7 @@ function toggleSelectAll() {
         if (selectedIds.size === all.length && all.length > 0) {
             selectedIds.clear(); items.forEach(div => div.classList.remove('selected')); btn.innerText = 'TOUT SELECTIONNER';
         } else {
-            selectedIds.clear();
-            all.forEach(item => selectedIds.add(item.id)); items.forEach(div => div.classList.add('selected')); btn.innerText = 'TOUT DESELECTIONNER';
+            selectedIds.clear(); all.forEach(item => selectedIds.add(item.id)); items.forEach(div => div.classList.add('selected')); btn.innerText = 'TOUT DESELECTIONNER';
         }
         updateDeleteBtn();
     };
@@ -541,18 +671,14 @@ function shareSelected() {
 
 function closeExportModal() { document.getElementById('export-modal').style.display = 'none'; }
 
-// ─── UTILITAIRES DE NOMMAGE ET RÉCUPÉRATION ───────────────────────────────────
+function handleOverlayClick(e) {
+    if (e.target === document.getElementById('export-modal')) closeExportModal();
+}
 
-// Génère un timestamp type 20231027_143005
 function getExactTimeStr() {
     const d = new Date();
     const pad = (n) => String(n).padStart(2, '0');
-    return d.getFullYear() +
-           pad(d.getMonth() + 1) +
-           pad(d.getDate()) + "_" +
-           pad(d.getHours()) +
-           pad(d.getMinutes()) +
-           pad(d.getSeconds());
+    return d.getFullYear() + pad(d.getMonth()+1) + pad(d.getDate()) + "_" + pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds());
 }
 
 async function getSelectedItems() {
@@ -565,7 +691,6 @@ async function getSelectedItems() {
     return items;
 }
 
-// Génère le CSV récapitulatif
 async function generateCSV(items) {
     let csv = 'Date,Magasin,Prix\n';
     items.forEach(item => {
@@ -575,170 +700,103 @@ async function generateCSV(items) {
     return csv;
 }
 
-// ─── ACTION 1 : MAIL (PDF + CSV) ────────────────────────────────────
 async function actionSendMail() {
     const pdfFormat = document.querySelector('input[name="pdf-format"]:checked').value;
     closeExportModal();
     showToast("Préparation du fichier...");
-
     try {
         const items = await getSelectedItems();
         if (!items.length) { showToast("Aucun fichier sélectionné"); return; }
-        
         const timeStr = getExactTimeStr();
         let filesToShare = [];
-        
-        // Génération du CSV
         const csv = await generateCSV(items);
-        const csvFile = new File([csv], `Recapitulatif_${timeStr}.csv`, { type: 'text/csv' });
-        filesToShare.push(csvFile);
-        
-        // Génération des PDFs selon le format
+        filesToShare.push(new File([csv], `Recapitulatif_${timeStr}.csv`, { type: 'text/csv' }));
         if (pdfFormat === 'separate') {
-            // PDFs séparés nommés correctement
             for (let item of items) {
                 const pdfBlob = await buildSinglePDF(item.imgData);
                 filesToShare.push(new File([pdfBlob], `${item.name}.pdf`, { type: 'application/pdf' }));
             }
         } else {
-            // PDF compilé avec timestamp
             const pdfBlob = await buildCompiledPDF(items);
             filesToShare.push(new File([pdfBlob], `Recus_${timeStr}.pdf`, { type: 'application/pdf' }));
         }
-        
-        // Tentative partage natif
         if (navigator.canShare && navigator.canShare({ files: filesToShare })) {
-            await navigator.share({
-                files: filesToShare,
-                title: 'Mes Reçus',
-                text: 'Voici mes reçus en PDF et le récapitulatif CSV.'
-            });
+            await navigator.share({ files: filesToShare, title: 'Mes Reçus', text: 'Voici mes reçus en PDF et le récapitulatif CSV.' });
             showToast("Mail ouvert !");
         } else {
-            // Fallback : créer un zip
             showToast("Création d'un ZIP...");
             const zip = new JSZip();
-            for (let file of filesToShare) {
-                const blob = await file.arrayBuffer();
-                zip.file(file.name, blob);
-            }
+            for (let file of filesToShare) { const blob = await file.arrayBuffer(); zip.file(file.name, blob); }
             const zipBlob = await zip.generateAsync({ type: 'blob' });
             fallbackDownloadZip(zipBlob, `Export_${timeStr}.zip`);
         }
-
-    } catch(err) {
-        if (err.name !== 'AbortError') {
-            showToast("Erreur: " + err.message);
-            console.error(err);
-        }
-    }
+    } catch(err) { if (err.name !== 'AbortError') { showToast("Erreur: " + err.message); console.error(err); } }
 }
 
-// ─── ACTION 2 : MESSAGE (PDFs seulement) ─────────────────────────────────────
 async function actionSendMessage() {
     const pdfFormat = document.querySelector('input[name="pdf-format"]:checked').value;
     closeExportModal();
     showToast("Préparation des fichiers...");
-
     try {
         const items = await getSelectedItems();
         if (!items.length) { showToast("Aucun fichier sélectionné"); return; }
-        
         const timeStr = getExactTimeStr();
         let filesToShare = [];
-
-        // Génération des PDFs selon le format (sans CSV)
         if (pdfFormat === 'separate') {
-            // PDFs séparés nommés correctement
             for (let item of items) {
                 const pdfBlob = await buildSinglePDF(item.imgData);
                 filesToShare.push(new File([pdfBlob], `${item.name}.pdf`, { type: 'application/pdf' }));
             }
         } else {
-            // PDF compilé avec timestamp
             const pdfBlob = await buildCompiledPDF(items);
             filesToShare.push(new File([pdfBlob], `Recus_${timeStr}.pdf`, { type: 'application/pdf' }));
         }
-
-        // Tentative de partage natif (SMS / Message)
         if (navigator.canShare && navigator.canShare({ files: filesToShare })) {
-            await navigator.share({
-                files: filesToShare,
-                title: 'Mes Reçus',
-                text: 'Voici mes reçus en PDF.'
-            });
+            await navigator.share({ files: filesToShare, title: 'Mes Reçus', text: 'Voici mes reçus en PDF.' });
             showToast("Message ouvert !");
         } else {
             showToast("Partage direct impossible, création d'un ZIP...");
             const zip = new JSZip();
-            for (let file of filesToShare) {
-                const blob = await file.arrayBuffer();
-                zip.file(file.name, blob);
-            }
+            for (let file of filesToShare) { const blob = await file.arrayBuffer(); zip.file(file.name, blob); }
             const zipBlob = await zip.generateAsync({ type: 'blob' });
             fallbackDownloadZip(zipBlob, `Export_${timeStr}.zip`);
         }
-
-    } catch(err) {
-        if (err.name !== 'AbortError') {
-            showToast("Erreur: " + err.message);
-            console.error(err);
-        }
-    }
+    } catch(err) { if (err.name !== 'AbortError') { showToast("Erreur: " + err.message); console.error(err); } }
 }
 
-// ─── ACTION 3 : ZIP (PDF compilé + CSV) ─────────────────────────────────────
 async function actionDownloadZip() {
     closeExportModal();
     showToast("Préparation du ZIP...");
-
     try {
         const items = await getSelectedItems();
         if (!items.length) { showToast("Aucun fichier sélectionné"); return; }
         if (typeof JSZip === 'undefined') { showToast("JSZip non chargé"); return; }
-        
         const zip = new JSZip();
         const timeStr = getExactTimeStr();
-
-        // Ajout du PDF compilé
         const pdfBlob = await buildCompiledPDF(items);
         zip.file(`Recus_Compiles_${timeStr}.pdf`, pdfBlob);
-
-        // Ajout du CSV
         const csv = await generateCSV(items);
         zip.file(`Recapitulatif_${timeStr}.csv`, csv);
-
         const zipBlob = await zip.generateAsync({ type: 'blob' });
         fallbackDownloadZip(zipBlob, `Export_${timeStr}.zip`);
-
-    } catch(err) {
-        showToast("Erreur ZIP: " + err.message);
-    }
+    } catch(err) { showToast("Erreur ZIP: " + err.message); }
 }
 
 function fallbackDownloadZip(blob, filename) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a); 
-    a.click();
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click();
     document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(url), 1000);
     showToast("Fichier téléchargé !");
 }
 
-// ─── CRÉATION DES PDFS À LA VOLÉE ─────────────────────────────────────────────
-
 async function buildSinglePDF(imgDataUrl) {
     const pdf = new window.jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     return new Promise((resolve) => {
         const img = new Image();
-        img.onload = () => {
-            const { x, y, w, h } = fitA4(img.width, img.height);
-            pdf.addImage(imgDataUrl, 'JPEG', x, y, w, h);
-            resolve(pdf.output('blob'));
-        };
+        img.onload = () => { const { x, y, w, h } = fitA4(img.width, img.height); pdf.addImage(imgDataUrl, 'JPEG', x, y, w, h); resolve(pdf.output('blob')); };
         img.src = imgDataUrl;
     });
 }
@@ -749,12 +807,7 @@ async function buildCompiledPDF(items) {
         const item = items[i];
         await new Promise((resolve) => {
             const img = new Image();
-            img.onload = () => {
-                const { x, y, w, h } = fitA4(img.width, img.height);
-                if (i > 0) pdf.addPage('a4', 'portrait');
-                pdf.addImage(item.imgData, 'JPEG', x, y, w, h);
-                resolve();
-            };
+            img.onload = () => { const { x, y, w, h } = fitA4(img.width, img.height); if (i > 0) pdf.addPage('a4', 'portrait'); pdf.addImage(item.imgData, 'JPEG', x, y, w, h); resolve(); };
             img.src = item.imgData;
         });
     }
