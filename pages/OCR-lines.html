@@ -279,13 +279,15 @@
             // Canvas à la résolution NATIVE de la vidéo
             photoCanvas.width  = vidW;
             photoCanvas.height = vidH;
-            // selectionCanvas aussi, pour que getPos() soit cohérent
             selectCanvas.width  = vidW;
             selectCanvas.height = vidH;
 
+            // Étape 1 : filtre CSS appliqué au drawImage (contrast + brightness + desaturation)
+            pctx.filter = 'contrast(1.15) brightness(1.02) saturate(0)';
             pctx.drawImage(video, 0, 0, vidW, vidH);
+            pctx.filter = 'none';
 
-            // Niveaux de gris sur la pleine résolution
+            // Étape 2 : traitement pixel par pixel (luminance + profil de contraste doux)
             const imgData = pctx.getImageData(0, 0, vidW, vidH);
             const d = imgData.data;
             for (let i = 0; i < d.length; i += 4) {
