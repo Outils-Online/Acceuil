@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>OCR Niveaux de Gris - Double Check</title>
+    <title>OCR-Lines</title>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         :root { --primary: #4b4be6; --bg: #000; }
@@ -42,6 +42,7 @@
         #selectionCanvas.frozen { cursor: crosshair; }
 
         /* Loader */
+        /* Loader + bouton stop */
         #loader {
             display: none;
             position: absolute;
@@ -50,6 +51,24 @@
             text-align: center;
             z-index: 50;
             pointer-events: none;
+        }
+        #loader .loader-inner {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            pointer-events: auto;
+        }
+        #btnStopOcr {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 7px 14px;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
         }
         .badge { background: var(--primary); padding: 8px 20px; border-radius: 30px; font-size: 12px; font-weight: bold; }
 
@@ -193,7 +212,12 @@
         <video id="video" autoplay playsinline muted></video>
         <canvas id="photoCanvas"></canvas>
         <canvas id="selectionCanvas"></canvas>
-        <div id="loader"><span class="badge">ANALYSE COMPARATIVE...</span></div>
+        <div id="loader">
+            <div class="loader-inner">
+                <span class="badge">ANALYSE COMPARATIVE...</span>
+                <button id="btnStopOcr" onclick="stopOcr()">✕ Stop</button>
+            </div>
+        </div>
         <button id="btnClear" onclick="openClearModal()" title="Effacer l'historique">
             🗑️ Effacer <span class="clear-count" id="clearCount">0</span>
         </button>
@@ -238,7 +262,7 @@
 
     let isFrozen = false, isDrawing = false, startX, startY;
     let historyData = [];
-    // Stocke la zone réelle de la vidéo dans le canvas (object-fit: cover simulé)
+    let ocrCancelled = false;
     let videoRect = { x: 0, y: 0, w: 0, h: 0 };
 
     // ── Caméra ────────────────────────────────────────────────────────────────
@@ -359,6 +383,7 @@
 
         if (w < 20 || h < 10) return;
 
+        ocrCancelled = false;
         loader.style.display = 'block';
 
         const c1 = document.createElement('canvas');
@@ -378,16 +403,25 @@
                 Tesseract.recognize(c1, 'fra'),
                 Tesseract.recognize(c2, 'fra')
             ]);
+
+            if (ocrCancelled) return; // abandonné pendant l'analyse
+
             const clean = (t) => t.replace(/-\s+/g, '').replace(/\s+/g, ' ').trim();
             const t1 = clean(r1.data.text);
             const t2 = clean(r2.data.text);
             ocrEditArea.value = (t1.length >= t2.length) ? t1 : t2;
             confirmModal.style.display = 'block';
         } catch(err) {
-            alert("Erreur OCR : " + err.message);
+            if (!ocrCancelled) alert("Erreur OCR : " + err.message);
         }
 
         loader.style.display = 'none';
+    }
+
+    function stopOcr() {
+        ocrCancelled = true;
+        loader.style.display = 'none';
+        sctx.clearRect(0, 0, selectCanvas.width, selectCanvas.height);
     }
 
     // ── Sauvegarde / Export ───────────────────────────────────────────────────
