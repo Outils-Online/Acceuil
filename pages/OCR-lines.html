@@ -7,32 +7,195 @@
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         :root { --primary: #4b4be6; --bg: #000; }
-        body, html { margin: 0; padding: 0; height: 100dvh; background: var(--bg); font-family: sans-serif; overflow: hidden; color: white; }
-        .app-container { display: flex; flex-direction: column; height: 100dvh; }
-        #viewport { position: relative; flex: 1; background: #000; overflow: hidden; display: flex; justify-content: center; align-items: center; }
-        video, #photoCanvas, #selectionCanvas { position: absolute; max-width: 100%; max-height: 100%; object-fit: contain; }
-        #selectionCanvas { z-index: 10; touch-action: none; }
-        .controls { background: #16161e; padding: 15px 10px 35px 10px; border-top: 1px solid #333; display: flex; gap: 15px; justify-content: center; z-index: 100; }
-        button { padding: 18px; border-radius: 12px; border: none; font-weight: 800; font-size: 14px; cursor: pointer; min-width: 120px; text-transform: uppercase; }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { width: 100%; height: 100dvh; background: var(--bg); font-family: sans-serif; overflow: hidden; color: white; }
+
+        .app-container { display: flex; flex-direction: column; width: 100%; height: 100dvh; }
+
+        #viewport {
+            position: relative;
+            flex: 1;
+            min-height: 0;
+            background: #000;
+            overflow: hidden;
+        }
+
+        /* Video remplit le viewport */
+        #video {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Canvas superposés, même taille que le viewport */
+        #photoCanvas, #selectionCanvas {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: block;
+        }
+        #photoCanvas { display: none; }
+        #selectionCanvas { z-index: 10; touch-action: none; cursor: default; }
+        #selectionCanvas.frozen { cursor: crosshair; }
+
+        /* Loader */
+        #loader {
+            display: none;
+            position: absolute;
+            top: 20px; left: 0;
+            width: 100%;
+            text-align: center;
+            z-index: 50;
+            pointer-events: none;
+        }
+        .badge { background: var(--primary); padding: 8px 20px; border-radius: 30px; font-size: 12px; font-weight: bold; }
+
+        /* Barre de contrôles */
+        .controls {
+            background: #16161e;
+            padding: 15px 10px 35px 10px;
+            border-top: 1px solid #333;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-shrink: 0;
+            z-index: 100;
+        }
+        button {
+            padding: 18px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 800;
+            font-size: 14px;
+            cursor: pointer;
+            min-width: 120px;
+            text-transform: uppercase;
+        }
         .btn-snap { background: #e74c3c; color: white; }
         .btn-export { background: #2ecc71; color: white; }
-        #confirmModal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; color: #333; padding: 15px; border-radius: 15px; width: 88%; max-width: 400px; z-index: 200; box-shadow: 0 10px 40px rgba(0,0,0,0.6); box-sizing: border-box; }
-        #ocrEditArea { width: 100%; height: 110px; background: #f0f2f5; border: 1px solid #ddd; border-radius: 10px; padding: 10px; font-size: 15px; font-weight: 600; margin-bottom: 12px; color: #000; box-sizing: border-box; resize: none; outline: none; }
-        #pageInput { width: 100%; padding: 12px; font-size: 16px; border: 2px solid #eee; border-radius: 10px; text-align: center; margin-bottom: 12px; box-sizing: border-box; }
-        .modal-btns { display: flex; gap: 10px; width: 100%; }
+
+        /* Bouton effacer — coin haut gauche */
+        #btnClear {
+            position: absolute;
+            top: 14px; left: 14px;
+            z-index: 20;
+            min-width: 0;
+            padding: 9px 14px 9px 11px;
+            font-size: 13px;
+            font-weight: 800;
+            border-radius: 50px;
+            background: rgba(20, 20, 30, 0.82);
+            color: #ff5f5f;
+            border: 1.5px solid rgba(255, 95, 95, 0.4);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 2px 14px rgba(0,0,0,0.55);
+            line-height: 1;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.15s, transform 0.1s;
+        }
+        #btnClear:active { background: rgba(255, 95, 95, 0.18); transform: scale(0.93); }
+        #btnClear .clear-count {
+            background: #ff5f5f;
+            color: #fff;
+            border-radius: 20px;
+            padding: 2px 7px;
+            font-size: 12px;
+            font-weight: 900;
+            min-width: 18px;
+            text-align: center;
+        }
+
+        /* Modal OCR */
+        #confirmModal {
+            display: none;
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            color: #333;
+            padding: 15px;
+            border-radius: 15px;
+            width: 88%; max-width: 400px;
+            z-index: 200;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+        }
+        #ocrEditArea {
+            width: 100%; height: 110px;
+            background: #f0f2f5;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 15px; font-weight: 600;
+            margin-bottom: 12px;
+            color: #000;
+            resize: none; outline: none;
+            display: block;
+        }
+        #pageInput {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid #eee;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 12px;
+            display: block;
+        }
+        .modal-btns { display: flex; gap: 10px; }
         .modal-btns button { min-width: 0; flex: 1; padding: 14px; }
-        #loader { display: none; position: absolute; top: 20px; width: 100%; text-align: center; z-index: 50; }
-        .badge { background: var(--primary); padding: 8px 20px; border-radius: 30px; font-size: 12px; font-weight: bold;}
+
+        /* Modal confirmation suppression */
+        #clearModal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 300;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(4px);
+            justify-content: center;
+            align-items: flex-end;
+            padding-bottom: 30px;
+        }
+        #clearModal.open { display: flex; animation: fadeIn 0.18s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        #clearModalBox {
+            background: #1a1a26;
+            border: 1px solid rgba(255,95,95,0.25);
+            border-radius: 20px;
+            width: 88%; max-width: 380px;
+            padding: 24px 20px 20px;
+            box-shadow: 0 -4px 40px rgba(255,60,60,0.15), 0 10px 40px rgba(0,0,0,0.7);
+            animation: slideUp 0.22s cubic-bezier(.22,.9,.36,1);
+        }
+        @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        #clearModalBox .clear-icon { font-size: 36px; text-align: center; margin-bottom: 10px; }
+        #clearModalBox h3 { margin: 0 0 6px; font-size: 17px; color: #fff; text-align: center; }
+        #clearModalBox p { margin: 0 0 20px; font-size: 13px; color: #aaa; text-align: center; line-height: 1.5; }
+        #clearModalBox p strong { color: #ff7070; }
+        .clear-modal-btns { display: flex; gap: 10px; }
+        .clear-modal-btns button { flex: 1; min-width: 0; padding: 15px; border-radius: 12px; font-size: 14px; font-weight: 800; text-transform: uppercase; }
+        .btn-cancel-clear { background: #2a2a3a; color: #ccc; border: none; }
+        .btn-confirm-clear { background: #e74c3c; color: white; border: none; box-shadow: 0 4px 16px rgba(231,76,60,0.35); }
     </style>
 </head>
 <body>
 
 <div class="app-container">
-    <div id="loader"><span class="badge">ANALYSE COMPARATIVE...</span></div>
     <div id="viewport">
-        <video id="video" autoplay playsinline></video>
-        <canvas id="photoCanvas" style="display:none;"></canvas>
+        <video id="video" autoplay playsinline muted></video>
+        <canvas id="photoCanvas"></canvas>
         <canvas id="selectionCanvas"></canvas>
+        <div id="loader"><span class="badge">ANALYSE COMPARATIVE...</span></div>
+        <button id="btnClear" onclick="openClearModal()" title="Effacer l'historique">
+            🗑️ Effacer <span class="clear-count" id="clearCount">0</span>
+        </button>
     </div>
     <div class="controls">
         <button class="btn-export" onclick="exportJSON()">Export</button>
@@ -49,131 +212,230 @@
     </div>
 </div>
 
-<script>
-    const video = document.getElementById('video');
-    const photoCanvas = document.getElementById('photoCanvas');
-    const selectCanvas = document.getElementById('selectionCanvas');
-    const sctx = selectCanvas.getContext('2d');
-    const confirmModal = document.getElementById('confirmModal');
-    const ocrEditArea = document.getElementById('ocrEditArea');
-    const loader = document.getElementById('loader');
-    
-    let isFrozen = false, isDrawing = false, startX, startY, historyData = [];
+<div id="clearModal">
+    <div id="clearModalBox">
+        <div class="clear-icon">🗑️</div>
+        <h3>Effacer l'historique</h3>
+        <p>Cette action supprimera définitivement<br><strong id="clearModalCount">0 entrée(s)</strong> enregistrée(s).</p>
+        <div class="clear-modal-btns">
+            <button class="btn-cancel-clear" onclick="closeClearModal()">Annuler</button>
+            <button class="btn-confirm-clear" onclick="confirmClear()">Tout supprimer</button>
+        </div>
+    </div>
+</div>
 
-    window.onload = () => { initCamera(); };
+<script>
+    const video        = document.getElementById('video');
+    const photoCanvas  = document.getElementById('photoCanvas');
+    const selectCanvas = document.getElementById('selectionCanvas');
+    const pctx         = photoCanvas.getContext('2d');
+    const sctx         = selectCanvas.getContext('2d');
+    const confirmModal = document.getElementById('confirmModal');
+    const ocrEditArea  = document.getElementById('ocrEditArea');
+    const loader       = document.getElementById('loader');
+    const viewport     = document.getElementById('viewport');
+
+    let isFrozen = false, isDrawing = false, startX, startY;
+    let historyData = [];
+    // Stocke la zone réelle de la vidéo dans le canvas (object-fit: cover simulé)
+    let videoRect = { x: 0, y: 0, w: 0, h: 0 };
+
+    // ── Caméra ────────────────────────────────────────────────────────────────
+    window.onload = () => initCamera();
 
     async function initCamera() {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: 'environment', width: { ideal: 4096 }, height: { ideal: 2160 } } 
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'environment', width: { ideal: 4096 }, height: { ideal: 2160 } }
             });
             video.srcObject = stream;
             video.onloadedmetadata = () => {
-                photoCanvas.width = video.videoWidth; photoCanvas.height = video.videoHeight;
-                selectCanvas.width = video.videoWidth; selectCanvas.height = video.videoHeight;
+                syncCanvasSize();
             };
-        } catch(e) { alert("Caméra bloquée."); }
+        } catch(e) { alert("Caméra bloquée : " + e.message); }
     }
 
+    // Redimensionne les canvas à la taille du viewport
+    function syncCanvasSize() {
+        const vw = viewport.clientWidth;
+        const vh = viewport.clientHeight;
+        photoCanvas.width  = vw;
+        photoCanvas.height = vh;
+        selectCanvas.width = vw;
+        selectCanvas.height = vh;
+    }
+
+    window.addEventListener('resize', () => {
+        if (!isFrozen) syncCanvasSize();
+    });
+
+    // ── Snap / Reset ──────────────────────────────────────────────────────────
     function toggleSnap() {
         if (!isFrozen) {
-            const ctx = photoCanvas.getContext('2d');
-            ctx.drawImage(video, 0, 0);
-            
-            // TRAITEMENT "PARFAIT" EN NIVEAUX DE GRIS
-            const imgData = ctx.getImageData(0, 0, photoCanvas.width, photoCanvas.height);
+            syncCanvasSize();
+
+            const vw = photoCanvas.width;
+            const vh = photoCanvas.height;
+            const vidW = video.videoWidth;
+            const vidH = video.videoHeight;
+
+            // Calcul object-fit: cover
+            const scale = Math.max(vw / vidW, vh / vidH);
+            const drawW = vidW * scale;
+            const drawH = vidH * scale;
+            const ox    = (vw - drawW) / 2;
+            const oy    = (vh - drawH) / 2;
+
+            // Mémorise pour le recadrage OCR
+            videoRect = { x: ox, y: oy, w: drawW, h: drawH, vidW, vidH, scale };
+
+            pctx.drawImage(video, ox, oy, drawW, drawH);
+
+            // Niveaux de gris
+            const imgData = pctx.getImageData(0, 0, vw, vh);
             const d = imgData.data;
             for (let i = 0; i < d.length; i += 4) {
-                // Calcul de luminance standard
                 let lum = d[i]*0.3 + d[i+1]*0.59 + d[i+2]*0.11;
-                // Application du profil de contraste doux (Grayscale)
-                let final = lum < 130 ? lum*0.92 : Math.min(255, lum*1.03);
-                d[i] = d[i+1] = d[i+2] = final;
+                let val = lum < 130 ? lum*0.92 : Math.min(255, lum*1.03);
+                d[i] = d[i+1] = d[i+2] = val;
             }
-            ctx.putImageData(imgData, 0, 0);
+            pctx.putImageData(imgData, 0, 0);
 
-            video.style.visibility = 'hidden';
+            video.style.display = 'none';
             photoCanvas.style.display = 'block';
+            selectCanvas.classList.add('frozen');
             document.getElementById('btnSnap').innerText = "Reprendre";
             isFrozen = true;
-        } else { reset(); }
+        } else {
+            reset();
+        }
     }
 
     function reset() {
-        video.style.visibility = 'visible'; photoCanvas.style.display = 'none';
+        video.style.display = 'block';
+        photoCanvas.style.display = 'none';
+        pctx.clearRect(0, 0, photoCanvas.width, photoCanvas.height);
         sctx.clearRect(0, 0, selectCanvas.width, selectCanvas.height);
+        selectCanvas.classList.remove('frozen');
         document.getElementById('btnSnap').innerText = "Figer";
-        confirmModal.style.display = 'none'; isFrozen = false;
+        confirmModal.style.display = 'none';
+        isFrozen = false;
     }
 
+    // ── Coordonnées ───────────────────────────────────────────────────────────
     function getPos(e) {
-        const r = selectCanvas.getBoundingClientRect();
+        const r  = selectCanvas.getBoundingClientRect();
         const ev = e.touches ? e.touches[0] : e;
-        return { x: ((ev.clientX - r.left) / r.width) * selectCanvas.width, y: ((ev.clientY - r.top) / r.height) * selectCanvas.height };
+        // Coordonnées dans le canvas CSS → coordonnées canvas réelles
+        const scaleX = selectCanvas.width  / r.width;
+        const scaleY = selectCanvas.height / r.height;
+        return {
+            x: (ev.clientX - r.left) * scaleX,
+            y: (ev.clientY - r.top)  * scaleY
+        };
     }
 
-    selectCanvas.addEventListener('touchstart', (e) => { if(!isFrozen) return; const p = getPos(e); startX = p.x; startY = p.y; isDrawing = true; });
-    selectCanvas.addEventListener('touchmove', (e) => { 
-        if(!isDrawing) return; const p = getPos(e); 
-        sctx.clearRect(0,0,selectCanvas.width,selectCanvas.height); 
-        sctx.strokeStyle = "#4b4be6"; sctx.lineWidth = 10; 
-        sctx.strokeRect(startX, startY, p.x-startX, p.y-startY); 
-    });
+    function drawRect(p) {
+        sctx.clearRect(0, 0, selectCanvas.width, selectCanvas.height);
+        sctx.strokeStyle = "#4b4be6";
+        sctx.lineWidth   = 3;
+        sctx.strokeRect(startX, startY, p.x - startX, p.y - startY);
+    }
 
-    selectCanvas.addEventListener('touchend', async (e) => {
-        if(!isDrawing) return; isDrawing = false;
-        const p = getPos(e.changedTouches[0]);
-        let w = Math.abs(p.x-startX), h = Math.abs(p.y-startY), x = Math.min(startX, p.x), y = Math.min(startY, p.y);
-        
-        if(w > 20) {
-            loader.style.display = 'block';
-            
-            const c1 = document.createElement('canvas'); const c2 = document.createElement('canvas');
-            c1.width = c2.width = w; c1.height = c2.height = h;
-            const ctx1 = c1.getContext('2d'); const ctx2 = c2.getContext('2d');
+    // ── Touch ─────────────────────────────────────────────────────────────────
+    selectCanvas.addEventListener('touchstart',  (e) => { if (!isFrozen) return; e.preventDefault(); const p = getPos(e); startX = p.x; startY = p.y; isDrawing = true; }, { passive: false });
+    selectCanvas.addEventListener('touchmove',   (e) => { if (!isDrawing) return; e.preventDefault(); drawRect(getPos(e)); }, { passive: false });
+    selectCanvas.addEventListener('touchend',    async (e) => { if (!isDrawing) return; isDrawing = false; const p = getPos(e.changedTouches[0]); await processSelection(p); });
 
-            // OCR 1 : Basé sur le Gris "Parfait"
-            ctx1.drawImage(photoCanvas, x, y, w, h, 0, 0, w, h);
-            
-            // OCR 2 : Basé sur un Gris plus sombre (pour compenser si c'est trop pâle)
-            ctx2.filter = 'brightness(0.9) contrast(1.2)';
-            ctx2.drawImage(photoCanvas, x, y, w, h, 0, 0, w, h);
+    // ── Souris ────────────────────────────────────────────────────────────────
+    selectCanvas.addEventListener('mousedown',  (e) => { if (!isFrozen) return; const p = getPos(e); startX = p.x; startY = p.y; isDrawing = true; });
+    selectCanvas.addEventListener('mousemove',  (e) => { if (!isDrawing) return; drawRect(getPos(e)); });
+    selectCanvas.addEventListener('mouseup',    async (e) => { if (!isDrawing) return; isDrawing = false; await processSelection(getPos(e)); });
+    selectCanvas.addEventListener('mouseleave', () => { isDrawing = false; });
 
-            try {
-                const [r1, r2] = await Promise.all([
-                    Tesseract.recognize(c1, 'fra'),
-                    Tesseract.recognize(c2, 'fra')
-                ]);
+    // ── OCR ───────────────────────────────────────────────────────────────────
+    async function processSelection(p) {
+        const w = Math.abs(p.x - startX);
+        const h = Math.abs(p.y - startY);
+        const x = Math.min(startX, p.x);
+        const y = Math.min(startY, p.y);
 
-                const clean = (t) => t.replace(/-\s+/g, '').replace(/\s+/g, ' ').trim();
-                let t1 = clean(r1.data.text);
-                let t2 = clean(r2.data.text);
+        if (w < 20 || h < 10) return;
 
-                // Choix du texte le plus riche + Double espace supprimé (règle OCR)
-                ocrEditArea.value = (t1.length >= t2.length) ? t1 : t2;
-                confirmModal.style.display = 'block';
-            } catch(e) { alert("Erreur OCR"); }
-            loader.style.display = 'none';
+        loader.style.display = 'block';
+
+        const c1 = document.createElement('canvas');
+        const c2 = document.createElement('canvas');
+        c1.width = c2.width = w;
+        c1.height = c2.height = h;
+        const ctx1 = c1.getContext('2d');
+        const ctx2 = c2.getContext('2d');
+
+        ctx1.drawImage(photoCanvas, x, y, w, h, 0, 0, w, h);
+
+        ctx2.filter = 'brightness(0.9) contrast(1.2)';
+        ctx2.drawImage(photoCanvas, x, y, w, h, 0, 0, w, h);
+
+        try {
+            const [r1, r2] = await Promise.all([
+                Tesseract.recognize(c1, 'fra'),
+                Tesseract.recognize(c2, 'fra')
+            ]);
+            const clean = (t) => t.replace(/-\s+/g, '').replace(/\s+/g, ' ').trim();
+            const t1 = clean(r1.data.text);
+            const t2 = clean(r2.data.text);
+            ocrEditArea.value = (t1.length >= t2.length) ? t1 : t2;
+            confirmModal.style.display = 'block';
+        } catch(err) {
+            alert("Erreur OCR : " + err.message);
         }
-    });
 
+        loader.style.display = 'none';
+    }
+
+    // ── Sauvegarde / Export ───────────────────────────────────────────────────
     function saveResult() {
         const p = document.getElementById('pageInput').value;
-        if(!p) return alert("Indiquez la page.");
-        // Sécurité finale : aucun double espace
-        const finalTexte = ocrEditArea.value.replace(/\s\s+/g, ' ').trim();
-        historyData.push({ page: p, texte: finalTexte });
-        document.getElementById('pageInput').value = ""; closeModal();
+        if (!p) return alert("Indiquez la page.");
+        const texte = ocrEditArea.value.replace(/\s\s+/g, ' ').trim();
+        historyData.push(`${texte} p. ${p}`);
+        document.getElementById('pageInput').value = "";
+        updateCount();
+        closeModal();
+        reset();
     }
 
-    function closeModal() { confirmModal.style.display = 'none'; sctx.clearRect(0,0,selectCanvas.width,selectCanvas.height); }
+    function closeModal() {
+        confirmModal.style.display = 'none';
+        reset();
+    }
 
     function exportJSON() {
-        if(!historyData.length) return alert("Vide.");
-        const b = new Blob([JSON.stringify(historyData, null, 2)], { type: 'application/json' });
+        if (!historyData.length) return alert("Vide.");
+        const nom = prompt("Nom du fichier :", "extraction");
+        if (nom === null) return; // annulé
+        const b = new Blob([historyData.join('\n----------------\n')], { type: 'text/plain' });
         const a = document.createElement("a");
-        a.href = URL.createObjectURL(b); a.download = "extraction.json"; a.click();
+        a.href = URL.createObjectURL(b);
+        a.download = (nom.trim() || "extraction") + ".txt";
+        a.click();
     }
+
+    // ── Historique ────────────────────────────────────────────────────────────
+    function updateCount() {
+        const n = historyData.length;
+        document.getElementById('clearCount').textContent = n;
+        document.getElementById('btnClear').style.opacity = n === 0 ? '0.45' : '1';
+    }
+
+    function openClearModal() {
+        if (!historyData.length) return;
+        const n = historyData.length;
+        document.getElementById('clearModalCount').textContent = n + ' entrée' + (n > 1 ? 's' : '');
+        document.getElementById('clearModal').classList.add('open');
+    }
+    function closeClearModal() { document.getElementById('clearModal').classList.remove('open'); }
+    function confirmClear() { historyData = []; updateCount(); closeClearModal(); }
 </script>
 </body>
 </html>
