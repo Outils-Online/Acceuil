@@ -42,7 +42,6 @@
         #selectionCanvas.frozen { cursor: crosshair; }
 
         /* Loader */
-        /* Loader + bouton stop */
         #loader {
             display: none;
             position: absolute;
@@ -225,6 +224,48 @@
             transition: background 0.15s, transform 0.1s;
         }
         #btnHome:active { background: rgba(255,255,255,0.15); transform: scale(0.93); }
+
+        /* Modal nom de fichier (fallback téléchargement) */
+        #filenameModal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 300;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(4px);
+            justify-content: center;
+            align-items: flex-end;
+            padding-bottom: 30px;
+        }
+        #filenameModal.open { display: flex; animation: fadeIn 0.18s ease; }
+        #filenameModalBox {
+            background: #1a1a26;
+            border: 1px solid rgba(75,75,230,0.3);
+            border-radius: 20px;
+            width: 88%; max-width: 380px;
+            padding: 24px 20px 20px;
+            box-shadow: 0 -4px 40px rgba(75,75,230,0.15), 0 10px 40px rgba(0,0,0,0.7);
+            animation: slideUp 0.22s cubic-bezier(.22,.9,.36,1);
+        }
+        #filenameModalBox h3 { margin: 0 0 14px; font-size: 17px; color: #fff; text-align: center; }
+        #filenameInput {
+            width: 100%;
+            padding: 13px;
+            font-size: 16px;
+            border: 2px solid rgba(75,75,230,0.4);
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 14px;
+            display: block;
+            background: #0d0d1a;
+            color: #fff;
+            outline: none;
+        }
+        #filenameInput:focus { border-color: var(--primary); }
+        .filename-modal-btns { display: flex; gap: 10px; }
+        .filename-modal-btns button { flex: 1; min-width: 0; padding: 15px; border-radius: 12px; font-size: 14px; font-weight: 800; text-transform: uppercase; }
+        .btn-cancel-filename { background: #2a2a3a; color: #ccc; border: none; }
+        .btn-confirm-filename { background: var(--primary); color: white; border: none; box-shadow: 0 4px 16px rgba(75,75,230,0.35); }
     </style>
 </head>
 <body>
@@ -272,6 +313,18 @@
     </div>
 </div>
 
+<!-- Modal nom de fichier (fallback si Web Share API indisponible) -->
+<div id="filenameModal">
+    <div id="filenameModalBox">
+        <h3>📥 Télécharger le fichier</h3>
+        <input type="text" id="filenameInput" placeholder="Nom du fichier" value="extraction">
+        <div class="filename-modal-btns">
+            <button class="btn-cancel-filename" onclick="closeFilenameModal()">Annuler</button>
+            <button class="btn-confirm-filename" onclick="confirmDownload()">Télécharger</button>
+        </div>
+    </div>
+</div>
+
 <script>
     const video        = document.getElementById('video');
     const photoCanvas  = document.getElementById('photoCanvas');
@@ -303,7 +356,6 @@
         } catch(e) { alert("Caméra bloquée : " + e.message); }
     }
 
-    // Redimensionne les canvas à la taille du viewport
     function syncCanvasSize() {
         const vw = viewport.clientWidth;
         const vh = viewport.clientHeight;
@@ -323,18 +375,15 @@
             const vidW = video.videoWidth;
             const vidH = video.videoHeight;
 
-            // Canvas à la résolution NATIVE de la vidéo
             photoCanvas.width  = vidW;
             photoCanvas.height = vidH;
             selectCanvas.width  = vidW;
             selectCanvas.height = vidH;
 
-            // Étape 1 : filtre CSS appliqué au drawImage (contrast + brightness + desaturation)
             pctx.filter = 'contrast(1.15) brightness(1.02) saturate(0)';
             pctx.drawImage(video, 0, 0, vidW, vidH);
             pctx.filter = 'none';
 
-            // Étape 2 : traitement pixel par pixel (luminance + profil de contraste doux)
             const imgData = pctx.getImageData(0, 0, vidW, vidH);
             const d = imgData.data;
             for (let i = 0; i < d.length; i += 4) {
@@ -370,7 +419,6 @@
     function getPos(e) {
         const r  = selectCanvas.getBoundingClientRect();
         const ev = e.touches ? e.touches[0] : e;
-        // Coordonnées dans le canvas CSS → coordonnées canvas réelles
         const scaleX = selectCanvas.width  / r.width;
         const scaleY = selectCanvas.height / r.height;
         return {
@@ -427,7 +475,7 @@
                 Tesseract.recognize(c2, 'fra')
             ]);
 
-            if (ocrCancelled) return; // abandonné pendant l'analyse
+            if (ocrCancelled) return;
 
             const clean = (t) => t.replace(/-\s+/g, '').replace(/\s+/g, ' ').trim();
             const t1 = clean(r1.data.text);
@@ -464,14 +512,44 @@
         reset();
     }
 
-    function exportJSON() {
+    // Construit le contenu texte à partager/télécharger
+    function buildContent() {
+        return historyData.join('\n----------------\n');
+    }
+
+    // Partage en texte brut via Web Share API, fallback téléchargement
+    async function exportJSON() {
         if (!historyData.length) return alert("Vide.");
-        const nom = prompt("Nom du fichier :", "extraction");
-        if (nom === null) return; // annulé
-        const b = new Blob([historyData.join('\n----------------\n')], { type: 'text/plain' });
+
+        const content = buildContent();
+
+        if (navigator.share) {
+            try {
+                await navigator.share({ title: 'Extraction OCR', text: content });
+                return;
+            } catch(e) {
+                if (e.name === 'AbortError') return;
+                // Fallback téléchargement si erreur inattendue
+            }
+        }
+
+        // Fallback : téléchargement classique avec modal de nom
+        document.getElementById('filenameInput').value = "extraction";
+        document.getElementById('filenameModal').classList.add('open');
+    }
+
+    // ── Modal nom de fichier (fallback) ──────────────────────────────────────
+    function closeFilenameModal() {
+        document.getElementById('filenameModal').classList.remove('open');
+    }
+
+    function confirmDownload() {
+        const nom = document.getElementById('filenameInput').value.trim() || "extraction";
+        closeFilenameModal();
+        const b = new Blob([buildContent()], { type: 'text/plain' });
         const a = document.createElement("a");
         a.href = URL.createObjectURL(b);
-        a.download = (nom.trim() || "extraction") + ".txt";
+        a.download = nom + ".txt";
         a.click();
     }
 
