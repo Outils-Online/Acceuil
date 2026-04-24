@@ -332,6 +332,10 @@
     <button class="close-iframe" onclick="closeIframe('iframe_photo_recu')">FERMER X</button>
     <iframe data-src="pages/photo-recu.html" allow="camera; microphone"></iframe>
 </div>
+<div id="iframe_cite_lines" class="iframe-container">
+    <button class="close-iframe" onclick="closeIframe('iframe_cite_lines')">FERMER X</button>
+    <iframe data-src="pages/Cite-Lines.html"></iframe>
+</div>
 <div id="iframe_ocr_lines" class="iframe-container">
     <button class="close-iframe" onclick="closeIframe('iframe_ocr_lines')">FERMER X</button>
     <iframe data-src="pages/OCR-lines.html" allow="camera; microphone"></iframe>
@@ -373,6 +377,18 @@
     <div class="btn-star">★</div>
     <div class="favicon-badge rainbow-mode"><span>📷</span></div>
     <div>Reçu-Lines</div>
+    <div class="count-badge">0</div>
+</button>
+
+<button class="btn-3d btn-blue" 
+    data-id="cite-lines" 
+    data-main="bureau" 
+    data-tags="recherche" 
+    onclick="openIframe('iframe_cite_lines', this)">
+
+    <div class="btn-star">★</div>
+    <div class="favicon-badge"><span>📚</span></div>
+    <div>Cite-Lines</div>
     <div class="count-badge">0</div>
 </button>
     <button class="btn-3d btn-green"  data-id="calculette"     data-main="bureau"   data-tags="compta"    onclick="openIframe('iframe_calculette', this)">
