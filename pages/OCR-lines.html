@@ -8,9 +8,9 @@
     <style>
         :root { --primary: #4b4be6; --bg: #000; }
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body { width: 100%; height: 100dvh; background: var(--bg); font-family: sans-serif; overflow: hidden; color: white; }
+        html, body { width: 100%; height: 100%; min-height: 100vh; background: var(--bg); font-family: sans-serif; overflow: hidden; color: white; }
 
-        .app-container { display: flex; flex-direction: column; width: 100%; height: 100dvh; }
+        .app-container { display: flex; flex-direction: column; width: 100%; height: 100vh; min-height: 100vh; }
 
         #viewport {
             position: relative;
@@ -81,6 +81,7 @@
             justify-content: center;
             flex-shrink: 0;
             z-index: 100;
+            position: relative;
         }
         button {
             padding: 18px;
@@ -225,6 +226,76 @@
         }
         #btnHome:active { background: rgba(255,255,255,0.15); transform: scale(0.93); }
 
+        /* Modal métadonnées export */
+        #metaModal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 300;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(4px);
+            justify-content: center;
+            align-items: flex-end;
+            padding-bottom: 20px;
+        }
+        #metaModal.open { display: flex; animation: fadeIn 0.18s ease; }
+        #metaModalBox {
+            background: #1a1a26;
+            border: 1px solid rgba(75,75,230,0.3);
+            border-radius: 20px;
+            width: 92%; max-width: 420px;
+            padding: 22px 18px 18px;
+            box-shadow: 0 -4px 40px rgba(75,75,230,0.15), 0 10px 40px rgba(0,0,0,0.7);
+            animation: slideUp 0.22s cubic-bezier(.22,.9,.36,1);
+            max-height: 88vh;
+            overflow-y: auto;
+        }
+        #metaModalBox h3 { margin: 0 0 16px; font-size: 16px; color: #fff; text-align: center; letter-spacing: 0.03em; }
+        .meta-field {
+            width: 100%;
+            padding: 11px 13px;
+            font-size: 15px;
+            border: 1.5px solid rgba(75,75,230,0.3);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: block;
+            background: #0d0d1a;
+            color: #fff;
+            outline: none;
+        }
+        .meta-field:focus { border-color: var(--primary); }
+        .meta-field::placeholder { color: #555; }
+        .meta-modal-btns { display: flex; gap: 10px; margin-top: 6px; }
+        .meta-modal-btns button { flex: 1; min-width: 0; padding: 15px; border-radius: 12px; font-size: 14px; font-weight: 800; text-transform: uppercase; }
+        .btn-cancel-meta { background: #2a2a3a; color: #ccc; border: none; }
+        .btn-confirm-meta { background: var(--primary); color: white; border: none; box-shadow: 0 4px 16px rgba(75,75,230,0.35); }
+
+        /* Loader Claude */
+        #claudeLoader {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 400;
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(6px);
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 14px;
+        }
+        #claudeLoader.open { display: flex; }
+        #claudeLoader .cl-badge {
+            background: var(--primary);
+            padding: 10px 24px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            animation: pulse 1.4s ease-in-out infinite;
+        }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+        #claudeLoader .cl-sub { font-size: 12px; color: #888; }
+
         /* Modal nom de fichier (fallback téléchargement) */
         #filenameModal {
             display: none;
@@ -287,7 +358,7 @@
         <a id="btnHome" href="#" onclick="window.parent.document.getElementById('iframe_ocr_lines').style.display='none'; return false;" title="Retour à l'accueil">✕</a>
     </div>
     <div class="controls">
-        <button class="btn-export" onclick="exportJSON()">Export</button>
+        <button class="btn-export" onclick="exportJSON()">Envoi</button>
         <button class="btn-snap" id="btnSnap" onclick="toggleSnap()">Figer</button>
     </div>
 </div>
@@ -309,6 +380,23 @@
         <div class="clear-modal-btns">
             <button class="btn-cancel-clear" onclick="closeClearModal()">Annuler</button>
             <button class="btn-confirm-clear" onclick="confirmClear()">Tout supprimer</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal métadonnées export -->
+<div id="metaModal">
+    <div id="metaModalBox">
+        <h3>📚 Métadonnées de la source</h3>
+        <input class="meta-field" id="metaPrenom"     type="text" placeholder="Prénom Nom (auteur)">
+        <input class="meta-field" id="metaTitre"      type="text" placeholder="Titre">
+        <input class="meta-field" id="metaVille"      type="text" placeholder="Ville d'édition">
+        <input class="meta-field" id="metaEditeur"    type="text" placeholder="Éditeur">
+        <input class="meta-field" id="metaCollection" type="text" placeholder="Collection">
+        <input class="meta-field" id="metaAnnee"      type="text" placeholder="Année" inputmode="numeric">
+        <div class="meta-modal-btns">
+            <button class="btn-cancel-meta" onclick="closeMetaModal()">Annuler</button>
+            <button class="btn-confirm-meta" onclick="confirmExport()">Exporter</button>
         </div>
     </div>
 </div>
@@ -512,30 +600,216 @@
         reset();
     }
 
-    // Construit le contenu texte à partager/télécharger
-    function buildContent() {
-        return historyData.join('\n----------------\n');
+    // ── Dictionnaire français ─────────────────────────────────────────────────
+    let dico = null;
+
+    async function chargerDictionnaire() {
+        if (dico) return;
+        try {
+            const r = await fetch('https://raw.githubusercontent.com/lorenbrichter/Words/master/Words/fr.txt');
+            const txt = await r.text();
+            dico = new Set(txt.split('\n').map(w => w.trim().toLowerCase()).filter(w => w.length > 2));
+        } catch(e) {
+            dico = new Set(); // vide = pas de reconstruction dico
+        }
     }
 
-    // Partage en texte brut via Web Share API, fallback téléchargement
-    async function exportJSON() {
+    // Initialiser le dico dès le chargement de l'app
+    window.addEventListener('load', () => { chargerDictionnaire(); });
+
+    // ── Moteur de correction OCR JS pur ──────────────────────────────────────
+
+    // Règle 1a : suppression des artefacts parasites → ●
+    function supprimerArtefacts(texte) {
+        return texte
+            .replace(/[¤\uFFFD]/g, '●')
+            .replace(/(?<![A-Za-zÀ-ÿ0-9])\|(?![A-Za-zÀ-ÿ0-9])/g, '●')
+            // Caractères parasites en début de mot (_Pntadopté, =ES)
+            .replace(/(?<!\w)[_=@#$%^&*~`](?=[A-Za-zÀ-ÿ])/g, '●')
+            // Chiffres isolés collés entre deux lettres
+            .replace(/([A-Za-zÀ-ÿ])\d([A-Za-zÀ-ÿ])/g, (m, a, b) => `${a}●${b}`)
+            .replace(/ {2,}/g, ' ');
+    }
+
+    // Règle 1b : mots collés sans espace (ennuyeuxet → [ennuyeuxet → ennuyeux et])
+    function detecterMotsColles(texte) {
+        if (!dico || dico.size === 0) return texte;
+        return texte.replace(/[A-Za-zÀ-ÿ]{10,}/g, (mot) => {
+            const m = mot.toLowerCase();
+            if (dico.has(m)) return mot;
+            for (let k = 3; k <= m.length - 3; k++) {
+                const g = m.slice(0, k);
+                const d = m.slice(k);
+                if (dico.has(g) && dico.has(d)) {
+                    return `[${mot} → ${g} ${d}]`;
+                }
+            }
+            return `[${mot} →?]`;
+        });
+    }
+
+    // Tente de fusionner une séquence de fragments en mots du dictionnaire
+    function fusionnerSequence(fragments) {
+        const brut = fragments.join('').toLowerCase();
+        if (dico && dico.has(brut)) return [brut];
+        if (!dico || dico.size === 0) return null;
+        const mots = [];
+        let reste = fragments.slice();
+        while (reste.length > 0) {
+            let trouvé = false;
+            for (let len = reste.length; len >= 1; len--) {
+                const candidat = reste.slice(0, len).join('').toLowerCase();
+                if (dico.has(candidat)) {
+                    mots.push(candidat);
+                    reste = reste.slice(len);
+                    trouvé = true;
+                    break;
+                }
+            }
+            if (!trouvé) return null;
+        }
+        return mots;
+    }
+
+    // Règle 2 : reconstruction des mots cassés avec dictionnaire
+    function reconstruireMots(texte) {
+        const courants = new Set([
+            'a','l','y','e','u','à','en','un','le','la','de','du','et','ou','on',
+            'il','ce','se','si','je','tu','me','te','ne','ni','au','ai','es','est',
+            'les','des','une','que','qui','par','sur','son','ses','mon','ton',
+            'ma','ta','sa','car','or','ici','cet','plus','mais','très',
+            'dans','avec','pour','sans','sous','chez','vers','dont','leur','aux'
+        ]);
+
+        const tokens = texte.split(/(\s+)/);
+        const result = [];
+        let i = 0;
+
+        while (i < tokens.length) {
+            const tok = tokens[i];
+            if (/^[A-Za-zÀ-ÿ]+$/.test(tok) && tok.length <= 4 && !courants.has(tok.toLowerCase())) {
+                const sequence = [tok];
+                let j = i + 1;
+                while (j < tokens.length) {
+                    const suivant = tokens[j + 1];
+                    if (!suivant || !/^[A-Za-zÀ-ÿ]+$/.test(suivant)) break;
+                    if (suivant.length <= 4 && !courants.has(suivant.toLowerCase())) {
+                        sequence.push(suivant); j += 2;
+                    } else if (sequence.length >= 2 && suivant.length <= 6) {
+                        sequence.push(suivant); j += 2; break;
+                    } else break;
+                }
+                if (sequence.length >= 2) {
+                    const ancien = sequence.join(' ');
+                    const reconstruction = fusionnerSequence(sequence);
+                    result.push(reconstruction
+                        ? `[${ancien} → ${reconstruction.join(' ')}]`
+                        : `[${ancien} →?]`
+                    );
+                    i = j;
+                } else {
+                    result.push(tok); i++;
+                }
+            } else {
+                result.push(tok); i++;
+            }
+        }
+        return result.join('');
+    }
+
+    // Règle 3 : mots coupés par tiret en fin de ligne → fusion silencieuse
+    function fusionnerTirets(texte) {
+        return texte.replace(/([A-Za-zÀ-ÿ]+)-\s*\n\s*([A-Za-zÀ-ÿ]+)/g, '$1$2');
+    }
+
+    // Règle 4 : regrouper les blocs [...] contigus en un seul bloc
+    function regrouperBlocs(texte) {
+        let prev;
+        do {
+            prev = texte;
+            texte = texte.replace(/\[([^\]]+)\]\s+\[([^\]]+)\]/g, (match, a, b) => {
+                const parse = (s) => {
+                    const idx = s.indexOf(' → ');
+                    if (idx === -1) return { ancien: s.replace(' →?',''), nouveau: '?' };
+                    return { ancien: s.slice(0, idx), nouveau: s.slice(idx + 3) };
+                };
+                const ba = parse(a), bb = parse(b);
+                const nouveauFinal = (ba.nouveau === '?' || bb.nouveau === '?') ? '?' : `${ba.nouveau} ${bb.nouveau}`;
+                return `[${ba.ancien} ${bb.ancien} → ${nouveauFinal}]`;
+            });
+        } while (texte !== prev);
+        return texte;
+    }
+
+    // Application complète du moteur
+    function corrigerOCR(texte) {
+        let t = fusionnerTirets(texte);
+        t = supprimerArtefacts(t);
+        t = detecterMotsColles(t);
+        t = reconstruireMots(t);
+        t = regrouperBlocs(t);
+        return t;
+    }
+
+    // ── Export : modal métadonnées ────────────────────────────────────────────
+    function exportJSON() {
         if (!historyData.length) return alert("Vide.");
+        document.getElementById('metaModal').classList.add('open');
+    }
 
-        const content = buildContent();
+    function closeMetaModal() {
+        document.getElementById('metaModal').classList.remove('open');
+    }
 
+    function confirmExport() {
+        const prenom     = document.getElementById('metaPrenom').value.trim();
+        const titre      = document.getElementById('metaTitre').value.trim();
+        const ville      = document.getElementById('metaVille').value.trim();
+        const editeur    = document.getElementById('metaEditeur').value.trim();
+        const collection = document.getElementById('metaCollection').value.trim();
+        const annee      = document.getElementById('metaAnnee').value.trim();
+
+        if (!prenom || !titre) return alert("Prénom Nom et Titre sont requis.");
+
+        closeMetaModal();
+
+        // 1. Correction OCR avec marqueurs (sur le texte brut sans "p. X")
+        const rawText = historyData.join('\n----------------\n');
+        const texteCorrige = corrigerOCR(rawText);
+
+        // 2. Injection des en-têtes — remplace "p. X" par "en-tête\np. X" (une seule occurrence)
+        const finalText = injectHeaders(texteCorrige, prenom, titre, ville, editeur, collection, annee);
+
+        // 3. Partage
+        partager(finalText);
+    }
+
+    // Injection : insère l'en-tête AVANT p. X, conserve p. X une seule fois
+    function injectHeaders(texte, prenom, titre, ville, editeur, collection, annee) {
+        return texte.replace(/p\.\s*(\d+)/gi, (match, num) => {
+            const header = `${prenom}, ${titre}, ${ville}, ${editeur}, coll. « ${collection} », ${annee}, p. ${num}`;
+            return `${header}`;
+        });
+    }
+
+    // Partage natif ou fallback téléchargement
+    async function partager(texte) {
         if (navigator.share) {
             try {
-                await navigator.share({ title: 'Extraction OCR', text: content });
+                await navigator.share({ title: 'Extraction OCR', text: texte });
                 return;
             } catch(e) {
                 if (e.name === 'AbortError') return;
-                // Fallback téléchargement si erreur inattendue
             }
         }
-
-        // Fallback : téléchargement classique avec modal de nom
+        window._pendingExportText = texte;
         document.getElementById('filenameInput').value = "extraction";
         document.getElementById('filenameModal').classList.add('open');
+    }
+
+    // Construit le contenu texte brut (sans traitement)
+    function buildContent() {
+        return historyData.join('\n----------------\n');
     }
 
     // ── Modal nom de fichier (fallback) ──────────────────────────────────────
@@ -546,7 +820,9 @@
     function confirmDownload() {
         const nom = document.getElementById('filenameInput').value.trim() || "extraction";
         closeFilenameModal();
-        const b = new Blob([buildContent()], { type: 'text/plain' });
+        const content = window._pendingExportText || buildContent();
+        window._pendingExportText = null;
+        const b = new Blob([content], { type: 'text/plain' });
         const a = document.createElement("a");
         a.href = URL.createObjectURL(b);
         a.download = nom + ".txt";

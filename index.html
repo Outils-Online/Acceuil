@@ -137,6 +137,67 @@
         .btn-orange { background: #c97b27; }
         .btn-purple { background: #8a3ebf; }
         .btn-red    { background: #d93025; }
+/* Effet Aura Pleine pour tous les boutons sélectionnés */
+[data-id="photo-recu"] .favicon-badge,
+[data-id="calculette"] .favicon-badge,
+[data-id="minuteur"] .favicon-badge,
+[data-id="sign-pdf"] .favicon-badge, 
+[data-id="ocr-lines"] .favicon-badge{
+    position: relative;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    overflow: hidden; /* Important : pour que le dégradé reste dans le rond */
+    background: rgba(255, 255, 255, 0.1) !important; /* Un léger fond pour l'unité */
+    border: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 1;
+}
+
+/* Le fond plein qui tourne */
+[data-id="photo-recu"] .favicon-badge::before,
+[data-id="calculette"] .favicon-badge::before,
+[data-id="minuteur"] .favicon-badge::before,
+[data-id="sign-pdf"] .favicon-badge::before, 
+[data-id="ocr-lines"] .favicon-badge::before{
+    content: "";
+    position: absolute;
+    /* On l'agrandit pour que les bords du dégradé ne se voient pas */
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    
+    /* Dégradé conique plein et transparent */
+    background: conic-gradient(
+        rgba(75, 75, 230, 0.7), 
+        rgba(50, 168, 82, 0.7), 
+        rgba(230, 75, 230, 0.7), 
+        rgba(168, 138, 50, 0.7), 
+        rgba(75, 75, 230, 0.7)
+    ) !important;
+    
+    /* Rotation lente */
+    animation: rotateRing 20s linear infinite !important;
+    z-index: -1; /* Passe derrière l'icône */
+}
+
+/* Réglage standard pour les autres */
+[data-id="calculette"] .favicon-badge span,
+[data-id="minuteur"] .favicon-badge span,
+[data-id="sign-pdf"] .favicon-badge span 
+[data-id="ocr-lines"] .favicon-badge span{
+    display: flex !important;
+    transform: translate(0px, -2px) !important;
+    font-size: 22px !important;
+}
+
+@keyframes rotateRing {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
 
         /* IFRAMES */
         .iframe-container { display: none; position: fixed; inset: 0; background: #000; z-index: 9999; }
@@ -308,11 +369,14 @@
     <button class="btn-3d btn-google" data-id="gmail-admin"    data-main="bureau"   data-tags="admin"     data-url="https://drive.google.com/drive/u/0/" onclick="handleTool(this)">
         <div class="btn-star">★</div><div class="favicon-badge">✉️</div><div>Gmail</div><div class="count-badge">0</div>
     </button>
-    <button class="btn-3d btn-green"  data-id="photo-recu"     data-main="bureau"   data-tags="compta"    onclick="openIframe('iframe_photo_recu', this)">
-        <div class="btn-star">★</div><div class="favicon-badge">📷</div><div>Reçu-Lines</div><div class="count-badge">0</div>
-    </button>
+    <button class="btn-3d btn-green" data-id="photo-recu" data-main="bureau" data-tags="compta" onclick="openIframe('iframe_photo_recu', this)">
+    <div class="btn-star">★</div>
+    <div class="favicon-badge rainbow-mode"><span>📷</span></div>
+    <div>Reçu-Lines</div>
+    <div class="count-badge">0</div>
+</button>
     <button class="btn-3d btn-green"  data-id="calculette"     data-main="bureau"   data-tags="compta"    onclick="openIframe('iframe_calculette', this)">
-        <div class="btn-star">★</div><div class="favicon-badge">🧮</div><div>Calculette</div><div class="count-badge">0</div>
+        <div class="btn-star">★</div><div class="favicon-badge">🔢</div><div>Calculette</div><div class="count-badge">0</div>
     </button>
     <button class="btn-3d btn-green"  data-id="drive-compta"   data-main="bureau"   data-tags="compta"    data-url="https://drive.google.com/drive/u/0/" onclick="handleTool(this)">
         <div class="btn-star">★</div><div class="favicon-badge">📁</div><div>Drive</div><div class="count-badge">0</div>
@@ -333,7 +397,7 @@
         <div class="btn-star">★</div><div class="favicon-badge">⏲️</div><div>Minuteur</div><div class="count-badge">0</div>
     </button>
     <button class="btn-3d btn-blue"   data-id="ocr-lines"      data-main="bureau"   data-tags="recherche" onclick="openIframe('iframe_ocr_lines', this)">
-        <div class="btn-star">★</div><div class="favicon-badge">🔍</div><div>OCR-lines</div><div class="count-badge">0</div>
+        <div class="btn-star">★</div><div class="favicon-badge"><span>🔍</span></div><div>OCR-lines</div><div class="count-badge">0</div>
     </button>
     <button class="btn-3d btn-orange" data-id="yt-mp4"         data-main="creative" data-tags="video"     data-url="https://fr.ssyoutube.com/" onclick="handleTool(this)">
         <div class="btn-star">★</div><div class="favicon-badge">🎬</div><div>Youtube MP4</div><div class="count-badge">0</div>
