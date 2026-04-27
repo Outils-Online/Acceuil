@@ -1416,15 +1416,19 @@ renderHistory();
 
     const video = document.createElement('video');
     video.id = 'isbn-scan-video';
+    // Propriétés posées AVANT insertion DOM (Chrome/Firefox autoplay policy)
+    video.muted = true;
+    video.playsInline = true;
+    video.autoplay = true;
     Object.assign(video.style, {
       width:'100%', display:'block',
       /* Désactiver tout filtre CSS qui pourrait brouiller l'image */
       filter:'none', transform:'none', willChange:'auto'
     });
+    // Attributs HTML en plus (certaines versions sont sensibles)
     video.setAttribute('playsinline', '');
     video.setAttribute('autoplay', '');
     video.setAttribute('muted', '');
-    video.muted = true;
 
     /* Viseur SVG superposé */
     const viewfinder = document.createElement('div');
@@ -1660,6 +1664,9 @@ renderHistory();
       const explained = explainGetUserMediaError(e);
       hint.textContent = `⚠ Caméra inaccessible (${name}). ${explained}`;
       setFeedback(`Accès caméra refusé (${name}).`, 'error');
+      if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
+        alert("Accès à la caméra refusé.\n\nVeuillez autoriser la caméra pour ce site dans votre navigateur, puis relancez le scan.");
+      }
       try { console.warn('[ISBN] getUserMedia error:', e); } catch (_) {}
       return;
     }
