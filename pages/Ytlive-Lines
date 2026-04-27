@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>YouTube Live Direct</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background: #1e293b;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      width: 380px;
+      text-align: center;
+    }
+
+    h2 {
+      margin-bottom: 15px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+
+    button {
+      background: #ef4444;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      color: white;
+      font-size: 15px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    button:hover {
+      background: #dc2626;
+    }
+
+    .info {
+      font-size: 12px;
+      opacity: 0.7;
+      margin-top: 10px;
+    }
+
+    .history {
+      margin-top: 15px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: center;
+    }
+
+    .history button {
+      width: auto;
+      padding: 6px 10px;
+      font-size: 12px;
+      background: #334155;
+      border-radius: 999px;
+    }
+
+    .history button:hover {
+      background: #475569;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>🔴 Ouvrir live YouTube</h2>
+
+    <input type="text" id="channel" placeholder="Ex: mrbeast ou @mrbeast">
+    <button onclick="openLive()">Ouvrir live en direct</button>
+
+    <div class="history" id="history"></div>
+
+    <div class="info">
+      Redirection vers /@chaine/live + historique local
+    </div>
+  </div>
+
+  <script>
+    let history = JSON.parse(localStorage.getItem('yt_history') || '[]');
+
+    function normalize(input) {
+      return input
+        .replace('https://www.youtube.com/', '')
+        .replace('youtube.com/', '')
+        .replace('@', '')
+        .replace('/', '')
+        .trim();
+    }
+
+    function saveHistory(name) {
+      history = history.filter(x => x !== name);
+      history.unshift(name);
+      history = history.slice(0, 8);
+      localStorage.setItem('yt_history', JSON.stringify(history));
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const box = document.getElementById('history');
+      box.innerHTML = '';
+
+      history.forEach(name => {
+        const btn = document.createElement('button');
+        btn.textContent = name;
+        btn.onclick = () => {
+          window.open(`https://www.youtube.com/@${name}/live`, '_blank');
+        };
+        box.appendChild(btn);
+      });
+    }
+
+    function openLive() {
+      let input = document.getElementById('channel').value.trim();
+      if (!input) return alert('Entre une chaîne');
+
+      const name = normalize(input);
+
+      saveHistory(name);
+
+      const url = `https://www.youtube.com/@${name}/live`;
+      window.open(url, '_blank');
+    }
+
+    renderHistory();
+  </script>
+</body>
+</html>

@@ -919,33 +919,46 @@ function renderMultiviewGrid() {
 }
 </script>
 
+
 <!-- ══════════════════════════════════════════════
-     STORAGE MANAGER — Persistance & Sauvegarde
-     Module autonome · Compatible Android WebView
+     STORAGE MANAGER v2 — Persistance & Sauvegarde
+     IndexedDB (auto) + Fichier (manuel)
+     Compatible Android WebView · Mobile-First
 ══════════════════════════════════════════════ -->
 <script>
-/**
- * ╔══════════════════════════════════════════════════════════════╗
- * ║          STORAGE MANAGER — Module de persistance locale      ║
- * ║  Compatible Android WebView · Mobile-First · Plug-and-Play   ║
- * ╚══════════════════════════════════════════════════════════════╝
- */
-
 (function (global) {
   'use strict';
 
   /* ─────────────────────────────────────────────
-     CONSTANTES DE CONFIGURATION
+     CONFIGURATION
   ───────────────────────────────────────────── */
   var CONFIG = {
-    BACKUP_KEY      : '__last_backup_date__',
-    ALERT_DAYS      : 7,
-    INDICATOR_ID    : '__sm_indicator__',
-    FILE_INPUT_ID   : '__sm_file_input__',
-    TOAST_ID        : '__sm_toast__',
-    TOAST_DURATION  : 3000,
-    Z_INDEX         : 99990
+    /* Clés localStorage internes */
+    BACKUP_FILE_KEY  : '__last_backup_file__',    // date du dernier export fichier
+    BACKUP_IDB_KEY   : '__last_backup_idb__',     // date de la dernière sauvegarde IndexedDB
+
+    /* IndexedDB */
+    IDB_NAME         : 'StorageManagerDB',
+    IDB_STORE        : 'backups',
+    IDB_RECORD_KEY   : 'latest',
+
+    /* Export fichier */
+    FILENAME         : 'backup-app.json',
+
+    /* UI */
+    INDICATOR_ID     : '__sm_indicator__',
+    FILE_INPUT_ID    : '__sm_file_input__',
+    TOAST_ID         : '__sm_toast__',
+    TOAST_DURATION   : 3000,
+    Z_INDEX          : 99990,
+
+    /* Règles sauvegarde auto */
+    CLIC_THRESHOLD   : 50,    // sauvegarde IndexedDB tous les 50 clics
+    MIN_CHARS        : 30     // alerte backup fichier si localStorage > 30 caractères
   };
+
+  /* Compteur de clics depuis la dernière sauvegarde IDB */
+  var _clicsSinceBackup = 0;
 
   /* ─────────────────────────────────────────────
      1. PERSISTANCE AUTOMATIQUE
@@ -953,40 +966,296 @@ function renderMultiviewGrid() {
   function initStoragePersistence() {
     if (navigator.storage && navigator.storage.persist) {
       navigator.storage.persist().then(function (granted) {
-        console.log('[StorageManager] Persistance : ' + (granted ? 'activée ✓' : 'refusée (mode normal)'));
+        console.log('[StorageManager] Persistance : ' + (granted ? 'activée ✓' : 'refusée'));
       }).catch(function (err) {
-        console.warn('[StorageManager] Erreur persist() :', err);
+        console.warn('[StorageManager] persist() :', err);
       });
     }
   }
 
   /* ─────────────────────────────────────────────
-     2. LOGIQUE TEMPORELLE
+     2. INDEXEDDB — sauvegarde temporaire silencieuse
   ───────────────────────────────────────────── */
-  function getLastBackupDate() {
-    var raw = localStorage.getItem(CONFIG.BACKUP_KEY);
-    return raw ? new Date(raw) : null;
+  function _openIDB(callback) {
+    try {
+      var req = indexedDB.open(CONFIG.IDB_NAME, 1);
+
+      req.onupgradeneeded = function (e) {
+        var db = e.target.result;
+        if (!db.objectStoreNames.contains(CONFIG.IDB_STORE)) {
+          db.createObjectStore(CONFIG.IDB_STORE);
+        }
+      };
+
+      req.onsuccess = function (e) { callback(null, e.target.result); };
+      req.onerror   = function (e) { callback(e.target.error, null); };
+    } catch (err) {
+      callback(err, null);
+    }
   }
 
-  function setLastBackupDate() {
-    localStorage.setItem(CONFIG.BACKUP_KEY, new Date().toISOString());
+  /** Sauvegarde tout le localStorage dans IndexedDB (silencieux) */
+  function saveToIDB(onDone) {
+    _openIDB(function (err, db) {
+      if (err || !db) {
+        console.warn('[StorageManager] IDB non disponible :', err);
+        if (onDone) onDone(false);
+        return;
+      }
+      try {
+        var data = {};
+        for (var i = 0; i < localStorage.length; i++) {
+          var key = localStorage.key(i);
+          if (key !== CONFIG.BACKUP_FILE_KEY && key !== CONFIG.BACKUP_IDB_KEY) {
+            data[key] = localStorage.getItem(key);
+          }
+        }
+
+        var tx    = db.transaction(CONFIG.IDB_STORE, 'readwrite');
+        var store = tx.objectStore(CONFIG.IDB_STORE);
+        var putReq = store.put({
+          data      : data,
+          savedAt   : new Date().toISOString()
+        }, CONFIG.IDB_RECORD_KEY);
+
+        putReq.onsuccess = function () {
+          /* Mémorise la date dans localStorage (lecture rapide pour UI) */
+          Storage.prototype._setItem
+            ? Storage.prototype._setItem.call(localStorage, CONFIG.BACKUP_IDB_KEY, new Date().toISOString())
+            : localStorage.setItem(CONFIG.BACKUP_IDB_KEY, new Date().toISOString());
+
+          refreshIndicatorState();
+          if (onDone) onDone(true);
+        };
+        putReq.onerror = function (e) {
+          console.warn('[StorageManager] Erreur écriture IDB :', e.target.error);
+          if (onDone) onDone(false);
+        };
+      } catch (txErr) {
+        console.warn('[StorageManager] Transaction IDB :', txErr);
+        if (onDone) onDone(false);
+      }
+    });
   }
 
-  function checkBackupAge() {
-    var last = getLastBackupDate();
-    if (!last) return true;
-    var diffMs   = Date.now() - last.getTime();
-    var diffDays = diffMs / (1000 * 60 * 60 * 24);
-    return diffDays > CONFIG.ALERT_DAYS;
+  /** Restaure depuis IndexedDB vers localStorage */
+  function restoreFromIDB(onDone) {
+    _openIDB(function (err, db) {
+      if (err || !db) { if (onDone) onDone(false); return; }
+      try {
+        var tx    = db.transaction(CONFIG.IDB_STORE, 'readonly');
+        var store = tx.objectStore(CONFIG.IDB_STORE);
+        var getReq = store.get(CONFIG.IDB_RECORD_KEY);
+
+        getReq.onsuccess = function (e) {
+          var record = e.target.result;
+          if (!record || !record.data) { if (onDone) onDone(false); return; }
+
+          var data = record.data;
+          var keys = Object.keys(data).length;
+          var ok   = global.confirm(
+            'Restaurer ' + keys + ' entrée(s) depuis la sauvegarde temporaire ?\n(' + _formatDate(new Date(record.savedAt)) + ')\n\nLes données actuelles seront remplacées.'
+          );
+          if (!ok) { if (onDone) onDone(false); return; }
+
+          localStorage.clear();
+          Object.keys(data).forEach(function (k) {
+            try { localStorage.setItem(k, data[k]); } catch (e) {}
+          });
+
+          showToast('✓ Données restaurées — rechargement…');
+          setTimeout(function () { global.location.reload(); }, 900);
+          if (onDone) onDone(true);
+        };
+        getReq.onerror = function () { if (onDone) onDone(false); };
+      } catch (e) { if (onDone) onDone(false); }
+    });
   }
 
   /* ─────────────────────────────────────────────
-     3. TOAST — feedback discret
+     3. EXPORT FICHIER — backup-app.json (manuel)
+  ───────────────────────────────────────────── */
+  function exportToFile() {
+    try {
+      var data = {};
+      for (var i = 0; i < localStorage.length; i++) {
+        var key = localStorage.key(i);
+        if (key !== CONFIG.BACKUP_FILE_KEY && key !== CONFIG.BACKUP_IDB_KEY) {
+          data[key] = localStorage.getItem(key);
+        }
+      }
+
+      var json = JSON.stringify(data, null, 2);
+      var blob = new Blob([json], { type: 'application/json' });
+      var url  = URL.createObjectURL(blob);
+      var a    = document.createElement('a');
+      a.href     = url;
+      a.download = CONFIG.FILENAME;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function () {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 1500);
+
+      /* Mémorise la date du dernier export fichier */
+      localStorage.setItem(CONFIG.BACKUP_FILE_KEY, new Date().toISOString());
+      refreshIndicatorState();
+      showToast('✓ Backup téléchargé');
+
+    } catch (err) {
+      console.error('[StorageManager] Erreur export fichier :', err);
+      showToast('Erreur lors de l\'export', true);
+    }
+  }
+
+  /* ─────────────────────────────────────────────
+     4. IMPORT FICHIER
+  ───────────────────────────────────────────── */
+  function importFromFile() {
+    var fi = document.getElementById(CONFIG.FILE_INPUT_ID);
+    if (fi) fi.click();
+  }
+
+  function _handleFileImport(event) {
+    var file = event.target.files && event.target.files[0];
+    if (!file) return;
+    event.target.value = '';
+
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      try {
+        var raw     = e.target.result;
+        var cleaned = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+        var data    = JSON.parse(cleaned);
+        if (typeof data !== 'object' || data === null) throw new Error('Format invalide');
+
+        var keys = Object.keys(data).length;
+        var ok   = global.confirm('Restaurer ' + keys + ' entrée(s) depuis le backup ?\n\nLes données actuelles seront remplacées.');
+        if (!ok) return;
+
+        localStorage.clear();
+        Object.keys(data).forEach(function (k) {
+          try { localStorage.setItem(k, data[k]); } catch (e) {}
+        });
+
+        showToast('✓ Données restaurées — rechargement…');
+        setTimeout(function () { global.location.reload(); }, 900);
+
+      } catch (err) {
+        console.error('[StorageManager] Erreur import :', err);
+        showToast('Fichier invalide ou corrompu', true);
+      }
+    };
+    reader.onerror = function () { showToast('Impossible de lire le fichier', true); };
+    reader.readAsText(file);
+  }
+
+  /* ─────────────────────────────────────────────
+     4b. PARTAGE — Web Share API (menu natif Android)
+  ───────────────────────────────────────────── */
+  function shareBackup() {
+    try {
+      var data = {};
+      for (var i = 0; i < localStorage.length; i++) {
+        var key = localStorage.key(i);
+        if (key !== CONFIG.BACKUP_FILE_KEY && key !== CONFIG.BACKUP_IDB_KEY) {
+          data[key] = localStorage.getItem(key);
+        }
+      }
+
+      var json = JSON.stringify(data, null, 2);
+      var blob = new Blob([json], { type: 'application/json' });
+      var file = new File([blob], CONFIG.FILENAME, { type: 'application/json' });
+
+      /* Web Share API niveau 2 — partage de fichier natif Android */
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({
+          title   : 'Backup application',
+          text    : 'Sauvegarde des données — ' + _formatDate(new Date()),
+          files   : [file]
+        }).then(function () {
+          showToast('✓ Backup partagé');
+        }).catch(function (err) {
+          /* Annulation volontaire de l'utilisateur — pas d'erreur affichée */
+          if (err.name !== 'AbortError') {
+            showToast('Erreur lors du partage', true);
+          }
+        });
+
+      /* Fallback : Web Share API niveau 1 (sans fichier) */
+      } else if (navigator.share) {
+        navigator.share({
+          title : 'Backup application',
+          text  : json
+        }).catch(function (err) {
+          if (err.name !== 'AbortError') showToast('Erreur lors du partage', true);
+        });
+
+      /* Fallback navigateur desktop : copie dans le presse-papier */
+      } else if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(json).then(function () {
+          showToast('✓ Backup copié dans le presse-papier');
+        }).catch(function () {
+          showToast('Partage non supporté sur cet appareil', true);
+        });
+
+      } else {
+        showToast('Partage non supporté sur cet appareil', true);
+      }
+
+    } catch (err) {
+      console.error('[StorageManager] Erreur partage :', err);
+      showToast('Erreur lors du partage', true);
+    }
+  }
+
+  /* ─────────────────────────────────────────────
+     5. LOGIQUE SAUVEGARDE AUTOMATIQUE (IDB)
+     - clics       → tous les 50 clics
+     - favs        → ignoré
+     - tout le reste → immédiat dans IDB
+  ───────────────────────────────────────────── */
+  function handleAutoSave(key) {
+    if (key === 'favs')                 return;
+    if (key === CONFIG.BACKUP_FILE_KEY) return;
+    if (key === CONFIG.BACKUP_IDB_KEY)  return;
+
+    if (key === 'clics') {
+      _clicsSinceBackup++;
+      if (_clicsSinceBackup >= CONFIG.CLIC_THRESHOLD) {
+        _clicsSinceBackup = 0;
+        saveToIDB();
+      }
+      return;
+    }
+
+    /* customTools, données -Lines, mode, favOnly, etc. → immédiat */
+    saveToIDB();
+  }
+
+  /* ─────────────────────────────────────────────
+     6. CALCUL TAILLE localStorage
+  ───────────────────────────────────────────── */
+  function _getLocalStorageSize() {
+    var total = 0;
+    for (var i = 0; i < localStorage.length; i++) {
+      var key = localStorage.key(i);
+      if (key !== CONFIG.BACKUP_FILE_KEY && key !== CONFIG.BACKUP_IDB_KEY) {
+        total += (localStorage.getItem(key) || '').length;
+      }
+    }
+    return total;
+  }
+
+  /* ─────────────────────────────────────────────
+     7. TOAST
   ───────────────────────────────────────────── */
   function showToast(message, isError) {
     var toast = document.getElementById(CONFIG.TOAST_ID);
     if (!toast) return;
-    toast.textContent = message;
+    toast.textContent      = message;
     toast.style.background = isError ? '#ff4b4b' : '#32a852';
     toast.style.display    = 'block';
     toast.style.opacity    = '1';
@@ -998,12 +1267,12 @@ function renderMultiviewGrid() {
   }
 
   /* ─────────────────────────────────────────────
-     4. UI — Indicateur flottant discret
+     8. UI — Indicateur flottant
   ───────────────────────────────────────────── */
   function createUIIndicator() {
     if (document.getElementById(CONFIG.INDICATOR_ID)) return;
 
-    /* Toast — réutilise #mvToast existant ou en crée un nouveau */
+    /* Toast */
     var existingToast = document.getElementById('mvToast');
     if (!existingToast) {
       var toast = document.createElement('div');
@@ -1023,10 +1292,9 @@ function renderMultiviewGrid() {
       existingToast.id = CONFIG.TOAST_ID;
     }
 
-    /* Input file caché pour l'import */
+    /* Input file caché */
     var fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = '.json';
+    fileInput.type = 'file'; fileInput.accept = '.json';
     fileInput.id = CONFIG.FILE_INPUT_ID;
     fileInput.style.display = 'none';
     fileInput.addEventListener('change', _handleFileImport);
@@ -1042,25 +1310,24 @@ function renderMultiviewGrid() {
       userSelect: 'none', WebkitUserSelect: 'none'
     });
 
-    /* Bouton principal */
+    /* Bouton ☁️ */
     var mainBtn = document.createElement('button');
     mainBtn.id = '__sm_main_btn__';
-    mainBtn.textContent = '☁️';
-    mainBtn.title = 'Gérer les sauvegardes';
     mainBtn.setAttribute('aria-label', 'Gestionnaire de sauvegarde');
     _applyStyles(mainBtn, {
       width: '44px', height: '44px', borderRadius: '14px',
       border: '1.5px solid rgba(255,255,255,0.15)',
       background: 'rgba(30,30,50,0.85)', color: 'white',
-      fontSize: '22px', cursor: 'pointer', display: 'flex',
-      alignItems: 'center', justifyContent: 'center',
+      fontSize: '20px', cursor: 'pointer',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
       boxShadow: '0 4px 16px rgba(0,0,0,0.35)',
       backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
-      transition: 'transform 0.15s ease, box-shadow 0.15s ease',
-      outline: 'none', padding: '0', lineHeight: '1', position: 'relative'
+      transition: 'transform 0.15s ease',
+      outline: 'none', padding: '0', position: 'relative'
     });
+    mainBtn.textContent = '☁️';
 
-    /* Pastille d'état */
+    /* Pastille d'état globale */
     var dot = document.createElement('span');
     dot.id = '__sm_dot__';
     _applyStyles(dot, {
@@ -1071,51 +1338,169 @@ function renderMultiviewGrid() {
     });
     mainBtn.appendChild(dot);
 
-    /* Panel d'actions */
+    /* Panel */
     var panel = document.createElement('div');
     panel.id = '__sm_panel__';
     _applyStyles(panel, {
-      display: 'none', flexDirection: 'column', gap: '8px',
-      background: 'rgba(23,23,40,0.96)',
+      display: 'none', flexDirection: 'column', gap: '10px',
+      background: 'rgba(23,23,40,0.97)',
       border: '1px solid rgba(255,255,255,0.12)',
-      borderRadius: '18px', padding: '14px',
+      borderRadius: '20px', padding: '16px',
       boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
       backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-      minWidth: '210px'
+      minWidth: '230px'
     });
 
     /* Titre panel */
     var panelTitle = document.createElement('div');
-    panelTitle.textContent = '💾 Sauvegardes';
+    panelTitle.textContent = '☁️ Sauvegardes';
     _applyStyles(panelTitle, {
-      fontSize: '11px', fontWeight: '800', textTransform: 'uppercase',
-      letterSpacing: '0.8px', opacity: '0.6', color: 'white',
-      marginBottom: '2px', fontFamily: 'inherit'
+      fontSize: '12px', fontWeight: '800', textTransform: 'uppercase',
+      letterSpacing: '0.8px', opacity: '0.7', color: 'white',
+      fontFamily: 'inherit', marginBottom: '2px'
     });
     panel.appendChild(panelTitle);
 
-    /* Label dernière sauvegarde */
-    var lastBackupLabel = document.createElement('div');
-    lastBackupLabel.id = '__sm_last_label__';
-    _applyStyles(lastBackupLabel, {
-      fontSize: '10px', opacity: '0.45', color: 'white',
-      fontFamily: 'inherit', marginBottom: '4px'
+    /* ── Bloc Sauvegarde temporaire (IDB) ── */
+    var idbBlock = document.createElement('div');
+    idbBlock.id = '__sm_idb_block__';
+    _applyStyles(idbBlock, {
+      padding: '10px 12px', borderRadius: '12px',
+      background: 'rgba(255,255,255,0.05)',
+      border: '1px solid rgba(255,255,255,0.08)'
     });
-    panel.appendChild(lastBackupLabel);
 
-    /* Bouton Export */
-    var exportBtn = _createPanelButton('⬇️ Créer une copie de sécurité', '#3a3abf', function () {
-      exportLocalStorage();
+    var idbRow = document.createElement('div');
+    _applyStyles(idbRow, { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px' });
+
+    var idbDot = document.createElement('span');
+    idbDot.id = '__sm_idb_dot__';
+    _applyStyles(idbDot, {
+      width: '8px', height: '8px', borderRadius: '50%',
+      background: '#32a852', flexShrink: '0',
+      transition: 'background 0.3s ease'
+    });
+
+    var idbTitle = document.createElement('span');
+    idbTitle.textContent = '⚡ Sauvegarde temporaire';
+    _applyStyles(idbTitle, {
+      fontSize: '11px', fontWeight: '700', color: 'white', fontFamily: 'inherit'
+    });
+
+    idbRow.appendChild(idbDot);
+    idbRow.appendChild(idbTitle);
+
+    var idbDate = document.createElement('div');
+    idbDate.id = '__sm_idb_date__';
+    _applyStyles(idbDate, {
+      fontSize: '10px', opacity: '0.5', color: 'white',
+      fontFamily: 'inherit', paddingLeft: '16px'
+    });
+
+    idbBlock.appendChild(idbRow);
+    idbBlock.appendChild(idbDate);
+
+    /* Bouton restaurer depuis IDB */
+    var restoreIdbBtn = _createPanelButton('↩️ Restaurer cette sauvegarde', 'rgba(255,255,255,0.08)', function () {
+      restoreFromIDB();
+      togglePanel(false);
+    });
+    restoreIdbBtn.style.fontSize   = '11px';
+    restoreIdbBtn.style.padding    = '8px 12px';
+    restoreIdbBtn.style.marginTop  = '6px';
+    restoreIdbBtn.style.borderRadius = '10px';
+    idbBlock.appendChild(restoreIdbBtn);
+    panel.appendChild(idbBlock);
+
+    /* ── Bloc Backup fichier ── */
+    var fileBlock = document.createElement('div');
+    fileBlock.id = '__sm_file_block__';
+    _applyStyles(fileBlock, {
+      padding: '10px 12px', borderRadius: '12px',
+      background: 'rgba(255,255,255,0.05)',
+      border: '1px solid rgba(255,255,255,0.08)'
+    });
+
+    var fileRow = document.createElement('div');
+    _applyStyles(fileRow, { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px' });
+
+    var fileDot = document.createElement('span');
+    fileDot.id = '__sm_file_dot__';
+    _applyStyles(fileDot, {
+      width: '8px', height: '8px', borderRadius: '50%',
+      background: '#ff8c00', flexShrink: '0',
+      transition: 'background 0.3s ease'
+    });
+
+    var fileTitle = document.createElement('span');
+    fileTitle.textContent = '📁 Backup fichier';
+    _applyStyles(fileTitle, {
+      fontSize: '11px', fontWeight: '700', color: 'white', fontFamily: 'inherit'
+    });
+
+    fileRow.appendChild(fileDot);
+    fileRow.appendChild(fileTitle);
+
+    var fileDate = document.createElement('div');
+    fileDate.id = '__sm_file_date__';
+    _applyStyles(fileDate, {
+      fontSize: '10px', opacity: '0.5', color: 'white',
+      fontFamily: 'inherit', paddingLeft: '16px'
+    });
+
+    fileBlock.appendChild(fileRow);
+    fileBlock.appendChild(fileDate);
+
+    /* Ligne de boutons Restaurer + Envoyer dans le bloc fichier */
+    var fileBtnRow = document.createElement('div');
+    _applyStyles(fileBtnRow, { display: 'flex', gap: '6px', marginTop: '8px' });
+
+    /* Bouton Restaurer */
+    var restoreFileBtn = document.createElement('button');
+    restoreFileBtn.textContent = '\u21a9\ufe0f Restaurer';
+    _applyStyles(restoreFileBtn, {
+      flex: '1', padding: '9px 8px', border: 'none',
+      borderRadius: '10px', background: 'rgba(58,58,191,0.7)',
+      color: 'white', fontSize: '11px', fontWeight: '700',
+      cursor: 'pointer', fontFamily: 'inherit',
+      WebkitTapHighlightColor: 'transparent', outline: 'none',
+      transition: 'opacity 0.15s ease'
+    });
+    restoreFileBtn.addEventListener('click', function () { importFromFile(); togglePanel(false); });
+    restoreFileBtn.addEventListener('touchstart', function () { restoreFileBtn.style.opacity = '0.7'; }, { passive: true });
+    restoreFileBtn.addEventListener('touchend',   function () { restoreFileBtn.style.opacity = '1';   }, { passive: true });
+
+    /* Bouton Envoyer (Web Share API — menu natif Android) */
+    var shareFileBtn = document.createElement('button');
+    shareFileBtn.textContent = '\ud83d\udce4 Envoyer';
+    _applyStyles(shareFileBtn, {
+      flex: '1', padding: '9px 8px', border: 'none',
+      borderRadius: '10px', background: 'rgba(45,138,78,0.7)',
+      color: 'white', fontSize: '11px', fontWeight: '700',
+      cursor: 'pointer', fontFamily: 'inherit',
+      WebkitTapHighlightColor: 'transparent', outline: 'none',
+      transition: 'opacity 0.15s ease'
+    });
+    shareFileBtn.addEventListener('click', function () { shareBackup(); togglePanel(false); });
+    shareFileBtn.addEventListener('touchstart', function () { shareFileBtn.style.opacity = '0.7'; }, { passive: true });
+    shareFileBtn.addEventListener('touchend',   function () { shareFileBtn.style.opacity = '1';   }, { passive: true });
+
+    fileBtnRow.appendChild(restoreFileBtn);
+    fileBtnRow.appendChild(shareFileBtn);
+    fileBlock.appendChild(fileBtnRow);
+    panel.appendChild(fileBlock);
+
+    /* Séparateur */
+    var sep = document.createElement('div');
+    _applyStyles(sep, { height: '1px', background: 'rgba(255,255,255,0.08)', margin: '2px 0' });
+    panel.appendChild(sep);
+
+    /* Bouton export manuel */
+    var exportBtn = _createPanelButton('\u2b07\ufe0f Créer un backup maintenant', '#3a3abf', function () {
+      exportToFile();
       togglePanel(false);
     });
     panel.appendChild(exportBtn);
-
-    /* Bouton Import */
-    var importBtn = _createPanelButton('📂 Charger une sauvegarde', '#2d8a4e', function () {
-      document.getElementById(CONFIG.FILE_INPUT_ID).click();
-      togglePanel(false);
-    });
-    panel.appendChild(importBtn);
 
     /* Toggle panel */
     mainBtn.addEventListener('click', function (e) {
@@ -1123,11 +1508,9 @@ function renderMultiviewGrid() {
       var isOpen = panel.style.display === 'flex';
       togglePanel(!isOpen);
     });
-
     document.addEventListener('click', function (e) {
       if (!indicator.contains(e.target)) togglePanel(false);
     });
-
     mainBtn.addEventListener('touchstart', function () {
       mainBtn.style.transform = 'scale(0.93)';
     }, { passive: true });
@@ -1143,113 +1526,54 @@ function renderMultiviewGrid() {
 
     function togglePanel(open) {
       panel.style.display = open ? 'flex' : 'none';
-      if (open) _updateLastBackupLabel(lastBackupLabel);
+      if (open) _updatePanelDates();
     }
   }
 
+  /* Met à jour les dates affichées dans le panel */
+  function _updatePanelDates() {
+    var idbDate  = document.getElementById('__sm_idb_date__');
+    var fileDate = document.getElementById('__sm_file_date__');
+
+    if (idbDate) {
+      var idbRaw = localStorage.getItem(CONFIG.BACKUP_IDB_KEY);
+      idbDate.textContent = idbRaw ? _timeAgo(new Date(idbRaw)) : 'Aucune sauvegarde';
+    }
+    if (fileDate) {
+      var fileRaw = localStorage.getItem(CONFIG.BACKUP_FILE_KEY);
+      fileDate.textContent = fileRaw ? _formatDate(new Date(fileRaw)) : 'Aucun backup fichier';
+    }
+  }
+
+  /* Met à jour les pastilles colorées */
   function refreshIndicatorState() {
+    /* Pastille IDB */
+    var idbDot  = document.getElementById('__sm_idb_dot__');
+    var idbRaw  = localStorage.getItem(CONFIG.BACKUP_IDB_KEY);
+    if (idbDot) idbDot.style.background = idbRaw ? '#32a852' : '#ff8c00';
+
+    /* Pastille fichier — orange si localStorage > 30 chars et pas encore de backup fichier */
+    var fileDot = document.getElementById('__sm_file_dot__');
+    var fileRaw = localStorage.getItem(CONFIG.BACKUP_FILE_KEY);
+    if (fileDot) {
+      var size       = _getLocalStorageSize();
+      var needsAlert = size > CONFIG.MIN_CHARS && !fileRaw;
+      fileDot.style.background = needsAlert ? '#ff8c00' : (fileRaw ? '#32a852' : '#888');
+    }
+
+    /* Pastille globale du bouton ☁️ */
     var dot = document.getElementById('__sm_dot__');
-    if (!dot) return;
-    var needsAlert = checkBackupAge();
-    dot.style.background = needsAlert ? '#ff8c00' : '#32a852';
-  }
-
-  function _updateLastBackupLabel(el) {
-    var last = getLastBackupDate();
-    el.textContent = last
-      ? 'Dernière : ' + _formatDate(last)
-      : 'Aucune sauvegarde enregistrée';
-  }
-
-  /* ─────────────────────────────────────────────
-     5. EXPORT
-  ───────────────────────────────────────────── */
-  function exportLocalStorage() {
-    try {
-      var data = {};
-      for (var i = 0; i < localStorage.length; i++) {
-        var key = localStorage.key(i);
-        if (key !== CONFIG.BACKUP_KEY) {
-          data[key] = localStorage.getItem(key);
-        }
-      }
-
-      var json     = JSON.stringify(data, null, 2);
-      var blob     = new Blob([json], { type: 'application/json' });
-      var filename = 'backup-app-' + _isoDate() + '.json';
-      var url      = URL.createObjectURL(blob);
-      var a        = document.createElement('a');
-      a.href     = url;
-      a.download = filename;
-      a.style.display = 'none';
-      document.body.appendChild(a);
-      a.click();
-
-      setTimeout(function () {
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      }, 1500);
-
-      setLastBackupDate();
-      refreshIndicatorState();
-      showToast('✓ Sauvegarde téléchargée');
-
-    } catch (err) {
-      console.error('[StorageManager] Erreur export :', err);
-      showToast('Erreur lors de l\'export', true);
+    if (dot) {
+      var globalAlert = !idbRaw || (_getLocalStorageSize() > CONFIG.MIN_CHARS && !fileRaw);
+      dot.style.background = globalAlert ? '#ff8c00' : '#32a852';
     }
   }
 
   /* ─────────────────────────────────────────────
-     6. IMPORT
-  ───────────────────────────────────────────── */
-  function importLocalStorage() {
-    var fi = document.getElementById(CONFIG.FILE_INPUT_ID);
-    if (fi) fi.click();
-  }
-
-  function _handleFileImport(event) {
-    var file = event.target.files && event.target.files[0];
-    if (!file) return;
-    event.target.value = '';
-
-    var reader = new FileReader();
-    reader.onload = function (e) {
-      try {
-        var raw     = e.target.result;
-        var cleaned = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-        var data    = JSON.parse(cleaned);
-
-        if (typeof data !== 'object' || data === null) throw new Error('Format invalide');
-
-        var keys = Object.keys(data).length;
-        var ok   = global.confirm('Restaurer ' + keys + ' entrée(s) depuis la sauvegarde ?\n\nLes données actuelles seront remplacées.');
-        if (!ok) return;
-
-        localStorage.clear();
-        Object.keys(data).forEach(function (key) {
-          try { localStorage.setItem(key, data[key]); }
-          catch (setErr) { console.warn('[StorageManager] Clé ignorée :', key, setErr); }
-        });
-
-        showToast('✓ Données restaurées — rechargement…');
-        setTimeout(function () { global.location.reload(); }, 900);
-
-      } catch (parseErr) {
-        console.error('[StorageManager] Erreur import :', parseErr);
-        showToast('Fichier invalide ou corrompu', true);
-      }
-    };
-
-    reader.onerror = function () { showToast('Impossible de lire le fichier', true); };
-    reader.readAsText(file);
-  }
-
-  /* ─────────────────────────────────────────────
-     UTILITAIRES PRIVÉS
+     UTILITAIRES
   ───────────────────────────────────────────── */
   function _applyStyles(el, styles) {
-    Object.keys(styles).forEach(function (prop) { el.style[prop] = styles[prop]; });
+    Object.keys(styles).forEach(function (p) { el.style[p] = styles[p]; });
   }
 
   function _createPanelButton(label, bgColor, onClick) {
@@ -1269,11 +1593,15 @@ function renderMultiviewGrid() {
     return btn;
   }
 
-  function _isoDate() {
-    var d   = new Date();
-    var m   = d.getMonth() + 1;
-    var day = d.getDate();
-    return d.getFullYear() + '-' + (m < 10 ? '0' + m : m) + '-' + (day < 10 ? '0' + day : day);
+  function _timeAgo(date) {
+    var diffMs   = Date.now() - date.getTime();
+    var diffMins = Math.floor(diffMs / 60000);
+    var diffH    = Math.floor(diffMs / 3600000);
+    var diffD    = Math.floor(diffMs / 86400000);
+    if (diffMins < 1)       return 'à l\'instant';
+    if (diffMins < 60)      return 'il y a ' + diffMins + ' min';
+    if (diffH < 24)         return 'il y a ' + diffH + 'h';
+    return 'il y a ' + diffD + ' jour' + (diffD > 1 ? 's' : '');
   }
 
   function _formatDate(date) {
@@ -1285,50 +1613,61 @@ function renderMultiviewGrid() {
     } catch (e) { return date.toString(); }
   }
 
+  function _getLocalStorageSize() {
+    var total = 0;
+    for (var i = 0; i < localStorage.length; i++) {
+      var key = localStorage.key(i);
+      if (key !== CONFIG.BACKUP_FILE_KEY && key !== CONFIG.BACKUP_IDB_KEY) {
+        total += (localStorage.getItem(key) || '').length;
+      }
+    }
+    return total;
+  }
+
   /* ─────────────────────────────────────────────
-     7. INIT + INTERCEPTION localStorage
+     9. INIT + INTERCEPTION localStorage
   ───────────────────────────────────────────── */
   function init() {
     initStoragePersistence();
     createUIIndicator();
 
-    /* Interception non-intrusive des mutations du localStorage */
     var _orig = {
       setItem   : Storage.prototype.setItem,
       removeItem: Storage.prototype.removeItem,
       clear     : Storage.prototype.clear
     };
 
+    /* Référence interne pour contourner la boucle d'interception sur les clés internes */
+    Storage.prototype._setItem = _orig.setItem;
+
     Storage.prototype.setItem = function (key, value) {
       _orig.setItem.call(this, key, value);
-      if (this === localStorage) _throttledRefresh();
+      if (this === localStorage) handleAutoSave(key);
     };
     Storage.prototype.removeItem = function (key) {
       _orig.removeItem.call(this, key);
-      if (this === localStorage) _throttledRefresh();
+      if (this === localStorage
+          && key !== 'favs'
+          && key !== CONFIG.BACKUP_FILE_KEY
+          && key !== CONFIG.BACKUP_IDB_KEY) {
+        saveToIDB();
+      }
     };
     Storage.prototype.clear = function () {
       _orig.clear.call(this);
-      _throttledRefresh();
     };
-  }
-
-  var _refreshTimer = null;
-  function _throttledRefresh() {
-    clearTimeout(_refreshTimer);
-    _refreshTimer = setTimeout(refreshIndicatorState, 200);
   }
 
   /* API publique */
   global.StorageManager = {
-    init              : init,
-    exportLocalStorage: exportLocalStorage,
-    importLocalStorage: importLocalStorage,
-    checkBackupAge    : checkBackupAge,
-    refreshState      : refreshIndicatorState
+    init           : init,
+    exportToFile   : exportToFile,
+    importFromFile : importFromFile,
+    saveToIDB      : saveToIDB,
+    restoreFromIDB : restoreFromIDB,
+    refreshState   : refreshIndicatorState
   };
 
-  /* Auto-init */
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
