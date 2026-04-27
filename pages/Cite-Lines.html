@@ -23,7 +23,7 @@
       --radius-lg: 8px;
       --transition: 0.2s ease;
     }
- 
+
     [data-theme="dark"] {
       --bg: #16140f;
       --bg-card: #1f1c17;
@@ -36,10 +36,10 @@
       --shadow: 0 2px 16px rgba(0,0,0,0.3);
       --shadow-lg: 0 8px 40px rgba(0,0,0,0.5);
     }
- 
+
     /* ===== RESET & BASE ===== */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
- 
+
     body {
       font-family: 'DM Sans', sans-serif;
       background: var(--bg);
@@ -49,7 +49,7 @@
       line-height: 1.6;
       transition: background var(--transition), color var(--transition);
     }
- 
+
     /* ===== HEADER ===== */
     header {
       background: var(--bg-card);
@@ -64,7 +64,7 @@
       z-index: 100;
       box-shadow: var(--shadow);
     }
- 
+
     .logo {
       font-family: 'Libre Baskerville', serif;
       font-size: 1.1rem;
@@ -74,16 +74,16 @@
       align-items: center;
       gap: 10px;
     }
- 
+
     .logo-dot {
       width: 8px; height: 8px;
       background: var(--accent);
       border-radius: 50%;
       display: inline-block;
     }
- 
+
     .header-actions { display: flex; align-items: center; gap: 12px; }
- 
+
     /* ===== DARK MODE TOGGLE ===== */
     .theme-toggle {
       width: 42px; height: 24px;
@@ -94,7 +94,7 @@
       position: relative;
       transition: background var(--transition);
     }
- 
+
     .theme-toggle::after {
       content: '';
       position: absolute;
@@ -105,16 +105,16 @@
       transition: transform var(--transition), background var(--transition);
       box-shadow: 0 1px 4px rgba(0,0,0,0.2);
     }
- 
+
     [data-theme="dark"] .theme-toggle { background: var(--accent); }
     [data-theme="dark"] .theme-toggle::after { transform: translateX(18px); }
- 
+
     .theme-label {
       font-size: 0.78rem;
       color: var(--ink-muted);
       font-weight: 500;
     }
- 
+
     /* ===== LAYOUT ===== */
     .container {
       max-width: 900px;
@@ -124,7 +124,7 @@
       grid-template-columns: 1fr;
       gap: 2rem;
     }
- 
+
     /* ===== SECTION TITLE ===== */
     .section-title {
       font-family: 'Libre Baskerville', serif;
@@ -133,19 +133,19 @@
       letter-spacing: -0.02em;
       margin-bottom: 0.25rem;
     }
- 
+
     .section-sub {
       font-size: 0.87rem;
       color: var(--ink-muted);
     }
- 
+
     /* ===== TYPE SELECTOR ===== */
     .type-grid {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
     }
- 
+
     .type-btn {
       padding: 7px 16px;
       border: 1.5px solid var(--border);
@@ -159,19 +159,19 @@
       transition: all var(--transition);
       white-space: nowrap;
     }
- 
+
     .type-btn:hover {
       border-color: var(--accent);
       color: var(--accent);
       background: var(--accent-light);
     }
- 
+
     .type-btn.active {
       background: var(--accent);
       border-color: var(--accent);
       color: #fff;
     }
- 
+
     /* ===== CARD ===== */
     .card {
       background: var(--bg-card);
@@ -181,7 +181,7 @@
       box-shadow: var(--shadow);
       transition: background var(--transition), border-color var(--transition);
     }
- 
+
     .card-title {
       font-family: 'Libre Baskerville', serif;
       font-size: 1rem;
@@ -193,29 +193,29 @@
       align-items: center;
       gap: 8px;
     }
- 
+
     .card-title-icon {
       width: 6px; height: 6px;
       background: var(--accent);
       border-radius: 50%;
       flex-shrink: 0;
     }
- 
+
     /* ===== FORM ===== */
     .form-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
       gap: 16px;
     }
- 
+
     .form-group {
       display: flex;
       flex-direction: column;
       gap: 5px;
     }
- 
+
     .form-group.full { grid-column: 1 / -1; }
- 
+
     label {
       font-size: 0.78rem;
       font-weight: 600;
@@ -223,12 +223,12 @@
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
- 
+
     label .req {
       color: var(--accent);
       margin-left: 2px;
     }
- 
+
     label .opt {
       font-weight: 400;
       color: var(--ink-light);
@@ -237,7 +237,7 @@
       font-size: 0.75rem;
       margin-left: 4px;
     }
- 
+
     input, select, textarea {
       padding: 9px 12px;
       border: 1.5px solid var(--border);
@@ -250,32 +250,32 @@
       outline: none;
       width: 100%;
     }
- 
+
     input:focus, select:focus, textarea:focus {
       border-color: var(--accent);
       background: var(--bg-card);
     }
- 
+
     input.error, select.error { border-color: #e74c3c; }
- 
+
     textarea { resize: vertical; min-height: 70px; }
- 
+
     select { cursor: pointer; }
- 
+
     .field-hint {
       font-size: 0.74rem;
       color: var(--ink-light);
       font-style: italic;
     }
- 
+
     .error-msg {
       font-size: 0.74rem;
       color: #e74c3c;
       display: none;
     }
- 
+
     .error-msg.visible { display: block; }
- 
+
     /* ===== ACTIONS ===== */
     .form-actions {
       display: flex;
@@ -284,7 +284,7 @@
       margin-top: 1.5rem;
       align-items: center;
     }
- 
+
     .btn {
       padding: 10px 22px;
       border-radius: var(--radius);
@@ -298,22 +298,22 @@
       align-items: center;
       gap: 7px;
     }
- 
+
     .btn-primary {
       background: var(--accent);
       color: #fff;
     }
- 
+
     .btn-primary:hover { background: #a93226; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(192,57,43,0.3); }
- 
+
     .btn-secondary {
       background: transparent;
       color: var(--ink-muted);
       border: 1.5px solid var(--border);
     }
- 
+
     .btn-secondary:hover { border-color: var(--ink-muted); color: var(--ink); }
- 
+
     /* ===== RESULT ===== */
     .result-box {
       background: var(--bg);
@@ -328,40 +328,40 @@
       transition: background var(--transition);
       word-break: break-word;
     }
- 
+
     .result-box.has-content {
       border-style: solid;
       border-color: var(--accent);
       background: var(--accent-light);
     }
- 
+
     [data-theme="dark"] .result-box.has-content {
       background: #2a1210;
     }
- 
+
     .result-placeholder {
       color: var(--ink-light);
       font-family: 'DM Sans', sans-serif;
       font-style: italic;
       font-size: 0.88rem;
     }
- 
+
     .result-actions {
       display: flex;
       gap: 8px;
       margin-top: 10px;
       flex-wrap: wrap;
     }
- 
+
     .btn-copy {
       background: var(--ink);
       color: var(--bg-card);
       font-size: 0.82rem;
       padding: 7px 16px;
     }
- 
+
     .btn-copy:hover { opacity: 0.85; }
- 
+
     .btn-save {
       background: transparent;
       border: 1.5px solid var(--border);
@@ -369,9 +369,9 @@
       font-size: 0.82rem;
       padding: 7px 16px;
     }
- 
+
     .btn-save:hover { border-color: var(--accent); color: var(--accent); }
- 
+
     .copy-confirm {
       font-size: 0.8rem;
       color: #27ae60;
@@ -380,9 +380,9 @@
       align-items: center;
       gap: 4px;
     }
- 
+
     .copy-confirm.show { display: flex; }
- 
+
     /* ===== HISTORY ===== */
     .history-header {
       display: flex;
@@ -390,7 +390,7 @@
       justify-content: space-between;
       margin-bottom: 1rem;
     }
- 
+
     .history-count {
       font-size: 0.8rem;
       background: var(--accent);
@@ -399,7 +399,7 @@
       padding: 2px 9px;
       font-weight: 600;
     }
- 
+
     .history-empty {
       color: var(--ink-light);
       font-style: italic;
@@ -407,7 +407,7 @@
       text-align: center;
       padding: 1.5rem 0;
     }
- 
+
     .history-list {
       display: flex;
       flex-direction: column;
@@ -415,7 +415,7 @@
       max-height: 400px;
       overflow-y: auto;
     }
- 
+
     .history-item {
       background: var(--bg);
       border: 1px solid var(--border);
@@ -426,14 +426,14 @@
       gap: 10px;
       transition: border-color var(--transition);
     }
- 
+
     .history-item:hover { border-color: var(--accent); }
- 
+
     .history-item-content {
       flex: 1;
       min-width: 0;
     }
- 
+
     .history-type {
       font-size: 0.7rem;
       font-weight: 700;
@@ -442,7 +442,7 @@
       color: var(--accent);
       margin-bottom: 3px;
     }
- 
+
     .history-text {
       font-family: 'Libre Baskerville', serif;
       font-size: 0.82rem;
@@ -453,15 +453,15 @@
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
     }
- 
+
     .history-date {
       font-size: 0.72rem;
       color: var(--ink-light);
       margin-top: 3px;
     }
- 
+
     .history-actions { display: flex; gap: 4px; flex-shrink: 0; }
- 
+
     .btn-icon {
       width: 28px; height: 28px;
       border: none;
@@ -475,16 +475,16 @@
       transition: background var(--transition);
       color: var(--ink-muted);
     }
- 
+
     .btn-icon:hover { background: var(--border); color: var(--ink); }
- 
+
     .btn-icon.danger:hover { background: #fde8e8; color: #e74c3c; }
- 
+
     /* ===== SCROLLBAR ===== */
     .history-list::-webkit-scrollbar { width: 4px; }
     .history-list::-webkit-scrollbar-track { background: transparent; }
     .history-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
- 
+
     /* ===== TOAST ===== */
     .toast {
       position: fixed;
@@ -502,9 +502,9 @@
       pointer-events: none;
       z-index: 200;
     }
- 
+
     .toast.show { opacity: 1; transform: translateY(0); }
- 
+
     /* ===== RESPONSIVE ===== */
     @media (max-width: 600px) {
       .form-grid { grid-template-columns: 1fr; }
@@ -514,7 +514,7 @@
   </style>
 </head>
 <body>
- 
+
 <!-- HEADER -->
 <header>
   <div class="logo">
@@ -526,17 +526,17 @@
     <button class="theme-toggle" id="theme-toggle" aria-label="Basculer le thème" title="Mode sombre"></button>
   </div>
 </header>
- 
+
 <!-- MAIN -->
 <div class="container">
- 
+
   <!-- TYPE SELECTOR -->
   <div>
     <p class="section-title">Générateur de citations</p>
     <p class="section-sub" style="margin-bottom:1rem;">Sélectionnez le type de source à citer</p>
     <div class="type-grid" id="type-grid"></div>
   </div>
- 
+
   <!-- FORM CARD -->
   <div class="card" id="form-card">
     <div class="card-title">
@@ -545,7 +545,7 @@
     </div>
     <div id="dynamic-form"></div>
   </div>
- 
+
   <!-- RESULT CARD -->
   <div class="card">
     <div class="card-title">
@@ -565,7 +565,7 @@
       <span class="copy-confirm" id="copy-confirm">✓ Copié !</span>
     </div>
   </div>
- 
+
   <!-- HISTORY CARD -->
   <div class="card">
     <div class="history-header">
@@ -580,12 +580,12 @@
       <p class="history-empty">Aucune citation sauvegardée.</p>
     </div>
   </div>
- 
+
 </div>
- 
+
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
- 
+
 <script>
 /* ========================================================
    MODÈLES DE FORMULAIRES PAR TYPE
@@ -595,6 +595,7 @@ const TYPES = {
     label: 'Ouvrage',
     icon: '📖',
     fields: [
+      { id: 'isbn', label: 'ISBN', required: false, full: true, hint: 'ex: 9782070368228 — saisir ou scanner pour auto-remplir' },
       { id: 'prenoms', label: 'Prénom(s)', required: true, hint: 'ex: Jean-Paul' },
       { id: 'noms', label: 'Nom(s)', required: true, hint: 'ex: Sartre' },
       { id: 'titre', label: 'Titre', required: true, full: true },
@@ -709,11 +710,11 @@ const TYPES = {
     ]
   }
 };
- 
+
 /* ========================================================
    UTILS
    ======================================================== */
- 
+
 /** Formate une date ISO YYYY-MM-DD en "JJ mois AAAA" en français */
 function formatDateFR(dateStr) {
   if (!dateStr) return '';
@@ -721,25 +722,25 @@ function formatDateFR(dateStr) {
   const [y, m, d] = dateStr.split('-');
   return `${parseInt(d)} ${MOIS[parseInt(m)-1]} ${y}`;
 }
- 
+
 /** Formate les secondes/minutes en "00 min. 00 sec." */
 function formatDuration(min, sec) {
   const m = String(parseInt(min)||0).padStart(2,'0');
   const s = String(parseInt(sec)||0).padStart(2,'0');
   return `${m} min. ${s} sec.`;
 }
- 
+
 /** Retourne aujourd'hui en français */
 function todayFR() {
   return formatDateFR(new Date().toISOString().split('T')[0]);
 }
- 
+
 /** Lire la valeur d'un champ du formulaire */
 function v(id) {
   const el = document.getElementById('f_'+id);
   return el ? el.value.trim() : '';
 }
- 
+
 /* ========================================================
    GÉNÉRATEURS DE CITATIONS
    ======================================================== */
@@ -812,14 +813,14 @@ const GENERATORS = {
     return c;
   }
 };
- 
+
 /* ========================================================
    ÉTAT GLOBAL
    ======================================================== */
 let currentType = null;
 let currentCitation = '';
 let history = JSON.parse(localStorage.getItem('citatio_history') || '[]');
- 
+
 /* ========================================================
    RENDU DU FORMULAIRE
    ======================================================== */
@@ -835,7 +836,7 @@ function renderTypeButtons() {
     grid.appendChild(btn);
   });
 }
- 
+
 function selectType(key) {
   currentType = key;
   document.querySelectorAll('.type-btn').forEach(b => b.classList.toggle('active', b.dataset.type === key));
@@ -844,24 +845,24 @@ function selectType(key) {
   // Reset result
   setResult('');
 }
- 
+
 function renderForm(key) {
   const fields = TYPES[key].fields;
   const container = document.getElementById('dynamic-form');
   container.innerHTML = '';
- 
+
   const grid = document.createElement('div');
   grid.className = 'form-grid';
- 
+
   fields.forEach(f => {
     const group = document.createElement('div');
     group.className = `form-group${f.full ? ' full' : ''}`;
- 
+
     const label = document.createElement('label');
     label.htmlFor = 'f_' + f.id;
     label.innerHTML = f.label + (f.required ? '<span class="req">*</span>' : '<span class="opt">(optionnel)</span>');
     group.appendChild(label);
- 
+
     let input;
     if (f.type === 'select') {
       input = document.createElement('select');
@@ -878,29 +879,29 @@ function renderForm(key) {
       input.type = f.type || 'text';
       if (f.hint) input.placeholder = f.hint;
     }
- 
+
     input.id = 'f_' + f.id;
     input.required = !!f.required;
     group.appendChild(input);
- 
+
     if (f.hint && f.type !== 'select' && !input.placeholder) {
       const hint = document.createElement('span');
       hint.className = 'field-hint';
       hint.textContent = f.hint;
       group.appendChild(hint);
     }
- 
+
     const errMsg = document.createElement('span');
     errMsg.className = 'error-msg';
     errMsg.id = 'err_' + f.id;
     errMsg.textContent = 'Ce champ est requis.';
     group.appendChild(errMsg);
- 
+
     grid.appendChild(group);
   });
- 
+
   container.appendChild(grid);
- 
+
   // Actions
   const actions = document.createElement('div');
   actions.className = 'form-actions';
@@ -910,7 +911,7 @@ function renderForm(key) {
   `;
   container.appendChild(actions);
 }
- 
+
 /* ========================================================
    GÉNÉRER LA CITATION
    ======================================================== */
@@ -918,7 +919,7 @@ function generateCitation() {
   if (!currentType) return;
   const fields = TYPES[currentType].fields;
   let valid = true;
- 
+
   // Validation
   fields.forEach(f => {
     const el = document.getElementById('f_' + f.id);
@@ -932,21 +933,21 @@ function generateCitation() {
       err.classList.remove('visible');
     }
   });
- 
+
   if (!valid) {
     showToast('⚠ Veuillez remplir les champs obligatoires.');
     return;
   }
- 
+
   // Collecte des données
   const data = {};
   fields.forEach(f => { data[f.id] = v(f.id); });
- 
+
   const html = GENERATORS[currentType](data);
   currentCitation = html;
   setResult(html);
 }
- 
+
 function setResult(html) {
   const box = document.getElementById('result-box');
   const actions = document.getElementById('result-actions');
@@ -961,7 +962,7 @@ function setResult(html) {
     actions.style.display = 'flex';
   }
 }
- 
+
 /* ========================================================
    COPIER / SAUVEGARDER
    ======================================================== */
@@ -977,7 +978,7 @@ function copyCitation() {
     setTimeout(() => conf.classList.remove('show'), 2000);
   });
 }
- 
+
 function saveCitation() {
   if (!currentCitation) return;
   const tmp = document.createElement('div');
@@ -997,7 +998,7 @@ function saveCitation() {
   renderHistory();
   showToast('✓ Citation sauvegardée !');
 }
- 
+
 /* ========================================================
    HISTORIQUE
    ======================================================== */
@@ -1005,12 +1006,12 @@ function renderHistory() {
   const list = document.getElementById('history-list');
   const count = document.getElementById('history-count');
   count.textContent = history.length;
- 
+
   if (!history.length) {
     list.innerHTML = '<p class="history-empty">Aucune citation sauvegardée.</p>';
     return;
   }
- 
+
   list.innerHTML = '';
   history.forEach(item => {
     const el = document.createElement('div');
@@ -1029,19 +1030,19 @@ function renderHistory() {
     list.appendChild(el);
   });
 }
- 
+
 function copyHistoryItem(id) {
   const item = history.find(h => h.id === id);
   if (!item) return;
   navigator.clipboard.writeText(item.text).then(() => showToast('✓ Copié !'));
 }
- 
+
 function deleteHistoryItem(id) {
   history = history.filter(h => h.id !== id);
   localStorage.setItem('citatio_history', JSON.stringify(history));
   renderHistory();
 }
- 
+
 function clearHistory() {
   if (!history.length) return;
   history = [];
@@ -1049,7 +1050,7 @@ function clearHistory() {
   renderHistory();
   showToast('Historique effacé.');
 }
- 
+
 /* ========================================================
    RESET FORMULAIRE
    ======================================================== */
@@ -1063,7 +1064,7 @@ function resetForm() {
   });
   setResult('');
 }
- 
+
 /* ========================================================
    TOAST
    ======================================================== */
@@ -1073,7 +1074,7 @@ function showToast(msg) {
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2500);
 }
- 
+
 /* ========================================================
    DARK MODE
    ======================================================== */
@@ -1083,18 +1084,18 @@ function initTheme() {
   const theme = saved || (prefersDark ? 'dark' : 'light');
   applyTheme(theme);
 }
- 
+
 function applyTheme(theme) {
   document.documentElement.dataset.theme = theme;
   localStorage.setItem('citatio_theme', theme);
   document.getElementById('theme-label').textContent = theme === 'dark' ? 'Mode clair' : 'Mode sombre';
 }
- 
+
 document.getElementById('theme-toggle').addEventListener('click', () => {
   const current = document.documentElement.dataset.theme;
   applyTheme(current === 'dark' ? 'light' : 'dark');
 });
- 
+
 /* ========================================================
    INIT
    ======================================================== */
@@ -1102,7 +1103,620 @@ initTheme();
 renderTypeButtons();
 renderHistory();
 </script>
+
+<!-- ═══════════════════════════════════════════════════════
+     MODULE ISBN — auto-remplissage + scan caméra
+     Autonome, non destructif, encapsulé dans une IIFE
+     ═══════════════════════════════════════════════════════ -->
+<script>
+(function () {
+  'use strict';
+
+  /* ── Champs cibles (préfixe f_ car générés dynamiquement) ───────── */
+  const ISBN_FIELDS = ['titre', 'prenoms', 'noms', 'editeur', 'annee'];
+
+  function getField(id) { return document.getElementById('f_' + id); }
+
+  function fieldsReady() {
+    return getField('isbn') && ISBN_FIELDS.some(id => getField(id));
+  }
+
+  /* ── Debounce ───────────────────────────────────────────────────── */
+  function debounce(fn, delay) {
+    let t;
+    return function (...a) { clearTimeout(t); t = setTimeout(() => fn.apply(this, a), delay); };
+  }
+
+  /* ── Extraire l'année d'une chaîne de date ─────────────────────── */
+  function extractYear(str) {
+    if (!str) return '';
+    const m = str.match(/\d{4}/);
+    return m ? m[0] : '';
+  }
+
+  /* ── Feedback visuel sous le champ ISBN ─────────────────────────── */
+  function setFeedback(msg, type) {
+    const el = document.getElementById('isbn-feedback');
+    if (!el) return;
+    const colors = { info:'var(--ink-muted)', success:'#27ae60', error:'#e74c3c', loading:'#2980b9' };
+    el.textContent = msg;
+    el.style.color = colors[type] || 'var(--ink-muted)';
+    el.style.opacity = '1';
+    if (type !== 'loading') setTimeout(() => { el.style.opacity = '0'; }, 3000);
+  }
+
+  /* ── Écriture sécurisée : ne pas écraser une valeur manuelle ────── */
+  function setField(id, value) {
+    const el = getField(id);
+    if (!el) { console.warn(`[ISBN] champ #f_${id} absent du DOM`); return; }
+    if (!value) { console.warn(`[ISBN] donnée manquante pour #f_${id}`); return; }
+    if (el.value && el.value.trim() !== '') return; // ne pas écraser
+    el.value = value;
+  }
+
+  /* ── Séparation prénom / nom ────────────────────────────────────── */
+  function splitAuthor(fullName) {
+    if (!fullName) return { prenom: '', nom: '' };
+    // Format "Nom, Prénom" (OpenLibrary retourne parfois ce format)
+    if (fullName.includes(',')) {
+      const [nom, prenom] = fullName.split(',').map(s => s.trim());
+      return { prenom: prenom || '', nom: nom || '' };
+    }
+    const parts = fullName.trim().split(/\s+/);
+    if (parts.length === 1) return { prenom: '', nom: parts[0] };
+    return {
+      prenom: parts.slice(0, -1).join(' '),
+      nom:    parts[parts.length - 1]
+    };
+  }
+
+  /* ── Remplir les champs du formulaire ───────────────────────────── */
+  function fillFields(book) {
+    // Titre
+    const title = book.title || '';
+    setField('titre', title);
+
+    // Éditeur — publishers est un tableau d'objets { name } ou de strings
+    const rawPublisher = book.publishers?.[0];
+    const publisher = (typeof rawPublisher === 'object' ? rawPublisher?.name : rawPublisher) || '';
+    setField('editeur', publisher);
+
+    // Ville — publish_places est un tableau d'objets { name } ou de strings
+    const rawPlace = book.publish_places?.[0];
+    const place = (typeof rawPlace === 'object' ? rawPlace?.name : rawPlace) || '';
+    setField('ville', place);
+
+    // Année
+    const year = extractYear(book.publish_date || '');
+    setField('annee', year);
+
+    // Collection — series[0] est une string directe
+    const collection = book.series?.[0] || '';
+    setField('collection', collection);
+
+    // Auteur — priorité : authors[].name > by_statement > appel API
+    const rawAuthorName = book.authors?.[0]?.name || '';
+    const byStmt        = book.by_statement || '';
+    const authorKey     = book.authors?.[0]?.key || '';
+
+    if (rawAuthorName) {
+      const { prenom, nom } = splitAuthor(rawAuthorName);
+      setField('prenoms', prenom);
+      setField('noms',    nom);
+    } else if (byStmt) {
+      const cleaned = byStmt.replace(/^(par|by)\s+/i, '').split(/,|;/)[0].trim();
+      const { prenom, nom } = splitAuthor(cleaned);
+      setField('prenoms', prenom);
+      setField('noms',    nom);
+    } else if (authorKey) {
+      fetchAuthor(authorKey);
+    } else {
+      console.warn('[ISBN] aucun auteur trouvé dans les données OpenLibrary');
+    }
+
+    setFeedback('✓ Champs remplis automatiquement', 'success');
+  }
+
+  function fetchAuthor(key) {
+    fetch(`https://openlibrary.org${key}.json`)
+      .then(r => r.json())
+      .then(a => {
+        const name = a.personal_name || a.name || '';
+        if (!name) { console.warn('[ISBN] auteur introuvable via', key); return; }
+        const { prenom, nom } = splitAuthor(name);
+        setField('prenoms', prenom);
+        setField('noms',    nom);
+      })
+      .catch(err => console.warn('[ISBN] erreur fetchAuthor:', err));
+  }
+
+  /* ── Appel OpenLibrary ──────────────────────────────────────────── */
+  function fetchISBN(isbn) {
+    const clean = isbn.replace(/[^0-9X]/gi, '');
+    if (clean.length !== 10 && clean.length !== 13) return;
+    setFeedback('⏳ Recherche en cours…', 'loading');
+    fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${clean}&format=json&jscmd=data`)
+      .then(r => r.json())
+      .then(data => {
+        const key = `ISBN:${clean}`;
+        data[key] ? fillFields(data[key]) : setFeedback('ISBN introuvable.', 'error');
+      })
+      .catch(() => setFeedback('Erreur réseau.', 'error'));
+  }
+
+  /* ── Scanner ZXing ──────────────────────────────────────────────── */
+  let scannerActive = false, videoStream = null, animFrame = null;
+
+  function loadZXing() {
+    return new Promise((res, rej) => {
+      if (window.ZXing) { res(); return; }
+      const s = document.createElement('script');
+      s.src = 'https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js';
+      s.onload = res; s.onerror = rej;
+      document.head.appendChild(s);
+    });
+  }
+
+  function buildOverlay() {
+    let o = document.getElementById('isbn-scan-overlay');
+    if (o) return o;
+    o = document.createElement('div');
+    o.id = 'isbn-scan-overlay';
+    Object.assign(o.style, {
+      position:'fixed', inset:'0', background:'rgba(0,0,0,0.9)',
+      display:'flex', flexDirection:'column', alignItems:'center',
+      justifyContent:'center', zIndex:'9999', gap:'14px'
+    });
+    const lbl = document.createElement('p');
+    lbl.textContent = '📷 Pointez la caméra vers le code-barres ISBN';
+    Object.assign(lbl.style, { color:'#fff', fontFamily:'inherit', fontSize:'14px', margin:'0' });
+
+    const video = document.createElement('video');
+    video.id = 'isbn-scan-video';
+    Object.assign(video.style, { width:'100%', maxWidth:'420px', borderRadius:'8px', border:'2px solid rgba(255,255,255,0.2)' });
+    video.setAttribute('playsinline',''); video.muted = true;
+
+    const canvas = document.createElement('canvas');
+    canvas.id = 'isbn-scan-canvas'; canvas.style.display = 'none';
+
+    const hint = document.createElement('p');
+    hint.id = 'isbn-scan-hint'; hint.textContent = 'Initialisation…';
+    Object.assign(hint.style, { color:'#aaa', fontFamily:'inherit', fontSize:'12px', margin:'0' });
+
+    const close = document.createElement('button');
+    close.textContent = '✕ Fermer';
+    Object.assign(close.style, {
+      padding:'8px 20px', background:'transparent', color:'#fff',
+      border:'1px solid rgba(255,255,255,0.4)', borderRadius:'4px',
+      cursor:'pointer', fontFamily:'inherit', fontSize:'13px'
+    });
+    close.onclick = stopScanner;
+
+    o.append(lbl, video, canvas, hint, close);
+    document.body.appendChild(o);
+    return o;
+  }
+
+  async function startScanner() {
+    if (scannerActive) return;
+    try { await loadZXing(); } catch { setFeedback('Scanner indisponible.', 'error'); return; }
+    buildOverlay();
+    const video  = document.getElementById('isbn-scan-video');
+    const canvas = document.getElementById('isbn-scan-canvas');
+    const hint   = document.getElementById('isbn-scan-hint');
+    try {
+      videoStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' } });
+    } catch { setFeedback('Accès caméra refusé.', 'error'); stopScanner(); return; }
+    video.srcObject = videoStream;
+    await video.play();
+    scannerActive = true;
+    hint.textContent = 'Scan en cours…';
+
+    function tick() {
+      if (!scannerActive) return;
+      if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+        try {
+          const src    = new ZXing.HTMLCanvasElementLuminanceSource(canvas);
+          const result = new ZXing.MultiFormatReader().decode(new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(src)));
+          if (result) {
+            const code = result.getText();
+            stopScanner();
+            const isbnEl = getField('isbn');
+            if (isbnEl) { isbnEl.value = code; isbnEl.dispatchEvent(new Event('input')); }
+            fetchISBN(code);
+            return;
+          }
+        } catch (_) {}
+      }
+      animFrame = requestAnimationFrame(tick);
+    }
+    animFrame = requestAnimationFrame(tick);
+  }
+
+  function stopScanner() {
+    scannerActive = false;
+    if (animFrame)    { cancelAnimationFrame(animFrame); animFrame = null; }
+    if (videoStream)  { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
+    const o = document.getElementById('isbn-scan-overlay');
+    if (o) o.remove();
+  }
+
+  /* ── Injection UI dans le groupe du champ ISBN ──────────────────── */
+  function injectUI() {
+    const isbnEl = getField('isbn');
+    if (!isbnEl || document.getElementById('isbn-feedback')) return;
+
+    /* Feedback */
+    const fb = document.createElement('span');
+    fb.id = 'isbn-feedback';
+    Object.assign(fb.style, {
+      display:'block', fontSize:'12px', marginTop:'4px',
+      transition:'opacity 0.5s', opacity:'0', fontFamily:'inherit'
+    });
+    isbnEl.parentNode.appendChild(fb);
+
+    /* Bouton Scanner */
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.id   = 'isbn-scan-btn';
+    btn.innerHTML = '📷 Scanner ISBN';
+    Object.assign(btn.style, {
+      marginTop:'8px', padding:'7px 16px',
+      border:'1.5px solid var(--border)',
+      borderRadius:'var(--radius)', background:'transparent',
+      color:'var(--ink-muted)', cursor:'pointer',
+      fontFamily:'inherit', fontSize:'0.85rem', fontWeight:'500',
+      transition:'all 0.2s', display:'inline-flex', alignItems:'center', gap:'6px'
+    });
+    btn.onmouseenter = () => { btn.style.borderColor='var(--accent)'; btn.style.color='var(--accent)'; };
+    btn.onmouseleave = () => { btn.style.borderColor='var(--border)'; btn.style.color='var(--ink-muted)'; };
+    btn.onclick = startScanner;
+    isbnEl.parentNode.appendChild(btn);
+
+    /* Écoute input avec debounce */
+    const dFetch = debounce(e => fetchISBN(e.target.value), 500);
+    isbnEl.addEventListener('input', dFetch);
+  }
+
+  /* ── Hook sur renderForm pour ré-injecter après chaque rendu ────── */
+  function hookRenderForm() {
+    const original = window.renderForm;
+    if (typeof original !== 'function') return;
+    window.renderForm = function (key) {
+      original(key);
+      /* Petit délai pour laisser le DOM se construire */
+      setTimeout(() => injectUI(), 0);
+    };
+  }
+
+  /* ── Init ───────────────────────────────────────────────────────── */
+  function initISBNModule() {
+    hookRenderForm();
+    /* Si le formulaire "ouvrage" est déjà actif au chargement */
+    if (fieldsReady()) injectUI();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initISBNModule);
+  } else {
+    initISBNModule();
+  }
+
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════
+     MODULE ISBN — validation + conversion + normalisation
+     Auto-adaptatif, plug-and-play, sans configuration
+     ═══════════════════════════════════════════════════════ -->
+<script>
+(function () {
+  'use strict';
+
+  /* ══════════════════════════════════════════════════════════════════
+     CONFIGURATION
+  ══════════════════════════════════════════════════════════════════ */
+  const CFG = {
+    debounceDelay : 400,
+    styleValid    : '2px solid #27ae60',
+    styleInvalid  : '2px solid #e74c3c',
+    styleNeutral  : '',
+    feedbackValid : '✓ ISBN-13 valide',
+    feedbackInvalid: '✗ ISBN invalide',
+    feedbackConverted: '↔ Converti en ISBN-13',
+  };
+
+  /* ══════════════════════════════════════════════════════════════════
+     UTILITAIRES
+  ══════════════════════════════════════════════════════════════════ */
+
+  function debounce(fn, delay) {
+    let t;
+    return function (...args) { clearTimeout(t); t = setTimeout(() => fn.apply(this, args), delay); };
+  }
+
+  /** Retourne un ID unique pour taguer les champs déjà traités */
+  function markField(el) {
+    if (!el.dataset.isbnModuleAttached) {
+      el.dataset.isbnModuleAttached = '1';
+      return true;
+    }
+    return false;
+  }
+
+  /* ══════════════════════════════════════════════════════════════════
+     1. NETTOYAGE
+  ══════════════════════════════════════════════════════════════════ */
+
+  function cleanISBN(raw) {
+    return raw.replace(/[^0-9Xx]/g, '').toUpperCase();
+  }
+
+  /* ══════════════════════════════════════════════════════════════════
+     2. VALIDATION ISBN-10
+  ══════════════════════════════════════════════════════════════════ */
+
+  function isValidISBN10(isbn) {
+    if (isbn.length !== 10) return false;
+    if (!/^\d{9}[\dX]$/.test(isbn)) return false;
+    const sum = isbn.split('').reduce((acc, ch, i) => {
+      const val = ch === 'X' ? 10 : parseInt(ch, 10);
+      return acc + val * (10 - i);
+    }, 0);
+    return sum % 11 === 0;
+  }
+
+  /* ══════════════════════════════════════════════════════════════════
+     3. VALIDATION ISBN-13
+  ══════════════════════════════════════════════════════════════════ */
+
+  function isValidISBN13(isbn) {
+    if (isbn.length !== 13) return false;
+    if (!/^\d{13}$/.test(isbn)) return false;
+    if (!/^97[89]/.test(isbn)) return false;
+    const sum = isbn.split('').reduce((acc, ch, i) => {
+      return acc + parseInt(ch, 10) * (i % 2 === 0 ? 1 : 3);
+    }, 0);
+    return sum % 10 === 0;
+  }
+
+  /* ══════════════════════════════════════════════════════════════════
+     4. CONVERSION ISBN-10 → ISBN-13
+  ══════════════════════════════════════════════════════════════════ */
+
+  function convertISBN10to13(isbn10) {
+    const base = '978' + isbn10.slice(0, 9);
+    const sum  = base.split('').reduce((acc, ch, i) => {
+      return acc + parseInt(ch, 10) * (i % 2 === 0 ? 1 : 3);
+    }, 0);
+    const check = (10 - (sum % 10)) % 10;
+    return base + check;
+  }
+
+  /* ══════════════════════════════════════════════════════════════════
+     5. NORMALISATION — toujours produire ISBN-13 si possible
+  ══════════════════════════════════════════════════════════════════ */
+
+  /**
+   * @returns {{ isbn: string, status: 'valid13'|'converted'|'invalid'|'incomplete' }}
+   */
+  function normalizeISBN(raw) {
+    const clean = cleanISBN(raw);
+
+    if (clean.length === 0) return { isbn: raw, status: 'incomplete' };
+
+    // ISBN-13 direct
+    if (clean.length === 13) {
+      if (isValidISBN13(clean)) return { isbn: clean, status: 'valid13' };
+      return { isbn: raw, status: 'invalid' };
+    }
+
+    // ISBN-10 → conversion
+    if (clean.length === 10) {
+      if (isValidISBN10(clean)) {
+        const isbn13 = convertISBN10to13(clean);
+        return { isbn: isbn13, status: 'converted' };
+      }
+      return { isbn: raw, status: 'invalid' };
+    }
+
+    // En cours de saisie (< 10 ou entre 11-12)
+    return { isbn: raw, status: 'incomplete' };
+  }
+
+  /* ══════════════════════════════════════════════════════════════════
+     6. FEEDBACK VISUEL — non destructif
+  ══════════════════════════════════════════════════════════════════ */
+
+  function getFeedbackEl(input) {
+    const id = 'isbn-val-fb-' + (input.id || input.name || Math.random().toString(36).slice(2));
+    let el = document.getElementById(id);
+    if (!el) {
+      el = document.createElement('span');
+      el.id = id;
+      Object.assign(el.style, {
+        display      : 'block',
+        fontSize     : '11px',
+        marginTop    : '3px',
+        transition   : 'opacity 0.3s',
+        opacity      : '0',
+        fontFamily   : 'inherit',
+        pointerEvents: 'none',
+      });
+      input.parentNode && input.parentNode.insertBefore(el, input.nextSibling);
+    }
+    return el;
+  }
+
+  function applyFeedback(input, status, isbn13) {
+    const fb = getFeedbackEl(input);
+
+    // Reset outline — on ne touche pas à border si le champ a déjà une bordure custom
+    const originalOutline = input.dataset.isbnOriginalOutline ?? input.style.outline;
+    if (!input.dataset.isbnOriginalOutline) input.dataset.isbnOriginalOutline = originalOutline;
+
+    if (status === 'valid13' || status === 'converted') {
+      input.style.outline = CFG.styleValid;
+      fb.style.color      = '#27ae60';
+      fb.textContent      = status === 'converted' ? CFG.feedbackConverted : CFG.feedbackValid;
+      fb.style.opacity    = '1';
+    } else if (status === 'invalid') {
+      input.style.outline = CFG.styleInvalid;
+      fb.style.color      = '#e74c3c';
+      fb.textContent      = CFG.feedbackInvalid;
+      fb.style.opacity    = '1';
+    } else {
+      // incomplete — neutre, pas de bruit
+      input.style.outline = input.dataset.isbnOriginalOutline || '';
+      fb.style.opacity    = '0';
+    }
+  }
+
+  /* ══════════════════════════════════════════════════════════════════
+     7. HANDLER — appelé sur input / change / blur
+  ══════════════════════════════════════════════════════════════════ */
+
+  function handleISBNInput(e) {
+    const input = e.target;
+    const raw   = input.value;
+
+    // Sur blur uniquement : normaliser la valeur dans le champ
+    const shouldWrite = e.type === 'blur' || e.type === 'change';
+
+    const { isbn, status } = normalizeISBN(raw);
+
+    if (shouldWrite && (status === 'valid13' || status === 'converted') && isbn !== raw) {
+      // Écriture silencieuse — on préserve la position curseur pour blur
+      input.value = isbn;
+      // Déclencher un événement input pour notifier les autres listeners
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    applyFeedback(input, status, isbn);
+  }
+
+  /* ══════════════════════════════════════════════════════════════════
+     8. ATTACHEMENT DES LISTENERS
+  ══════════════════════════════════════════════════════════════════ */
+
+  function attachListeners(input) {
+    if (!markField(input)) return; // déjà traité
+
+    const debouncedInput = debounce(handleISBNInput, CFG.debounceDelay);
+
+    // input → feedback temps réel (debounced pour ne pas perturber la saisie)
+    input.addEventListener('input', debouncedInput);
+    // change / blur → normalisation de la valeur
+    input.addEventListener('change', handleISBNInput);
+    input.addEventListener('blur',   handleISBNInput);
+  }
+
+  /* ══════════════════════════════════════════════════════════════════
+     9. DÉTECTION DES CHAMPS ISBN
+  ══════════════════════════════════════════════════════════════════ */
+
+  /** Retourne le texte du <label> associé à un input (for= ou parent) */
+  function getLabelText(input) {
+    // Via for=
+    if (input.id) {
+      const lbl = document.querySelector(`label[for="${CSS.escape(input.id)}"]`);
+      if (lbl) return lbl.textContent.toLowerCase();
+    }
+    // Via parent label
+    const parent = input.closest('label');
+    if (parent) return parent.textContent.toLowerCase();
+    // Via aria-label
+    return (input.getAttribute('aria-label') || '').toLowerCase();
+  }
+
+  function isISBNField(input) {
+    if (input.type === 'hidden' || input.type === 'submit' || input.type === 'button') return false;
+
+    const id          = (input.id          || '').toLowerCase();
+    const name        = (input.name        || '').toLowerCase();
+    const placeholder = (input.placeholder || '').toLowerCase();
+    const labelText   = getLabelText(input);
+
+    if (id.includes('isbn') || name.includes('isbn')) return true;
+    if (placeholder.includes('isbn'))                  return true;
+    if (labelText.includes('isbn'))                    return true;
+
+    // Heuristique valeur : 10 ou 13 chiffres consécutifs
+    const val = cleanISBN(input.value);
+    if (val.length === 10 || val.length === 13) return true;
+
+    return false;
+  }
+
+  function detectISBNFields(root) {
+    return Array.from((root || document).querySelectorAll('input, textarea'))
+      .filter(isISBNField);
+  }
+
+  /* ══════════════════════════════════════════════════════════════════
+     10. SCAN INITIAL
+  ══════════════════════════════════════════════════════════════════ */
+
+  function scanInputs(root) {
+    detectISBNFields(root).forEach(attachListeners);
+  }
+
+  /* ══════════════════════════════════════════════════════════════════
+     11. MUTATIONOBSERVER — formulaires dynamiques
+  ══════════════════════════════════════════════════════════════════ */
+
+  function startObserver() {
+    const observer = new MutationObserver(mutations => {
+      for (const mutation of mutations) {
+        for (const node of mutation.addedNodes) {
+          if (node.nodeType !== 1) continue; // éléments seulement
+          // Le nœud lui-même est-il un input ISBN ?
+          if ((node.tagName === 'INPUT' || node.tagName === 'TEXTAREA') && isISBNField(node)) {
+            attachListeners(node);
+          }
+          // Chercher dans les descendants
+          scanInputs(node);
+        }
+      }
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+  }
+
+  /* ══════════════════════════════════════════════════════════════════
+     12. API PUBLIQUE (optionnelle — accessible via window.ISBNModule)
+  ══════════════════════════════════════════════════════════════════ */
+
+  window.ISBNModule = {
+    cleanISBN,
+    isValidISBN10,
+    isValidISBN13,
+    convertISBN10to13,
+    normalizeISBN,
+    scanInputs,
+    detectISBNFields,
+    attachListeners,
+  };
+
+  /* ══════════════════════════════════════════════════════════════════
+     13. INIT
+  ══════════════════════════════════════════════════════════════════ */
+
+  function init() {
+    scanInputs(document);
+    startObserver();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+})();
+
+</script>
 </body>
 </html>
- 
-
