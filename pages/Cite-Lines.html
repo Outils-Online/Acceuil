@@ -434,6 +434,10 @@
   </style>
 </head>
 <body>
+<!--
+  Si cette page est chargée dans une <iframe>, le parent doit autoriser la caméra, ex. :
+  <iframe src="Cite-Lines.html" allow="camera; microphone" title="…"></iframe>
+-->
 
 <!-- HEADER -->
 <header>
@@ -1282,9 +1286,13 @@ renderHistory();
     video.playsInline = true;
     video.autoplay = true;
     Object.assign(video.style, {
-      width:'100%', display:'block',
-      objectFit:'cover',
-      /* Désactiver tout filtre CSS qui pourrait brouiller l'image */
+      width:'100%',
+      maxHeight:'70vh',
+      display:'block',
+      /* contain = pas d'étirement / déformation ; le flux garde son ratio natif */
+      objectFit:'contain',
+      objectPosition:'center',
+      backgroundColor:'#000',
       filter:'none', transform:'none', willChange:'auto'
     });
     // Attributs HTML en plus (certaines versions sont sensibles)
@@ -1356,7 +1364,13 @@ renderHistory();
     return o;
   }
 
-  /* ── Obtenir un flux caméra (Chrome + Firefox + Safari) ──────────── */
+  /* ── Obtenir un flux caméra (Chrome / Opera / Firefox) ─────────────── */
+  const SCAN_VIDEO_FRAMERATE = { ideal: 30, max: 60 };
+
+  function scanVideoConstraints(partial) {
+    return { audio: false, video: partial };
+  }
+
   async function acquireStream() {
     /* Libérer tout flux existant AVANT d'en demander un nouveau */
     if (videoStream) {
@@ -1368,29 +1382,72 @@ renderHistory();
       err.name = 'NotSupportedError';
       throw err;
     }
-    const baseVideo = {
-      aspectRatio: { ideal: 16 / 9 },
-      frameRate: { ideal: 30, max: 60 }
-    };
-    const env = { facingMode: { ideal: 'environment' } };
 
-    /* Séquence de contraintes du plus strict au plus permissif (ideal uniquement) */
+    const env = { facingMode: { ideal: 'environment' } };
+    /* 1) Contraintes explicites HD (souvent OK sur Chrome si la caméra le supporte) */
+    const hdExplicit = {
+      ...env,
+      width: { min: 1280, ideal: 1920, max: 1920 },
+      height: { min: 720, ideal: 1080, max: 1080 },
+      aspectRatio: { ideal: 16 / 9 },
+      frameRate: { ...SCAN_VIDEO_FRAMERATE }
+    };
+    /* 2–n) Repli progressif : évite OverconstrainedError tout en poussant la résolution */
     const tries = [
-      { audio: false, video: { ...baseVideo, ...env, width: { ideal: 1920 }, height: { ideal: 1080 } } },
-      { audio: false, video: { ...baseVideo, ...env, width: { ideal: 1280 }, height: { ideal: 720 } } },
-      { audio: false, video: { ...baseVideo, ...env } },
-      { audio: false, video: { ...baseVideo, width: { ideal: 1280 }, height: { ideal: 720 } } },
+      scanVideoConstraints(hdExplicit),
+      scanVideoConstraints({
+        ...env,
+        width: { min: 1280, ideal: 1920 },
+        height: { min: 720, ideal: 1080 },
+        aspectRatio: { ideal: 16 / 9 },
+        frameRate: { ...SCAN_VIDEO_FRAMERATE }
+      }),
+      scanVideoConstraints({
+        ...env,
+        width: { ideal: 1920 },
+        height: { ideal: 1080 },
+        aspectRatio: { ideal: 16 / 9 },
+        frameRate: { ...SCAN_VIDEO_FRAMERATE }
+      }),
+      scanVideoConstraints({
+        ...env,
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+        aspectRatio: { ideal: 16 / 9 },
+        frameRate: { ...SCAN_VIDEO_FRAMERATE }
+      }),
+      scanVideoConstraints({ ...env, frameRate: { ...SCAN_VIDEO_FRAMERATE } }),
+      scanVideoConstraints({ frameRate: { ...SCAN_VIDEO_FRAMERATE } }),
       { audio: false, video: true }
     ];
+
     let lastErr = null;
-    for (const c of tries) {
+    for (let i = 0; i < tries.length; i++) {
       try {
-        return await navigator.mediaDevices.getUserMedia(c);
+        const stream = await navigator.mediaDevices.getUserMedia(tries[i]);
+        try {
+          console.log('[ISBN-scan] getUserMedia OK (étape ' + (i + 1) + '/' + tries.length + ')', tries[i]);
+        } catch (_) {}
+        return stream;
       } catch (e) {
         lastErr = e;
+        try {
+          console.log('[ISBN-scan] getUserMedia échec étape ' + (i + 1), e && e.name, e && e.message);
+        } catch (_) {}
       }
     }
     throw (lastErr || new Error('Impossible d’ouvrir la caméra.'));
+  }
+
+  function logScanVideoDebug(phase, track, video) {
+    try {
+      if (track && typeof track.getSettings === 'function') {
+        console.log('[ISBN-scan] ' + phase + ' — track.getSettings():', track.getSettings());
+      }
+      if (video) {
+        console.log('[ISBN-scan] ' + phase + ' — video.videoWidth x video.videoHeight:', video.videoWidth, 'x', video.videoHeight);
+      }
+    } catch (_) {}
   }
 
   function explainGetUserMediaError(e) {
@@ -1548,25 +1605,39 @@ renderHistory();
       return;
     }
 
-    /* Appliquer autofocus si disponible */
     const track = videoStream.getVideoTracks()[0];
+    logScanVideoDebug('Après getUserMedia', track, null);
+
     if (track?.applyConstraints) {
       const caps = track.getCapabilities?.() ?? {};
       const adv  = {};
       if (caps.focusMode?.includes('continuous')) adv.focusMode = 'continuous';
       if (Object.keys(adv).length) track.applyConstraints({ advanced: [adv] }).catch(() => {});
 
-      // Chrome démarre parfois en basse résolution -> on pousse doucement vers 1080p (ideal, pas exact)
+      /* Tentative d’upgrade si le navigateur a ouvert en basse résolution (souvent Chrome) */
       try {
         const s0 = track.getSettings?.() ?? {};
         const w0 = Number(s0.width || 0);
         const h0 = Number(s0.height || 0);
-        if ((w0 && w0 < 1000) || (h0 && h0 < 700)) {
-          await track.applyConstraints({
-            width: { ideal: 1920 },
-            height: { ideal: 1080 },
-            aspectRatio: { ideal: 16 / 9 }
-          });
+        if ((w0 && w0 < 1280) || (h0 && h0 < 720)) {
+          try {
+            await track.applyConstraints({
+              width: { min: 1280, ideal: 1920, max: 1920 },
+              height: { min: 720, ideal: 1080, max: 1080 },
+              aspectRatio: { ideal: 16 / 9 },
+              frameRate: { ...SCAN_VIDEO_FRAMERATE }
+            });
+          } catch (_) {
+            try {
+              await track.applyConstraints({
+                width: { ideal: 1920 },
+                height: { ideal: 1080 },
+                aspectRatio: { ideal: 16 / 9 },
+                frameRate: { ...SCAN_VIDEO_FRAMERATE }
+              });
+            } catch (_) {}
+          }
+          logScanVideoDebug('Après applyConstraints (upgrade)', track, null);
         }
       } catch (_) {}
     }
@@ -1582,6 +1653,11 @@ renderHistory();
       if (video.readyState >= 2) { tryPlay(); return; }
       video.onloadedmetadata = () => tryPlay();
     });
+
+    logScanVideoDebug('Après lecture vidéo', track, video);
+    video.addEventListener('loadeddata', function () {
+      logScanVideoDebug('loadeddata', track, video);
+    }, { once: true });
 
     /* Essayer BarcodeDetector (Chrome) d'abord, Quagga ensuite */
     const ok = await startWithBarcodeDetector(video, hint)
