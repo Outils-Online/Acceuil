@@ -1364,79 +1364,194 @@ renderHistory();
     return o;
   }
 
-  /* ── Obtenir un flux caméra (Chrome / Opera / Firefox) ─────────────── */
+  /* ── Caméra : meilleur périphérique + flux HD (Chrome / Firefox / mobile) ── */
   const SCAN_VIDEO_FRAMERATE = { ideal: 30, max: 60 };
 
-  function scanVideoConstraints(partial) {
-    return { audio: false, video: partial };
-  }
+  /**
+   * Choisit la caméra la plus « nette » possible : permission → enumerateDevices →
+   * sonde chaque videoinput (résolution courante × score) → ouverture finale avec deviceId.
+   * Réutilisable : window.getBestCameraStream(options)
+   */
+  async function getBestCameraStream(options) {
+    const opt = options || {};
+    const logPrefix = opt.logPrefix || '[getBestCameraStream]';
+    const widthIdeal = opt.widthIdeal != null ? opt.widthIdeal : 1920;
+    const heightIdeal = opt.heightIdeal != null ? opt.heightIdeal : 1080;
+    const frameRateIdeal = opt.frameRateIdeal != null ? opt.frameRateIdeal : 30;
 
-  async function acquireStream() {
-    /* Libérer tout flux existant AVANT d'en demander un nouveau */
-    if (videoStream) {
-      videoStream.getTracks().forEach(t => t.stop());
-      videoStream = null;
-    }
     if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== 'function') {
       const err = new Error('getUserMedia indisponible (navigator.mediaDevices manquant).');
       err.name = 'NotSupportedError';
       throw err;
     }
 
-    const env = { facingMode: { ideal: 'environment' } };
-    /* 1) Contraintes explicites HD (souvent OK sur Chrome si la caméra le supporte) */
-    const hdExplicit = {
-      ...env,
-      width: { min: 1280, ideal: 1920, max: 1920 },
-      height: { min: 720, ideal: 1080, max: 1080 },
-      aspectRatio: { ideal: 16 / 9 },
-      frameRate: { ...SCAN_VIDEO_FRAMERATE }
-    };
-    /* 2–n) Repli progressif : évite OverconstrainedError tout en poussant la résolution */
-    const tries = [
-      scanVideoConstraints(hdExplicit),
-      scanVideoConstraints({
-        ...env,
-        width: { min: 1280, ideal: 1920 },
-        height: { min: 720, ideal: 1080 },
-        aspectRatio: { ideal: 16 / 9 },
-        frameRate: { ...SCAN_VIDEO_FRAMERATE }
-      }),
-      scanVideoConstraints({
-        ...env,
-        width: { ideal: 1920 },
-        height: { ideal: 1080 },
-        aspectRatio: { ideal: 16 / 9 },
-        frameRate: { ...SCAN_VIDEO_FRAMERATE }
-      }),
-      scanVideoConstraints({
-        ...env,
-        width: { ideal: 1280 },
-        height: { ideal: 720 },
-        aspectRatio: { ideal: 16 / 9 },
-        frameRate: { ...SCAN_VIDEO_FRAMERATE }
-      }),
-      scanVideoConstraints({ ...env, frameRate: { ...SCAN_VIDEO_FRAMERATE } }),
-      scanVideoConstraints({ frameRate: { ...SCAN_VIDEO_FRAMERATE } }),
-      { audio: false, video: true }
-    ];
+    /* 1) Permission + libellés des périphériques */
+    let prime = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+    const devicesListed = await navigator.mediaDevices.enumerateDevices();
+    prime.getTracks().forEach(function (t) { t.stop(); });
+    prime = null;
+
+    const videoInputs = devicesListed.filter(function (d) { return d.kind === 'videoinput'; });
+    try {
+      console.log(logPrefix + ' Liste videoinput:', videoInputs.map(function (d) {
+        return { deviceId: d.deviceId ? (d.deviceId.slice(0, 12) + '…') : '', label: d.label || '(sans label)' };
+      }));
+    } catch (_) {}
+
+    const scores = [];
+    const probed = new Set();
+
+    /* 3–5) Sonder chaque caméra : score = width × height (getSettings après ouverture courte) */
+    for (let i = 0; i < videoInputs.length; i++) {
+      const dev = videoInputs[i];
+      if (!dev.deviceId || probed.has(dev.deviceId)) continue;
+      probed.add(dev.deviceId);
+
+      let probeStream = null;
+      try {
+        probeStream = await navigator.mediaDevices.getUserMedia({
+          audio: false,
+          video: { deviceId: { exact: dev.deviceId } }
+        });
+        const track = probeStream.getVideoTracks()[0];
+        const st = track && track.getSettings ? track.getSettings() : {};
+        const w = Number(st.width) || 0;
+        const h = Number(st.height) || 0;
+        const score = w * h;
+        scores.push({
+          deviceId: dev.deviceId,
+          label: dev.label || '',
+          width: w,
+          height: h,
+          score: score
+        });
+        try {
+          console.log(logPrefix + ' Sonde « ' + (dev.label || dev.deviceId.slice(0, 8)) + ' » → ' + w + '×' + h + ' (score=' + score + ')');
+        } catch (_) {}
+      } catch (err) {
+        scores.push({
+          deviceId: dev.deviceId,
+          label: dev.label || '',
+          width: 0,
+          height: 0,
+          score: 0,
+          probeError: err && err.name ? err.name : 'error'
+        });
+        try {
+          console.log(logPrefix + ' Sonde échouée « ' + (dev.label || '') + ' »:', err && err.name, err && err.message);
+        } catch (_) {}
+      } finally {
+        try {
+          if (probeStream) probeStream.getTracks().forEach(function (t) { t.stop(); });
+        } catch (_) {}
+      }
+    }
+
+    scores.sort(function (a, b) { return b.score - a.score; });
+
+    function finalConstraintSets(deviceId) {
+      return [
+        {
+          audio: false,
+          video: {
+            deviceId: { ideal: deviceId },
+            width: { ideal: widthIdeal },
+            height: { ideal: heightIdeal },
+            frameRate: { ideal: frameRateIdeal }
+          }
+        },
+        {
+          audio: false,
+          video: {
+            deviceId: { ideal: deviceId },
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            frameRate: { ideal: frameRateIdeal }
+          }
+        },
+        { audio: false, video: { deviceId: { ideal: deviceId } } }
+      ];
+    }
 
     let lastErr = null;
-    for (let i = 0; i < tries.length; i++) {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia(tries[i]);
+    const rankedIds = scores.map(function (s) { return s.deviceId; }).filter(Boolean);
+    const uniqueRanked = [];
+    const seenId = new Set();
+    for (let j = 0; j < rankedIds.length; j++) {
+      if (!seenId.has(rankedIds[j])) {
+        seenId.add(rankedIds[j]);
+        uniqueRanked.push(rankedIds[j]);
+      }
+    }
+
+    /* 6–7) Ouvrir le flux final : meilleur deviceId d’abord, puis suivants si échec */
+    for (let k = 0; k < uniqueRanked.length; k++) {
+      const id = uniqueRanked[k];
+      const sets = finalConstraintSets(id);
+      for (let m = 0; m < sets.length; m++) {
         try {
-          console.log('[ISBN-scan] getUserMedia OK (étape ' + (i + 1) + '/' + tries.length + ')', tries[i]);
+          const stream = await navigator.mediaDevices.getUserMedia(sets[m]);
+          const tr = stream.getVideoTracks()[0];
+          const fin = tr && tr.getSettings ? tr.getSettings() : {};
+          const meta = scores.find(function (s) { return s.deviceId === id; });
+          try {
+            console.log(logPrefix + ' Caméra sélectionnée:', meta && meta.label ? meta.label : id);
+            console.log(logPrefix + ' Score retenu (sonde):', meta ? meta.score : '?', '— Résolution finale getSettings:', fin.width, '×', fin.height);
+          } catch (_) {}
+          return stream;
+        } catch (e) {
+          lastErr = e;
+          try {
+            console.log(logPrefix + ' Échec ouverture deviceId (tentative suivante):', e && e.name);
+          } catch (_) {}
+        }
+      }
+    }
+
+    /* 8) Dernier recours : facingMode environment puis défaut */
+    const envFallbacks = [
+      {
+        audio: false,
+        video: {
+          facingMode: { ideal: 'environment' },
+          width: { ideal: widthIdeal },
+          height: { ideal: heightIdeal },
+          frameRate: { ideal: frameRateIdeal }
+        }
+      },
+      { audio: false, video: { facingMode: { ideal: 'environment' } } },
+      { audio: false, video: true }
+    ];
+    for (let f = 0; f < envFallbacks.length; f++) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia(envFallbacks[f]);
+        const tr = stream.getVideoTracks()[0];
+        const fin = tr && tr.getSettings ? tr.getSettings() : {};
+        try {
+          console.log(logPrefix + ' Fallback facingMode / défaut — résolution:', fin.width, '×', fin.height);
         } catch (_) {}
         return stream;
       } catch (e) {
         lastErr = e;
-        try {
-          console.log('[ISBN-scan] getUserMedia échec étape ' + (i + 1), e && e.name, e && e.message);
-        } catch (_) {}
       }
     }
+
     throw (lastErr || new Error('Impossible d’ouvrir la caméra.'));
+  }
+
+  window.getBestCameraStream = getBestCameraStream;
+
+  async function acquireStream() {
+    if (videoStream) {
+      videoStream.getTracks().forEach(function (t) { t.stop(); });
+      videoStream = null;
+    }
+    return getBestCameraStream({
+      logPrefix: '[ISBN-scan]',
+      widthIdeal: 1920,
+      heightIdeal: 1080,
+      frameRateIdeal: 30
+    });
   }
 
   function logScanVideoDebug(phase, track, video) {
