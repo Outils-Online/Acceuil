@@ -142,7 +142,8 @@
 [data-id="calculette"] .favicon-badge,
 [data-id="minuteur"] .favicon-badge,
 [data-id="sign-pdf"] .favicon-badge, 
-[data-id="ocr-lines"] .favicon-badge{
+[data-id="ocr-lines"] .favicon-badge,
+[data-id="ytlive-lines"] .favicon-badge{
     position: relative;
     width: 44px;
     height: 44px;
@@ -161,7 +162,8 @@
 [data-id="calculette"] .favicon-badge::before,
 [data-id="minuteur"] .favicon-badge::before,
 [data-id="sign-pdf"] .favicon-badge::before, 
-[data-id="ocr-lines"] .favicon-badge::before{
+[data-id="ocr-lines"] .favicon-badge::before, 
+[data-id="ytlive-lines"] .favicon-badge::before {
     content: "";
     position: absolute;
     /* On l'agrandit pour que les bords du dégradé ne se voient pas */
@@ -187,8 +189,9 @@
 /* Réglage standard pour les autres */
 [data-id="calculette"] .favicon-badge span,
 [data-id="minuteur"] .favicon-badge span,
-[data-id="sign-pdf"] .favicon-badge span 
-[data-id="ocr-lines"] .favicon-badge span{
+[data-id="sign-pdf"] .favicon-badge span, 
+[data-id="ocr-lines"] .favicon-badge span,
+[data-id="ytlive-lines"] .favicon-badge span{
     display: flex !important;
     transform: translate(0px, -2px) !important;
     font-size: 22px !important;
@@ -316,6 +319,10 @@
 
 <div id="mvToast"></div>
 
+<div id="iframe_ytlive_lines" class="iframe-container">
+    <button class="close-iframe" onclick="closeIframe('iframe_ytlive_lines')">FERMER X</button>
+    <iframe data-src="pages/ytlive-lines.html" allow="camera; microphone"></iframe>
+</div>
 <div id="iframe_calculette" class="iframe-container">
     <button class="close-iframe" onclick="closeIframe('iframe_calculette')">FERMER X</button>
     <iframe src="https://es-d-0544653420260421-019da75d-1b6e-7819-b877-2b48cfb03541.codepen.dev/"></iframe>
@@ -389,6 +396,12 @@
     <div class="btn-star">★</div>
     <div class="favicon-badge"><span>📚</span></div>
     <div>Cite-Lines</div>
+    <div class="count-badge">0</div>
+</button>
+<button class="btn-3d btn-red" data-id="ytlive-lines" data-main="creative" data-tags="radio" onclick="openIframe('iframe_ytlive_lines', this)">
+    <div class="btn-star">★</div>
+    <div class="favicon-badge"><span>🎬</span></div>
+    <div>Ytlive-Lines</div>
     <div class="count-badge">0</div>
 </button>
     <button class="btn-3d btn-green"  data-id="calculette"     data-main="bureau"   data-tags="compta"    onclick="openIframe('iframe_calculette', this)">
