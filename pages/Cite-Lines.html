@@ -1165,18 +1165,19 @@ document.getElementById('theme-toggle').addEventListener('click', () => {
    ======================================================== */
 function quitterApplication() {
   try {
-    // Si dans une iframe : envoyer message au parent
+    /* Dans une iframe : signaler au parent ET naviguer */
     if (window.self !== window.top) {
       window.parent.postMessage('close-cite-lines', '*');
+      /* Le parent peut ignorer le message — on navigue quand même */
+      window.parent.location.href = 'index.html';
       return;
     }
-  } catch (e) {}
-  // Sinon : retour historique ou page d'accueil
-  if (document.referrer) {
-    history.back();
-  } else {
-    window.location.href = '/';
+  } catch (e) {
+    /* Sécurité cross-origin : on ne peut pas toucher parent.location */
   }
+  /* Page standalone : retour vers index.html dans le même répertoire */
+  const base = window.location.href.replace(/\/[^\/]*$/, '/');
+  window.location.href = base + 'index.html';
 }
 
 /* ========================================================
@@ -1370,17 +1371,24 @@ renderHistory();
     if (typeof showToast === 'function') showToast('⚠ ISBN introuvable sur Open Library et Google Books');
   }
 
-  /* ── Scanner ZXing ──────────────────────────────────────────────── */
+  /* ── Scanner — BarcodeDetector (Chrome/Edge) + Quagga (Firefox) ── */
   let scannerActive = false, videoStream = null, animFrame = null;
 
-  function loadZXing() {
+  /* Chargement dynamique de QuaggaJS (fallback Firefox/Safari) */
+  function loadQuagga() {
     return new Promise((res, rej) => {
-      if (window.ZXing) { res(); return; }
+      if (window.Quagga) { res(); return; }
       const s = document.createElement('script');
-      s.src = 'https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js';
+      s.src = 'https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js';
       s.onload = res; s.onerror = rej;
       document.head.appendChild(s);
     });
+  }
+
+  /* Détection de la méthode disponible */
+  function getDecodeMethod() {
+    if ('BarcodeDetector' in window) return 'native';
+    return 'quagga';
   }
 
   function buildOverlay() {
@@ -1477,143 +1485,177 @@ renderHistory();
     return o;
   }
 
-  /* ── Demande getUserMedia avec stratégie de fallback Chrome/FF ──── */
-  async function acquireCamera() {
-    /* Chrome exige exact:'environment' sur certains appareils, Firefox préfère ideal */
-    const strategies = [
-      /* 1. Haute résolution + caméra arrière exacte (Chrome mobile) */
-      { video: { facingMode: { exact: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } } },
-      /* 2. Caméra arrière idéale + haute résolution */
-      { video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } } },
-      /* 3. Caméra arrière idéale sans contrainte de résolution */
+  /* ── Obtenir un flux caméra (Chrome + Firefox + Safari) ──────────── */
+  async function acquireStream() {
+    /* Libérer tout flux existant AVANT d'en demander un nouveau */
+    if (videoStream) {
+      videoStream.getTracks().forEach(t => t.stop());
+      videoStream = null;
+    }
+    /* Séquence de contraintes du plus strict au plus permissif */
+    const tries = [
+      { video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } } },
+      { video: { facingMode: 'environment' } },
       { video: { facingMode: { ideal: 'environment' } } },
-      /* 4. Toute caméra disponible (fallback ultime desktop/webcam) */
       { video: true }
     ];
-
-    for (const constraints of strategies) {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        return stream;
-      } catch (_) { /* essayer la stratégie suivante */ }
+    for (const c of tries) {
+      try { return await navigator.mediaDevices.getUserMedia(c); } catch (_) {}
     }
     return null;
   }
 
-  async function startScanner() {
-    if (scannerActive) return;
-    try { await loadZXing(); } catch { setFeedback('Scanner indisponible.', 'error'); return; }
-    buildOverlay();
+  /* ── Callback commun après détection d'un code ─────────────────── */
+  function onCodeDetected(raw) {
+    const code = raw.replace(/[^0-9X]/gi, '');
+    if (!code) return;
+    stopScanner();
+    if (typeof selectType === 'function') selectType('ouvrage');
+    setTimeout(() => {
+      const isbnEl = getField('isbn');
+      if (isbnEl) {
+        isbnEl.value = code;
+        isbnEl.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+      fetchISBN(code);
+    }, 150);
+  }
 
-    const video  = document.getElementById('isbn-scan-video');
-    const canvas = document.getElementById('isbn-scan-canvas');
-    const hint   = document.getElementById('isbn-scan-hint');
-
-    /* Stopper un éventuel flux résiduel (Chrome bloque sinon) */
-    if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
-
-    videoStream = await acquireCamera();
-    if (!videoStream) {
-      setFeedback('Accès caméra refusé ou indisponible.', 'error');
-      hint.textContent = '⚠ Caméra inaccessible — vérifiez les permissions.';
-      return;
+  /* ── Moteur 1 : BarcodeDetector natif (Chrome 83+, Edge, Android) ─ */
+  async function startWithBarcodeDetector(video, hint) {
+    let detector;
+    try {
+      detector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'code_128', 'upc_a'] });
+    } catch {
+      return false; /* API non disponible */
     }
-
-    /* Autofocus continu via applyConstraints (Chrome Android, Safari iOS) */
-    const track = videoStream.getVideoTracks()[0];
-    if (track?.applyConstraints) {
-      const caps = track.getCapabilities ? track.getCapabilities() : {};
-      const adv  = {};
-      if (caps.focusMode?.includes('continuous')) adv.focusMode = 'continuous';
-      if (caps.zoom) adv.zoom = caps.zoom.min ?? 1;
-      if (Object.keys(adv).length) track.applyConstraints({ advanced: [adv] }).catch(() => {});
-    }
-
-    video.srcObject = videoStream;
-
-    /* Attendre que les métadonnées soient prêtes AVANT play() */
-    await new Promise(resolve => {
-      if (video.readyState >= 1) { video.play().then(resolve).catch(resolve); return; }
-      video.onloadedmetadata = () => video.play().then(resolve).catch(resolve);
-    });
 
     scannerActive = true;
-    hint.textContent = 'Scan en cours — approchez doucement le code-barres';
+    hint.textContent = 'Scan en cours — approchez le code-barres';
+    let last = 0;
 
-    /* ── Throttle 15 fps pour laisser l'autofocus travailler ────── */
-    let lastScan = 0;
-    const SCAN_INTERVAL = 1000 / 15;
-
-    function tick(timestamp) {
+    async function tick(ts) {
       if (!scannerActive) return;
-
-      if (timestamp - lastScan >= SCAN_INTERVAL && video.readyState === video.HAVE_ENOUGH_DATA) {
-        lastScan = timestamp;
-        const vw = video.videoWidth, vh = video.videoHeight;
-        if (!vw || !vh) { animFrame = requestAnimationFrame(tick); return; }
-
-        /* Capture à résolution native */
-        canvas.width  = vw;
-        canvas.height = vh;
-        const ctx = canvas.getContext('2d', { willReadFrequently: true });
-        ctx.drawImage(video, 0, 0, vw, vh);
-
-        /* Zone de recadrage centrale (correspond au viseur) */
-        const cropW = Math.round(vw * 0.85), cropH = Math.round(vh * 0.45);
-        const cropX = Math.round((vw - cropW) / 2), cropY = Math.round((vh - cropH) / 2);
-        const crop  = document.createElement('canvas');
-        crop.width  = cropW; crop.height = cropH;
-        crop.getContext('2d').drawImage(canvas, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
-
+      if (ts - last > 150 && video.readyState === video.HAVE_ENOUGH_DATA) {
+        last = ts;
         try {
-          const hints = new Map([
-            [ZXing.DecodeHintType.POSSIBLE_FORMATS, [ZXing.BarcodeFormat.EAN_13, ZXing.BarcodeFormat.EAN_8, ZXing.BarcodeFormat.CODE_128]],
-            [ZXing.DecodeHintType.TRY_HARDER, true]
-          ]);
-          const reader = new ZXing.MultiFormatReader();
-          reader.setHints(hints);
-          const result = reader.decode(
-            new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(new ZXing.HTMLCanvasElementLuminanceSource(crop)))
-          );
-          if (result) {
-            const code = result.getText().replace(/[^0-9X]/gi, '');
-            stopScanner();
-            /* Navigation auto vers formulaire Ouvrage */
-            if (typeof selectType === 'function') selectType('ouvrage');
-            /* Attendre que le DOM soit rendu puis injecter l'ISBN */
-            setTimeout(() => {
-              const isbnEl = getField('isbn');
-              if (isbnEl) {
-                isbnEl.value = code;
-                isbnEl.dispatchEvent(new Event('input', { bubbles: true }));
-              }
-              fetchISBN(code);
-            }, 120);
-            return;
-          }
+          const barcodes = await detector.detect(video);
+          if (barcodes.length > 0) { onCodeDetected(barcodes[0].rawValue); return; }
         } catch (_) {}
       }
       animFrame = requestAnimationFrame(tick);
     }
     animFrame = requestAnimationFrame(tick);
+    return true;
+  }
+
+  /* ── Moteur 2 : QuaggaJS (Firefox, Safari, navigateurs sans BarcodeDetector) ── */
+  async function startWithQuagga(video, hint) {
+    try { await loadQuagga(); } catch { return false; }
+
+    const canvas = document.getElementById('isbn-scan-canvas');
+    scannerActive = true;
+    hint.textContent = 'Scan en cours — approchez le code-barres';
+    let last = 0;
+
+    function tick(ts) {
+      if (!scannerActive) return;
+      if (ts - last > 100 && video.readyState === video.HAVE_ENOUGH_DATA) {
+        last = ts;
+        const vw = video.videoWidth, vh = video.videoHeight;
+        if (!vw || !vh) { animFrame = requestAnimationFrame(tick); return; }
+        canvas.width = vw; canvas.height = vh;
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        ctx.drawImage(video, 0, 0, vw, vh);
+
+        /* Recadrage zone centrale */
+        const cw = Math.round(vw * 0.9), ch = Math.round(vh * 0.5);
+        const cx = Math.round((vw - cw) / 2), cy = Math.round((vh - ch) / 2);
+        const crop = document.createElement('canvas');
+        crop.width = cw; crop.height = ch;
+        crop.getContext('2d').drawImage(canvas, cx, cy, cw, ch, 0, 0, cw, ch);
+        const imgData = crop.getContext('2d').getImageData(0, 0, cw, ch);
+
+        Quagga.decodeSingle({
+          decoder: { readers: ['ean_reader', 'ean_8_reader', 'code_128_reader'] },
+          locate: true,
+          src: crop.toDataURL()
+        }, result => {
+          if (result?.codeResult?.code) onCodeDetected(result.codeResult.code);
+        });
+      }
+      animFrame = requestAnimationFrame(tick);
+    }
+    animFrame = requestAnimationFrame(tick);
+    return true;
+  }
+
+  /* ── Point d'entrée principal ───────────────────────────────────── */
+  async function startScanner() {
+    if (scannerActive) return;
+    buildOverlay();
+
+    const video = document.getElementById('isbn-scan-video');
+    const hint  = document.getElementById('isbn-scan-hint');
+
+    hint.textContent = 'Initialisation caméra…';
+
+    videoStream = await acquireStream();
+    if (!videoStream) {
+      hint.textContent = '⚠ Caméra inaccessible. Vérifiez les permissions du navigateur.';
+      setFeedback('Accès caméra refusé.', 'error');
+      return;
+    }
+
+    /* Appliquer autofocus si disponible */
+    const track = videoStream.getVideoTracks()[0];
+    if (track?.applyConstraints) {
+      const caps = track.getCapabilities?.() ?? {};
+      const adv  = {};
+      if (caps.focusMode?.includes('continuous')) adv.focusMode = 'continuous';
+      if (Object.keys(adv).length) track.applyConstraints({ advanced: [adv] }).catch(() => {});
+    }
+
+    video.srcObject = videoStream;
+    await new Promise(res => {
+      if (video.readyState >= 2) { video.play().then(res).catch(res); return; }
+      video.onloadedmetadata = () => video.play().then(res).catch(res);
+    });
+
+    /* Essayer BarcodeDetector (Chrome) d'abord, Quagga ensuite */
+    const ok = await startWithBarcodeDetector(video, hint)
+            || await startWithQuagga(video, hint);
+
+    if (!ok) {
+      hint.textContent = '⚠ Aucun moteur de scan disponible sur ce navigateur.';
+      stopScanner();
+    }
   }
 
   function stopScanner() {
     scannerActive = false;
     if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; }
-    /* Libération complète du flux — indispensable pour Chrome */
+
+    /* Arrêt Quagga si actif */
+    try { if (window.Quagga) Quagga.stop(); } catch (_) {}
+
+    /* Libération complète flux vidéo — CRITIQUE pour Chrome */
+    const video = document.getElementById('isbn-scan-video');
+    if (video) {
+      video.pause();
+      video.srcObject = null;
+      video.load();
+    }
     if (videoStream) {
-      videoStream.getTracks().forEach(t => { t.stop(); });
+      videoStream.getTracks().forEach(t => t.stop());
       videoStream = null;
     }
-    /* Couper explicitement le srcObject de la vidéo */
-    const video = document.getElementById('isbn-scan-video');
-    if (video) { video.srcObject = null; video.load(); }
+
     const o = document.getElementById('isbn-scan-overlay');
     if (o) o.remove();
   }
 
-  /* ── Exposer startScanner globalement pour le bouton bannière ────── */
+  /* ── Exposer pour le bouton bannière ────────────────────────────── */
   window.globalStartScanner = function () { startScanner(); };
 
   /* ── Injection UI dans le groupe du champ ISBN ──────────────────── */
