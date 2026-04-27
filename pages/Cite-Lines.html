@@ -511,6 +511,59 @@
       .type-grid { gap: 6px; }
       .type-btn { font-size: 0.8rem; padding: 6px 13px; }
     }
+
+    /* ===== SCAN GLOBAL BANNER ===== */
+    .scan-banner {
+      background: var(--bg-card);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      box-shadow: var(--shadow);
+    }
+    .scan-banner-text {
+      font-size: 0.88rem;
+      color: var(--ink-muted);
+    }
+    .scan-banner-text strong { color: var(--ink); }
+    .btn-scan-global {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 20px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-scan-global:hover { background: #a93226; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(192,57,43,0.3); }
+
+    /* ===== BOUTON QUITTER ===== */
+    .btn-quitter {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 16px;
+      background: transparent;
+      color: var(--ink-muted);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-quitter:hover { border-color: var(--ink-muted); color: var(--ink); }
   </style>
 </head>
 <body>
@@ -522,6 +575,7 @@
     Citatio
   </div>
   <div class="header-actions">
+    <button class="btn-quitter" onclick="quitterApplication()" title="Quitter / retour au menu">← Retour</button>
     <span class="theme-label" id="theme-label">Mode sombre</span>
     <button class="theme-toggle" id="theme-toggle" aria-label="Basculer le thème" title="Mode sombre"></button>
   </div>
@@ -529,6 +583,16 @@
 
 <!-- MAIN -->
 <div class="container">
+
+  <!-- SCAN ISBN BANNER -->
+  <div class="scan-banner">
+    <div class="scan-banner-text">
+      <strong>📖 Ouvrage ?</strong> Scannez directement le code-barres ISBN pour remplir le formulaire automatiquement.
+    </div>
+    <button class="btn-scan-global" id="btn-scan-global" onclick="globalStartScanner()">
+      📷 Scanner un ISBN
+    </button>
+  </div>
 
   <!-- TYPE SELECTOR -->
   <div>
@@ -1097,6 +1161,25 @@ document.getElementById('theme-toggle').addEventListener('click', () => {
 });
 
 /* ========================================================
+   QUITTER L'APPLICATION (iframe ou standalone)
+   ======================================================== */
+function quitterApplication() {
+  try {
+    // Si dans une iframe : envoyer message au parent
+    if (window.self !== window.top) {
+      window.parent.postMessage('close-cite-lines', '*');
+      return;
+    }
+  } catch (e) {}
+  // Sinon : retour historique ou page d'accueil
+  if (document.referrer) {
+    history.back();
+  } else {
+    window.location.href = '/';
+  }
+}
+
+/* ========================================================
    INIT
    ======================================================== */
 initTheme();
@@ -1394,6 +1477,29 @@ renderHistory();
     return o;
   }
 
+  /* ── Demande getUserMedia avec stratégie de fallback Chrome/FF ──── */
+  async function acquireCamera() {
+    /* Chrome exige exact:'environment' sur certains appareils, Firefox préfère ideal */
+    const strategies = [
+      /* 1. Haute résolution + caméra arrière exacte (Chrome mobile) */
+      { video: { facingMode: { exact: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } } },
+      /* 2. Caméra arrière idéale + haute résolution */
+      { video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } } },
+      /* 3. Caméra arrière idéale sans contrainte de résolution */
+      { video: { facingMode: { ideal: 'environment' } } },
+      /* 4. Toute caméra disponible (fallback ultime desktop/webcam) */
+      { video: true }
+    ];
+
+    for (const constraints of strategies) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        return stream;
+      } catch (_) { /* essayer la stratégie suivante */ }
+    }
+    return null;
+  }
+
   async function startScanner() {
     if (scannerActive) return;
     try { await loadZXing(); } catch { setFeedback('Scanner indisponible.', 'error'); return; }
@@ -1403,56 +1509,38 @@ renderHistory();
     const canvas = document.getElementById('isbn-scan-canvas');
     const hint   = document.getElementById('isbn-scan-hint');
 
-    /* ── Contraintes caméra optimisées pour la netteté ────────────── */
-    const constraints = {
-      video: {
-        facingMode:  { ideal: 'environment' },
-        width:       { ideal: 1920, min: 640 },
-        height:      { ideal: 1080, min: 480 },
-        frameRate:   { ideal: 30 },
-        focusMode:   { ideal: 'continuous' },   /* autofocus continu */
-        zoom:        { ideal: 1 }               /* pas de zoom numérique */
-      }
-    };
+    /* Stopper un éventuel flux résiduel (Chrome bloque sinon) */
+    if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
 
-    try {
-      videoStream = await navigator.mediaDevices.getUserMedia(constraints);
-    } catch (e1) {
-      /* Fallback : contraintes minimales si les avancées sont refusées */
-      try {
-        videoStream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: 'environment' } }
-        });
-      } catch {
-        setFeedback('Accès caméra refusé.', 'error');
-        stopScanner();
-        return;
-      }
+    videoStream = await acquireCamera();
+    if (!videoStream) {
+      setFeedback('Accès caméra refusé ou indisponible.', 'error');
+      hint.textContent = '⚠ Caméra inaccessible — vérifiez les permissions.';
+      return;
     }
 
-    /* Appliquer autofocus continu via applyConstraints si disponible */
+    /* Autofocus continu via applyConstraints (Chrome Android, Safari iOS) */
     const track = videoStream.getVideoTracks()[0];
-    if (track && typeof track.applyConstraints === 'function') {
+    if (track?.applyConstraints) {
       const caps = track.getCapabilities ? track.getCapabilities() : {};
-      const advConstraints = {};
-      if (caps.focusMode && caps.focusMode.includes('continuous'))
-        advConstraints.focusMode = 'continuous';
-      if (caps.zoom) advConstraints.zoom = caps.zoom.min || 1;
-      if (Object.keys(advConstraints).length)
-        track.applyConstraints({ advanced: [advConstraints] }).catch(() => {});
+      const adv  = {};
+      if (caps.focusMode?.includes('continuous')) adv.focusMode = 'continuous';
+      if (caps.zoom) adv.zoom = caps.zoom.min ?? 1;
+      if (Object.keys(adv).length) track.applyConstraints({ advanced: [adv] }).catch(() => {});
     }
 
     video.srcObject = videoStream;
 
-    /* Attendre que la vidéo soit réellement prête avant de démarrer le scan */
+    /* Attendre que les métadonnées soient prêtes AVANT play() */
     await new Promise(resolve => {
-      video.onloadedmetadata = () => { video.play().then(resolve).catch(resolve); };
+      if (video.readyState >= 1) { video.play().then(resolve).catch(resolve); return; }
+      video.onloadedmetadata = () => video.play().then(resolve).catch(resolve);
     });
 
     scannerActive = true;
     hint.textContent = 'Scan en cours — approchez doucement le code-barres';
 
-    /* ── Throttle : scanner à 15 fps max pour laisser l'AF travailler */
+    /* ── Throttle 15 fps pour laisser l'autofocus travailler ────── */
     let lastScan = 0;
     const SCAN_INTERVAL = 1000 / 15;
 
@@ -1461,66 +1549,72 @@ renderHistory();
 
       if (timestamp - lastScan >= SCAN_INTERVAL && video.readyState === video.HAVE_ENOUGH_DATA) {
         lastScan = timestamp;
+        const vw = video.videoWidth, vh = video.videoHeight;
+        if (!vw || !vh) { animFrame = requestAnimationFrame(tick); return; }
 
-        /* Résolution native du flux — pas de mise à l'échelle */
-        const vw = video.videoWidth;
-        const vh = video.videoHeight;
-        if (vw === 0 || vh === 0) { animFrame = requestAnimationFrame(tick); return; }
-
+        /* Capture à résolution native */
         canvas.width  = vw;
         canvas.height = vh;
         const ctx = canvas.getContext('2d', { willReadFrequently: true });
         ctx.drawImage(video, 0, 0, vw, vh);
 
-        /* Recadrage sur la zone centrale (là où est le viseur) */
-        const cropW = Math.round(vw * 0.85);
-        const cropH = Math.round(vh * 0.45);
-        const cropX = Math.round((vw - cropW) / 2);
-        const cropY = Math.round((vh - cropH) / 2);
-
-        const cropCanvas = document.createElement('canvas');
-        cropCanvas.width  = cropW;
-        cropCanvas.height = cropH;
-        cropCanvas.getContext('2d').drawImage(canvas, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
+        /* Zone de recadrage centrale (correspond au viseur) */
+        const cropW = Math.round(vw * 0.85), cropH = Math.round(vh * 0.45);
+        const cropX = Math.round((vw - cropW) / 2), cropY = Math.round((vh - cropH) / 2);
+        const crop  = document.createElement('canvas');
+        crop.width  = cropW; crop.height = cropH;
+        crop.getContext('2d').drawImage(canvas, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
 
         try {
-          const lum    = new ZXing.HTMLCanvasElementLuminanceSource(cropCanvas);
-          const bitmap = new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(lum));
-          const hints  = new Map();
-          hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
-            ZXing.BarcodeFormat.EAN_13,
-            ZXing.BarcodeFormat.EAN_8,
-            ZXing.BarcodeFormat.CODE_128
+          const hints = new Map([
+            [ZXing.DecodeHintType.POSSIBLE_FORMATS, [ZXing.BarcodeFormat.EAN_13, ZXing.BarcodeFormat.EAN_8, ZXing.BarcodeFormat.CODE_128]],
+            [ZXing.DecodeHintType.TRY_HARDER, true]
           ]);
-          hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
           const reader = new ZXing.MultiFormatReader();
           reader.setHints(hints);
-          const result = reader.decode(bitmap);
-
+          const result = reader.decode(
+            new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(new ZXing.HTMLCanvasElementLuminanceSource(crop)))
+          );
           if (result) {
             const code = result.getText().replace(/[^0-9X]/gi, '');
             stopScanner();
-            const isbnEl = getField('isbn');
-            if (isbnEl) { isbnEl.value = code; isbnEl.dispatchEvent(new Event('input')); }
-            fetchISBN(code);
+            /* Navigation auto vers formulaire Ouvrage */
+            if (typeof selectType === 'function') selectType('ouvrage');
+            /* Attendre que le DOM soit rendu puis injecter l'ISBN */
+            setTimeout(() => {
+              const isbnEl = getField('isbn');
+              if (isbnEl) {
+                isbnEl.value = code;
+                isbnEl.dispatchEvent(new Event('input', { bubbles: true }));
+              }
+              fetchISBN(code);
+            }, 120);
             return;
           }
         } catch (_) {}
       }
-
       animFrame = requestAnimationFrame(tick);
     }
-
     animFrame = requestAnimationFrame(tick);
   }
 
   function stopScanner() {
     scannerActive = false;
-    if (animFrame)   { cancelAnimationFrame(animFrame); animFrame = null; }
-    if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
+    if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; }
+    /* Libération complète du flux — indispensable pour Chrome */
+    if (videoStream) {
+      videoStream.getTracks().forEach(t => { t.stop(); });
+      videoStream = null;
+    }
+    /* Couper explicitement le srcObject de la vidéo */
+    const video = document.getElementById('isbn-scan-video');
+    if (video) { video.srcObject = null; video.load(); }
     const o = document.getElementById('isbn-scan-overlay');
     if (o) o.remove();
   }
+
+  /* ── Exposer startScanner globalement pour le bouton bannière ────── */
+  window.globalStartScanner = function () { startScanner(); };
 
   /* ── Injection UI dans le groupe du champ ISBN ──────────────────── */
   function injectUI() {
