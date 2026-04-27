@@ -1492,6 +1492,11 @@ renderHistory();
       videoStream.getTracks().forEach(t => t.stop());
       videoStream = null;
     }
+    if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== 'function') {
+      const err = new Error('getUserMedia indisponible (navigator.mediaDevices manquant).');
+      err.name = 'NotSupportedError';
+      throw err;
+    }
     /* Séquence de contraintes du plus strict au plus permissif */
     const tries = [
       { video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } } },
@@ -1499,10 +1504,15 @@ renderHistory();
       { video: { facingMode: { ideal: 'environment' } } },
       { video: true }
     ];
+    let lastErr = null;
     for (const c of tries) {
-      try { return await navigator.mediaDevices.getUserMedia(c); } catch (_) {}
+      try {
+        return await navigator.mediaDevices.getUserMedia(c);
+      } catch (e) {
+        lastErr = e;
+      }
     }
-    return null;
+    throw (lastErr || new Error('Impossible d’ouvrir la caméra.'));
   }
 
   /* ── Callback commun après détection d'un code ─────────────────── */
@@ -1600,10 +1610,30 @@ renderHistory();
 
     hint.textContent = 'Initialisation caméra…';
 
-    videoStream = await acquireStream();
-    if (!videoStream) {
-      hint.textContent = '⚠ Caméra inaccessible. Vérifiez les permissions du navigateur.';
-      setFeedback('Accès caméra refusé.', 'error');
+    // Chrome (et la plupart des navigateurs) exigent un contexte sécurisé pour la caméra.
+    // Sur http:// (hors localhost) ou file://, getUserMedia échoue.
+    if (!window.isSecureContext) {
+      const extra = location.protocol === 'file:' ? ' (vous êtes en file://)' : ` (protocole: ${location.protocol})`;
+      hint.textContent = `⚠ Contexte non sécurisé${extra}. Ouvrez la page via https:// ou http://localhost pour activer la caméra.`;
+      setFeedback('Caméra bloquée (contexte non sécurisé).', 'error');
+      return;
+    }
+
+    // Si la page est dans une iframe, Chrome peut bloquer la caméra sans Permissions-Policy / allow="camera".
+    try {
+      if (window.self !== window.top) {
+        // Ne bloque pas forcément, mais donne une piste claire en cas d’échec.
+        hint.textContent = 'Initialisation caméra… (si ça échoue sur Chrome en iframe: ajouter allow="camera" côté parent)';
+      }
+    } catch (_) {}
+
+    try {
+      videoStream = await acquireStream();
+    } catch (e) {
+      const name = e && e.name ? e.name : 'Erreur';
+      const msg  = e && e.message ? e.message : String(e);
+      hint.textContent = `⚠ Caméra inaccessible (${name}). ${msg}`;
+      setFeedback(`Accès caméra refusé (${name}).`, 'error');
       return;
     }
 
