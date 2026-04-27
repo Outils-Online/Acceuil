@@ -1499,10 +1499,10 @@ renderHistory();
     }
     /* Séquence de contraintes du plus strict au plus permissif */
     const tries = [
-      { video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } } },
-      { video: { facingMode: 'environment' } },
-      { video: { facingMode: { ideal: 'environment' } } },
-      { video: true }
+      { audio: false, video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30, max: 60 } } },
+      { audio: false, video: { facingMode: { ideal: 'environment' }, frameRate: { ideal: 30, max: 60 } } },
+      { audio: false, video: { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30, max: 60 } } },
+      { audio: false, video: true }
     ];
     let lastErr = null;
     for (const c of tries) {
@@ -1513,6 +1513,31 @@ renderHistory();
       }
     }
     throw (lastErr || new Error('Impossible d’ouvrir la caméra.'));
+  }
+
+  function explainGetUserMediaError(e) {
+    const name = e && e.name ? e.name : 'Error';
+    const rawMessage = e && e.message ? e.message : '';
+    switch (name) {
+      case 'NotAllowedError':
+      case 'PermissionDeniedError':
+        return "Permission caméra refusée. Sur Chrome: cliquez sur l'icône caméra dans la barre d'adresse et autorisez l'accès.";
+      case 'NotFoundError':
+      case 'DevicesNotFoundError':
+        return "Aucune caméra détectée (ou caméra désactivée dans Windows).";
+      case 'NotReadableError':
+      case 'TrackStartError':
+        return "La caméra est occupée par une autre application (Teams/Zoom/OBS) ou le pilote refuse l'accès. Fermez les applis puis réessayez.";
+      case 'OverconstrainedError':
+      case 'ConstraintNotSatisfiedError':
+        return "Contraintes vidéo non supportées par la caméra. Le module retente normalement en mode plus permissif.";
+      case 'SecurityError':
+        return "Blocage de sécurité. Ouvrez la page en https:// (ou http://localhost).";
+      case 'NotSupportedError':
+        return "Caméra non supportée dans ce contexte/navigateur.";
+      default:
+        return rawMessage || "Erreur inconnue lors de l'accès caméra.";
+    }
   }
 
   /* ── Callback commun après détection d'un code ─────────────────── */
@@ -1631,9 +1656,10 @@ renderHistory();
       videoStream = await acquireStream();
     } catch (e) {
       const name = e && e.name ? e.name : 'Erreur';
-      const msg  = e && e.message ? e.message : String(e);
-      hint.textContent = `⚠ Caméra inaccessible (${name}). ${msg}`;
+      const explained = explainGetUserMediaError(e);
+      hint.textContent = `⚠ Caméra inaccessible (${name}). ${explained}`;
       setFeedback(`Accès caméra refusé (${name}).`, 'error');
+      try { console.warn('[ISBN] getUserMedia error:', e); } catch (_) {}
       return;
     }
 
@@ -1648,8 +1674,14 @@ renderHistory();
 
     video.srcObject = videoStream;
     await new Promise(res => {
-      if (video.readyState >= 2) { video.play().then(res).catch(res); return; }
-      video.onloadedmetadata = () => video.play().then(res).catch(res);
+      let done = false;
+      const finish = () => { if (done) return; done = true; res(); };
+      const timer = setTimeout(finish, 2500); // ne pas rester bloqué sur certains Chrome
+      const tryPlay = () => {
+        Promise.resolve(video.play()).then(() => { clearTimeout(timer); finish(); }).catch(() => { clearTimeout(timer); finish(); });
+      };
+      if (video.readyState >= 2) { tryPlay(); return; }
+      video.onloadedmetadata = () => tryPlay();
     });
 
     /* Essayer BarcodeDetector (Chrome) d'abord, Quagga ensuite */
@@ -1684,6 +1716,14 @@ renderHistory();
     const o = document.getElementById('isbn-scan-overlay');
     if (o) o.remove();
   }
+
+  // Cleanup Chrome: libérer la caméra si l'onglet est caché / la page se ferme
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible' && scannerActive) stopScanner();
+  });
+  window.addEventListener('pagehide', () => {
+    if (scannerActive) stopScanner();
+  });
 
   /* ── Exposer pour le bouton bannière ────────────────────────────── */
   window.globalStartScanner = function () { startScanner(); };
