@@ -6,129 +6,126 @@
   <title>Générateur de Citations Bibliographiques</title>
   <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <style>
-    /* ========================================================
-       VARIABLES (toujours en premier)
-       ======================================================== */
+    /* ===== VARIABLES ===== */
     :root {
-      --accent: #c0392b;
-      --accent-light: #e8d5d3;
       --bg: #f5f2ee;
       --bg-card: #ffffff;
       --bg-dark: #1a1714;
-      --border: #e0dbd5;
       --ink: #1a1714;
-      --ink-light: #a09b96;
       --ink-muted: #6b6560;
-      --radius: 4px;
-      --radius-lg: 8px;
+      --ink-light: #a09b96;
+      --accent: #c0392b;
+      --accent-light: #e8d5d3;
+      --border: #e0dbd5;
       --shadow: 0 2px 16px rgba(26,23,20,0.08);
       --shadow-lg: 0 8px 40px rgba(26,23,20,0.14);
+      --radius: 4px;
+      --radius-lg: 8px;
       --transition: 0.2s ease;
     }
 
     [data-theme="dark"] {
-      --accent: #e05a4e;
-      --accent-light: #2e1a18;
       --bg: #16140f;
       --bg-card: #1f1c17;
-      --border: #2e2a24;
       --ink: #f0ebe4;
-      --ink-light: #5a554e;
       --ink-muted: #9c9488;
+      --ink-light: #5a554e;
+      --accent: #e05a4e;
+      --accent-light: #2e1a18;
+      --border: #2e2a24;
       --shadow: 0 2px 16px rgba(0,0,0,0.3);
       --shadow-lg: 0 8px 40px rgba(0,0,0,0.5);
     }
 
-    /* ========================================================
-       GLOBAL
-       ======================================================== */
+    /* ===== RESET & BASE ===== */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
+      font-family: 'DM Sans', sans-serif;
       background: var(--bg);
       color: var(--ink);
-      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
       font-size: 15px;
       line-height: 1.6;
-      min-height: 100vh;
       transition: background var(--transition), color var(--transition);
     }
 
-    /* ========================================================
-       LAYOUT
-       ======================================================== */
+    /* ===== HEADER ===== */
     header {
-      align-items: center;
       background: var(--bg-card);
       border-bottom: 1px solid var(--border);
-      box-shadow: var(--shadow);
-      display: flex;
-      height: 64px;
-      justify-content: space-between;
       padding: 0 clamp(1rem, 4vw, 3rem);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
       position: sticky;
       top: 0;
       z-index: 100;
+      box-shadow: var(--shadow);
     }
-
-    .container {
-      display: grid;
-      gap: 2rem;
-      grid-template-columns: 1fr;
-      margin: 0 auto;
-      max-width: 900px;
-      padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 4vw, 2rem);
-    }
-
-    .header-actions { align-items: center; display: flex; gap: 12px; }
 
     .logo {
-      align-items: center;
-      display: flex;
       font-family: 'Libre Baskerville', serif;
       font-size: 1.1rem;
       font-weight: 700;
-      gap: 10px;
       letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
     .logo-dot {
+      width: 8px; height: 8px;
       background: var(--accent);
       border-radius: 50%;
       display: inline-block;
-      height: 8px;
-      width: 8px;
     }
 
-    .card {
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+
+    /* ===== DARK MODE TOGGLE ===== */
+    .theme-toggle {
+      width: 42px; height: 24px;
+      background: var(--border);
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      position: relative;
+      transition: background var(--transition);
+    }
+
+    .theme-toggle::after {
+      content: '';
+      position: absolute;
+      width: 18px; height: 18px;
       background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow);
-      padding: clamp(1.25rem, 3vw, 2rem);
-      transition: background var(--transition), border-color var(--transition);
-    }
-
-    .card-title {
-      align-items: center;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      font-family: 'Libre Baskerville', serif;
-      font-size: 1rem;
-      font-weight: 700;
-      gap: 8px;
-      margin-bottom: 1.25rem;
-      padding-bottom: 0.75rem;
-    }
-
-    .card-title-icon {
-      background: var(--accent);
       border-radius: 50%;
-      flex-shrink: 0;
-      height: 6px;
-      width: 6px;
+      top: 3px; left: 3px;
+      transition: transform var(--transition), background var(--transition);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
     }
 
+    [data-theme="dark"] .theme-toggle { background: var(--accent); }
+    [data-theme="dark"] .theme-toggle::after { transform: translateX(18px); }
+
+    .theme-label {
+      font-size: 0.78rem;
+      color: var(--ink-muted);
+      font-weight: 500;
+    }
+
+    /* ===== LAYOUT ===== */
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 4vw, 2rem);
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
+    /* ===== SECTION TITLE ===== */
     .section-title {
       font-family: 'Libre Baskerville', serif;
       font-size: 1.5rem;
@@ -137,240 +134,279 @@
       margin-bottom: 0.25rem;
     }
 
-    .section-sub { color: var(--ink-muted); font-size: 0.87rem; }
-
-    /* ========================================================
-       FORMULAIRE
-       ======================================================== */
-    label {
+    .section-sub {
+      font-size: 0.87rem;
       color: var(--ink-muted);
-      font-size: 0.78rem;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
     }
 
-    label .req { color: var(--accent); margin-left: 2px; }
-    label .opt { color: var(--ink-light); font-size: 0.75rem; font-weight: 400; margin-left: 4px; text-transform: none; }
+    /* ===== TYPE SELECTOR ===== */
+    .type-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .type-btn {
+      padding: 7px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 100px;
+      background: transparent;
+      color: var(--ink-muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all var(--transition);
+      white-space: nowrap;
+    }
+
+    .type-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-light);
+    }
+
+    .type-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    /* ===== CARD ===== */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: clamp(1.25rem, 3vw, 2rem);
+      box-shadow: var(--shadow);
+      transition: background var(--transition), border-color var(--transition);
+    }
+
+    .card-title {
+      font-family: 'Libre Baskerville', serif;
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-title-icon {
+      width: 6px; height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ===== FORM ===== */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .form-group.full { grid-column: 1 / -1; }
+
+    label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--ink-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    label .req {
+      color: var(--accent);
+      margin-left: 2px;
+    }
+
+    label .opt {
+      font-weight: 400;
+      color: var(--ink-light);
+      text-transform: none;
+      letter-spacing: 0;
+      font-size: 0.75rem;
+      margin-left: 4px;
+    }
 
     input, select, textarea {
-      background: var(--bg);
+      padding: 9px 12px;
       border: 1.5px solid var(--border);
       border-radius: var(--radius);
+      background: var(--bg);
       color: var(--ink);
       font-family: 'DM Sans', sans-serif;
       font-size: 0.9rem;
-      outline: none;
-      padding: 9px 12px;
       transition: border-color var(--transition), background var(--transition);
+      outline: none;
       width: 100%;
     }
 
-    input:focus, select:focus, textarea:focus { background: var(--bg-card); border-color: var(--accent); }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent);
+      background: var(--bg-card);
+    }
+
     input.error, select.error { border-color: #e74c3c; }
 
-    select { cursor: pointer; }
-    textarea { min-height: 70px; resize: vertical; }
+    textarea { resize: vertical; min-height: 70px; }
 
-    .error-msg { color: #e74c3c; display: none; font-size: 0.74rem; }
+    select { cursor: pointer; }
+
+    .field-hint {
+      font-size: 0.74rem;
+      color: var(--ink-light);
+      font-style: italic;
+    }
+
+    .error-msg {
+      font-size: 0.74rem;
+      color: #e74c3c;
+      display: none;
+    }
+
     .error-msg.visible { display: block; }
 
-    .field-hint { color: var(--ink-light); font-size: 0.74rem; font-style: italic; }
-
-    .form-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 10px; margin-top: 1.5rem; }
-
-    .form-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
-    .form-group { display: flex; flex-direction: column; gap: 5px; }
-    .form-group.full { grid-column: 1 / -1; }
-
-    /* ========================================================
-       SCANNER (bannière ISBN)
-       ======================================================== */
-    .scan-banner {
-      align-items: center;
-      background: var(--bg-card);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow);
+    /* ===== ACTIONS ===== */
+    .form-actions {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
-      justify-content: space-between;
-      padding: 14px 18px;
+      margin-top: 1.5rem;
+      align-items: center;
     }
 
-    .scan-banner-text { color: var(--ink-muted); font-size: 0.88rem; }
-    .scan-banner-text strong { color: var(--ink); }
-
-    /* ========================================================
-       ANIMATIONS / INTERACTIONS
-       ======================================================== */
     .btn {
-      align-items: center;
-      border: none;
+      padding: 10px 22px;
       border-radius: var(--radius);
-      cursor: pointer;
-      display: inline-flex;
       font-family: 'DM Sans', sans-serif;
       font-size: 0.88rem;
       font-weight: 600;
-      gap: 7px;
-      padding: 10px 22px;
+      cursor: pointer;
+      border: none;
       transition: all var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
     }
 
-    .btn-primary { background: var(--accent); color: #fff; }
-    .btn-primary:hover { background: #a93226; box-shadow: 0 4px 12px rgba(192,57,43,0.3); transform: translateY(-1px); }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
 
-    .btn-secondary { background: transparent; border: 1.5px solid var(--border); color: var(--ink-muted); }
+    .btn-primary:hover { background: #a93226; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(192,57,43,0.3); }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--ink-muted);
+      border: 1.5px solid var(--border);
+    }
+
     .btn-secondary:hover { border-color: var(--ink-muted); color: var(--ink); }
 
-    .btn-copy { background: var(--ink); color: var(--bg-card); font-size: 0.82rem; padding: 7px 16px; }
-    .btn-copy:hover { opacity: 0.85; }
-
-    .btn-save { background: transparent; border: 1.5px solid var(--border); color: var(--ink-muted); font-size: 0.82rem; padding: 7px 16px; }
-    .btn-save:hover { border-color: var(--accent); color: var(--accent); }
-
-    .btn-scan-global {
-      align-items: center;
-      background: var(--accent);
-      border: none;
-      border-radius: var(--radius);
-      color: #fff;
-      cursor: pointer;
-      display: inline-flex;
-      font-family: inherit;
-      font-size: 0.88rem;
-      font-weight: 600;
-      gap: 8px;
-      padding: 9px 20px;
-      transition: all 0.2s;
-    }
-
-    .btn-scan-global:hover { background: #a93226; box-shadow: 0 4px 12px rgba(192,57,43,0.3); transform: translateY(-1px); }
-
-    .btn-quitter {
-      align-items: center;
-      background: transparent;
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius);
-      color: var(--ink-muted);
-      cursor: pointer;
-      display: inline-flex;
-      font-family: inherit;
-      font-size: 0.82rem;
-      font-weight: 500;
-      gap: 6px;
-      padding: 7px 16px;
-      transition: all 0.2s;
-    }
-
-    .btn-quitter:hover { border-color: var(--ink-muted); color: var(--ink); }
-
-    .copy-confirm { align-items: center; color: #27ae60; display: none; font-size: 0.8rem; font-weight: 500; gap: 4px; }
-    .copy-confirm.show { display: flex; }
-
-    .result-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-
+    /* ===== RESULT ===== */
     .result-box {
       background: var(--bg);
       border: 1.5px dashed var(--border);
       border-radius: var(--radius);
-      color: var(--ink);
+      padding: 1.25rem;
       font-family: 'Libre Baskerville', serif;
       font-size: 0.95rem;
       line-height: 1.8;
+      color: var(--ink);
       min-height: 80px;
-      padding: 1.25rem;
       transition: background var(--transition);
       word-break: break-word;
     }
 
-    .result-box.has-content { background: var(--accent-light); border-color: var(--accent); border-style: solid; }
-    [data-theme="dark"] .result-box.has-content { background: #2a1210; }
-
-    .result-placeholder { color: var(--ink-light); font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-style: italic; }
-
-    .theme-label { color: var(--ink-muted); font-size: 0.78rem; font-weight: 500; }
-
-    .theme-toggle {
-      background: var(--border);
-      border: none;
-      border-radius: 12px;
-      cursor: pointer;
-      height: 24px;
-      position: relative;
-      transition: background var(--transition);
-      width: 42px;
+    .result-box.has-content {
+      border-style: solid;
+      border-color: var(--accent);
+      background: var(--accent-light);
     }
 
-    .theme-toggle::after {
-      background: var(--bg-card);
-      border-radius: 50%;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
-      content: '';
-      height: 18px;
-      left: 3px;
-      position: absolute;
-      top: 3px;
-      transition: transform var(--transition), background var(--transition);
-      width: 18px;
+    [data-theme="dark"] .result-box.has-content {
+      background: #2a1210;
     }
 
-    [data-theme="dark"] .theme-toggle { background: var(--accent); }
-    [data-theme="dark"] .theme-toggle::after { transform: translateX(18px); }
-
-    .toast {
-      background: var(--ink);
-      border-radius: var(--radius);
-      bottom: 2rem;
-      color: var(--bg);
+    .result-placeholder {
+      color: var(--ink-light);
+      font-family: 'DM Sans', sans-serif;
+      font-style: italic;
       font-size: 0.88rem;
-      font-weight: 500;
-      opacity: 0;
-      padding: 10px 20px;
-      pointer-events: none;
-      position: fixed;
-      right: 2rem;
-      transform: translateY(10px);
-      transition: all 0.3s ease;
-      z-index: 200;
     }
 
-    .toast.show { opacity: 1; transform: translateY(0); }
+    .result-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
 
-    /* ========================================================
-       COMPOSANTS (historique / types)
-       ======================================================== */
-    .history-actions { display: flex; flex-shrink: 0; gap: 4px; }
+    .btn-copy {
+      background: var(--ink);
+      color: var(--bg-card);
+      font-size: 0.82rem;
+      padding: 7px 16px;
+    }
+
+    .btn-copy:hover { opacity: 0.85; }
+
+    .btn-save {
+      background: transparent;
+      border: 1.5px solid var(--border);
+      color: var(--ink-muted);
+      font-size: 0.82rem;
+      padding: 7px 16px;
+    }
+
+    .btn-save:hover { border-color: var(--accent); color: var(--accent); }
+
+    .copy-confirm {
+      font-size: 0.8rem;
+      color: #27ae60;
+      font-weight: 500;
+      display: none;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .copy-confirm.show { display: flex; }
+
+    /* ===== HISTORY ===== */
+    .history-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
 
     .history-count {
-      background: var(--accent);
-      border-radius: 100px;
-      color: #fff;
       font-size: 0.8rem;
-      font-weight: 600;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 100px;
       padding: 2px 9px;
+      font-weight: 600;
     }
 
-    .history-date { color: var(--ink-light); font-size: 0.72rem; margin-top: 3px; }
-    .history-empty { color: var(--ink-light); font-size: 0.88rem; font-style: italic; padding: 1.5rem 0; text-align: center; }
-    .history-header { align-items: center; display: flex; justify-content: space-between; margin-bottom: 1rem; }
-
-    .history-item {
-      align-items: flex-start;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      display: flex;
-      gap: 10px;
-      padding: 10px 14px;
-      transition: border-color var(--transition);
+    .history-empty {
+      color: var(--ink-light);
+      font-style: italic;
+      font-size: 0.88rem;
+      text-align: center;
+      padding: 1.5rem 0;
     }
-
-    .history-item:hover { border-color: var(--accent); }
-
-    .history-item-content { flex: 1; min-width: 0; }
 
     .history-list {
       display: flex;
@@ -380,64 +416,157 @@
       overflow-y: auto;
     }
 
+    .history-item {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      transition: border-color var(--transition);
+    }
+
+    .history-item:hover { border-color: var(--accent); }
+
+    .history-item-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .history-type {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      margin-bottom: 3px;
+    }
+
+    .history-text {
+      font-family: 'Libre Baskerville', serif;
+      font-size: 0.82rem;
+      line-height: 1.5;
+      color: var(--ink);
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .history-date {
+      font-size: 0.72rem;
+      color: var(--ink-light);
+      margin-top: 3px;
+    }
+
+    .history-actions { display: flex; gap: 4px; flex-shrink: 0; }
+
+    .btn-icon {
+      width: 28px; height: 28px;
+      border: none;
+      background: transparent;
+      border-radius: var(--radius);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      transition: background var(--transition);
+      color: var(--ink-muted);
+    }
+
+    .btn-icon:hover { background: var(--border); color: var(--ink); }
+
+    .btn-icon.danger:hover { background: #fde8e8; color: #e74c3c; }
+
+    /* ===== SCROLLBAR ===== */
     .history-list::-webkit-scrollbar { width: 4px; }
     .history-list::-webkit-scrollbar-track { background: transparent; }
     .history-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-    .history-text {
-      color: var(--ink);
-      display: -webkit-box;
-      font-family: 'Libre Baskerville', serif;
-      font-size: 0.82rem;
-      line-height: 1.5;
-      overflow: hidden;
-      -webkit-box-orient: vertical;
-      -webkit-line-clamp: 2;
-    }
-
-    .history-type {
-      color: var(--accent);
-      font-size: 0.7rem;
-      font-weight: 700;
-      letter-spacing: 0.06em;
-      margin-bottom: 3px;
-      text-transform: uppercase;
-    }
-
-    .type-grid { display: flex; flex-wrap: wrap; gap: 8px; }
-
-    .type-btn {
-      background: transparent;
-      border: 1.5px solid var(--border);
-      border-radius: 100px;
-      color: var(--ink-muted);
-      cursor: pointer;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.85rem;
+    /* ===== TOAST ===== */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--ink);
+      color: var(--bg);
+      padding: 10px 20px;
+      border-radius: var(--radius);
+      font-size: 0.88rem;
       font-weight: 500;
-      padding: 7px 16px;
-      transition: all var(--transition);
-      white-space: nowrap;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.3s ease;
+      pointer-events: none;
+      z-index: 200;
     }
 
-    .type-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
-    .type-btn:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+    .toast.show { opacity: 1; transform: translateY(0); }
 
-    /* ========================================================
-       RESPONSIVE
-       ======================================================== */
+    /* ===== RESPONSIVE ===== */
     @media (max-width: 600px) {
       .form-grid { grid-template-columns: 1fr; }
       .type-grid { gap: 6px; }
       .type-btn { font-size: 0.8rem; padding: 6px 13px; }
     }
+
+    /* ===== SCAN GLOBAL BANNER ===== */
+    .scan-banner {
+      background: var(--bg-card);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      box-shadow: var(--shadow);
+    }
+    .scan-banner-text {
+      font-size: 0.88rem;
+      color: var(--ink-muted);
+    }
+    .scan-banner-text strong { color: var(--ink); }
+    .btn-scan-global {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 20px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-scan-global:hover { background: #a93226; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(192,57,43,0.3); }
+
+    /* ===== BOUTON QUITTER ===== */
+    .btn-quitter {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 16px;
+      background: transparent;
+      color: var(--ink-muted);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-quitter:hover { border-color: var(--ink-muted); color: var(--ink); }
   </style>
 </head>
 <body>
-<!--
-  Si cette page est chargée dans une <iframe>, le parent doit autoriser la caméra, ex. :
-  <iframe src="Cite-Lines.html" allow="camera; microphone" title="…"></iframe>
--->
 
 <!-- HEADER -->
 <header>
@@ -521,9 +650,6 @@
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<!-- ========================================================
-     SCRIPTS
-     ======================================================== -->
 <script>
 /* ========================================================
    MODÈLES DE FORMULAIRES PAR TYPE
@@ -650,13 +776,6 @@ const TYPES = {
 };
 
 /* ========================================================
-   ÉTAT GLOBAL
-   ======================================================== */
-let currentType = null;
-let currentCitation = '';
-let history = JSON.parse(localStorage.getItem('citatio_history') || '[]');
-
-/* ========================================================
    UTILS
    ======================================================== */
 
@@ -760,6 +879,13 @@ const GENERATORS = {
 };
 
 /* ========================================================
+   ÉTAT GLOBAL
+   ======================================================== */
+let currentType = null;
+let currentCitation = '';
+let history = JSON.parse(localStorage.getItem('citatio_history') || '[]');
+
+/* ========================================================
    RENDU DU FORMULAIRE
    ======================================================== */
 function renderTypeButtons() {
@@ -775,9 +901,6 @@ function renderTypeButtons() {
   });
 }
 
-/* ========================================================
-   SÉLECTION / RENDU DU FORMULAIRE
-   ======================================================== */
 function selectType(key) {
   currentType = key;
   document.querySelectorAll('.type-btn').forEach(b => b.classList.toggle('active', b.dataset.type === key));
@@ -1041,20 +1164,9 @@ document.getElementById('theme-toggle').addEventListener('click', () => {
    QUITTER L'APPLICATION (iframe ou standalone)
    ======================================================== */
 function quitterApplication() {
-  try {
-    /* Dans une iframe : signaler au parent ET naviguer */
-    if (window.self !== window.top) {
-      window.parent.postMessage('close-cite-lines', '*');
-      /* Le parent peut ignorer le message — on navigue quand même */
-      window.parent.location.href = 'index.html';
-      return;
-    }
-  } catch (e) {
-    /* Sécurité cross-origin : on ne peut pas toucher parent.location */
-  }
-  /* Page standalone : retour vers index.html dans le même répertoire */
-  const base = window.location.href.replace(/\/[^\/]*$/, '/');
-  window.location.href = base + 'index.html';
+  const ACCUEIL = 'https://outils-online.github.io/Acceuil/';
+  /* window.top fonctionne même en cross-origin pour la navigation */
+  window.top.location.href = ACCUEIL;
 }
 
 /* ========================================================
@@ -1067,35 +1179,27 @@ renderHistory();
 
 <!-- ═══════════════════════════════════════════════════════
      MODULE ISBN — auto-remplissage + scan caméra
-     Autonome, non destructif, encapsulé dans une IIFE
+     Moteur : BarcodeDetector (Chrome/Edge) → Quagga2 (Firefox/Safari)
      ═══════════════════════════════════════════════════════ -->
 <script>
 (function () {
   'use strict';
 
-  /* ── Champs cibles (préfixe f_ car générés dynamiquement) ───────── */
+  /* ── Champs cibles ───────────────────────────────────────────────── */
   const ISBN_FIELDS = ['titre', 'prenoms', 'noms', 'editeur', 'annee'];
-
   function getField(id) { return document.getElementById('f_' + id); }
-
-  function fieldsReady() {
-    return getField('isbn') && ISBN_FIELDS.some(id => getField(id));
-  }
+  function fieldsReady() { return getField('isbn') && ISBN_FIELDS.some(id => getField(id)); }
 
   /* ── Debounce ───────────────────────────────────────────────────── */
-  function debounce(fn, delay) {
+  function debounce(fn, ms) {
     let t;
-    return function (...a) { clearTimeout(t); t = setTimeout(() => fn.apply(this, a), delay); };
+    return function (...a) { clearTimeout(t); t = setTimeout(() => fn.apply(this, a), ms); };
   }
 
-  /* ── Extraire l'année d'une chaîne de date ─────────────────────── */
-  function extractYear(str) {
-    if (!str) return '';
-    const m = str.match(/\d{4}/);
-    return m ? m[0] : '';
-  }
+  /* ── extractYear ────────────────────────────────────────────────── */
+  function extractYear(s) { return (s || '').match(/\d{4}/)?.[0] || ''; }
 
-  /* ── Feedback visuel sous le champ ISBN ─────────────────────────── */
+  /* ── Feedback ───────────────────────────────────────────────────── */
   function setFeedback(msg, type) {
     const el = document.getElementById('isbn-feedback');
     if (!el) return;
@@ -1103,240 +1207,241 @@ renderHistory();
     el.textContent = msg;
     el.style.color = colors[type] || 'var(--ink-muted)';
     el.style.opacity = '1';
-    if (type !== 'loading') setTimeout(() => { el.style.opacity = '0'; }, 3000);
+    if (type !== 'loading') setTimeout(() => { el.style.opacity = '0'; }, 3500);
   }
 
-  /* ── Écriture sécurisée : ne pas écraser une valeur manuelle ────── */
+  /* ── Écriture sécurisée ─────────────────────────────────────────── */
   function setField(id, value) {
     const el = getField(id);
-    if (!el) return;
-    if (!value) return;
-    if (el.value && el.value.trim() !== '') return; // ne pas écraser
+    if (!el || !value) return;
+    if (el.value && el.value.trim()) return;
     el.value = value;
   }
 
   /* ── Séparation prénom / nom ────────────────────────────────────── */
-  function splitAuthor(fullName) {
-    if (!fullName) return { prenom: '', nom: '' };
-    // Format "Nom, Prénom" (OpenLibrary retourne parfois ce format)
-    if (fullName.includes(',')) {
-      const [nom, prenom] = fullName.split(',').map(s => s.trim());
-      return { prenom: prenom || '', nom: nom || '' };
+  function splitAuthor(name) {
+    if (!name) return { prenom: '', nom: '' };
+    if (name.includes(',')) {
+      const [nom, prenom] = name.split(',').map(s => s.trim());
+      return { prenom: prenom || '', nom };
     }
-    const parts = fullName.trim().split(/\s+/);
-    if (parts.length === 1) return { prenom: '', nom: parts[0] };
-    return {
-      prenom: parts.slice(0, -1).join(' '),
-      nom:    parts[parts.length - 1]
-    };
+    const parts = name.trim().split(/\s+/);
+    return parts.length === 1
+      ? { prenom: '', nom: parts[0] }
+      : { prenom: parts.slice(0, -1).join(' '), nom: parts[parts.length - 1] };
   }
 
-  /* ── Normalisation d'une valeur brute (objet ou string) ────────── */
-  function resolveStr(raw) {
-    if (!raw) return '';
-    if (typeof raw === 'object') return raw.name || raw.title || '';
-    return String(raw).trim();
+  /* ── resolveStr ─────────────────────────────────────────────────── */
+  function resolveStr(v) {
+    if (!v) return '';
+    return typeof v === 'object' ? (v.name || v.title || '') : String(v).trim();
   }
 
-  /* ── Remplissage depuis données OpenLibrary (jscmd=data) ─────────── */
+  /* ── fillFromOpenLibrary ────────────────────────────────────────── */
   function fillFromOpenLibrary(book) {
     setField('titre',      book.title || '');
     setField('editeur',    resolveStr(book.publishers?.[0]));
     setField('ville',      resolveStr(book.publish_places?.[0]));
     setField('annee',      extractYear(book.publish_date || ''));
     setField('collection', resolveStr(book.series?.[0]));
-
     const authorName = book.authors?.[0]?.name || '';
     const byStmt     = book.by_statement || '';
     const authorKey  = book.authors?.[0]?.key || '';
-
     if (authorName) {
       const { prenom, nom } = splitAuthor(authorName);
-      setField('prenoms', prenom);
-      setField('noms',    nom);
+      setField('prenoms', prenom); setField('noms', nom);
     } else if (byStmt) {
       const cleaned = byStmt.replace(/^(par|by)\s+/i, '').split(/,|;/)[0].trim();
       const { prenom, nom } = splitAuthor(cleaned);
-      setField('prenoms', prenom);
-      setField('noms',    nom);
+      setField('prenoms', prenom); setField('noms', nom);
     } else if (authorKey) {
       fetch(`https://openlibrary.org${authorKey}.json`)
         .then(r => r.json())
         .then(a => {
-          const name = a.personal_name || a.name || '';
-          if (!name) return;
-          const { prenom, nom } = splitAuthor(name);
-          setField('prenoms', prenom);
-          setField('noms',    nom);
-        })
-        .catch(() => {});
-    } else {
+          const n = a.personal_name || a.name || '';
+          if (n) { const { prenom, nom } = splitAuthor(n); setField('prenoms', prenom); setField('noms', nom); }
+        }).catch(() => {});
     }
   }
 
-  /* ── Remplissage depuis données Google Books ────────────────────── */
+  /* ── fillFromGoogleBooks ────────────────────────────────────────── */
   function fillFromGoogleBooks(item) {
     const info = item.volumeInfo || {};
     setField('titre',   info.title || '');
     setField('editeur', info.publisher || '');
     setField('annee',   extractYear(info.publishedDate || ''));
-
-    const rawCity = info.publishedCountry || '';
-    setField('ville', rawCity);
-
-    const cats = info.categories || [];
-    setField('collection', cats[0] || '');
-
     const authors = info.authors || [];
-    if (authors.length > 0) {
+    if (authors.length) {
       const { prenom, nom } = splitAuthor(authors[0]);
-      setField('prenoms', prenom);
-      setField('noms',    nom);
-    } else {
+      setField('prenoms', prenom); setField('noms', nom);
     }
   }
 
-  /* ── Cascade API : OpenLibrary d'abord, Google Books en fallback ── */
+  /* ── Cascade API : OpenLibrary → Google Books ───────────────────── */
   async function fetchISBN(isbn) {
     const clean = isbn.replace(/[^0-9Xx]/g, '').toUpperCase();
     if (clean.length !== 10 && clean.length !== 13) return;
-
     setFeedback('⏳ Recherche en cours…', 'loading');
-
-    // ── 1. OpenLibrary ──────────────────────────────────────────────
     try {
-      const olRes  = await fetch(
-        `https://openlibrary.org/api/books?bibkeys=ISBN:${clean}&format=json&jscmd=data`
-      );
-      const olData = await olRes.json();
-      const olKey  = `ISBN:${clean}`;
-
-      if (olData[olKey]) {
-        fillFromOpenLibrary(olData[olKey]);
+      const olData = await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${clean}&format=json&jscmd=data`).then(r => r.json());
+      if (olData[`ISBN:${clean}`]) {
+        fillFromOpenLibrary(olData[`ISBN:${clean}`]);
         setFeedback('✓ Données récupérées via Open Library', 'success');
-        if (typeof showToast === 'function') showToast('✓ Données récupérées via Open Library');
+        if (typeof showToast === 'function') showToast('✓ Open Library');
         return;
       }
-    } catch (err) {
-    }
-
-    // ── 2. Google Books (fallback) ──────────────────────────────────
+    } catch (_) {}
     try {
-      const gbRes  = await fetch(
-        `https://www.googleapis.com/books/v1/volumes?q=isbn:${clean}`
-      );
-      const gbData = await gbRes.json();
-      const items  = gbData.items || [];
-
-      if (items.length > 0) {
-        fillFromGoogleBooks(items[0]);
+      const gbData = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${clean}`).then(r => r.json());
+      if (gbData.items?.length) {
+        fillFromGoogleBooks(gbData.items[0]);
         setFeedback('✓ Données récupérées via Google Books', 'success');
-        if (typeof showToast === 'function') showToast('✓ Données récupérées via Google Books');
+        if (typeof showToast === 'function') showToast('✓ Google Books');
         return;
       }
-    } catch (err) {
-    }
-
-    // ── 3. Échec total ──────────────────────────────────────────────
-    setFeedback('ISBN introuvable sur les deux APIs.', 'error');
-    if (typeof showToast === 'function') showToast('⚠ ISBN introuvable sur Open Library et Google Books');
+    } catch (_) {}
+    setFeedback('ISBN introuvable.', 'error');
   }
 
-  /* ── Scanner — BarcodeDetector (Chrome/Edge) + Quagga (Firefox) ── */
-  let scannerActive = false, videoStream = null, animFrame = null;
+  /* ══════════════════════════════════════════════════════════════════
+     SCANNER — architecture unifiée cross-browser
+     Moteur A : BarcodeDetector natif  → Chrome 83+, Edge, Android
+     Moteur B : Quagga2 (html5-qrcode) → Firefox, Safari, autres
+  ══════════════════════════════════════════════════════════════════ */
+  let scannerActive = false;
+  let videoStream   = null;
+  let animFrame     = null;
 
-  /* Chargement dynamique de QuaggaJS (fallback Firefox/Safari) */
-  function loadQuagga() {
+  /* ── Charger Quagga2 à la demande ───────────────────────────────── */
+  function loadQuagga2() {
     return new Promise((res, rej) => {
       if (window.Quagga) { res(); return; }
       const s = document.createElement('script');
-      s.src = 'https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js';
-      s.onload = res; s.onerror = rej;
+      /* Quagga2 : fork maintenu, bien meilleur que 0.12 sur Chrome/FF */
+      s.src = 'https://cdn.jsdelivr.net/npm/@ericblade/quagga2@1.2.6/dist/quagga.min.js';
+      s.onload = res;
+      s.onerror = () => {
+        /* fallback vers CDN alternatif */
+        const s2 = document.createElement('script');
+        s2.src = 'https://unpkg.com/@ericblade/quagga2@1.2.6/dist/quagga.min.js';
+        s2.onload = res; s2.onerror = rej;
+        document.head.appendChild(s2);
+      };
       document.head.appendChild(s);
     });
   }
 
+  /* ── Libérer proprement tout flux vidéo ─────────────────────────── */
+  function releaseStream() {
+    const video = document.getElementById('isbn-scan-video');
+    if (video) { video.pause(); video.srcObject = null; try { video.load(); } catch(_){} }
+    if (videoStream) {
+      videoStream.getTracks().forEach(t => { try { t.stop(); } catch(_){} });
+      videoStream = null;
+    }
+  }
+
+  /* ── Obtenir le flux caméra ─────────────────────────────────────── */
+  async function getStream() {
+    releaseStream();
+    await new Promise(r => setTimeout(r, 100)); /* pause hardware Chrome */
+
+    /*  Priorité : caméra arrière HD.
+        On essaie d'abord avec `exact` (force Chrome à prendre le bon objectif),
+        puis avec `ideal` (Firefox n'accepte pas `exact` sur desktop),
+        puis fallback total.  */
+    const attempts = [
+      { video: { facingMode: { exact: 'environment' }, width: { min: 1280, ideal: 1920 }, height: { min: 720, ideal: 1080 } } },
+      { video: { facingMode: { exact: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } } },
+      { video: { facingMode: { ideal: 'environment' }, width: { min: 1280, ideal: 1920 }, height: { min: 720, ideal: 1080 } } },
+      { video: { facingMode: { ideal: 'environment' } } },
+      { video: true },
+    ];
+
+    for (const c of attempts) {
+      try {
+        const s = await navigator.mediaDevices.getUserMedia(c);
+        console.info('[ISBN Scanner] caméra obtenue avec', JSON.stringify(c.video));
+        return s;
+      } catch (e) {
+        console.info('[ISBN Scanner] échec contrainte', JSON.stringify(c.video), '→', e.name);
+      }
+    }
+    return null;
+  }
+
+  /* ── Appliquer autofocus/exposition continus ────────────────────── */
+  async function applyAdvancedConstraints(stream) {
+    const track = stream?.getVideoTracks()[0];
+    if (!track?.applyConstraints) return;
+    const caps = track.getCapabilities?.() ?? {};
+    const adv  = {};
+    if (caps.focusMode?.includes('continuous'))      adv.focusMode      = 'continuous';
+    if (caps.exposureMode?.includes('continuous'))   adv.exposureMode   = 'continuous';
+    if (caps.whiteBalanceMode?.includes('continuous')) adv.whiteBalanceMode = 'continuous';
+    if (!Object.keys(adv).length) return;
+    try { await track.applyConstraints({ advanced: [adv] }); }
+    catch(e) { console.info('[ISBN Scanner] applyConstraints:', e.message); }
+  }
+
+  /* ── Overlay UI ─────────────────────────────────────────────────── */
   function buildOverlay() {
-    let o = document.getElementById('isbn-scan-overlay');
-    if (o) return o;
-    o = document.createElement('div');
+    if (document.getElementById('isbn-scan-overlay')) return;
+
+    const o = document.createElement('div');
     o.id = 'isbn-scan-overlay';
     Object.assign(o.style, {
-      position:'fixed', inset:'0', background:'rgba(0,0,0,0.92)',
-      display:'flex', flexDirection:'column', alignItems:'center',
-      justifyContent:'center', zIndex:'9999', gap:'12px',
-      padding:'16px'
+      position:'fixed', inset:'0', zIndex:'9999',
+      background:'rgba(0,0,0,0.93)',
+      display:'flex', flexDirection:'column',
+      alignItems:'center', justifyContent:'center',
+      gap:'14px', padding:'16px',
     });
 
     const lbl = document.createElement('p');
-    lbl.textContent = '📷 Pointez le code-barres ISBN dans le cadre';
+    lbl.textContent = '📷 Centrez le code-barres ISBN dans le cadre';
     Object.assign(lbl.style, { color:'#fff', fontFamily:'inherit', fontSize:'14px', margin:'0', textAlign:'center' });
 
-    /* Conteneur vidéo + viseur */
+    /* Wrapper vidéo */
     const wrap = document.createElement('div');
     Object.assign(wrap.style, {
       position:'relative', width:'100%', maxWidth:'460px',
-      borderRadius:'10px', overflow:'hidden', background:'#000'
+      borderRadius:'10px', overflow:'hidden', background:'#000',
+      aspectRatio:'16/9',
     });
 
     const video = document.createElement('video');
     video.id = 'isbn-scan-video';
-    // Propriétés posées AVANT insertion DOM (Chrome/Firefox autoplay policy)
+    Object.assign(video.style, { width:'100%', height:'100%', objectFit:'cover', display:'block', filter:'none' });
+    video.setAttribute('playsinline','');
+    video.setAttribute('autoplay','');
     video.muted = true;
-    video.playsInline = true;
-    video.autoplay = true;
-    Object.assign(video.style, {
-      width:'100%',
-      maxHeight:'70vh',
-      display:'block',
-      /* contain = pas d'étirement / déformation ; le flux garde son ratio natif */
-      objectFit:'contain',
-      objectPosition:'center',
-      backgroundColor:'#000',
-      filter:'none', transform:'none', willChange:'auto'
-    });
-    // Attributs HTML en plus (certaines versions sont sensibles)
-    video.setAttribute('playsinline', '');
-    video.setAttribute('autoplay', '');
-    video.setAttribute('muted', '');
 
-    /* Viseur SVG superposé */
-    const viewfinder = document.createElement('div');
-    Object.assign(viewfinder.style, {
+    /* Viseur */
+    const vf = document.createElement('div');
+    Object.assign(vf.style, {
       position:'absolute', inset:'0', pointerEvents:'none',
-      display:'flex', alignItems:'center', justifyContent:'center'
+      display:'flex', alignItems:'center', justifyContent:'center',
     });
-    viewfinder.innerHTML = `
-      <svg width="260" height="100" viewBox="0 0 260 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="1" y="1" width="258" height="98" rx="4" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
-        <!-- coins -->
-        <path d="M1 25 L1 1 L25 1"   stroke="#fff" stroke-width="3" stroke-linecap="round"/>
-        <path d="M235 1 L259 1 L259 25" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
-        <path d="M1 75 L1 99 L25 99"  stroke="#fff" stroke-width="3" stroke-linecap="round"/>
-        <path d="M235 99 L259 99 L259 75" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
-        <!-- ligne de scan animée -->
-        <line id="scan-line" x1="4" y1="50" x2="256" y2="50" stroke="#e74c3c" stroke-width="1.5" opacity="0.8"/>
+    vf.innerHTML = `
+      <svg width="80%" height="60%" viewBox="0 0 260 100" fill="none">
+        <path d="M1 28 L1 1 L28 1"   stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+        <path d="M232 1 L259 1 L259 28" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+        <path d="M1 72 L1 99 L28 99"  stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+        <path d="M232 99 L259 99 L259 72" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+        <line id="isbn-scan-line" x1="4" y1="50" x2="256" y2="50" stroke="#e74c3c" stroke-width="2"/>
       </svg>`;
 
-    /* Animation ligne de scan */
-    // Évite d'injecter ce style à chaque ouverture/fermeture du scanner
     if (!document.getElementById('isbn-scan-style')) {
-      const styleTag = document.createElement('style');
-      styleTag.id = 'isbn-scan-style';
-      styleTag.textContent = `
-        @keyframes scanMove {
-          0%   { transform: translateY(-38px); opacity:1; }
-          50%  { transform: translateY(38px);  opacity:1; }
-          100% { transform: translateY(-38px); opacity:1; }
-        }
-        #scan-line { animation: scanMove 1.8s ease-in-out infinite; }
-      `;
-      document.head.appendChild(styleTag);
+      const st = document.createElement('style');
+      st.id = 'isbn-scan-style';
+      st.textContent = '@keyframes isbnScan{0%,100%{transform:translateY(-28px)}50%{transform:translateY(28px)}} #isbn-scan-line{animation:isbnScan 2s ease-in-out infinite}';
+      document.head.appendChild(st);
     }
 
-    wrap.append(video, viewfinder);
+    wrap.append(video, vf);
 
-    /* Canvas caché pour la capture */
+    /* Canvas caché */
     const canvas = document.createElement('canvas');
     canvas.id = 'isbn-scan-canvas';
     canvas.style.display = 'none';
@@ -1344,187 +1449,64 @@ renderHistory();
     const hint = document.createElement('p');
     hint.id = 'isbn-scan-hint';
     hint.textContent = 'Initialisation…';
-    Object.assign(hint.style, {
-      color:'#aaa', fontFamily:'inherit', fontSize:'12px',
-      margin:'0', textAlign:'center'
-    });
+    Object.assign(hint.style, { color:'#bbb', fontFamily:'inherit', fontSize:'12px', margin:'0', textAlign:'center' });
 
-    const close = document.createElement('button');
-    close.textContent = '✕ Fermer';
-    Object.assign(close.style, {
-      padding:'8px 24px', background:'transparent', color:'#fff',
-      border:'1px solid rgba(255,255,255,0.35)', borderRadius:'4px',
+    const closeBtn = document.createElement('button');
+    closeBtn.textContent = '✕ Fermer le scanner';
+    Object.assign(closeBtn.style, {
+      padding:'9px 24px', background:'transparent', color:'#fff',
+      border:'1.5px solid rgba(255,255,255,0.4)', borderRadius:'4px',
       cursor:'pointer', fontFamily:'inherit', fontSize:'13px',
-      marginTop:'4px'
     });
-    close.onclick = stopScanner;
+    closeBtn.onclick = stopScanner;
 
-    o.append(lbl, wrap, canvas, hint, close);
+    o.append(lbl, wrap, canvas, hint, closeBtn);
     document.body.appendChild(o);
-    return o;
   }
 
-  /* ── Caméra : arrière + 4K (ideal) puis repli FHD puis défaut (Chrome / Firefox / mobile) ── */
-  const SCAN_VIDEO_FRAMERATE = { ideal: 30, max: 60 };
-
-  /**
-   * Stratégie robuste en 3 étapes (aucun `exact` sur la 4K) :
-   * 1) facingMode environment + 4K ideal + frameRate
-   * 2) environment + 1080p ideal
-   * 3) video: true
-   * Réutilisable : window.getBestStream(options)
-   */
-  async function getBestStream(options) {
-    const opt = options || {};
-    const logPrefix = opt.logPrefix || '[getBestStream]';
-
-    if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== 'function') {
-      const err = new Error('getUserMedia indisponible (navigator.mediaDevices manquant).');
-      err.name = 'NotSupportedError';
-      throw err;
-    }
-
-    const steps = [
-      {
-        name: 'Étape 1 — 4K arrière (ideal, pas exact)',
-        constraints: {
-          audio: false,
-          video: {
-            facingMode: { ideal: 'environment' },
-            width: { ideal: 3840 },
-            height: { ideal: 2160 },
-            frameRate: { ideal: 30, max: 60 }
-          }
-        }
-      },
-      {
-        name: 'Étape 2 — Full HD arrière (ideal)',
-        constraints: {
-          audio: false,
-          video: {
-            facingMode: { ideal: 'environment' },
-            width: { ideal: 1920 },
-            height: { ideal: 1080 }
-          }
-        }
-      },
-      {
-        name: 'Étape 3 — fallback ultime (video: true)',
-        constraints: { audio: false, video: true }
-      }
-    ];
-
-    let lastErr = null;
-    for (let i = 0; i < steps.length; i++) {
-      try {
-        try {
-          console.log(logPrefix + ' ' + steps[i].name + ' …');
-        } catch (_) {}
-        const stream = await navigator.mediaDevices.getUserMedia(steps[i].constraints);
-        const track = stream.getVideoTracks()[0];
-        if (track && typeof track.getSettings === 'function') {
-          try {
-            console.log(logPrefix + ' OK — track.getSettings():', track.getSettings());
-          } catch (_) {}
-        }
-        try {
-          console.log(logPrefix + ' Succès:', steps[i].name);
-        } catch (_) {}
-        return stream;
-      } catch (e) {
-        lastErr = e;
-        try {
-          console.log(logPrefix + ' Échec:', steps[i].name, '→', e && e.name, e && e.message);
-        } catch (_) {}
-      }
-    }
-
-    throw (lastErr || new Error('Impossible d’ouvrir la caméra.'));
-  }
-
-  window.getBestStream = getBestStream;
-
-  async function acquireStream() {
-    if (videoStream) {
-      videoStream.getTracks().forEach(function (t) { t.stop(); });
-      videoStream = null;
-    }
-    return getBestStream({ logPrefix: '[ISBN-scan]' });
-  }
-
-  function logScanVideoDebug(phase, track, video) {
-    try {
-      if (track && typeof track.getSettings === 'function') {
-        console.log('[ISBN-scan] ' + phase + ' — track.getSettings():', track.getSettings());
-      }
-      if (video) {
-        console.log('[ISBN-scan] ' + phase + ' — video.videoWidth x video.videoHeight:', video.videoWidth, 'x', video.videoHeight);
-      }
-    } catch (_) {}
-  }
-
-  function explainGetUserMediaError(e) {
-    const name = e && e.name ? e.name : 'Error';
-    const rawMessage = e && e.message ? e.message : '';
-    switch (name) {
-      case 'NotAllowedError':
-      case 'PermissionDeniedError':
-        return "Permission caméra refusée. Sur Chrome: cliquez sur l'icône caméra dans la barre d'adresse et autorisez l'accès.";
-      case 'NotFoundError':
-      case 'DevicesNotFoundError':
-        return "Aucune caméra détectée (ou caméra désactivée dans Windows).";
-      case 'NotReadableError':
-      case 'TrackStartError':
-        return "La caméra est occupée par une autre application (Teams/Zoom/OBS) ou le pilote refuse l'accès. Fermez les applis puis réessayez.";
-      case 'OverconstrainedError':
-      case 'ConstraintNotSatisfiedError':
-        return "Contraintes vidéo non supportées par la caméra. Le module retente normalement en mode plus permissif.";
-      case 'SecurityError':
-        return "Blocage de sécurité. Ouvrez la page en https:// (ou http://localhost).";
-      case 'NotSupportedError':
-        return "Caméra non supportée dans ce contexte/navigateur.";
-      default:
-        return rawMessage || "Erreur inconnue lors de l'accès caméra.";
-    }
-  }
-
-  /* ── Callback commun après détection d'un code ─────────────────── */
-  function onCodeDetected(raw) {
-    const code = raw.replace(/[^0-9X]/gi, '');
-    if (!code) return;
+  /* ── Callback partagé : ISBN détecté ────────────────────────────── */
+  function onISBNDetected(raw) {
+    const code = String(raw).replace(/[^0-9X]/gi, '');
+    if (code.length !== 13 && code.length !== 10) return;
+    console.info('[ISBN Scanner] code détecté :', code);
     stopScanner();
     if (typeof selectType === 'function') selectType('ouvrage');
     setTimeout(() => {
-      const isbnEl = getField('isbn');
-      if (isbnEl) {
-        isbnEl.value = code;
-        isbnEl.dispatchEvent(new Event('input', { bubbles: true }));
-      }
+      const el = getField('isbn');
+      if (el) { el.value = code; el.dispatchEvent(new Event('input', { bubbles: true })); }
       fetchISBN(code);
     }, 150);
   }
 
-  /* ── Moteur 1 : BarcodeDetector natif (Chrome 83+, Edge, Android) ─ */
-  async function startWithBarcodeDetector(video, hint) {
-    let detector;
-    try {
-      detector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'code_128', 'upc_a'] });
-    } catch {
-      return false; /* API non disponible */
-    }
+  /* ══════════════════════════════════════════════════════════════════
+     MOTEUR A — BarcodeDetector natif
+     Chrome 83+, Edge 83+, Chrome Android, Samsung Browser
+     Avantages : aucune lib, délègue au GPU, le plus rapide
+  ══════════════════════════════════════════════════════════════════ */
+  async function engineBarcodeDetector(video, hint) {
+    if (!('BarcodeDetector' in window)) return false;
 
+    let supported = [];
+    try { supported = await BarcodeDetector.getSupportedFormats(); } catch(_) {}
+    const formats = ['ean_13','ean_8','code_128','upc_a'].filter(f =>
+      supported.length === 0 || supported.includes(f)
+    );
+
+    let detector;
+    try { detector = new BarcodeDetector({ formats }); }
+    catch(_) { return false; }
+
+    hint.textContent = 'BarcodeDetector actif — approchez le code-barres';
     scannerActive = true;
-    hint.textContent = 'Scan en cours — approchez le code-barres';
     let last = 0;
 
-    async function tick(ts) {
+    function tick(ts) {
       if (!scannerActive) return;
-      if (ts - last > 150 && video.readyState === video.HAVE_ENOUGH_DATA) {
+      if (ts - last > 120 && video.readyState >= video.HAVE_ENOUGH_DATA) {
         last = ts;
-        try {
-          const barcodes = await detector.detect(video);
-          if (barcodes.length > 0) { onCodeDetected(barcodes[0].rawValue); return; }
-        } catch (_) {}
+        detector.detect(video).then(codes => {
+          if (codes.length > 0) onISBNDetected(codes[0].rawValue);
+        }).catch(() => {});
       }
       animFrame = requestAnimationFrame(tick);
     }
@@ -1532,44 +1514,58 @@ renderHistory();
     return true;
   }
 
-  /* ── Moteur 2 : QuaggaJS (Firefox, Safari, navigateurs sans BarcodeDetector) ── */
-  async function startWithQuagga(video, hint) {
-    try { await loadQuagga(); } catch { return false; }
+  /* ══════════════════════════════════════════════════════════════════
+     MOTEUR B — Quagga2
+     Firefox, Safari, Opera, navigateurs sans BarcodeDetector
+     Décode frame par frame depuis un canvas recadré
+  ══════════════════════════════════════════════════════════════════ */
+  async function engineQuagga2(video, hint) {
+    try { await loadQuagga2(); } catch(e) {
+      console.warn('[ISBN Scanner] Quagga2 non chargé:', e);
+      return false;
+    }
 
-    const canvas = document.getElementById('isbn-scan-canvas');
-    const ctx = canvas.getContext('2d', { willReadFrequently: true });
-    const crop = document.createElement('canvas');
-    const cropCtx = crop.getContext('2d');
+    hint.textContent = 'Quagga2 actif — approchez le code-barres';
     scannerActive = true;
-    hint.textContent = 'Scan en cours — approchez le code-barres';
     let last = 0;
-    let busy = false;
+    const canvas = document.getElementById('isbn-scan-canvas');
 
     function tick(ts) {
       if (!scannerActive) return;
-      if (!busy && ts - last > 100 && video.readyState === video.HAVE_ENOUGH_DATA) {
+      if (ts - last > 120 && video.readyState >= video.HAVE_ENOUGH_DATA) {
         last = ts;
         const vw = video.videoWidth, vh = video.videoHeight;
         if (!vw || !vh) { animFrame = requestAnimationFrame(tick); return; }
-        // Évite de réinitialiser le canvas (et donc le contexte) si la taille n'a pas changé
-        if (canvas.width !== vw) canvas.width = vw;
-        if (canvas.height !== vh) canvas.height = vh;
-        ctx.drawImage(video, 0, 0, vw, vh);
 
-        /* Recadrage zone centrale */
+        /* Capture résolution native */
+        canvas.width = vw; canvas.height = vh;
+        canvas.getContext('2d', { willReadFrequently: true })
+              .drawImage(video, 0, 0, vw, vh);
+
+        /* Recadrage zone centrale 90% × 50% */
         const cw = Math.round(vw * 0.9), ch = Math.round(vh * 0.5);
         const cx = Math.round((vw - cw) / 2), cy = Math.round((vh - ch) / 2);
+        const crop = document.createElement('canvas');
         crop.width = cw; crop.height = ch;
-        cropCtx.drawImage(canvas, cx, cy, cw, ch, 0, 0, cw, ch);
+        crop.getContext('2d').drawImage(canvas, cx, cy, cw, ch, 0, 0, cw, ch);
 
-        busy = true;
+        /* Pré-traitement contraste pour améliorer détection */
+        const ctx2 = crop.getContext('2d');
+        const img  = ctx2.getImageData(0, 0, cw, ch);
+        const d    = img.data;
+        for (let i = 0; i < d.length; i += 4) {
+          const gray = 0.299*d[i] + 0.587*d[i+1] + 0.114*d[i+2];
+          const v    = gray > 128 ? Math.min(255, gray * 1.3) : gray * 0.7;
+          d[i] = d[i+1] = d[i+2] = v;
+        }
+        ctx2.putImageData(img, 0, 0);
+
         Quagga.decodeSingle({
           decoder: { readers: ['ean_reader', 'ean_8_reader', 'code_128_reader'] },
           locate: true,
-          src: crop.toDataURL()
+          src: crop.toDataURL('image/png'),
         }, result => {
-          busy = false;
-          if (result?.codeResult?.code) onCodeDetected(result.codeResult.code);
+          if (result?.codeResult?.code) onISBNDetected(result.codeResult.code);
         });
       }
       animFrame = requestAnimationFrame(tick);
@@ -1578,196 +1574,108 @@ renderHistory();
     return true;
   }
 
-  /* ── Point d'entrée principal ───────────────────────────────────── */
+  /* ══════════════════════════════════════════════════════════════════
+     POINT D'ENTRÉE PRINCIPAL
+  ══════════════════════════════════════════════════════════════════ */
   async function startScanner() {
     if (scannerActive) return;
     buildOverlay();
 
     const video = document.getElementById('isbn-scan-video');
     const hint  = document.getElementById('isbn-scan-hint');
+    hint.textContent = 'Ouverture de la caméra…';
 
-    hint.textContent = 'Initialisation caméra…';
-
-    // Chrome (et la plupart des navigateurs) exigent un contexte sécurisé pour la caméra.
-    // Sur http:// (hors localhost) ou file://, getUserMedia échoue.
-    if (!window.isSecureContext) {
-      const extra = location.protocol === 'file:' ? ' (vous êtes en file://)' : ` (protocole: ${location.protocol})`;
-      hint.textContent = `⚠ Contexte non sécurisé${extra}. Ouvrez la page via https:// ou http://localhost pour activer la caméra.`;
-      setFeedback('Caméra bloquée (contexte non sécurisé).', 'error');
+    /* 1. Obtenir le flux */
+    videoStream = await getStream();
+    if (!videoStream) {
+      hint.textContent = '⚠ Caméra inaccessible — autorisez l'accès dans les réglages du navigateur.';
+      hint.style.color = '#e74c3c';
       return;
     }
 
-    // Si la page est dans une iframe, Chrome peut bloquer la caméra sans Permissions-Policy / allow="camera".
-    try {
-      if (window.self !== window.top) {
-        // Ne bloque pas forcément, mais donne une piste claire en cas d’échec.
-        hint.textContent = 'Initialisation caméra… (si ça échoue sur Chrome en iframe: ajouter allow="camera" côté parent)';
-      }
-    } catch (_) {}
-
-    try {
-      videoStream = await acquireStream();
-    } catch (e) {
-      const name = e && e.name ? e.name : 'Erreur';
-      const explained = explainGetUserMediaError(e);
-      hint.textContent = `⚠ Caméra inaccessible (${name}). ${explained}`;
-      setFeedback(`Accès caméra refusé (${name}).`, 'error');
-      if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
-        alert("Accès à la caméra refusé.\n\nVeuillez autoriser la caméra pour ce site dans votre navigateur, puis relancez le scan.");
-      }
-      return;
-    }
-
-    const track = videoStream.getVideoTracks()[0];
-    logScanVideoDebug('Après getUserMedia', track, null);
-
-    if (track?.applyConstraints) {
-      const caps = track.getCapabilities?.() ?? {};
-      const adv  = {};
-      if (caps.focusMode?.includes('continuous')) adv.focusMode = 'continuous';
-      if (Object.keys(adv).length) track.applyConstraints({ advanced: [adv] }).catch(() => {});
-
-      /* Tentative d’upgrade si le navigateur a ouvert en basse résolution (souvent Chrome) */
-      try {
-        const s0 = track.getSettings?.() ?? {};
-        const w0 = Number(s0.width || 0);
-        const h0 = Number(s0.height || 0);
-        if ((w0 && w0 < 1280) || (h0 && h0 < 720)) {
-          try {
-            await track.applyConstraints({
-              width: { min: 1280, ideal: 1920, max: 1920 },
-              height: { min: 720, ideal: 1080, max: 1080 },
-              aspectRatio: { ideal: 16 / 9 },
-              frameRate: { ...SCAN_VIDEO_FRAMERATE }
-            });
-          } catch (_) {
-            try {
-              await track.applyConstraints({
-                width: { ideal: 1920 },
-                height: { ideal: 1080 },
-                aspectRatio: { ideal: 16 / 9 },
-                frameRate: { ...SCAN_VIDEO_FRAMERATE }
-              });
-            } catch (_) {}
-          }
-          logScanVideoDebug('Après applyConstraints (upgrade)', track, null);
-        }
-      } catch (_) {}
-    }
-
+    /* 2. Connecter la vidéo */
     video.srcObject = videoStream;
     await new Promise(res => {
-      let done = false;
-      const finish = () => { if (done) return; done = true; res(); };
-      const timer = setTimeout(finish, 2500); // ne pas rester bloqué sur certains Chrome
-      const tryPlay = () => {
-        Promise.resolve(video.play()).then(() => { clearTimeout(timer); finish(); }).catch(() => { clearTimeout(timer); finish(); });
-      };
-      if (video.readyState >= 2) { tryPlay(); return; }
-      video.onloadedmetadata = () => tryPlay();
+      if (video.readyState >= 2) { video.play().then(res).catch(res); return; }
+      video.onloadedmetadata = () => video.play().then(res).catch(res);
     });
 
-    logScanVideoDebug('Après lecture vidéo', track, video);
-    video.addEventListener('loadeddata', function () {
-      logScanVideoDebug('loadeddata', track, video);
-    }, { once: true });
+    /* 3. Autofocus APRÈS play() — Chrome exige cet ordre */
+    await applyAdvancedConstraints(videoStream);
 
-    /* Essayer BarcodeDetector (Chrome) d'abord, Quagga ensuite */
-    const ok = await startWithBarcodeDetector(video, hint)
-            || await startWithQuagga(video, hint);
+    hint.textContent = 'Sélection du moteur de décodage…';
+
+    /* 4. Essayer les moteurs dans l'ordre */
+    const ok = await engineBarcodeDetector(video, hint)
+            || await engineQuagga2(video, hint);
 
     if (!ok) {
-      hint.textContent = '⚠ Aucun moteur de scan disponible sur ce navigateur.';
+      hint.textContent = '⚠ Décodage non supporté sur ce navigateur.';
+      hint.style.color = '#e74c3c';
       stopScanner();
     }
   }
 
   function stopScanner() {
     scannerActive = false;
+
     if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; }
 
-    /* Arrêt Quagga si actif */
-    try { if (window.Quagga) Quagga.stop(); } catch (_) {}
+    try { if (window.Quagga) Quagga.stop(); } catch(_) {}
 
-    /* Libération complète flux vidéo — CRITIQUE pour Chrome */
-    const video = document.getElementById('isbn-scan-video');
-    if (video) {
-      video.pause();
-      video.srcObject = null;
-      video.load();
-    }
-    if (videoStream) {
-      videoStream.getTracks().forEach(t => t.stop());
-      videoStream = null;
-    }
+    /* Ordre critique pour Chrome : srcObject=null AVANT track.stop() */
+    releaseStream();
 
     const o = document.getElementById('isbn-scan-overlay');
     if (o) o.remove();
   }
 
-  // Cleanup Chrome: libérer la caméra si l'onglet est caché / la page se ferme
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState !== 'visible' && scannerActive) stopScanner();
-  });
-  window.addEventListener('pagehide', () => {
-    if (scannerActive) stopScanner();
-  });
-
   /* ── Exposer pour le bouton bannière ────────────────────────────── */
   window.globalStartScanner = function () { startScanner(); };
 
-  /* ── Injection UI dans le groupe du champ ISBN ──────────────────── */
+  /* ── Overlay UI ─────────────────────────────────────────────────── */
   function injectUI() {
     const isbnEl = getField('isbn');
     if (!isbnEl || document.getElementById('isbn-feedback')) return;
 
-    /* Feedback */
     const fb = document.createElement('span');
     fb.id = 'isbn-feedback';
     Object.assign(fb.style, {
       display:'block', fontSize:'12px', marginTop:'4px',
-      transition:'opacity 0.5s', opacity:'0', fontFamily:'inherit'
+      transition:'opacity 0.5s', opacity:'0', fontFamily:'inherit',
     });
     isbnEl.parentNode.appendChild(fb);
 
-    /* Bouton Scanner */
     const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.id   = 'isbn-scan-btn';
-    btn.innerHTML = '📷 Scanner ISBN';
+    btn.type = 'button'; btn.id = 'isbn-scan-btn';
+    btn.textContent = '📷 Scanner ISBN';
     Object.assign(btn.style, {
       marginTop:'8px', padding:'7px 16px',
-      border:'1.5px solid var(--border)',
-      borderRadius:'var(--radius)', background:'transparent',
-      color:'var(--ink-muted)', cursor:'pointer',
-      fontFamily:'inherit', fontSize:'0.85rem', fontWeight:'500',
-      transition:'all 0.2s', display:'inline-flex', alignItems:'center', gap:'6px'
+      border:'1.5px solid var(--border)', borderRadius:'var(--radius)',
+      background:'transparent', color:'var(--ink-muted)',
+      cursor:'pointer', fontFamily:'inherit', fontSize:'0.85rem', fontWeight:'500',
+      transition:'all 0.2s', display:'inline-flex', alignItems:'center', gap:'6px',
     });
     btn.onmouseenter = () => { btn.style.borderColor='var(--accent)'; btn.style.color='var(--accent)'; };
     btn.onmouseleave = () => { btn.style.borderColor='var(--border)'; btn.style.color='var(--ink-muted)'; };
     btn.onclick = startScanner;
     isbnEl.parentNode.appendChild(btn);
 
-    /* Écoute input avec debounce */
     const dFetch = debounce(e => fetchISBN(e.target.value), 500);
     isbnEl.addEventListener('input', dFetch);
   }
 
-  /* ── Hook sur renderForm pour ré-injecter après chaque rendu ────── */
   function hookRenderForm() {
-    const original = window.renderForm;
-    if (typeof original !== 'function') return;
+    const orig = window.renderForm;
+    if (typeof orig !== 'function') return;
     window.renderForm = function (key) {
-      original(key);
-      /* Petit délai pour laisser le DOM se construire */
+      orig(key);
       setTimeout(() => injectUI(), 0);
     };
   }
 
-  /* ── Init ───────────────────────────────────────────────────────── */
   function initISBNModule() {
     hookRenderForm();
-    /* Si le formulaire "ouvrage" est déjà actif au chargement */
     if (fieldsReady()) injectUI();
   }
 
