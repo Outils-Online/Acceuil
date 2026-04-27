@@ -6,126 +6,129 @@
   <title>Générateur de Citations Bibliographiques</title>
   <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <style>
-    /* ===== VARIABLES ===== */
+    /* ========================================================
+       VARIABLES (toujours en premier)
+       ======================================================== */
     :root {
+      --accent: #c0392b;
+      --accent-light: #e8d5d3;
       --bg: #f5f2ee;
       --bg-card: #ffffff;
       --bg-dark: #1a1714;
-      --ink: #1a1714;
-      --ink-muted: #6b6560;
-      --ink-light: #a09b96;
-      --accent: #c0392b;
-      --accent-light: #e8d5d3;
       --border: #e0dbd5;
-      --shadow: 0 2px 16px rgba(26,23,20,0.08);
-      --shadow-lg: 0 8px 40px rgba(26,23,20,0.14);
+      --ink: #1a1714;
+      --ink-light: #a09b96;
+      --ink-muted: #6b6560;
       --radius: 4px;
       --radius-lg: 8px;
+      --shadow: 0 2px 16px rgba(26,23,20,0.08);
+      --shadow-lg: 0 8px 40px rgba(26,23,20,0.14);
       --transition: 0.2s ease;
     }
 
     [data-theme="dark"] {
-      --bg: #16140f;
-      --bg-card: #1f1c17;
-      --ink: #f0ebe4;
-      --ink-muted: #9c9488;
-      --ink-light: #5a554e;
       --accent: #e05a4e;
       --accent-light: #2e1a18;
+      --bg: #16140f;
+      --bg-card: #1f1c17;
       --border: #2e2a24;
+      --ink: #f0ebe4;
+      --ink-light: #5a554e;
+      --ink-muted: #9c9488;
       --shadow: 0 2px 16px rgba(0,0,0,0.3);
       --shadow-lg: 0 8px 40px rgba(0,0,0,0.5);
     }
 
-    /* ===== RESET & BASE ===== */
+    /* ========================================================
+       GLOBAL
+       ======================================================== */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: 'DM Sans', sans-serif;
       background: var(--bg);
       color: var(--ink);
-      min-height: 100vh;
+      font-family: 'DM Sans', sans-serif;
       font-size: 15px;
       line-height: 1.6;
+      min-height: 100vh;
       transition: background var(--transition), color var(--transition);
     }
 
-    /* ===== HEADER ===== */
+    /* ========================================================
+       LAYOUT
+       ======================================================== */
     header {
+      align-items: center;
       background: var(--bg-card);
       border-bottom: 1px solid var(--border);
-      padding: 0 clamp(1rem, 4vw, 3rem);
+      box-shadow: var(--shadow);
       display: flex;
-      align-items: center;
-      justify-content: space-between;
       height: 64px;
+      justify-content: space-between;
+      padding: 0 clamp(1rem, 4vw, 3rem);
       position: sticky;
       top: 0;
       z-index: 100;
-      box-shadow: var(--shadow);
     }
 
+    .container {
+      display: grid;
+      gap: 2rem;
+      grid-template-columns: 1fr;
+      margin: 0 auto;
+      max-width: 900px;
+      padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 4vw, 2rem);
+    }
+
+    .header-actions { align-items: center; display: flex; gap: 12px; }
+
     .logo {
+      align-items: center;
+      display: flex;
       font-family: 'Libre Baskerville', serif;
       font-size: 1.1rem;
       font-weight: 700;
-      letter-spacing: -0.01em;
-      display: flex;
-      align-items: center;
       gap: 10px;
+      letter-spacing: -0.01em;
     }
 
     .logo-dot {
-      width: 8px; height: 8px;
       background: var(--accent);
       border-radius: 50%;
       display: inline-block;
+      height: 8px;
+      width: 8px;
     }
 
-    .header-actions { display: flex; align-items: center; gap: 12px; }
-
-    /* ===== DARK MODE TOGGLE ===== */
-    .theme-toggle {
-      width: 42px; height: 24px;
-      background: var(--border);
-      border-radius: 12px;
-      border: none;
-      cursor: pointer;
-      position: relative;
-      transition: background var(--transition);
-    }
-
-    .theme-toggle::after {
-      content: '';
-      position: absolute;
-      width: 18px; height: 18px;
+    .card {
       background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      padding: clamp(1.25rem, 3vw, 2rem);
+      transition: background var(--transition), border-color var(--transition);
+    }
+
+    .card-title {
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      font-family: 'Libre Baskerville', serif;
+      font-size: 1rem;
+      font-weight: 700;
+      gap: 8px;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.75rem;
+    }
+
+    .card-title-icon {
+      background: var(--accent);
       border-radius: 50%;
-      top: 3px; left: 3px;
-      transition: transform var(--transition), background var(--transition);
-      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+      flex-shrink: 0;
+      height: 6px;
+      width: 6px;
     }
 
-    [data-theme="dark"] .theme-toggle { background: var(--accent); }
-    [data-theme="dark"] .theme-toggle::after { transform: translateX(18px); }
-
-    .theme-label {
-      font-size: 0.78rem;
-      color: var(--ink-muted);
-      font-weight: 500;
-    }
-
-    /* ===== LAYOUT ===== */
-    .container {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 4vw, 2rem);
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 2rem;
-    }
-
-    /* ===== SECTION TITLE ===== */
     .section-title {
       font-family: 'Libre Baskerville', serif;
       font-size: 1.5rem;
@@ -134,279 +137,240 @@
       margin-bottom: 0.25rem;
     }
 
-    .section-sub {
-      font-size: 0.87rem;
-      color: var(--ink-muted);
-    }
+    .section-sub { color: var(--ink-muted); font-size: 0.87rem; }
 
-    /* ===== TYPE SELECTOR ===== */
-    .type-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .type-btn {
-      padding: 7px 16px;
-      border: 1.5px solid var(--border);
-      border-radius: 100px;
-      background: transparent;
-      color: var(--ink-muted);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.85rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all var(--transition);
-      white-space: nowrap;
-    }
-
-    .type-btn:hover {
-      border-color: var(--accent);
-      color: var(--accent);
-      background: var(--accent-light);
-    }
-
-    .type-btn.active {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: #fff;
-    }
-
-    /* ===== CARD ===== */
-    .card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: clamp(1.25rem, 3vw, 2rem);
-      box-shadow: var(--shadow);
-      transition: background var(--transition), border-color var(--transition);
-    }
-
-    .card-title {
-      font-family: 'Libre Baskerville', serif;
-      font-size: 1rem;
-      font-weight: 700;
-      margin-bottom: 1.25rem;
-      padding-bottom: 0.75rem;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .card-title-icon {
-      width: 6px; height: 6px;
-      background: var(--accent);
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-
-    /* ===== FORM ===== */
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 16px;
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-    }
-
-    .form-group.full { grid-column: 1 / -1; }
-
+    /* ========================================================
+       FORMULAIRE
+       ======================================================== */
     label {
+      color: var(--ink-muted);
       font-size: 0.78rem;
       font-weight: 600;
-      color: var(--ink-muted);
-      text-transform: uppercase;
       letter-spacing: 0.05em;
+      text-transform: uppercase;
     }
 
-    label .req {
-      color: var(--accent);
-      margin-left: 2px;
-    }
-
-    label .opt {
-      font-weight: 400;
-      color: var(--ink-light);
-      text-transform: none;
-      letter-spacing: 0;
-      font-size: 0.75rem;
-      margin-left: 4px;
-    }
+    label .req { color: var(--accent); margin-left: 2px; }
+    label .opt { color: var(--ink-light); font-size: 0.75rem; font-weight: 400; margin-left: 4px; text-transform: none; }
 
     input, select, textarea {
-      padding: 9px 12px;
+      background: var(--bg);
       border: 1.5px solid var(--border);
       border-radius: var(--radius);
-      background: var(--bg);
       color: var(--ink);
       font-family: 'DM Sans', sans-serif;
       font-size: 0.9rem;
-      transition: border-color var(--transition), background var(--transition);
       outline: none;
+      padding: 9px 12px;
+      transition: border-color var(--transition), background var(--transition);
       width: 100%;
     }
 
-    input:focus, select:focus, textarea:focus {
-      border-color: var(--accent);
-      background: var(--bg-card);
-    }
-
+    input:focus, select:focus, textarea:focus { background: var(--bg-card); border-color: var(--accent); }
     input.error, select.error { border-color: #e74c3c; }
 
-    textarea { resize: vertical; min-height: 70px; }
-
     select { cursor: pointer; }
+    textarea { min-height: 70px; resize: vertical; }
 
-    .field-hint {
-      font-size: 0.74rem;
-      color: var(--ink-light);
-      font-style: italic;
-    }
-
-    .error-msg {
-      font-size: 0.74rem;
-      color: #e74c3c;
-      display: none;
-    }
-
+    .error-msg { color: #e74c3c; display: none; font-size: 0.74rem; }
     .error-msg.visible { display: block; }
 
-    /* ===== ACTIONS ===== */
-    .form-actions {
+    .field-hint { color: var(--ink-light); font-size: 0.74rem; font-style: italic; }
+
+    .form-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 10px; margin-top: 1.5rem; }
+
+    .form-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    .form-group.full { grid-column: 1 / -1; }
+
+    /* ========================================================
+       SCANNER (bannière ISBN)
+       ======================================================== */
+    .scan-banner {
+      align-items: center;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
-      margin-top: 1.5rem;
-      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
     }
 
+    .scan-banner-text { color: var(--ink-muted); font-size: 0.88rem; }
+    .scan-banner-text strong { color: var(--ink); }
+
+    /* ========================================================
+       ANIMATIONS / INTERACTIONS
+       ======================================================== */
     .btn {
-      padding: 10px 22px;
+      align-items: center;
+      border: none;
       border-radius: var(--radius);
+      cursor: pointer;
+      display: inline-flex;
       font-family: 'DM Sans', sans-serif;
       font-size: 0.88rem;
       font-weight: 600;
-      cursor: pointer;
-      border: none;
-      transition: all var(--transition);
-      display: inline-flex;
-      align-items: center;
       gap: 7px;
+      padding: 10px 22px;
+      transition: all var(--transition);
     }
 
-    .btn-primary {
-      background: var(--accent);
-      color: #fff;
-    }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: #a93226; box-shadow: 0 4px 12px rgba(192,57,43,0.3); transform: translateY(-1px); }
 
-    .btn-primary:hover { background: #a93226; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(192,57,43,0.3); }
-
-    .btn-secondary {
-      background: transparent;
-      color: var(--ink-muted);
-      border: 1.5px solid var(--border);
-    }
-
+    .btn-secondary { background: transparent; border: 1.5px solid var(--border); color: var(--ink-muted); }
     .btn-secondary:hover { border-color: var(--ink-muted); color: var(--ink); }
 
-    /* ===== RESULT ===== */
+    .btn-copy { background: var(--ink); color: var(--bg-card); font-size: 0.82rem; padding: 7px 16px; }
+    .btn-copy:hover { opacity: 0.85; }
+
+    .btn-save { background: transparent; border: 1.5px solid var(--border); color: var(--ink-muted); font-size: 0.82rem; padding: 7px 16px; }
+    .btn-save:hover { border-color: var(--accent); color: var(--accent); }
+
+    .btn-scan-global {
+      align-items: center;
+      background: var(--accent);
+      border: none;
+      border-radius: var(--radius);
+      color: #fff;
+      cursor: pointer;
+      display: inline-flex;
+      font-family: inherit;
+      font-size: 0.88rem;
+      font-weight: 600;
+      gap: 8px;
+      padding: 9px 20px;
+      transition: all 0.2s;
+    }
+
+    .btn-scan-global:hover { background: #a93226; box-shadow: 0 4px 12px rgba(192,57,43,0.3); transform: translateY(-1px); }
+
+    .btn-quitter {
+      align-items: center;
+      background: transparent;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--ink-muted);
+      cursor: pointer;
+      display: inline-flex;
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 500;
+      gap: 6px;
+      padding: 7px 16px;
+      transition: all 0.2s;
+    }
+
+    .btn-quitter:hover { border-color: var(--ink-muted); color: var(--ink); }
+
+    .copy-confirm { align-items: center; color: #27ae60; display: none; font-size: 0.8rem; font-weight: 500; gap: 4px; }
+    .copy-confirm.show { display: flex; }
+
+    .result-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+
     .result-box {
       background: var(--bg);
       border: 1.5px dashed var(--border);
       border-radius: var(--radius);
-      padding: 1.25rem;
+      color: var(--ink);
       font-family: 'Libre Baskerville', serif;
       font-size: 0.95rem;
       line-height: 1.8;
-      color: var(--ink);
       min-height: 80px;
+      padding: 1.25rem;
       transition: background var(--transition);
       word-break: break-word;
     }
 
-    .result-box.has-content {
-      border-style: solid;
-      border-color: var(--accent);
-      background: var(--accent-light);
+    .result-box.has-content { background: var(--accent-light); border-color: var(--accent); border-style: solid; }
+    [data-theme="dark"] .result-box.has-content { background: #2a1210; }
+
+    .result-placeholder { color: var(--ink-light); font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-style: italic; }
+
+    .theme-label { color: var(--ink-muted); font-size: 0.78rem; font-weight: 500; }
+
+    .theme-toggle {
+      background: var(--border);
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      height: 24px;
+      position: relative;
+      transition: background var(--transition);
+      width: 42px;
     }
 
-    [data-theme="dark"] .result-box.has-content {
-      background: #2a1210;
+    .theme-toggle::after {
+      background: var(--bg-card);
+      border-radius: 50%;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+      content: '';
+      height: 18px;
+      left: 3px;
+      position: absolute;
+      top: 3px;
+      transition: transform var(--transition), background var(--transition);
+      width: 18px;
     }
 
-    .result-placeholder {
-      color: var(--ink-light);
-      font-family: 'DM Sans', sans-serif;
-      font-style: italic;
-      font-size: 0.88rem;
-    }
+    [data-theme="dark"] .theme-toggle { background: var(--accent); }
+    [data-theme="dark"] .theme-toggle::after { transform: translateX(18px); }
 
-    .result-actions {
-      display: flex;
-      gap: 8px;
-      margin-top: 10px;
-      flex-wrap: wrap;
-    }
-
-    .btn-copy {
+    .toast {
       background: var(--ink);
-      color: var(--bg-card);
-      font-size: 0.82rem;
-      padding: 7px 16px;
-    }
-
-    .btn-copy:hover { opacity: 0.85; }
-
-    .btn-save {
-      background: transparent;
-      border: 1.5px solid var(--border);
-      color: var(--ink-muted);
-      font-size: 0.82rem;
-      padding: 7px 16px;
-    }
-
-    .btn-save:hover { border-color: var(--accent); color: var(--accent); }
-
-    .copy-confirm {
-      font-size: 0.8rem;
-      color: #27ae60;
+      border-radius: var(--radius);
+      bottom: 2rem;
+      color: var(--bg);
+      font-size: 0.88rem;
       font-weight: 500;
-      display: none;
-      align-items: center;
-      gap: 4px;
+      opacity: 0;
+      padding: 10px 20px;
+      pointer-events: none;
+      position: fixed;
+      right: 2rem;
+      transform: translateY(10px);
+      transition: all 0.3s ease;
+      z-index: 200;
     }
 
-    .copy-confirm.show { display: flex; }
+    .toast.show { opacity: 1; transform: translateY(0); }
 
-    /* ===== HISTORY ===== */
-    .history-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 1rem;
-    }
+    /* ========================================================
+       COMPOSANTS (historique / types)
+       ======================================================== */
+    .history-actions { display: flex; flex-shrink: 0; gap: 4px; }
 
     .history-count {
-      font-size: 0.8rem;
       background: var(--accent);
-      color: #fff;
       border-radius: 100px;
-      padding: 2px 9px;
+      color: #fff;
+      font-size: 0.8rem;
       font-weight: 600;
+      padding: 2px 9px;
     }
 
-    .history-empty {
-      color: var(--ink-light);
-      font-style: italic;
-      font-size: 0.88rem;
-      text-align: center;
-      padding: 1.5rem 0;
+    .history-date { color: var(--ink-light); font-size: 0.72rem; margin-top: 3px; }
+    .history-empty { color: var(--ink-light); font-size: 0.88rem; font-style: italic; padding: 1.5rem 0; text-align: center; }
+    .history-header { align-items: center; display: flex; justify-content: space-between; margin-bottom: 1rem; }
+
+    .history-item {
+      align-items: flex-start;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      display: flex;
+      gap: 10px;
+      padding: 10px 14px;
+      transition: border-color var(--transition);
     }
+
+    .history-item:hover { border-color: var(--accent); }
+
+    .history-item-content { flex: 1; min-width: 0; }
 
     .history-list {
       display: flex;
@@ -416,154 +380,57 @@
       overflow-y: auto;
     }
 
-    .history-item {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 10px 14px;
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      transition: border-color var(--transition);
-    }
-
-    .history-item:hover { border-color: var(--accent); }
-
-    .history-item-content {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .history-type {
-      font-size: 0.7rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--accent);
-      margin-bottom: 3px;
-    }
-
-    .history-text {
-      font-family: 'Libre Baskerville', serif;
-      font-size: 0.82rem;
-      line-height: 1.5;
-      color: var(--ink);
-      overflow: hidden;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-    }
-
-    .history-date {
-      font-size: 0.72rem;
-      color: var(--ink-light);
-      margin-top: 3px;
-    }
-
-    .history-actions { display: flex; gap: 4px; flex-shrink: 0; }
-
-    .btn-icon {
-      width: 28px; height: 28px;
-      border: none;
-      background: transparent;
-      border-radius: var(--radius);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.85rem;
-      transition: background var(--transition);
-      color: var(--ink-muted);
-    }
-
-    .btn-icon:hover { background: var(--border); color: var(--ink); }
-
-    .btn-icon.danger:hover { background: #fde8e8; color: #e74c3c; }
-
-    /* ===== SCROLLBAR ===== */
     .history-list::-webkit-scrollbar { width: 4px; }
     .history-list::-webkit-scrollbar-track { background: transparent; }
     .history-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-    /* ===== TOAST ===== */
-    .toast {
-      position: fixed;
-      bottom: 2rem;
-      right: 2rem;
-      background: var(--ink);
-      color: var(--bg);
-      padding: 10px 20px;
-      border-radius: var(--radius);
-      font-size: 0.88rem;
-      font-weight: 500;
-      opacity: 0;
-      transform: translateY(10px);
-      transition: all 0.3s ease;
-      pointer-events: none;
-      z-index: 200;
+    .history-text {
+      color: var(--ink);
+      display: -webkit-box;
+      font-family: 'Libre Baskerville', serif;
+      font-size: 0.82rem;
+      line-height: 1.5;
+      overflow: hidden;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
     }
 
-    .toast.show { opacity: 1; transform: translateY(0); }
+    .history-type {
+      color: var(--accent);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      margin-bottom: 3px;
+      text-transform: uppercase;
+    }
 
-    /* ===== RESPONSIVE ===== */
+    .type-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+
+    .type-btn {
+      background: transparent;
+      border: 1.5px solid var(--border);
+      border-radius: 100px;
+      color: var(--ink-muted);
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      padding: 7px 16px;
+      transition: all var(--transition);
+      white-space: nowrap;
+    }
+
+    .type-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .type-btn:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+
+    /* ========================================================
+       RESPONSIVE
+       ======================================================== */
     @media (max-width: 600px) {
       .form-grid { grid-template-columns: 1fr; }
       .type-grid { gap: 6px; }
       .type-btn { font-size: 0.8rem; padding: 6px 13px; }
     }
-
-    /* ===== SCAN GLOBAL BANNER ===== */
-    .scan-banner {
-      background: var(--bg-card);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 14px 18px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 10px;
-      box-shadow: var(--shadow);
-    }
-    .scan-banner-text {
-      font-size: 0.88rem;
-      color: var(--ink-muted);
-    }
-    .scan-banner-text strong { color: var(--ink); }
-    .btn-scan-global {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 9px 20px;
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      border-radius: var(--radius);
-      font-family: inherit;
-      font-size: 0.88rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .btn-scan-global:hover { background: #a93226; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(192,57,43,0.3); }
-
-    /* ===== BOUTON QUITTER ===== */
-    .btn-quitter {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 7px 16px;
-      background: transparent;
-      color: var(--ink-muted);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius);
-      font-family: inherit;
-      font-size: 0.82rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .btn-quitter:hover { border-color: var(--ink-muted); color: var(--ink); }
   </style>
 </head>
 <body>
@@ -650,6 +517,9 @@
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
+<!-- ========================================================
+     SCRIPTS
+     ======================================================== -->
 <script>
 /* ========================================================
    MODÈLES DE FORMULAIRES PAR TYPE
@@ -776,6 +646,13 @@ const TYPES = {
 };
 
 /* ========================================================
+   ÉTAT GLOBAL
+   ======================================================== */
+let currentType = null;
+let currentCitation = '';
+let history = JSON.parse(localStorage.getItem('citatio_history') || '[]');
+
+/* ========================================================
    UTILS
    ======================================================== */
 
@@ -879,13 +756,6 @@ const GENERATORS = {
 };
 
 /* ========================================================
-   ÉTAT GLOBAL
-   ======================================================== */
-let currentType = null;
-let currentCitation = '';
-let history = JSON.parse(localStorage.getItem('citatio_history') || '[]');
-
-/* ========================================================
    RENDU DU FORMULAIRE
    ======================================================== */
 function renderTypeButtons() {
@@ -901,6 +771,9 @@ function renderTypeButtons() {
   });
 }
 
+/* ========================================================
+   SÉLECTION / RENDU DU FORMULAIRE
+   ======================================================== */
 function selectType(key) {
   currentType = key;
   document.querySelectorAll('.type-btn').forEach(b => b.classList.toggle('active', b.dataset.type === key));
@@ -1232,8 +1105,8 @@ renderHistory();
   /* ── Écriture sécurisée : ne pas écraser une valeur manuelle ────── */
   function setField(id, value) {
     const el = getField(id);
-    if (!el) { console.warn(`[ISBN] champ #f_${id} absent du DOM`); return; }
-    if (!value) { console.warn(`[ISBN] donnée manquante pour #f_${id}`); return; }
+    if (!el) return;
+    if (!value) return;
     if (el.value && el.value.trim() !== '') return; // ne pas écraser
     el.value = value;
   }
@@ -1287,14 +1160,13 @@ renderHistory();
         .then(r => r.json())
         .then(a => {
           const name = a.personal_name || a.name || '';
-          if (!name) { console.warn('[ISBN] auteur OL introuvable via', authorKey); return; }
+          if (!name) return;
           const { prenom, nom } = splitAuthor(name);
           setField('prenoms', prenom);
           setField('noms',    nom);
         })
-        .catch(err => console.warn('[ISBN] erreur author OL:', err));
+        .catch(() => {});
     } else {
-      console.warn('[ISBN] aucun auteur trouvé dans OpenLibrary');
     }
   }
 
@@ -1317,7 +1189,6 @@ renderHistory();
       setField('prenoms', prenom);
       setField('noms',    nom);
     } else {
-      console.warn('[ISBN] aucun auteur trouvé dans Google Books');
     }
   }
 
@@ -1342,9 +1213,7 @@ renderHistory();
         if (typeof showToast === 'function') showToast('✓ Données récupérées via Open Library');
         return;
       }
-      console.info('[ISBN] Open Library : aucun résultat pour', clean, '— tentative Google Books');
     } catch (err) {
-      console.warn('[ISBN] Open Library inaccessible :', err);
     }
 
     // ── 2. Google Books (fallback) ──────────────────────────────────
@@ -1361,9 +1230,7 @@ renderHistory();
         if (typeof showToast === 'function') showToast('✓ Données récupérées via Google Books');
         return;
       }
-      console.info('[ISBN] Google Books : aucun résultat pour', clean);
     } catch (err) {
-      console.warn('[ISBN] Google Books inaccessible :', err);
     }
 
     // ── 3. Échec total ──────────────────────────────────────────────
@@ -1383,12 +1250,6 @@ renderHistory();
       s.onload = res; s.onerror = rej;
       document.head.appendChild(s);
     });
-  }
-
-  /* Détection de la méthode disponible */
-  function getDecodeMethod() {
-    if ('BarcodeDetector' in window) return 'native';
-    return 'quagga';
   }
 
   function buildOverlay() {
@@ -1422,6 +1283,7 @@ renderHistory();
     video.autoplay = true;
     Object.assign(video.style, {
       width:'100%', display:'block',
+      objectFit:'cover',
       /* Désactiver tout filtre CSS qui pourrait brouiller l'image */
       filter:'none', transform:'none', willChange:'auto'
     });
@@ -1449,16 +1311,20 @@ renderHistory();
       </svg>`;
 
     /* Animation ligne de scan */
-    const styleTag = document.createElement('style');
-    styleTag.textContent = `
-      @keyframes scanMove {
-        0%   { transform: translateY(-38px); opacity:1; }
-        50%  { transform: translateY(38px);  opacity:1; }
-        100% { transform: translateY(-38px); opacity:1; }
-      }
-      #scan-line { animation: scanMove 1.8s ease-in-out infinite; }
-    `;
-    document.head.appendChild(styleTag);
+    // Évite d'injecter ce style à chaque ouverture/fermeture du scanner
+    if (!document.getElementById('isbn-scan-style')) {
+      const styleTag = document.createElement('style');
+      styleTag.id = 'isbn-scan-style';
+      styleTag.textContent = `
+        @keyframes scanMove {
+          0%   { transform: translateY(-38px); opacity:1; }
+          50%  { transform: translateY(38px);  opacity:1; }
+          100% { transform: translateY(-38px); opacity:1; }
+        }
+        #scan-line { animation: scanMove 1.8s ease-in-out infinite; }
+      `;
+      document.head.appendChild(styleTag);
+    }
 
     wrap.append(video, viewfinder);
 
@@ -1502,11 +1368,18 @@ renderHistory();
       err.name = 'NotSupportedError';
       throw err;
     }
-    /* Séquence de contraintes du plus strict au plus permissif */
+    const baseVideo = {
+      aspectRatio: { ideal: 16 / 9 },
+      frameRate: { ideal: 30, max: 60 }
+    };
+    const env = { facingMode: { ideal: 'environment' } };
+
+    /* Séquence de contraintes du plus strict au plus permissif (ideal uniquement) */
     const tries = [
-      { audio: false, video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30, max: 60 } } },
-      { audio: false, video: { facingMode: { ideal: 'environment' }, frameRate: { ideal: 30, max: 60 } } },
-      { audio: false, video: { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30, max: 60 } } },
+      { audio: false, video: { ...baseVideo, ...env, width: { ideal: 1920 }, height: { ideal: 1080 } } },
+      { audio: false, video: { ...baseVideo, ...env, width: { ideal: 1280 }, height: { ideal: 720 } } },
+      { audio: false, video: { ...baseVideo, ...env } },
+      { audio: false, video: { ...baseVideo, width: { ideal: 1280 }, height: { ideal: 720 } } },
       { audio: false, video: true }
     ];
     let lastErr = null;
@@ -1594,33 +1467,38 @@ renderHistory();
     try { await loadQuagga(); } catch { return false; }
 
     const canvas = document.getElementById('isbn-scan-canvas');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    const crop = document.createElement('canvas');
+    const cropCtx = crop.getContext('2d');
     scannerActive = true;
     hint.textContent = 'Scan en cours — approchez le code-barres';
     let last = 0;
+    let busy = false;
 
     function tick(ts) {
       if (!scannerActive) return;
-      if (ts - last > 100 && video.readyState === video.HAVE_ENOUGH_DATA) {
+      if (!busy && ts - last > 100 && video.readyState === video.HAVE_ENOUGH_DATA) {
         last = ts;
         const vw = video.videoWidth, vh = video.videoHeight;
         if (!vw || !vh) { animFrame = requestAnimationFrame(tick); return; }
-        canvas.width = vw; canvas.height = vh;
-        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        // Évite de réinitialiser le canvas (et donc le contexte) si la taille n'a pas changé
+        if (canvas.width !== vw) canvas.width = vw;
+        if (canvas.height !== vh) canvas.height = vh;
         ctx.drawImage(video, 0, 0, vw, vh);
 
         /* Recadrage zone centrale */
         const cw = Math.round(vw * 0.9), ch = Math.round(vh * 0.5);
         const cx = Math.round((vw - cw) / 2), cy = Math.round((vh - ch) / 2);
-        const crop = document.createElement('canvas');
         crop.width = cw; crop.height = ch;
-        crop.getContext('2d').drawImage(canvas, cx, cy, cw, ch, 0, 0, cw, ch);
-        const imgData = crop.getContext('2d').getImageData(0, 0, cw, ch);
+        cropCtx.drawImage(canvas, cx, cy, cw, ch, 0, 0, cw, ch);
 
+        busy = true;
         Quagga.decodeSingle({
           decoder: { readers: ['ean_reader', 'ean_8_reader', 'code_128_reader'] },
           locate: true,
           src: crop.toDataURL()
         }, result => {
+          busy = false;
           if (result?.codeResult?.code) onCodeDetected(result.codeResult.code);
         });
       }
@@ -1667,7 +1545,6 @@ renderHistory();
       if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
         alert("Accès à la caméra refusé.\n\nVeuillez autoriser la caméra pour ce site dans votre navigateur, puis relancez le scan.");
       }
-      try { console.warn('[ISBN] getUserMedia error:', e); } catch (_) {}
       return;
     }
 
@@ -1678,6 +1555,20 @@ renderHistory();
       const adv  = {};
       if (caps.focusMode?.includes('continuous')) adv.focusMode = 'continuous';
       if (Object.keys(adv).length) track.applyConstraints({ advanced: [adv] }).catch(() => {});
+
+      // Chrome démarre parfois en basse résolution -> on pousse doucement vers 1080p (ideal, pas exact)
+      try {
+        const s0 = track.getSettings?.() ?? {};
+        const w0 = Number(s0.width || 0);
+        const h0 = Number(s0.height || 0);
+        if ((w0 && w0 < 1000) || (h0 && h0 < 700)) {
+          await track.applyConstraints({
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
+            aspectRatio: { ideal: 16 / 9 }
+          });
+        }
+      } catch (_) {}
     }
 
     video.srcObject = videoStream;
