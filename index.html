@@ -918,5 +918,424 @@ function renderMultiviewGrid() {
     );
 }
 </script>
+
+<!-- ══════════════════════════════════════════════
+     STORAGE MANAGER — Persistance & Sauvegarde
+     Module autonome · Compatible Android WebView
+══════════════════════════════════════════════ -->
+<script>
+/**
+ * ╔══════════════════════════════════════════════════════════════╗
+ * ║          STORAGE MANAGER — Module de persistance locale      ║
+ * ║  Compatible Android WebView · Mobile-First · Plug-and-Play   ║
+ * ╚══════════════════════════════════════════════════════════════╝
+ */
+
+(function (global) {
+  'use strict';
+
+  /* ─────────────────────────────────────────────
+     CONSTANTES DE CONFIGURATION
+  ───────────────────────────────────────────── */
+  var CONFIG = {
+    BACKUP_KEY      : '__last_backup_date__',
+    ALERT_DAYS      : 7,
+    INDICATOR_ID    : '__sm_indicator__',
+    FILE_INPUT_ID   : '__sm_file_input__',
+    TOAST_ID        : '__sm_toast__',
+    TOAST_DURATION  : 3000,
+    Z_INDEX         : 99990
+  };
+
+  /* ─────────────────────────────────────────────
+     1. PERSISTANCE AUTOMATIQUE
+  ───────────────────────────────────────────── */
+  function initStoragePersistence() {
+    if (navigator.storage && navigator.storage.persist) {
+      navigator.storage.persist().then(function (granted) {
+        console.log('[StorageManager] Persistance : ' + (granted ? 'activée ✓' : 'refusée (mode normal)'));
+      }).catch(function (err) {
+        console.warn('[StorageManager] Erreur persist() :', err);
+      });
+    }
+  }
+
+  /* ─────────────────────────────────────────────
+     2. LOGIQUE TEMPORELLE
+  ───────────────────────────────────────────── */
+  function getLastBackupDate() {
+    var raw = localStorage.getItem(CONFIG.BACKUP_KEY);
+    return raw ? new Date(raw) : null;
+  }
+
+  function setLastBackupDate() {
+    localStorage.setItem(CONFIG.BACKUP_KEY, new Date().toISOString());
+  }
+
+  function checkBackupAge() {
+    var last = getLastBackupDate();
+    if (!last) return true;
+    var diffMs   = Date.now() - last.getTime();
+    var diffDays = diffMs / (1000 * 60 * 60 * 24);
+    return diffDays > CONFIG.ALERT_DAYS;
+  }
+
+  /* ─────────────────────────────────────────────
+     3. TOAST — feedback discret
+  ───────────────────────────────────────────── */
+  function showToast(message, isError) {
+    var toast = document.getElementById(CONFIG.TOAST_ID);
+    if (!toast) return;
+    toast.textContent = message;
+    toast.style.background = isError ? '#ff4b4b' : '#32a852';
+    toast.style.display    = 'block';
+    toast.style.opacity    = '1';
+    clearTimeout(toast.__smTimer);
+    toast.__smTimer = setTimeout(function () {
+      toast.style.opacity = '0';
+      setTimeout(function () { toast.style.display = 'none'; }, 300);
+    }, CONFIG.TOAST_DURATION);
+  }
+
+  /* ─────────────────────────────────────────────
+     4. UI — Indicateur flottant discret
+  ───────────────────────────────────────────── */
+  function createUIIndicator() {
+    if (document.getElementById(CONFIG.INDICATOR_ID)) return;
+
+    /* Toast — réutilise #mvToast existant ou en crée un nouveau */
+    var existingToast = document.getElementById('mvToast');
+    if (!existingToast) {
+      var toast = document.createElement('div');
+      toast.id = CONFIG.TOAST_ID;
+      _applyStyles(toast, {
+        display: 'none', position: 'fixed', bottom: '30px',
+        left: '50%', transform: 'translateX(-50%)', color: 'white',
+        padding: '12px 20px', borderRadius: '16px', fontSize: '12px',
+        fontWeight: '700', textAlign: 'center', maxWidth: '320px',
+        width: '90%', boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+        zIndex: String(CONFIG.Z_INDEX + 1), opacity: '1',
+        transition: 'opacity 0.3s ease', fontFamily: 'inherit',
+        pointerEvents: 'none'
+      });
+      document.body.appendChild(toast);
+    } else {
+      existingToast.id = CONFIG.TOAST_ID;
+    }
+
+    /* Input file caché pour l'import */
+    var fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.json';
+    fileInput.id = CONFIG.FILE_INPUT_ID;
+    fileInput.style.display = 'none';
+    fileInput.addEventListener('change', _handleFileImport);
+    document.body.appendChild(fileInput);
+
+    /* Conteneur principal */
+    var indicator = document.createElement('div');
+    indicator.id = CONFIG.INDICATOR_ID;
+    _applyStyles(indicator, {
+      position: 'fixed', bottom: '20px', right: '16px',
+      zIndex: String(CONFIG.Z_INDEX), display: 'flex',
+      flexDirection: 'column', alignItems: 'flex-end', gap: '8px',
+      userSelect: 'none', WebkitUserSelect: 'none'
+    });
+
+    /* Bouton principal */
+    var mainBtn = document.createElement('button');
+    mainBtn.id = '__sm_main_btn__';
+    mainBtn.textContent = '☁️';
+    mainBtn.title = 'Gérer les sauvegardes';
+    mainBtn.setAttribute('aria-label', 'Gestionnaire de sauvegarde');
+    _applyStyles(mainBtn, {
+      width: '44px', height: '44px', borderRadius: '14px',
+      border: '1.5px solid rgba(255,255,255,0.15)',
+      background: 'rgba(30,30,50,0.85)', color: 'white',
+      fontSize: '22px', cursor: 'pointer', display: 'flex',
+      alignItems: 'center', justifyContent: 'center',
+      boxShadow: '0 4px 16px rgba(0,0,0,0.35)',
+      backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+      transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+      outline: 'none', padding: '0', lineHeight: '1', position: 'relative'
+    });
+
+    /* Pastille d'état */
+    var dot = document.createElement('span');
+    dot.id = '__sm_dot__';
+    _applyStyles(dot, {
+      position: 'absolute', top: '-3px', right: '-3px',
+      width: '11px', height: '11px', borderRadius: '50%',
+      border: '2px solid rgba(23,23,35,0.9)', background: '#32a852',
+      transition: 'background 0.4s ease'
+    });
+    mainBtn.appendChild(dot);
+
+    /* Panel d'actions */
+    var panel = document.createElement('div');
+    panel.id = '__sm_panel__';
+    _applyStyles(panel, {
+      display: 'none', flexDirection: 'column', gap: '8px',
+      background: 'rgba(23,23,40,0.96)',
+      border: '1px solid rgba(255,255,255,0.12)',
+      borderRadius: '18px', padding: '14px',
+      boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+      backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+      minWidth: '210px'
+    });
+
+    /* Titre panel */
+    var panelTitle = document.createElement('div');
+    panelTitle.textContent = '💾 Sauvegardes';
+    _applyStyles(panelTitle, {
+      fontSize: '11px', fontWeight: '800', textTransform: 'uppercase',
+      letterSpacing: '0.8px', opacity: '0.6', color: 'white',
+      marginBottom: '2px', fontFamily: 'inherit'
+    });
+    panel.appendChild(panelTitle);
+
+    /* Label dernière sauvegarde */
+    var lastBackupLabel = document.createElement('div');
+    lastBackupLabel.id = '__sm_last_label__';
+    _applyStyles(lastBackupLabel, {
+      fontSize: '10px', opacity: '0.45', color: 'white',
+      fontFamily: 'inherit', marginBottom: '4px'
+    });
+    panel.appendChild(lastBackupLabel);
+
+    /* Bouton Export */
+    var exportBtn = _createPanelButton('⬇️ Créer une copie de sécurité', '#3a3abf', function () {
+      exportLocalStorage();
+      togglePanel(false);
+    });
+    panel.appendChild(exportBtn);
+
+    /* Bouton Import */
+    var importBtn = _createPanelButton('📂 Charger une sauvegarde', '#2d8a4e', function () {
+      document.getElementById(CONFIG.FILE_INPUT_ID).click();
+      togglePanel(false);
+    });
+    panel.appendChild(importBtn);
+
+    /* Toggle panel */
+    mainBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var isOpen = panel.style.display === 'flex';
+      togglePanel(!isOpen);
+    });
+
+    document.addEventListener('click', function (e) {
+      if (!indicator.contains(e.target)) togglePanel(false);
+    });
+
+    mainBtn.addEventListener('touchstart', function () {
+      mainBtn.style.transform = 'scale(0.93)';
+    }, { passive: true });
+    mainBtn.addEventListener('touchend', function () {
+      mainBtn.style.transform = 'scale(1)';
+    }, { passive: true });
+
+    indicator.appendChild(panel);
+    indicator.appendChild(mainBtn);
+    document.body.appendChild(indicator);
+
+    refreshIndicatorState();
+
+    function togglePanel(open) {
+      panel.style.display = open ? 'flex' : 'none';
+      if (open) _updateLastBackupLabel(lastBackupLabel);
+    }
+  }
+
+  function refreshIndicatorState() {
+    var dot = document.getElementById('__sm_dot__');
+    if (!dot) return;
+    var needsAlert = checkBackupAge();
+    dot.style.background = needsAlert ? '#ff8c00' : '#32a852';
+  }
+
+  function _updateLastBackupLabel(el) {
+    var last = getLastBackupDate();
+    el.textContent = last
+      ? 'Dernière : ' + _formatDate(last)
+      : 'Aucune sauvegarde enregistrée';
+  }
+
+  /* ─────────────────────────────────────────────
+     5. EXPORT
+  ───────────────────────────────────────────── */
+  function exportLocalStorage() {
+    try {
+      var data = {};
+      for (var i = 0; i < localStorage.length; i++) {
+        var key = localStorage.key(i);
+        if (key !== CONFIG.BACKUP_KEY) {
+          data[key] = localStorage.getItem(key);
+        }
+      }
+
+      var json     = JSON.stringify(data, null, 2);
+      var blob     = new Blob([json], { type: 'application/json' });
+      var filename = 'backup-app-' + _isoDate() + '.json';
+      var url      = URL.createObjectURL(blob);
+      var a        = document.createElement('a');
+      a.href     = url;
+      a.download = filename;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+
+      setTimeout(function () {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 1500);
+
+      setLastBackupDate();
+      refreshIndicatorState();
+      showToast('✓ Sauvegarde téléchargée');
+
+    } catch (err) {
+      console.error('[StorageManager] Erreur export :', err);
+      showToast('Erreur lors de l\'export', true);
+    }
+  }
+
+  /* ─────────────────────────────────────────────
+     6. IMPORT
+  ───────────────────────────────────────────── */
+  function importLocalStorage() {
+    var fi = document.getElementById(CONFIG.FILE_INPUT_ID);
+    if (fi) fi.click();
+  }
+
+  function _handleFileImport(event) {
+    var file = event.target.files && event.target.files[0];
+    if (!file) return;
+    event.target.value = '';
+
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      try {
+        var raw     = e.target.result;
+        var cleaned = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+        var data    = JSON.parse(cleaned);
+
+        if (typeof data !== 'object' || data === null) throw new Error('Format invalide');
+
+        var keys = Object.keys(data).length;
+        var ok   = global.confirm('Restaurer ' + keys + ' entrée(s) depuis la sauvegarde ?\n\nLes données actuelles seront remplacées.');
+        if (!ok) return;
+
+        localStorage.clear();
+        Object.keys(data).forEach(function (key) {
+          try { localStorage.setItem(key, data[key]); }
+          catch (setErr) { console.warn('[StorageManager] Clé ignorée :', key, setErr); }
+        });
+
+        showToast('✓ Données restaurées — rechargement…');
+        setTimeout(function () { global.location.reload(); }, 900);
+
+      } catch (parseErr) {
+        console.error('[StorageManager] Erreur import :', parseErr);
+        showToast('Fichier invalide ou corrompu', true);
+      }
+    };
+
+    reader.onerror = function () { showToast('Impossible de lire le fichier', true); };
+    reader.readAsText(file);
+  }
+
+  /* ─────────────────────────────────────────────
+     UTILITAIRES PRIVÉS
+  ───────────────────────────────────────────── */
+  function _applyStyles(el, styles) {
+    Object.keys(styles).forEach(function (prop) { el.style[prop] = styles[prop]; });
+  }
+
+  function _createPanelButton(label, bgColor, onClick) {
+    var btn = document.createElement('button');
+    btn.textContent = label;
+    _applyStyles(btn, {
+      display: 'block', width: '100%', padding: '11px 14px',
+      border: 'none', borderRadius: '12px', background: bgColor,
+      color: 'white', fontSize: '12px', fontWeight: '700',
+      cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit',
+      transition: 'opacity 0.15s ease',
+      WebkitTapHighlightColor: 'transparent', outline: 'none'
+    });
+    btn.addEventListener('click', onClick);
+    btn.addEventListener('touchstart', function () { btn.style.opacity = '0.75'; }, { passive: true });
+    btn.addEventListener('touchend',   function () { btn.style.opacity = '1'; },   { passive: true });
+    return btn;
+  }
+
+  function _isoDate() {
+    var d   = new Date();
+    var m   = d.getMonth() + 1;
+    var day = d.getDate();
+    return d.getFullYear() + '-' + (m < 10 ? '0' + m : m) + '-' + (day < 10 ? '0' + day : day);
+  }
+
+  function _formatDate(date) {
+    try {
+      return date.toLocaleDateString('fr-FR', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+    } catch (e) { return date.toString(); }
+  }
+
+  /* ─────────────────────────────────────────────
+     7. INIT + INTERCEPTION localStorage
+  ───────────────────────────────────────────── */
+  function init() {
+    initStoragePersistence();
+    createUIIndicator();
+
+    /* Interception non-intrusive des mutations du localStorage */
+    var _orig = {
+      setItem   : Storage.prototype.setItem,
+      removeItem: Storage.prototype.removeItem,
+      clear     : Storage.prototype.clear
+    };
+
+    Storage.prototype.setItem = function (key, value) {
+      _orig.setItem.call(this, key, value);
+      if (this === localStorage) _throttledRefresh();
+    };
+    Storage.prototype.removeItem = function (key) {
+      _orig.removeItem.call(this, key);
+      if (this === localStorage) _throttledRefresh();
+    };
+    Storage.prototype.clear = function () {
+      _orig.clear.call(this);
+      _throttledRefresh();
+    };
+  }
+
+  var _refreshTimer = null;
+  function _throttledRefresh() {
+    clearTimeout(_refreshTimer);
+    _refreshTimer = setTimeout(refreshIndicatorState, 200);
+  }
+
+  /* API publique */
+  global.StorageManager = {
+    init              : init,
+    exportLocalStorage: exportLocalStorage,
+    importLocalStorage: importLocalStorage,
+    checkBackupAge    : checkBackupAge,
+    refreshState      : refreshIndicatorState
+  };
+
+  /* Auto-init */
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+})(window);
+</script>
 </body>
 </html>
