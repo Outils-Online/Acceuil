@@ -1306,36 +1306,90 @@ renderHistory();
     o = document.createElement('div');
     o.id = 'isbn-scan-overlay';
     Object.assign(o.style, {
-      position:'fixed', inset:'0', background:'rgba(0,0,0,0.9)',
+      position:'fixed', inset:'0', background:'rgba(0,0,0,0.92)',
       display:'flex', flexDirection:'column', alignItems:'center',
-      justifyContent:'center', zIndex:'9999', gap:'14px'
+      justifyContent:'center', zIndex:'9999', gap:'12px',
+      padding:'16px'
     });
+
     const lbl = document.createElement('p');
-    lbl.textContent = '📷 Pointez la caméra vers le code-barres ISBN';
-    Object.assign(lbl.style, { color:'#fff', fontFamily:'inherit', fontSize:'14px', margin:'0' });
+    lbl.textContent = '📷 Pointez le code-barres ISBN dans le cadre';
+    Object.assign(lbl.style, { color:'#fff', fontFamily:'inherit', fontSize:'14px', margin:'0', textAlign:'center' });
+
+    /* Conteneur vidéo + viseur */
+    const wrap = document.createElement('div');
+    Object.assign(wrap.style, {
+      position:'relative', width:'100%', maxWidth:'460px',
+      borderRadius:'10px', overflow:'hidden', background:'#000'
+    });
 
     const video = document.createElement('video');
     video.id = 'isbn-scan-video';
-    Object.assign(video.style, { width:'100%', maxWidth:'420px', borderRadius:'8px', border:'2px solid rgba(255,255,255,0.2)' });
-    video.setAttribute('playsinline',''); video.muted = true;
+    Object.assign(video.style, {
+      width:'100%', display:'block',
+      /* Désactiver tout filtre CSS qui pourrait brouiller l'image */
+      filter:'none', transform:'none', willChange:'auto'
+    });
+    video.setAttribute('playsinline', '');
+    video.setAttribute('autoplay', '');
+    video.muted = true;
 
+    /* Viseur SVG superposé */
+    const viewfinder = document.createElement('div');
+    Object.assign(viewfinder.style, {
+      position:'absolute', inset:'0', pointerEvents:'none',
+      display:'flex', alignItems:'center', justifyContent:'center'
+    });
+    viewfinder.innerHTML = `
+      <svg width="260" height="100" viewBox="0 0 260 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="1" y="1" width="258" height="98" rx="4" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
+        <!-- coins -->
+        <path d="M1 25 L1 1 L25 1"   stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+        <path d="M235 1 L259 1 L259 25" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+        <path d="M1 75 L1 99 L25 99"  stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+        <path d="M235 99 L259 99 L259 75" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+        <!-- ligne de scan animée -->
+        <line id="scan-line" x1="4" y1="50" x2="256" y2="50" stroke="#e74c3c" stroke-width="1.5" opacity="0.8"/>
+      </svg>`;
+
+    /* Animation ligne de scan */
+    const styleTag = document.createElement('style');
+    styleTag.textContent = `
+      @keyframes scanMove {
+        0%   { transform: translateY(-38px); opacity:1; }
+        50%  { transform: translateY(38px);  opacity:1; }
+        100% { transform: translateY(-38px); opacity:1; }
+      }
+      #scan-line { animation: scanMove 1.8s ease-in-out infinite; }
+    `;
+    document.head.appendChild(styleTag);
+
+    wrap.append(video, viewfinder);
+
+    /* Canvas caché pour la capture */
     const canvas = document.createElement('canvas');
-    canvas.id = 'isbn-scan-canvas'; canvas.style.display = 'none';
+    canvas.id = 'isbn-scan-canvas';
+    canvas.style.display = 'none';
 
     const hint = document.createElement('p');
-    hint.id = 'isbn-scan-hint'; hint.textContent = 'Initialisation…';
-    Object.assign(hint.style, { color:'#aaa', fontFamily:'inherit', fontSize:'12px', margin:'0' });
+    hint.id = 'isbn-scan-hint';
+    hint.textContent = 'Initialisation…';
+    Object.assign(hint.style, {
+      color:'#aaa', fontFamily:'inherit', fontSize:'12px',
+      margin:'0', textAlign:'center'
+    });
 
     const close = document.createElement('button');
     close.textContent = '✕ Fermer';
     Object.assign(close.style, {
-      padding:'8px 20px', background:'transparent', color:'#fff',
-      border:'1px solid rgba(255,255,255,0.4)', borderRadius:'4px',
-      cursor:'pointer', fontFamily:'inherit', fontSize:'13px'
+      padding:'8px 24px', background:'transparent', color:'#fff',
+      border:'1px solid rgba(255,255,255,0.35)', borderRadius:'4px',
+      cursor:'pointer', fontFamily:'inherit', fontSize:'13px',
+      marginTop:'4px'
     });
     close.onclick = stopScanner;
 
-    o.append(lbl, video, canvas, hint, close);
+    o.append(lbl, wrap, canvas, hint, close);
     document.body.appendChild(o);
     return o;
   }
@@ -1344,27 +1398,107 @@ renderHistory();
     if (scannerActive) return;
     try { await loadZXing(); } catch { setFeedback('Scanner indisponible.', 'error'); return; }
     buildOverlay();
+
     const video  = document.getElementById('isbn-scan-video');
     const canvas = document.getElementById('isbn-scan-canvas');
     const hint   = document.getElementById('isbn-scan-hint');
-    try {
-      videoStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' } });
-    } catch { setFeedback('Accès caméra refusé.', 'error'); stopScanner(); return; }
-    video.srcObject = videoStream;
-    await video.play();
-    scannerActive = true;
-    hint.textContent = 'Scan en cours…';
 
-    function tick() {
+    /* ── Contraintes caméra optimisées pour la netteté ────────────── */
+    const constraints = {
+      video: {
+        facingMode:  { ideal: 'environment' },
+        width:       { ideal: 1920, min: 640 },
+        height:      { ideal: 1080, min: 480 },
+        frameRate:   { ideal: 30 },
+        focusMode:   { ideal: 'continuous' },   /* autofocus continu */
+        zoom:        { ideal: 1 }               /* pas de zoom numérique */
+      }
+    };
+
+    try {
+      videoStream = await navigator.mediaDevices.getUserMedia(constraints);
+    } catch (e1) {
+      /* Fallback : contraintes minimales si les avancées sont refusées */
+      try {
+        videoStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: 'environment' } }
+        });
+      } catch {
+        setFeedback('Accès caméra refusé.', 'error');
+        stopScanner();
+        return;
+      }
+    }
+
+    /* Appliquer autofocus continu via applyConstraints si disponible */
+    const track = videoStream.getVideoTracks()[0];
+    if (track && typeof track.applyConstraints === 'function') {
+      const caps = track.getCapabilities ? track.getCapabilities() : {};
+      const advConstraints = {};
+      if (caps.focusMode && caps.focusMode.includes('continuous'))
+        advConstraints.focusMode = 'continuous';
+      if (caps.zoom) advConstraints.zoom = caps.zoom.min || 1;
+      if (Object.keys(advConstraints).length)
+        track.applyConstraints({ advanced: [advConstraints] }).catch(() => {});
+    }
+
+    video.srcObject = videoStream;
+
+    /* Attendre que la vidéo soit réellement prête avant de démarrer le scan */
+    await new Promise(resolve => {
+      video.onloadedmetadata = () => { video.play().then(resolve).catch(resolve); };
+    });
+
+    scannerActive = true;
+    hint.textContent = 'Scan en cours — approchez doucement le code-barres';
+
+    /* ── Throttle : scanner à 15 fps max pour laisser l'AF travailler */
+    let lastScan = 0;
+    const SCAN_INTERVAL = 1000 / 15;
+
+    function tick(timestamp) {
       if (!scannerActive) return;
-      if (video.readyState === video.HAVE_ENOUGH_DATA) {
-        canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-        canvas.getContext('2d').drawImage(video, 0, 0);
+
+      if (timestamp - lastScan >= SCAN_INTERVAL && video.readyState === video.HAVE_ENOUGH_DATA) {
+        lastScan = timestamp;
+
+        /* Résolution native du flux — pas de mise à l'échelle */
+        const vw = video.videoWidth;
+        const vh = video.videoHeight;
+        if (vw === 0 || vh === 0) { animFrame = requestAnimationFrame(tick); return; }
+
+        canvas.width  = vw;
+        canvas.height = vh;
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        ctx.drawImage(video, 0, 0, vw, vh);
+
+        /* Recadrage sur la zone centrale (là où est le viseur) */
+        const cropW = Math.round(vw * 0.85);
+        const cropH = Math.round(vh * 0.45);
+        const cropX = Math.round((vw - cropW) / 2);
+        const cropY = Math.round((vh - cropH) / 2);
+
+        const cropCanvas = document.createElement('canvas');
+        cropCanvas.width  = cropW;
+        cropCanvas.height = cropH;
+        cropCanvas.getContext('2d').drawImage(canvas, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
+
         try {
-          const src    = new ZXing.HTMLCanvasElementLuminanceSource(canvas);
-          const result = new ZXing.MultiFormatReader().decode(new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(src)));
+          const lum    = new ZXing.HTMLCanvasElementLuminanceSource(cropCanvas);
+          const bitmap = new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(lum));
+          const hints  = new Map();
+          hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
+            ZXing.BarcodeFormat.EAN_13,
+            ZXing.BarcodeFormat.EAN_8,
+            ZXing.BarcodeFormat.CODE_128
+          ]);
+          hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+          const reader = new ZXing.MultiFormatReader();
+          reader.setHints(hints);
+          const result = reader.decode(bitmap);
+
           if (result) {
-            const code = result.getText();
+            const code = result.getText().replace(/[^0-9X]/gi, '');
             stopScanner();
             const isbnEl = getField('isbn');
             if (isbnEl) { isbnEl.value = code; isbnEl.dispatchEvent(new Event('input')); }
@@ -1373,15 +1507,17 @@ renderHistory();
           }
         } catch (_) {}
       }
+
       animFrame = requestAnimationFrame(tick);
     }
+
     animFrame = requestAnimationFrame(tick);
   }
 
   function stopScanner() {
     scannerActive = false;
-    if (animFrame)    { cancelAnimationFrame(animFrame); animFrame = null; }
-    if (videoStream)  { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
+    if (animFrame)   { cancelAnimationFrame(animFrame); animFrame = null; }
+    if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
     const o = document.getElementById('isbn-scan-overlay');
     if (o) o.remove();
   }
