@@ -1170,37 +1170,27 @@ renderHistory();
     };
   }
 
-  /* ── Remplir les champs du formulaire ───────────────────────────── */
-  function fillFields(book) {
-    // Titre
-    const title = book.title || '';
-    setField('titre', title);
+  /* ── Normalisation d'une valeur brute (objet ou string) ────────── */
+  function resolveStr(raw) {
+    if (!raw) return '';
+    if (typeof raw === 'object') return raw.name || raw.title || '';
+    return String(raw).trim();
+  }
 
-    // Éditeur — publishers est un tableau d'objets { name } ou de strings
-    const rawPublisher = book.publishers?.[0];
-    const publisher = (typeof rawPublisher === 'object' ? rawPublisher?.name : rawPublisher) || '';
-    setField('editeur', publisher);
+  /* ── Remplissage depuis données OpenLibrary (jscmd=data) ─────────── */
+  function fillFromOpenLibrary(book) {
+    setField('titre',      book.title || '');
+    setField('editeur',    resolveStr(book.publishers?.[0]));
+    setField('ville',      resolveStr(book.publish_places?.[0]));
+    setField('annee',      extractYear(book.publish_date || ''));
+    setField('collection', resolveStr(book.series?.[0]));
 
-    // Ville — publish_places est un tableau d'objets { name } ou de strings
-    const rawPlace = book.publish_places?.[0];
-    const place = (typeof rawPlace === 'object' ? rawPlace?.name : rawPlace) || '';
-    setField('ville', place);
+    const authorName = book.authors?.[0]?.name || '';
+    const byStmt     = book.by_statement || '';
+    const authorKey  = book.authors?.[0]?.key || '';
 
-    // Année
-    const year = extractYear(book.publish_date || '');
-    setField('annee', year);
-
-    // Collection — series[0] est une string directe
-    const collection = book.series?.[0] || '';
-    setField('collection', collection);
-
-    // Auteur — priorité : authors[].name > by_statement > appel API
-    const rawAuthorName = book.authors?.[0]?.name || '';
-    const byStmt        = book.by_statement || '';
-    const authorKey     = book.authors?.[0]?.key || '';
-
-    if (rawAuthorName) {
-      const { prenom, nom } = splitAuthor(rawAuthorName);
+    if (authorName) {
+      const { prenom, nom } = splitAuthor(authorName);
       setField('prenoms', prenom);
       setField('noms',    nom);
     } else if (byStmt) {
@@ -1209,39 +1199,92 @@ renderHistory();
       setField('prenoms', prenom);
       setField('noms',    nom);
     } else if (authorKey) {
-      fetchAuthor(authorKey);
+      fetch(`https://openlibrary.org${authorKey}.json`)
+        .then(r => r.json())
+        .then(a => {
+          const name = a.personal_name || a.name || '';
+          if (!name) { console.warn('[ISBN] auteur OL introuvable via', authorKey); return; }
+          const { prenom, nom } = splitAuthor(name);
+          setField('prenoms', prenom);
+          setField('noms',    nom);
+        })
+        .catch(err => console.warn('[ISBN] erreur author OL:', err));
     } else {
-      console.warn('[ISBN] aucun auteur trouvé dans les données OpenLibrary');
+      console.warn('[ISBN] aucun auteur trouvé dans OpenLibrary');
+    }
+  }
+
+  /* ── Remplissage depuis données Google Books ────────────────────── */
+  function fillFromGoogleBooks(item) {
+    const info = item.volumeInfo || {};
+    setField('titre',   info.title || '');
+    setField('editeur', info.publisher || '');
+    setField('annee',   extractYear(info.publishedDate || ''));
+
+    const rawCity = info.publishedCountry || '';
+    setField('ville', rawCity);
+
+    const cats = info.categories || [];
+    setField('collection', cats[0] || '');
+
+    const authors = info.authors || [];
+    if (authors.length > 0) {
+      const { prenom, nom } = splitAuthor(authors[0]);
+      setField('prenoms', prenom);
+      setField('noms',    nom);
+    } else {
+      console.warn('[ISBN] aucun auteur trouvé dans Google Books');
+    }
+  }
+
+  /* ── Cascade API : OpenLibrary d'abord, Google Books en fallback ── */
+  async function fetchISBN(isbn) {
+    const clean = isbn.replace(/[^0-9Xx]/g, '').toUpperCase();
+    if (clean.length !== 10 && clean.length !== 13) return;
+
+    setFeedback('⏳ Recherche en cours…', 'loading');
+
+    // ── 1. OpenLibrary ──────────────────────────────────────────────
+    try {
+      const olRes  = await fetch(
+        `https://openlibrary.org/api/books?bibkeys=ISBN:${clean}&format=json&jscmd=data`
+      );
+      const olData = await olRes.json();
+      const olKey  = `ISBN:${clean}`;
+
+      if (olData[olKey]) {
+        fillFromOpenLibrary(olData[olKey]);
+        setFeedback('✓ Données récupérées via Open Library', 'success');
+        if (typeof showToast === 'function') showToast('✓ Données récupérées via Open Library');
+        return;
+      }
+      console.info('[ISBN] Open Library : aucun résultat pour', clean, '— tentative Google Books');
+    } catch (err) {
+      console.warn('[ISBN] Open Library inaccessible :', err);
     }
 
-    setFeedback('✓ Champs remplis automatiquement', 'success');
-  }
+    // ── 2. Google Books (fallback) ──────────────────────────────────
+    try {
+      const gbRes  = await fetch(
+        `https://www.googleapis.com/books/v1/volumes?q=isbn:${clean}`
+      );
+      const gbData = await gbRes.json();
+      const items  = gbData.items || [];
 
-  function fetchAuthor(key) {
-    fetch(`https://openlibrary.org${key}.json`)
-      .then(r => r.json())
-      .then(a => {
-        const name = a.personal_name || a.name || '';
-        if (!name) { console.warn('[ISBN] auteur introuvable via', key); return; }
-        const { prenom, nom } = splitAuthor(name);
-        setField('prenoms', prenom);
-        setField('noms',    nom);
-      })
-      .catch(err => console.warn('[ISBN] erreur fetchAuthor:', err));
-  }
+      if (items.length > 0) {
+        fillFromGoogleBooks(items[0]);
+        setFeedback('✓ Données récupérées via Google Books', 'success');
+        if (typeof showToast === 'function') showToast('✓ Données récupérées via Google Books');
+        return;
+      }
+      console.info('[ISBN] Google Books : aucun résultat pour', clean);
+    } catch (err) {
+      console.warn('[ISBN] Google Books inaccessible :', err);
+    }
 
-  /* ── Appel OpenLibrary ──────────────────────────────────────────── */
-  function fetchISBN(isbn) {
-    const clean = isbn.replace(/[^0-9X]/gi, '');
-    if (clean.length !== 10 && clean.length !== 13) return;
-    setFeedback('⏳ Recherche en cours…', 'loading');
-    fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${clean}&format=json&jscmd=data`)
-      .then(r => r.json())
-      .then(data => {
-        const key = `ISBN:${clean}`;
-        data[key] ? fillFields(data[key]) : setFeedback('ISBN introuvable.', 'error');
-      })
-      .catch(() => setFeedback('Erreur réseau.', 'error'));
+    // ── 3. Échec total ──────────────────────────────────────────────
+    setFeedback('ISBN introuvable sur les deux APIs.', 'error');
+    if (typeof showToast === 'function') showToast('⚠ ISBN introuvable sur Open Library et Google Books');
   }
 
   /* ── Scanner ZXing ──────────────────────────────────────────────── */
