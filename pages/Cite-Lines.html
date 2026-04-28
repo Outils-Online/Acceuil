@@ -2129,33 +2129,38 @@ if (records.length > 0) {
       const val = e.target.value.trim().replace(/[-\s]/g, '');
       
       if (val.length === 10 || val.length === 13) {
-        showToast("🔍 Recherche sur la BnF...");
+        showToast("🔍 Interrogation de la BnF...");
         
         const data = await fetchFromBNF(val);
         
         if (data) {
-          // Mapping étendu vers les cases de votre formulaire
+          // Mapping vers vos IDs de formulaires (Vérifiez bien ces noms dans votre HTML)
           const mapping = {
             'f_titre': data.titre,
             'f_noms': data.auteurs,
             'f_editeur': data.editeur,
             'f_annee': data.annee,
-            'f_lieu': data.lieu,           // Remplira la case "Lieu" (si elle existe)
-            'f_collection': data.collection // Remplira la case "Collection" (si elle existe)
+            'f_lieu': data.lieu,
+            'f_collection': data.collection
           };
 
+          let count = 0;
           for (let [id, value] of Object.entries(mapping)) {
             const field = document.getElementById(id);
             if (field && value) {
               field.value = value;
+              // On prévient le reste du script que la case a changé
               field.dispatchEvent(new Event('input', { bubbles: true }));
+              count++;
             }
           }
           
-          // Message spécifique demandé
-          if (typeof showToast === 'function') {
-            showToast("✅ ISBN trouvé dans la BnF !");
+          // MESSAGE DE CONFIRMATION SPÉCIFIQUE
+          if (count > 0) {
+            showToast("✅ ISBN trouvé dans la BnF ! (" + count + " champs remplis)");
           }
+        } else {
+          showToast("❌ Non trouvé dans la base BnF");
         }
       }
     }, 500));
@@ -2234,7 +2239,7 @@ if (records.length > 0) {
   }
 
 /* ── Logique de capture BnF (Format MarcXML) ── */
-  async function fetchFromBNF(isbn) {
+ async function fetchFromBNF(isbn) {
     const cleanIsbn = isbn.replace(/[-\s]/g, '');
     const url = `https://catalogue.bnf.fr/api/SRU?operation=searchRetrieve&version=1.2&query=bib.isbn%20all%20%22${cleanIsbn}%22`;
 
@@ -2244,26 +2249,40 @@ if (records.length > 0) {
       const parser = new DOMParser();
       const xml = parser.parseFromString(xmlText, "text/xml");
 
-      if (!xml.querySelector('recordData')) return null;
+      // On récupère le premier enregistrement
+      const record = xml.getElementsByTagName('srw:recordData')[0] || xml.getElementsByTagName('recordData')[0];
+      if (!record) return null;
 
-      const getMarc = (tag, code) => xml.querySelector(`datafield[tag="${tag}"] subfield[code="${code}"]`)?.textContent || '';
+      // Fonction ultra-robuste pour extraire les données MarcXML
+      const getField = (tag, code) => {
+        const df = Array.from(xml.getElementsByTagName('mxc:datafield') || xml.getElementsByTagName('datafield'))
+                        .find(el => el.getAttribute('tag') === tag);
+        if (!df) return '';
+        const sf = Array.from(df.getElementsByTagName('mxc:subfield') || df.getElementsByTagName('subfield'))
+                        .find(el => el.getAttribute('code') === code);
+        return sf ? sf.textContent.trim() : '';
+      };
 
-      // Construction des données enrichies
-      const titrePrincipal = getMarc('200', 'a');
-      const sousTitre = getMarc('200', 'e');
-      
+      // Extraction des informations
+      const titrePrincipal = getField('200', 'a');
+      const sousTitre = getField('200', 'e');
+      const auteurDirect = getField('200', 'f'); // "David de Wolf"
+      const editeur = getField('210', 'c');      // "Actes Sud junior"
+      const lieu = getField('210', 'a');         // "[Arles]"
+      const dateBrute = getField('210', 'd');    // "DL 2024"
+      const collection = getField('225', 'a');   // "L'incroyable catalogue"
+
       return {
-        // Fusion du titre et sous-titre
         titre: sousTitre ? `${titrePrincipal} : ${sousTitre}` : titrePrincipal,
-        auteurs: getMarc('200', 'f'),
-        editeur: getMarc('210', 'c'),
-        lieu: getMarc('210', 'a'),        // NOUVEAU : Ville d'édition
-        collection: getMarc('225', 'a'),  // NOUVEAU : Collection (ex: "Folio")
-        annee: (getMarc('210', 'd').match(/\d{4}/) || [''])[0],
+        auteurs: auteurDirect,
+        editeur: editeur,
+        lieu: lieu.replace(/[\[\]]/g, ''), // Enlève les crochets [Arles] -> Arles
+        annee: (dateBrute.match(/\d{4}/) || [''])[0],
+        collection: collection,
         source: 'BnF'
       };
     } catch (e) {
-      console.error("Erreur BnF:", e);
+      console.error("Erreur de capture BnF:", e);
       return null;
     }
   }
