@@ -1339,29 +1339,25 @@ function fillFromBNF(xmlText) {
   const parser = new DOMParser();
   const xml = parser.parseFromString(xmlText, "text/xml");
 
- const get = (tag, code) => {
-  const fields = xml.getElementsByTagName('datafield');
-  for (let f of fields) {
-    if (f.getAttribute('tag') === tag) {
-      const subs = f.getElementsByTagName('subfield');
-      for (let s of subs) {
-        if (s.getAttribute('code') === code) {
-          return s.textContent.trim();
-        }
-      }
-    }
-  }
-  return '';
-};
+  const get = (tag, code) => {
+    // Utilisation de querySelector pour ignorer les préfixes (ex: mxc:datafield)
+    const field = xml.querySelector(`datafield[tag="${tag}"], [tag="${tag}"]`);
+    if (!field) return '';
+    
+    const subfield = field.querySelector(`subfield[code="${code}"], [code="${code}"]`);
+    return subfield ? subfield.textContent.trim() : '';
+  };
 
-const titre   = get('200', 'a');
-const auteur  = get('700', 'a');
-const prenom  = get('700', 'b');
-const editeur = get('210', 'c');
-const annee   = get('210', 'd');
+  const titre  = get('200', 'a');
+  const auteur = get('700', 'a');
+  const prenom = get('700', 'b');
+  const editeur = get('210', 'c'); // Maintenant ça marchera avec recordSchema
+  const annee   = get('210', 'd');
+  const ville   = get('210', 'a');
 
   if (titre)   setField('titre', titre);
   if (editeur) setField('editeur', editeur);
+  if (ville)   setField('ville', ville.replace(/[\[\]]/g, ''));
   if (annee)   setField('annee', extractYear(annee));
 
   if (auteur || prenom) {
@@ -1385,7 +1381,7 @@ const annee   = get('210', 'd');
     } catch (_) {}
     // 2. BnF
 try {
-  const res = await fetch(`https://catalogue.bnf.fr/api/SRU?operation=searchRetrieve&version=1.2&query=bib.isbn any "${clean}"`);
+  const res = await fetch(`https://catalogue.bnf.fr/api/SRU?operation=searchRetrieve&version=1.2&query=bib.isbn%20any%20"${clean}"&recordSchema=unimarcxchange`);
   const text = await res.text();
 
 const xml = new DOMParser().parseFromString(text, "text/xml");
