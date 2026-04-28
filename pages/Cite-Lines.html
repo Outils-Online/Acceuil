@@ -2125,42 +2125,45 @@ if (records.length > 0) {
   ══════════════════════════════════════════════════════════════════ */
 
   function attachListeners(input) {
+    if (input.dataset.isbnObserved) return;
+    input.dataset.isbnObserved = 'true';
+
     input.addEventListener('input', debounce(async (e) => {
-      const val = e.target.value.trim().replace(/[-\s]/g, '');
+      const rawVal = e.target.value;
+      const cleanVal = rawVal.trim().replace(/[-\s]/g, '');
       
-      if (val.length === 10 || val.length === 13) {
-        showToast("🔍 Interrogation de la BnF...");
+      // 1. On garde la validation visuelle (rouge/vert)
+      const status = getISBNStatus(rawVal);
+      setFeedback(input, status.msg, status.type);
+
+      // 2. Si l'ISBN est complet (10 ou 13 chiffres), on interroge la BnF
+      if (cleanVal.length === 10 || cleanVal.length === 13) {
+        setFeedback(input, "Recherche BnF...", "info");
         
-        const data = await fetchFromBNF(val);
+        const data = await fetchFromBNF(cleanVal);
         
         if (data) {
-          // Mapping vers vos IDs de formulaires (Vérifiez bien ces noms dans votre HTML)
+          // On définit quel champ reçoit quelle donnée
           const mapping = {
             'f_titre': data.titre,
-            'f_noms': data.auteurs,
+            'f_noms': data.auteur,
             'f_editeur': data.editeur,
             'f_annee': data.annee,
             'f_lieu': data.lieu,
             'f_collection': data.collection
           };
 
-          let count = 0;
-          for (let [id, value] of Object.entries(mapping)) {
-            const field = document.getElementById(id);
-            if (field && value) {
-              field.value = value;
-              // On prévient le reste du script que la case a changé
-              field.dispatchEvent(new Event('input', { bubbles: true }));
-              count++;
+          // Remplissage automatique
+          Object.entries(mapping).forEach(([id, value]) => {
+            const el = document.getElementById(id);
+            if (el && value) {
+              el.value = value;
+              // On force la mise à jour de la citation finale
+              el.dispatchEvent(new Event('input', { bubbles: true }));
             }
-          }
+          });
           
-          // MESSAGE DE CONFIRMATION SPÉCIFIQUE
-          if (count > 0) {
-            showToast("✅ ISBN trouvé dans la BnF 3 ! (" + count + " champs remplis)");
-          }
-        } else {
-          showToast("❌ Non trouvé dans la base BnF");
+          setFeedback(input, "✅ ISBN trouvé dans la BnF 4 !", "success");
         }
       }
     }, 500));
