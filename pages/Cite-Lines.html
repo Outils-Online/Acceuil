@@ -1424,6 +1424,7 @@ renderHistory();
       if (deviceId) {
         /* Contraintes par deviceId — contourne facingMode non fiable sur Chrome */
         const byDeviceConstraints = [
+          { video: { deviceId: { exact: deviceId }, width: { ideal: 4096 }, height: { ideal: 2160 }, frameRate: { ideal: 30 } } },
           { video: { deviceId: { exact: deviceId }, width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30 } } },
           { video: { deviceId: { exact: deviceId }, width: { ideal: 1280 }, height: { ideal: 720  } } },
           { video: { deviceId: { exact: deviceId } } },
@@ -1442,12 +1443,15 @@ renderHistory();
 
     /* ── Étape 2 : fallback facingMode (Firefox/Safari/desktop) ────── */
     const fallbackAttempts = IS_MOBILE ? [
+      { video: { facingMode: { exact: 'environment' }, width: { ideal: 4096 }, height: { ideal: 2160 }, frameRate: { ideal: 30 } } },
       { video: { facingMode: { exact: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30 } } },
       { video: { facingMode: { exact: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720  } } },
+      { video: { facingMode: { ideal: 'environment' }, width: { ideal: 4096 }, height: { ideal: 2160 } } },
       { video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720  } } },
       { video: { facingMode: { ideal: 'environment' } } },
       { video: true },
     ] : [
+      { video: { width: { ideal: 4096 }, height: { ideal: 2160 }, frameRate: { ideal: 30 } } },
       { video: { width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30 } } },
       { video: { width: { ideal: 1280 }, height: { ideal: 720  } } },
       { video: true },
