@@ -2157,7 +2157,7 @@ if (records.length > 0) {
           
           // MESSAGE DE CONFIRMATION SPÉCIFIQUE
           if (count > 0) {
-            showToast("✅ ISBN trouvé dans la BnF 2 ! (" + count + " champs remplis)");
+            showToast("✅ ISBN trouvé dans la BnF ! (" + count + " champs remplis)");
           }
         } else {
           showToast("❌ Non trouvé dans la base BnF");
@@ -2239,47 +2239,53 @@ if (records.length > 0) {
   }
 
 /* ── Logique de capture BnF (Format MarcXML) ── */
-async function fetchFromBNF(isbn) {
-  const cleanIsbn = isbn.replace(/[-\s]/g, '');
-  const url = `https://catalogue.bnf.fr/api/SRU?operation=searchRetrieve&version=1.2&query=bib.isbn%20all%20%22${cleanIsbn}%22`;
+ async function fetchFromBNF(isbn) {
+    const cleanIsbn = isbn.replace(/[-\s]/g, '');
+    const url = `https://catalogue.bnf.fr/api/SRU?operation=searchRetrieve&version=1.2&query=bib.isbn%20all%20%22${cleanIsbn}%22`;
 
-  try {
-    const response = await fetch(url);
-    const xmlText = await response.text();
-    const parser = new DOMParser();
-    const xml = parser.parseFromString(xmlText, "text/xml");
+    try {
+      const response = await fetch(url);
+      const xmlText = await response.text();
+      const parser = new DOMParser();
+      const xml = parser.parseFromString(xmlText, "text/xml");
 
-    // On cherche l'élément 'record', peu importe son préfixe
-    const record = xml.querySelector('recordData') || xml.getElementsByTagNameNS("*", "recordData")[0];
-    if (!record) return null;
+      // On récupère le premier enregistrement
+      const record = xml.getElementsByTagName('srw:recordData')[0] || xml.getElementsByTagName('recordData')[0];
+      if (!record) return null;
 
-    // Fonction d'extraction universelle (cherche avec et sans namespace)
-    const getVal = (tag, code) => {
-      const el = xml.querySelector(`datafield[tag="${tag}"] subfield[code="${code}"], [tag="${tag}"] [code="${code}"]`);
-      return el ? el.textContent.trim() : '';
-    };
+      // Fonction ultra-robuste pour extraire les données MarcXML
+      const getField = (tag, code) => {
+        const df = Array.from(xml.getElementsByTagName('mxc:datafield') || xml.getElementsByTagName('datafield'))
+                        .find(el => el.getAttribute('tag') === tag);
+        if (!df) return '';
+        const sf = Array.from(df.getElementsByTagName('mxc:subfield') || df.getElementsByTagName('subfield'))
+                        .find(el => el.getAttribute('code') === code);
+        return sf ? sf.textContent.trim() : '';
+      };
 
-    // Mapping MarcXML standard
-    const data = {
-      titre: getVal('200', 'a'),
-      sousTitre: getVal('200', 'e'),
-      auteur: getVal('200', 'f'),
-      lieu: getVal('210', 'a').replace(/[\[\]]/g, ''),
-      editeur: getVal('210', 'c'),
-      annee: (getVal('210', 'd').match(/\d{4}/) || [''])[0],
-      collection: getVal('225', 'a'),
-      source: 'BnF'
-    };
+      // Extraction des informations
+      const titrePrincipal = getField('200', 'a');
+      const sousTitre = getField('200', 'e');
+      const auteurDirect = getField('200', 'f'); // "David de Wolf"
+      const editeur = getField('210', 'c');      // "Actes Sud junior"
+      const lieu = getField('210', 'a');         // "[Arles]"
+      const dateBrute = getField('210', 'd');    // "DL 2024"
+      const collection = getField('225', 'a');   // "L'incroyable catalogue"
 
-    // Nettoyage final du titre
-    if (data.sousTitre) data.titre += ` : ${data.sousTitre}`;
-    
-    return data;
-  } catch (e) {
-    console.error("Erreur d'accès BnF:", e);
-    return null;
+      return {
+        titre: sousTitre ? `${titrePrincipal} : ${sousTitre}` : titrePrincipal,
+        auteurs: auteurDirect,
+        editeur: editeur,
+        lieu: lieu.replace(/[\[\]]/g, ''), // Enlève les crochets [Arles] -> Arles
+        annee: (dateBrute.match(/\d{4}/) || [''])[0],
+        collection: collection,
+        source: 'BnF'
+      };
+    } catch (e) {
+      console.error("Erreur de capture BnF:", e);
+      return null;
+    }
   }
-}
   /* ══════════════════════════════════════════════════════════════════
      12. API PUBLIQUE (optionnelle — accessible via window.ISBNModule)
   ══════════════════════════════════════════════════════════════════ */
