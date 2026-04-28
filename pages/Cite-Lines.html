@@ -587,8 +587,21 @@
       letter-spacing: 0.06em;
     }
 
+    /* Bouton scan dans la grille — même gabarit que type-btn, couleur accent */
+    .type-btn--scan {
+      background: var(--accent) !important;
+      color: #fff !important;
+      border-color: var(--accent) !important;
+      font-weight: 700;
+    }
+    .type-btn--scan:hover {
+      background: #a93226 !important;
+      border-color: #a93226 !important;
+      color: #fff !important;
+    }
+
     @media (max-width: 600px) {
-      .btn-scan-global { width: 100%; justify-content: center; }
+      .type-btn--scan { order: -1; }
     }
 
     /* ===== BOUTON QUITTER ===== */
@@ -628,25 +641,11 @@
 <!-- MAIN -->
 <div class="container">
 
-  <!-- ACTION BAR — ISBN + sélecteur de source regroupés -->
-  <div class="action-bar">
-
-    <!-- Capture ISBN : action principale, visuellement distincte -->
-    <div class="action-isbn">
-      <button class="btn-scan-global" id="btn-scan-global" onclick="globalStartScanner()">
-        📷 Capturer ISBN
-      </button>
-      <span class="isbn-hint">Scannez un code-barres pour remplir automatiquement</span>
-    </div>
-
-    <div class="action-divider">ou choisissez un type de source</div>
-
-    <!-- Sélecteur de source : secondaire, neutre -->
-    <div class="action-source">
-      <span class="action-source-label">Type de source</span>
-      <div class="type-grid" id="type-grid"></div>
-    </div>
-
+  <!-- SÉLECTEUR DE SOURCE (bouton scan injecté avant Ouvrage par JS) -->
+  <div>
+    <p class="section-title">Générateur de citations</p>
+    <p class="section-sub" style="margin-bottom:1rem;">Sélectionnez le type de source à citer</p>
+    <div class="type-grid" id="type-grid"></div>
   </div>
 
   <!-- FORM CARD -->
@@ -939,6 +938,15 @@ let history = JSON.parse(localStorage.getItem('citatio_history') || '[]');
 function renderTypeButtons() {
   const grid = document.getElementById('type-grid');
   grid.innerHTML = '';
+
+  /* ── Bouton "Capturer ISBN" injecté avant Ouvrage ─────────────── */
+  const scanBtn = document.createElement('button');
+  scanBtn.id        = 'btn-scan-global';
+  scanBtn.className = 'type-btn type-btn--scan';
+  scanBtn.textContent = '📷 Capturer ISBN';
+  scanBtn.onclick   = () => { if (typeof globalStartScanner === 'function') globalStartScanner(); };
+  grid.appendChild(scanBtn);
+
   Object.entries(TYPES).forEach(([key, type]) => {
     const btn = document.createElement('button');
     btn.className = 'type-btn';
