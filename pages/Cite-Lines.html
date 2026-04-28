@@ -1339,13 +1339,26 @@ function fillFromBNF(xmlText) {
   const parser = new DOMParser();
   const xml = parser.parseFromString(xmlText, "text/xml");
 
-  const get = (selector) => xml.querySelector(selector)?.textContent?.trim() || '';
+ const get = (tag, code) => {
+  const fields = xml.getElementsByTagName('datafield');
+  for (let f of fields) {
+    if (f.getAttribute('tag') === tag) {
+      const subs = f.getElementsByTagName('subfield');
+      for (let s of subs) {
+        if (s.getAttribute('code') === code) {
+          return s.textContent.trim();
+        }
+      }
+    }
+  }
+  return '';
+};
 
-  const titre   = get('datafield[tag="200"] subfield[code="a"]');
-  const auteur  = get('datafield[tag="700"] subfield[code="a"]');
-  const prenom  = get('datafield[tag="700"] subfield[code="b"]');
-  const editeur = get('datafield[tag="210"] subfield[code="c"]');
-  const annee   = get('datafield[tag="210"] subfield[code="d"]');
+const titre   = get('200', 'a');
+const auteur  = get('700', 'a');
+const prenom  = get('700', 'b');
+const editeur = get('210', 'c');
+const annee   = get('210', 'd');
 
   if (titre)   setField('titre', titre);
   if (editeur) setField('editeur', editeur);
