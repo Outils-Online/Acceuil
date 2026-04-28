@@ -1,268 +1,267 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Citatio Pro - Focus Mode</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Lora:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+
     <style>
         :root {
-            --accent: #2563eb;
-            --bg: #f8fafc;
-            --card: #ffffff;
-            --text: #1e293b;
-            --sidebar-z: 1000;
+            --bg: #f5f2ee;
+            --bg-card: #ffffff;
+            --ink: #1a1714;
+            --ink-muted: #6b6560;
+            --ink-light: #a09b96;
+            --accent: #c0392b;
+            --accent-light: #e8d5d3;
+            --border: #e0dbd5;
+            --shadow: 0 2px 16px rgba(26,23,20,0.08);
+            --radius: 4px;
+            --radius-lg: 8px;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
+        [data-theme="dark"] {
+            --bg: #16140f;
+            --bg-card: #1f1c17;
+            --ink: #f0ebe4;
+            --ink-muted: #9c9488;
+            --ink-light: #5a554e;
+            --accent: #e05a4e;
+            --accent-light: #2e1a18;
+            --border: #2e2a24;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'DM Sans', sans-serif;
             background: var(--bg);
-            color: var(--text);
-            margin: 0;
-            overflow: hidden;
+            color: var(--ink);
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background var(--transition);
+        }
+
+        /* --- LAYOUT FOCUS --- */
+        .main-container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 2rem 1rem 5rem 1rem;
+        }
+
+        /* --- RECHERCHE --- */
+        .search-area {
+            position: sticky;
+            top: 10px;
+            z-index: 10;
+            margin-bottom: 2rem;
+        }
+        
+        input#search {
+            width: 100%;
+            padding: 14px 20px;
+            border: 1.5px solid var(--border);
+            border-radius: 100px;
+            background: var(--bg-card);
+            color: var(--ink);
+            font-size: 1rem;
+            outline: none;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+        input#search:focus { border-color: var(--accent); }
+
+        .type-filter {
             display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 10px 0;
+            scrollbar-width: none;
         }
+        .type-filter::-webkit-scrollbar { display: none; }
 
-        /* --- PANNEAU RETRACTABLE (SIDEBAR) --- */
-        .sidebar {
-            position: fixed;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 320px;
-            background: var(--card);
-            box-shadow: 10px 0 30px rgba(0,0,0,0.1);
-            z-index: var(--sidebar-z);
-            padding: 25px;
-            transform: translateX(-100%);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            overflow-y: auto;
-        }
-
-        .sidebar.open { transform: translateX(0); }
-
-        .close-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: #f1f5f9;
-            border: none;
-            font-size: 20px;
+        .filter-btn {
+            padding: 6px 15px;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            background: var(--bg-card);
+            color: var(--ink-muted);
+            font-size: 0.8rem;
+            font-weight: 600;
             cursor: pointer;
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            white-space: nowrap;
         }
-
-        /* --- ZONE PRINCIPALE --- */
-        .main-content {
-            flex: 1;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .header-bar {
-            background: var(--card);
-            padding: 15px 20px;
-            border-bottom: 1px solid #e2e8f0;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .menu-toggle {
+        .filter-btn.active {
             background: var(--accent);
             color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
+            border-color: var(--accent);
         }
 
-        .search-wrapper { flex: 1; position: relative; }
-        #search {
-            width: 100%;
-            padding: 12px 15px;
-            border-radius: 10px;
-            border: 2px solid #f1f5f9;
-            font-size: 16px;
-            outline: none;
-        }
-
-        /* --- LISTE DES CITATIONS --- */
-        .scroll-area {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            max-width: 900px;
-            margin: 0 auto;
-            width: 100%;
-        }
-
+        /* --- CARTES --- */
         .citation-card {
-            background: var(--card);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 15px;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 1.2rem;
+            box-shadow: var(--shadow);
         }
+        .cite-label { font-size: 0.7rem; text-transform: uppercase; font-weight: 700; color: var(--accent); margin-bottom: 0.8rem; }
+        .cite-content { font-family: 'Libre Baskerville', serif; font-size: 1.05rem; line-height: 1.6; margin-bottom: 1.2rem; }
+        .cite-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--ink-light); }
 
-        .cite-content {
-            font-family: 'Lora', serif;
-            font-size: 1.1rem;
-            line-height: 1.6;
-            margin-bottom: 15px;
+        /* --- DRAWER (ONGLET FERMABLE) --- */
+        .side-drawer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 85%;
+            max-width: 350px;
+            height: 100%;
+            background: var(--bg-card);
+            z-index: 1000;
+            box-shadow: 20px 0 50px rgba(0,0,0,0.2);
+            transform: translateX(-100%);
+            transition: var(--transition);
+            padding: 2rem;
+            overflow-y: auto;
         }
+        .side-drawer.open { transform: translateX(0); }
+        .drawer-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(2px);
+            z-index: 999;
+            display: none;
+        }
+        .drawer-overlay.visible { display: block; }
 
-        /* --- MISE EN PAGE DES AUTRES DONNÉES --- */
-        .stats-section { margin-bottom: 30px; }
-        .stats-title { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 15px; }
-        
-        .yt-tag {
-            display: inline-block;
-            background: #f1f5f9;
-            padding: 4px 10px;
-            border-radius: 15px;
-            font-size: 0.8rem;
-            margin: 3px;
+        .drawer-section { margin-bottom: 2rem; }
+        .drawer-title { 
+            font-family: 'Libre Baskerville', serif; 
+            font-size: 1rem; 
+            margin-bottom: 1rem; 
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
         }
 
         .backup-card {
-            background: #eff6ff;
+            background: var(--bg);
             padding: 12px;
-            border-radius: 8px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
             font-size: 0.85rem;
-            border: 1px solid #dbeafe;
         }
 
-        .floating-clean {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #1e293b;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 30px;
-            cursor: pointer;
-            font-weight: 600;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
+        /* --- BOUTONS FLOTTANTS --- */
+        .fab-stats { position: fixed; bottom: 20px; left: 20px; background: var(--ink); color: white; border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; z-index: 100; box-shadow: var(--shadow); }
+        .fab-clean { position: fixed; bottom: 20px; right: 20px; background: var(--accent); color: white; border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; z-index: 100; box-shadow: var(--shadow); }
+        .theme-toggle { margin-top: 1rem; padding: 8px; width: 100%; border: 1px solid var(--border); background: var(--bg); border-radius: var(--radius); cursor: pointer; color: var(--ink); }
 
-        @media (max-width: 600px) {
-            .sidebar { width: 100%; }
-        }
+        .yt-tag { display: inline-block; background: var(--accent-light); color: var(--accent); padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; margin: 2px; font-weight: 600; }
     </style>
 </head>
 <body>
 
-<aside class="sidebar" id="sidebar">
-    <button class="close-btn" onclick="toggleMenu()">✕</button>
+<div class="drawer-overlay" id="overlay" onclick="toggleDrawer()"></div>
+
+<aside class="side-drawer" id="drawer">
+    <h2 style="font-family: 'Libre Baskerville'; margin-bottom: 1.5rem;">Citatio Pro</h2>
     
-    <div class="stats-section">
-        <h2 class="stats-title">📈 Usage des Outils</h2>
-        <canvas id="clickChart"></canvas>
+    <div class="drawer-section">
+        <h3 class="drawer-title">📈 Usage</h3>
+        <canvas id="clickChart" style="max-height: 150px;"></canvas>
     </div>
 
-    <div class="stats-section">
-        <h2 class="stats-title">💾 État du Backup</h2>
+    <div class="drawer-section">
+        <h3 class="drawer-title">💾 Sauvegarde</h3>
         <div id="backupInfo" class="backup-card"></div>
     </div>
 
-    <div class="stats-section">
-        <h2 class="stats-title">📺 Historique YouTube</h2>
+    <div class="drawer-section">
+        <h3 class="drawer-title">📺 YouTube Tags</h3>
         <div id="ytList"></div>
     </div>
+
+    <button class="theme-toggle" onclick="toggleTheme()">🌓 Inverser les couleurs</button>
 </aside>
 
-<main class="main-content">
-    <div class="header-bar">
-        <button class="menu-toggle" onclick="toggleMenu()">☰ Stats</button>
-        <div class="search-wrapper">
-            <input type="text" id="search" placeholder="Rechercher une citation...">
+<main class="main-container">
+    <section class="search-area">
+        <input type="text" id="search" placeholder="Filtrer vos notes..." oninput="render()">
+        <div class="type-filter">
+            <button class="filter-btn active" onclick="setFilter('all', this)">Tous</button>
+            <button class="filter-btn" onclick="setFilter('livre', this)">Livres</button>
+            <button class="filter-btn" onclick="setFilter('web', this)">Web</button>
+            <button class="filter-btn" onclick="setFilter('video', this)">Vidéos</button>
         </div>
-    </div>
+    </section>
 
-    <div class="scroll-area" id="citationList">
-        </div>
+    <div id="citationList"></div>
 </main>
 
-<button class="floating-clean" onclick="smartClean()">🧹 Nettoyer</button>
+<button class="fab-stats" onclick="toggleDrawer()" title="Infos et Stats">📊</button>
+<button class="fab-clean" onclick="smartClean()" title="Nettoyer les doublons">🧹</button>
 
 <script>
-    // Récupération des données réelles
     const getD = (k) => JSON.parse(localStorage.getItem(k) || '[]');
     let citations = getD('citatio_history').sort((a,b) => b.id - a.id);
     const clics = JSON.parse(localStorage.getItem('clics') || '{}');
     const yt = getD('yt_history');
     const backupDate = localStorage.getItem('__last_backup_date__');
+    let currentType = 'all';
 
-    // Toggle Sidebar
-    function toggleMenu() {
-        document.getElementById('sidebar').classList.toggle('open');
+    function toggleDrawer() {
+        document.getElementById('drawer').classList.toggle('open');
+        document.getElementById('overlay').classList.toggle('visible');
     }
 
-    // Rendu des Citations
-    function render(filter = "") {
+    function toggleTheme() {
+        const doc = document.documentElement;
+        doc.setAttribute('data-theme', doc.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    }
+
+    function setFilter(type, btn) {
+        currentType = type;
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        render();
+    }
+
+    function render() {
         const container = document.getElementById('citationList');
+        const search = document.getElementById('search').value.toLowerCase();
         container.innerHTML = "";
-        
-        const filtered = citations.filter(c => c.text.toLowerCase().includes(filter.toLowerCase()));
-        
+
+        const filtered = citations.filter(c => {
+            const matchesSearch = c.text.toLowerCase().includes(search);
+            const matchesType = currentType === 'all' || c.typeLabel.toLowerCase().includes(currentType);
+            return matchesSearch && matchesType;
+        });
+
         filtered.forEach(cite => {
             const card = document.createElement('div');
             card.className = "citation-card";
             card.innerHTML = `
-                <div style="font-size:0.7rem; color:var(--accent); font-weight:bold; margin-bottom:8px;">${cite.typeLabel.toUpperCase()}</div>
+                <div class="cite-label">${cite.typeLabel}</div>
                 <div class="cite-content">${cite.html}</div>
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-size:0.75rem; color:#64748b;">Le ${cite.date}</span>
-                    <button onclick="copyText('${cite.id}')" style="background:none; border:1px solid var(--accent); color:var(--accent); padding:5px 12px; border-radius:6px; cursor:pointer; font-weight:600;">Copier</button>
+                <div class="cite-meta">
+                    <span>${cite.date}</span>
+                    <button onclick="copyText('${cite.id}')" style="background:none; border:none; color:var(--accent); font-weight:700; cursor:pointer;">COPIER</button>
                 </div>
             `;
             container.appendChild(card);
         });
     }
 
-    // Mise en page des données système
-    function initStats() {
-        // Backup
-        document.getElementById('backupInfo').innerHTML = `
-            <strong>Dernière synchro :</strong><br>
-            ${backupDate ? new Date(backupDate).toLocaleString('fr-FR') : 'Aucune donnée'}
-        `;
-
-        // YouTube
-        document.getElementById('ytList').innerHTML = yt.map(t => `<span class="yt-tag">#${t}</span>`).join('');
-
-        // Graphique Clics
-        const ctx = document.getElementById('clickChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: Object.keys(clics),
-                datasets: [{ data: Object.values(clics), backgroundColor: '#3b82f6', borderRadius: 5 }]
-            },
-            options: { 
-                indexAxis: 'y', 
-                plugins: { legend: { display: false } },
-                scales: { x: { display: false }, y: { grid: { display: false } } }
-            }
-        });
-    }
-
-    // Outils
     window.copyText = (id) => {
         const c = citations.find(x => x.id == id);
         navigator.clipboard.writeText(c.text);
-        alert("Copié !");
     };
 
     window.smartClean = () => {
@@ -278,9 +277,28 @@
         }
     };
 
-    document.getElementById('search').addEventListener('input', (e) => render(e.target.value));
+    function initStats() {
+        // Infos Sauvegarde
+        document.getElementById('backupInfo').innerHTML = `
+            <strong>Dernière synchronisation</strong><br>
+            ${backupDate ? new Date(backupDate).toLocaleString('fr-FR') : 'Aucun backup trouvé'}
+        `;
 
-    // Lancement
+        // YouTube Tags
+        document.getElementById('ytList').innerHTML = yt.map(t => `<span class="yt-tag">#${t}</span>`).join('');
+
+        // Chart
+        const ctx = document.getElementById('clickChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(clics),
+                datasets: [{ data: Object.values(clics), backgroundColor: '#c0392b' }]
+            },
+            options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { display: false } } } }
+        });
+    }
+
     initStats();
     render();
 </script>
