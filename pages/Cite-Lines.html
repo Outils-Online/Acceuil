@@ -2138,7 +2138,7 @@ if (records.length > 0) {
           const mapping = {
             'f_titre': data.titre,
             'f_noms': data.auteurs,
-            'f_editeur': data.publisher,
+            'f_editeur': data.editeur,
             'f_annee': data.annee,
             'f_lieu': data.lieu,
             'f_collection': data.collection
@@ -2239,9 +2239,10 @@ if (records.length > 0) {
   }
 
 /* ── Logique de capture BnF (Format MarcXML) ── */
- async function fetchFromBNF(isbn) {
+async function fetchFromBNF(isbn) {
     const cleanIsbn = isbn.replace(/[-\s]/g, '');
-    const url = `https://catalogue.bnf.fr/api/SRU?operation=searchRetrieve&version=1.2&query=bib.isbn%20all%20%22${cleanIsbn}%22`;
+    // CRUCIAL : Ajout de &recordSchema=unimarcxchange à la fin
+    const url = `https://catalogue.bnf.fr/api/SRU?operation=searchRetrieve&version=1.2&query=bib.isbn%20all%20%22${cleanIsbn}%22&recordSchema=unimarcxchange`;
 
     try {
       const response = await fetch(url);
@@ -2249,34 +2250,35 @@ if (records.length > 0) {
       const parser = new DOMParser();
       const xml = parser.parseFromString(xmlText, "text/xml");
 
-      // On récupère le premier enregistrement
-      const record = xml.getElementsByTagName('srw:recordData')[0] || xml.getElementsByTagName('recordData')[0];
+      // On cherche l'enregistrement (gère les namespaces srw: ou direct)
+      const record = xml.querySelector('recordData, srw\\:recordData');
       if (!record) return null;
 
-      // Fonction ultra-robuste pour extraire les données MarcXML
+      // Fonction d'extraction UNIMARC
       const getField = (tag, code) => {
-        const df = Array.from(xml.getElementsByTagName('mxc:datafield') || xml.getElementsByTagName('datafield'))
-                        .find(el => el.getAttribute('tag') === tag);
+        // Cherche le datafield avec l'attribut tag (ex: 210)
+        // La syntaxe [tag="${tag}"] est plus performante que Array.from().find()
+        const df = record.querySelector(`datafield[tag="${tag}"], mxc\\:datafield[tag="${tag}"]`);
         if (!df) return '';
-        const sf = Array.from(df.getElementsByTagName('mxc:subfield') || df.getElementsByTagName('subfield'))
-                        .find(el => el.getAttribute('code') === code);
+        
+        // Cherche le subfield avec l'attribut code (ex: c)
+        const sf = df.querySelector(`subfield[code="${code}"], mxc\\:subfield[code="${code}"]`);
         return sf ? sf.textContent.trim() : '';
       };
 
-      // Extraction des informations
       const titrePrincipal = getField('200', 'a');
       const sousTitre = getField('200', 'e');
-      const auteurDirect = getField('200', 'f'); // "David de Wolf"
-      const editeur = getField('210', 'c');      // "Actes Sud junior"
-      const lieu = getField('210', 'a');         // "[Arles]"
-      const dateBrute = getField('210', 'd');    // "DL 2024"
-      const collection = getField('225', 'a');   // "L'incroyable catalogue"
+      const auteurDirect = getField('200', 'f');
+      const editeur = getField('210', 'c');      
+      const lieu = getField('210', 'a');         
+      const dateBrute = getField('210', 'd');    
+      const collection = getField('225', 'a');   
 
       return {
         titre: sousTitre ? `${titrePrincipal} : ${sousTitre}` : titrePrincipal,
         auteurs: auteurDirect,
         editeur: editeur,
-        lieu: lieu.replace(/[\[\]]/g, ''), // Enlève les crochets [Arles] -> Arles
+        lieu: lieu.replace(/[\[\]]/g, ''), 
         annee: (dateBrute.match(/\d{4}/) || [''])[0],
         collection: collection,
         source: 'BnF'
@@ -2285,7 +2287,7 @@ if (records.length > 0) {
       console.error("Erreur de capture BnF:", e);
       return null;
     }
-  }
+}
   /* ══════════════════════════════════════════════════════════════════
      12. API PUBLIQUE (optionnelle — accessible via window.ISBNModule)
   ══════════════════════════════════════════════════════════════════ */
