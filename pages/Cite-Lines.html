@@ -2125,15 +2125,33 @@ if (records.length > 0) {
   ══════════════════════════════════════════════════════════════════ */
 
   function attachListeners(input) {
-    if (!markField(input)) return; // déjà traité
+    // On écoute la saisie dans le champ ISBN
+    input.addEventListener('input', debounce(async (e) => {
+      const val = e.target.value.trim().replace(/[-\s]/g, '');
+      
+      // On lance la recherche si l'ISBN fait 10 ou 13 chiffres
+      if (val.length === 10 || val.length === 13) {
+        console.log("Tentative de capture BnF pour:", val);
+        
+        const data = await fetchFromBNF(val);
+        
+        if (data) {
+          // Remplissage automatique des champs du formulaire
+          const f_titre = document.getElementById('f_titre');
+          const f_noms = document.getElementById('f_noms');
+          const f_editeur = document.getElementById('f_editeur');
+          const f_annee = document.getElementById('f_annee');
 
-    const debouncedInput = debounce(handleISBNInput, CFG.debounceDelay);
-
-    // input → feedback temps réel (debounced pour ne pas perturber la saisie)
-    input.addEventListener('input', debouncedInput);
-    // change / blur → normalisation de la valeur
-    input.addEventListener('change', handleISBNInput);
-    input.addEventListener('blur',   handleISBNInput);
+          if (f_titre) f_titre.value = data.titre;
+          if (f_noms) f_noms.value = data.auteurs;
+          if (f_editeur) f_editeur.value = data.editeur;
+          if (f_annee) f_annee.value = data.annee;
+          
+          // Petit feedback visuel (si votre fonction showToast existe)
+          if (typeof showToast === 'function') showToast("Données BnF récupérées !");
+        }
+      }
+    }, 500));
   }
 
   /* ══════════════════════════════════════════════════════════════════
@@ -2208,6 +2226,32 @@ if (records.length > 0) {
     observer.observe(document.body, { childList: true, subtree: true });
   }
 
+/* ── Logique de capture BnF (Format MarcXML) ── */
+  async function fetchFromBNF(isbn) {
+    const cleanIsbn = isbn.replace(/[-\s]/g, '');
+    const url = `https://catalogue.bnf.fr/api/SRU?operation=searchRetrieve&version=1.2&query=bib.isbn%20all%20%22${cleanIsbn}%22`;
+
+    try {
+      const response = await fetch(url);
+      const xmlText = await response.text();
+      const parser = new DOMParser();
+      const xml = parser.parseFromString(xmlText, "text/xml");
+
+      // On vérifie si un résultat existe
+      if (!xml.getElementsByTagName('srw:recordData')[0]) return null;
+
+      // Extraction des champs selon la norme INTERMARC de la BnF
+      return {
+        titre: xml.querySelector('datafield[tag="200"] subfield[code="a"]')?.textContent || '',
+        auteurs: xml.querySelector('datafield[tag="200"] subfield[code="f"]')?.textContent || '',
+        editeur: xml.querySelector('datafield[tag="210"] subfield[code="c"]')?.textContent || '',
+        annee: (xml.querySelector('datafield[tag="210"] subfield[code="d"]')?.textContent || '').match(/\d{4}/)?.[0] || ''
+      };
+    } catch (e) {
+      console.error("Erreur BnF:", e);
+      return null;
+    }
+  }
   /* ══════════════════════════════════════════════════════════════════
      12. API PUBLIQUE (optionnelle — accessible via window.ISBNModule)
   ══════════════════════════════════════════════════════════════════ */
