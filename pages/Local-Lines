@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Workspace - LocalStorage</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Lora:ital@0;1&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f4f6f9;
+            --card: #ffffff;
+            --primary: #2d3436;
+            --accent: #0984e3;
+            --danger: #d63031;
+            --text-secondary: #636e72;
+            --border: #dfe6e9;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--primary);
+            margin: 0;
+            padding: 30px;
+        }
+
+        .dashboard {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 25px;
+        }
+
+        /* Panneau de gauche : Système et Stats */
+        .sidebar { display: flex; flex-direction: column; gap: 20px; }
+
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+        }
+
+        h2 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        .stat-label { font-weight: 600; color: var(--primary); }
+        .stat-value { color: var(--accent); font-family: monospace; }
+
+        /* Panneau de droite : Citations */
+        .main-content { display: flex; flex-direction: column; gap: 20px; }
+
+        .citation-item {
+            background: var(--card);
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 5px solid var(--accent);
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .cite-header {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .cite-content {
+            font-family: 'Lora', serif;
+            font-size: 1.05rem;
+            line-height: 1.6;
+            color: #2d3436;
+        }
+
+        .cite-content i { font-style: italic; }
+
+        .badge {
+            background: #e1f5fe;
+            color: #0288d1;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        .yt-tag {
+            display: inline-block;
+            background: #ffeaa7;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+
+        .btn-copy {
+            margin-top: 15px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            padding: 5px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: 0.2s;
+        }
+
+        .btn-copy:hover { background: var(--accent); color: white; border-color: var(--accent); }
+
+        .empty { text-align: center; color: var(--text-secondary); padding: 40px; }
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    
+    <div class="sidebar">
+        <div class="card">
+            <h2>💾 Derniers Backups</h2>
+            <div id="backup-data"></div>
+        </div>
+
+        <div class="card">
+            <h2>🖱️ Statistiques Clics</h2>
+            <div id="click-data"></div>
+        </div>
+
+        <div class="card">
+            <h2>⚙️ Configuration</h2>
+            <div class="stat-item"><span class="stat-label">Thème</span><span id="theme-val" class="stat-value">-</span></div>
+            <div class="stat-item"><span class="stat-label">Mode</span><span id="mode-val" class="stat-value">-</span></div>
+        </div>
+
+        <div class="card">
+            <h2>📺 Historique YT</h2>
+            <div id="yt-data"></div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="card">
+            <h2>📚 Historique des Citations Académiques</h2>
+            <div id="citation-container"></div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // 1. Fonctions utilitaires
+    const getLS = (key) => {
+        const val = localStorage.getItem(key);
+        try { return JSON.parse(val); } catch(e) { return val; }
+    };
+
+    const formatDate = (str) => {
+        if (!str || str === "undefined") return "Jamais";
+        const d = new Date(str);
+        return d.toLocaleDateString('fr-FR') + " à " + d.toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
+    };
+
+    // 2. Hydratation des données
+    function init() {
+        // --- Backups ---
+        const backupContainer = document.getElementById('backup-data');
+        const backups = [
+            { n: "Global", k: "__last_backup_date__" },
+            { n: "Fichier", k: "__last_backup_file__" },
+            { n: "Base IDB", k: "__last_backup_idb__" }
+        ];
+        backupContainer.innerHTML = backups.map(b => `
+            <div class="stat-item">
+                <span class="stat-label">${b.n}</span>
+                <span class="stat-value">${formatDate(localStorage.getItem(b.k))}</span>
+            </div>
+        `).join('');
+
+        // --- Clics ---
+        const clickData = getLS('clics') || {};
+        const clickContainer = document.getElementById('click-data');
+        if (Object.keys(clickData).length > 0) {
+            clickContainer.innerHTML = Object.entries(clickData).map(([key, val]) => `
+                <div class="stat-item">
+                    <span class="stat-label">${key.replace('-', ' ')}</span>
+                    <span class="stat-value">${val}</span>
+                </div>
+            `).join('');
+        } else {
+            clickContainer.innerHTML = "<p class='empty'>Aucune donnée</p>";
+        }
+
+        // --- Paramètres ---
+        document.getElementById('theme-val').innerText = localStorage.getItem('citatio_theme') || 'Défaut';
+        document.getElementById('mode-val').innerText = localStorage.getItem('mode') || 'Défaut';
+
+        // --- YouTube ---
+        const ytData = getLS('yt_history') || [];
+        const ytContainer = document.getElementById('yt-data');
+        ytContainer.innerHTML = ytData.length ? ytData.map(y => `<span class="yt-tag">${y}</span>`).join('') : "Vide";
+
+        // --- Citations (Le gros morceau) ---
+        const citations = getLS('citatio_history') || [];
+        const citeContainer = document.getElementById('citation-container');
+
+        if (citations.length === 0) {
+            citeContainer.innerHTML = "<div class='empty'>Aucune citation enregistrée.</div>";
+        } else {
+            // On affiche les plus récentes en premier
+            citeContainer.innerHTML = citations.reverse().map(c => `
+                <div class="citation-item">
+                    <div class="cite-header">
+                        <span class="badge">${c.typeLabel || 'Référence'}</span>
+                        <span>Ajouté le ${c.date || 'Inconnue'}</span>
+                    </div>
+                    <div class="cite-content">${c.html}</div>
+                    <button class="btn-copy" onclick="copyRaw('${c.id}')">Copier le texte brut</button>
+                </div>
+            `).join('');
+        }
+
+        // Stockage global des citations pour la fonction de copie
+        window.currentCitations = citations;
+    }
+
+    // Fonction de copie
+    window.copyRaw = (id) => {
+        const item = window.currentCitations.find(c => c.id == id);
+        if (item) {
+            navigator.clipboard.writeText(item.text);
+            alert("Copié !");
+        }
+    };
+
+    // Lancement
+    window.onload = init;
+</script>
+
+</body>
+</html>
