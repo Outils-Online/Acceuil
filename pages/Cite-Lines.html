@@ -1321,11 +1321,14 @@ renderHistory();
   }
 
   /* ── fillFromGoogleBooks ────────────────────────────────────────── */
-  function fillFromGoogleBooks(item) {
-    const info = item.volumeInfo || {};
-    setField('titre',   info.title || '');
-    setField('editeur', info.publisher || '');
-    setField('annee',   extractYear(info.publishedDate || ''));
+  function fillFromGoogleBooks(items) {
+  // On cherche le premier item qui possède réellement un éditeur
+  const itemWithPublisher = items.find(i => i.volumeInfo.publisher) || items[0];
+  const info = itemWithPublisher.volumeInfo || {};
+
+  setField('titre',   info.title || '');
+  setField('editeur', info.publisher || ''); // Si trouvé, il sera rempli
+  setField('annee',   extractYear(info.publishedDate || ''));
     const authors = info.authors || [];
     if (authors.length) {
       const { prenom, nom } = splitAuthor(authors[0]);
