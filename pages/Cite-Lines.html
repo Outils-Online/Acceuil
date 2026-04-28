@@ -2125,35 +2125,37 @@ if (records.length > 0) {
   ══════════════════════════════════════════════════════════════════ */
 
   function attachListeners(input) {
-    // On écoute la saisie dans le champ ISBN
     input.addEventListener('input', debounce(async (e) => {
       const val = e.target.value.trim().replace(/[-\s]/g, '');
       
-      // On lance la recherche si l'ISBN fait 10 ou 13 chiffres
       if (val.length === 10 || val.length === 13) {
-        console.log("Tentative de capture BnF pour:", val);
+        showToast("🔍 Recherche sur la BnF...");
         
         const data = await fetchFromBNF(val);
         
         if (data) {
-          // On cible les IDs standards de Cite-Lines pour le type "Ouvrage"
+          // Mapping étendu vers les cases de votre formulaire
           const mapping = {
             'f_titre': data.titre,
             'f_noms': data.auteurs,
             'f_editeur': data.editeur,
-            'f_annee': data.annee
+            'f_annee': data.annee,
+            'f_lieu': data.lieu,           // Remplira la case "Lieu" (si elle existe)
+            'f_collection': data.collection // Remplira la case "Collection" (si elle existe)
           };
 
           for (let [id, value] of Object.entries(mapping)) {
-            const el = document.getElementById(id);
-            if (el) {
-              el.value = value;
-              // On force le navigateur à détecter le changement
-              el.dispatchEvent(new Event('input', { bubbles: true }));
+            const field = document.getElementById(id);
+            if (field && value) {
+              field.value = value;
+              field.dispatchEvent(new Event('input', { bubbles: true }));
             }
           }
           
-          if (typeof showToast === 'function') showToast("✅ Ouvrage complété !");
+          // Message spécifique demandé
+          if (typeof showToast === 'function') {
+            showToast("✅ ISBN trouvé dans la BnF !");
+          }
         }
       }
     }, 500));
@@ -2242,20 +2244,23 @@ if (records.length > 0) {
       const parser = new DOMParser();
       const xml = parser.parseFromString(xmlText, "text/xml");
 
-      // On cherche l'enregistrement sans se soucier du préfixe XML
-      const record = xml.querySelector('recordData');
-      if (!record) return null;
+      if (!xml.querySelector('recordData')) return null;
 
-      // Fonction helper pour trouver les champs MarcXML (ex: 200 $a)
-      const getMarc = (tag, code) => {
-        return xml.querySelector(`datafield[tag="${tag}"] subfield[code="${code}"]`)?.textContent || '';
-      };
+      const getMarc = (tag, code) => xml.querySelector(`datafield[tag="${tag}"] subfield[code="${code}"]`)?.textContent || '';
 
+      // Construction des données enrichies
+      const titrePrincipal = getMarc('200', 'a');
+      const sousTitre = getMarc('200', 'e');
+      
       return {
-        titre: getMarc('200', 'a'),
+        // Fusion du titre et sous-titre
+        titre: sousTitre ? `${titrePrincipal} : ${sousTitre}` : titrePrincipal,
         auteurs: getMarc('200', 'f'),
         editeur: getMarc('210', 'c'),
-        annee: (getMarc('210', 'd').match(/\d{4}/) || [''])[0]
+        lieu: getMarc('210', 'a'),        // NOUVEAU : Ville d'édition
+        collection: getMarc('225', 'a'),  // NOUVEAU : Collection (ex: "Folio")
+        annee: (getMarc('210', 'd').match(/\d{4}/) || [''])[0],
+        source: 'BnF'
       };
     } catch (e) {
       console.error("Erreur BnF:", e);
