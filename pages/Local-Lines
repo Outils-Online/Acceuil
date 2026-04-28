@@ -2,247 +2,287 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mon Workspace - LocalStorage</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Lora:ital@0;1&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Citatio Pro - Focus Mode</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Lora:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #f4f6f9;
+            --accent: #2563eb;
+            --bg: #f8fafc;
             --card: #ffffff;
-            --primary: #2d3436;
-            --accent: #0984e3;
-            --danger: #d63031;
-            --text-secondary: #636e72;
-            --border: #dfe6e9;
+            --text: #1e293b;
+            --sidebar-z: 1000;
         }
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--bg);
-            color: var(--primary);
+            background: var(--bg);
+            color: var(--text);
             margin: 0;
-            padding: 30px;
-        }
-
-        .dashboard {
-            max-width: 1100px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: 350px 1fr;
-            gap: 25px;
-        }
-
-        /* Panneau de gauche : Système et Stats */
-        .sidebar { display: flex; flex-direction: column; gap: 20px; }
-
-        .card {
-            background: var(--card);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            border: 1px solid var(--border);
-        }
-
-        h2 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
-
-        .stat-item {
+            overflow: hidden;
             display: flex;
-            justify-content: space-between;
+        }
+
+        /* --- PANNEAU RETRACTABLE (SIDEBAR) --- */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 320px;
+            background: var(--card);
+            box-shadow: 10px 0 30px rgba(0,0,0,0.1);
+            z-index: var(--sidebar-z);
+            padding: 25px;
+            transform: translateX(-100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+        }
+
+        .sidebar.open { transform: translateX(0); }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #f1f5f9;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
             align-items: center;
-            margin-bottom: 10px;
-            font-size: 0.9rem;
+            justify-content: center;
         }
 
-        .stat-label { font-weight: 600; color: var(--primary); }
-        .stat-value { color: var(--accent); font-family: monospace; }
-
-        /* Panneau de droite : Citations */
-        .main-content { display: flex; flex-direction: column; gap: 20px; }
-
-        .citation-item {
-            background: var(--card);
-            padding: 20px;
-            border-radius: 12px;
-            border-left: 5px solid var(--accent);
-            margin-bottom: 15px;
-            position: relative;
-        }
-
-        .cite-header {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            margin-bottom: 10px;
+        /* --- ZONE PRINCIPALE --- */
+        .main-content {
+            flex: 1;
+            height: 100vh;
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
+        }
+
+        .header-bar {
+            background: var(--card);
+            padding: 15px 20px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .menu-toggle {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .search-wrapper { flex: 1; position: relative; }
+        #search {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 10px;
+            border: 2px solid #f1f5f9;
+            font-size: 16px;
+            outline: none;
+        }
+
+        /* --- LISTE DES CITATIONS --- */
+        .scroll-area {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .citation-card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         }
 
         .cite-content {
             font-family: 'Lora', serif;
-            font-size: 1.05rem;
+            font-size: 1.1rem;
             line-height: 1.6;
-            color: #2d3436;
+            margin-bottom: 15px;
         }
 
-        .cite-content i { font-style: italic; }
-
-        .badge {
-            background: #e1f5fe;
-            color: #0288d1;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            font-weight: bold;
-        }
-
+        /* --- MISE EN PAGE DES AUTRES DONNÉES --- */
+        .stats-section { margin-bottom: 30px; }
+        .stats-title { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 15px; }
+        
         .yt-tag {
             display: inline-block;
-            background: #ffeaa7;
-            padding: 3px 10px;
-            border-radius: 20px;
+            background: #f1f5f9;
+            padding: 4px 10px;
+            border-radius: 15px;
             font-size: 0.8rem;
-            margin-right: 5px;
-            margin-bottom: 5px;
+            margin: 3px;
         }
 
-        .btn-copy {
-            margin-top: 15px;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            padding: 5px 12px;
-            border-radius: 6px;
+        .backup-card {
+            background: #eff6ff;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            border: 1px solid #dbeafe;
+        }
+
+        .floating-clean {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #1e293b;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 30px;
             cursor: pointer;
-            font-size: 0.8rem;
-            transition: 0.2s;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
 
-        .btn-copy:hover { background: var(--accent); color: white; border-color: var(--accent); }
-
-        .empty { text-align: center; color: var(--text-secondary); padding: 40px; }
+        @media (max-width: 600px) {
+            .sidebar { width: 100%; }
+        }
     </style>
 </head>
 <body>
 
-<div class="dashboard">
+<aside class="sidebar" id="sidebar">
+    <button class="close-btn" onclick="toggleMenu()">✕</button>
     
-    <div class="sidebar">
-        <div class="card">
-            <h2>💾 Derniers Backups</h2>
-            <div id="backup-data"></div>
-        </div>
+    <div class="stats-section">
+        <h2 class="stats-title">📈 Usage des Outils</h2>
+        <canvas id="clickChart"></canvas>
+    </div>
 
-        <div class="card">
-            <h2>🖱️ Statistiques Clics</h2>
-            <div id="click-data"></div>
-        </div>
+    <div class="stats-section">
+        <h2 class="stats-title">💾 État du Backup</h2>
+        <div id="backupInfo" class="backup-card"></div>
+    </div>
 
-        <div class="card">
-            <h2>⚙️ Configuration</h2>
-            <div class="stat-item"><span class="stat-label">Thème</span><span id="theme-val" class="stat-value">-</span></div>
-            <div class="stat-item"><span class="stat-label">Mode</span><span id="mode-val" class="stat-value">-</span></div>
-        </div>
+    <div class="stats-section">
+        <h2 class="stats-title">📺 Historique YouTube</h2>
+        <div id="ytList"></div>
+    </div>
+</aside>
 
-        <div class="card">
-            <h2>📺 Historique YT</h2>
-            <div id="yt-data"></div>
+<main class="main-content">
+    <div class="header-bar">
+        <button class="menu-toggle" onclick="toggleMenu()">☰ Stats</button>
+        <div class="search-wrapper">
+            <input type="text" id="search" placeholder="Rechercher une citation...">
         </div>
     </div>
 
-    <div class="main-content">
-        <div class="card">
-            <h2>📚 Historique des Citations Académiques</h2>
-            <div id="citation-container"></div>
+    <div class="scroll-area" id="citationList">
         </div>
-    </div>
+</main>
 
-</div>
+<button class="floating-clean" onclick="smartClean()">🧹 Nettoyer</button>
 
 <script>
-    // 1. Fonctions utilitaires
-    const getLS = (key) => {
-        const val = localStorage.getItem(key);
-        try { return JSON.parse(val); } catch(e) { return val; }
-    };
+    // Récupération des données réelles
+    const getD = (k) => JSON.parse(localStorage.getItem(k) || '[]');
+    let citations = getD('citatio_history').sort((a,b) => b.id - a.id);
+    const clics = JSON.parse(localStorage.getItem('clics') || '{}');
+    const yt = getD('yt_history');
+    const backupDate = localStorage.getItem('__last_backup_date__');
 
-    const formatDate = (str) => {
-        if (!str || str === "undefined") return "Jamais";
-        const d = new Date(str);
-        return d.toLocaleDateString('fr-FR') + " à " + d.toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
-    };
-
-    // 2. Hydratation des données
-    function init() {
-        // --- Backups ---
-        const backupContainer = document.getElementById('backup-data');
-        const backups = [
-            { n: "Global", k: "__last_backup_date__" },
-            { n: "Fichier", k: "__last_backup_file__" },
-            { n: "Base IDB", k: "__last_backup_idb__" }
-        ];
-        backupContainer.innerHTML = backups.map(b => `
-            <div class="stat-item">
-                <span class="stat-label">${b.n}</span>
-                <span class="stat-value">${formatDate(localStorage.getItem(b.k))}</span>
-            </div>
-        `).join('');
-
-        // --- Clics ---
-        const clickData = getLS('clics') || {};
-        const clickContainer = document.getElementById('click-data');
-        if (Object.keys(clickData).length > 0) {
-            clickContainer.innerHTML = Object.entries(clickData).map(([key, val]) => `
-                <div class="stat-item">
-                    <span class="stat-label">${key.replace('-', ' ')}</span>
-                    <span class="stat-value">${val}</span>
-                </div>
-            `).join('');
-        } else {
-            clickContainer.innerHTML = "<p class='empty'>Aucune donnée</p>";
-        }
-
-        // --- Paramètres ---
-        document.getElementById('theme-val').innerText = localStorage.getItem('citatio_theme') || 'Défaut';
-        document.getElementById('mode-val').innerText = localStorage.getItem('mode') || 'Défaut';
-
-        // --- YouTube ---
-        const ytData = getLS('yt_history') || [];
-        const ytContainer = document.getElementById('yt-data');
-        ytContainer.innerHTML = ytData.length ? ytData.map(y => `<span class="yt-tag">${y}</span>`).join('') : "Vide";
-
-        // --- Citations (Le gros morceau) ---
-        const citations = getLS('citatio_history') || [];
-        const citeContainer = document.getElementById('citation-container');
-
-        if (citations.length === 0) {
-            citeContainer.innerHTML = "<div class='empty'>Aucune citation enregistrée.</div>";
-        } else {
-            // On affiche les plus récentes en premier
-            citeContainer.innerHTML = citations.reverse().map(c => `
-                <div class="citation-item">
-                    <div class="cite-header">
-                        <span class="badge">${c.typeLabel || 'Référence'}</span>
-                        <span>Ajouté le ${c.date || 'Inconnue'}</span>
-                    </div>
-                    <div class="cite-content">${c.html}</div>
-                    <button class="btn-copy" onclick="copyRaw('${c.id}')">Copier le texte brut</button>
-                </div>
-            `).join('');
-        }
-
-        // Stockage global des citations pour la fonction de copie
-        window.currentCitations = citations;
+    // Toggle Sidebar
+    function toggleMenu() {
+        document.getElementById('sidebar').classList.toggle('open');
     }
 
-    // Fonction de copie
-    window.copyRaw = (id) => {
-        const item = window.currentCitations.find(c => c.id == id);
-        if (item) {
-            navigator.clipboard.writeText(item.text);
-            alert("Copié !");
+    // Rendu des Citations
+    function render(filter = "") {
+        const container = document.getElementById('citationList');
+        container.innerHTML = "";
+        
+        const filtered = citations.filter(c => c.text.toLowerCase().includes(filter.toLowerCase()));
+        
+        filtered.forEach(cite => {
+            const card = document.createElement('div');
+            card.className = "citation-card";
+            card.innerHTML = `
+                <div style="font-size:0.7rem; color:var(--accent); font-weight:bold; margin-bottom:8px;">${cite.typeLabel.toUpperCase()}</div>
+                <div class="cite-content">${cite.html}</div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:0.75rem; color:#64748b;">Le ${cite.date}</span>
+                    <button onclick="copyText('${cite.id}')" style="background:none; border:1px solid var(--accent); color:var(--accent); padding:5px 12px; border-radius:6px; cursor:pointer; font-weight:600;">Copier</button>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    // Mise en page des données système
+    function initStats() {
+        // Backup
+        document.getElementById('backupInfo').innerHTML = `
+            <strong>Dernière synchro :</strong><br>
+            ${backupDate ? new Date(backupDate).toLocaleString('fr-FR') : 'Aucune donnée'}
+        `;
+
+        // YouTube
+        document.getElementById('ytList').innerHTML = yt.map(t => `<span class="yt-tag">#${t}</span>`).join('');
+
+        // Graphique Clics
+        const ctx = document.getElementById('clickChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(clics),
+                datasets: [{ data: Object.values(clics), backgroundColor: '#3b82f6', borderRadius: 5 }]
+            },
+            options: { 
+                indexAxis: 'y', 
+                plugins: { legend: { display: false } },
+                scales: { x: { display: false }, y: { grid: { display: false } } }
+            }
+        });
+    }
+
+    // Outils
+    window.copyText = (id) => {
+        const c = citations.find(x => x.id == id);
+        navigator.clipboard.writeText(c.text);
+        alert("Copié !");
+    };
+
+    window.smartClean = () => {
+        const seen = new Set();
+        const unique = citations.filter(c => {
+            const isDup = seen.has(c.text);
+            seen.add(c.text);
+            return !isDup;
+        });
+        if(confirm(`Supprimer ${citations.length - unique.length} doublons ?`)) {
+            localStorage.setItem('citatio_history', JSON.stringify(unique));
+            location.reload();
         }
     };
 
+    document.getElementById('search').addEventListener('input', (e) => render(e.target.value));
+
     // Lancement
-    window.onload = init;
+    initStats();
+    render();
 </script>
 
 </body>
