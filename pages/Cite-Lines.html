@@ -2124,7 +2124,7 @@ if (records.length > 0) {
      8. ATTACHEMENT DES LISTENERS
   ══════════════════════════════════════════════════════════════════ */
 
-  function attachListeners(input) {
+ function attachListeners(input) {
     if (input.dataset.isbnObserved) return;
     input.dataset.isbnObserved = 'true';
 
@@ -2132,18 +2132,18 @@ if (records.length > 0) {
       const rawVal = e.target.value;
       const cleanVal = rawVal.trim().replace(/[-\s]/g, '');
       
-      // 1. On garde la validation visuelle (rouge/vert)
+      // 1. On affiche la validation visuelle (rouge/vert)
       const status = getISBNStatus(rawVal);
       setFeedback(input, status.msg, status.type);
 
-      // 2. Si l'ISBN est complet (10 ou 13 chiffres), on interroge la BnF
+      // 2. Si l'ISBN est complet, on interroge la BnF
       if (cleanVal.length === 10 || cleanVal.length === 13) {
-        setFeedback(input, "Recherche BnF...", "info");
+        setFeedback(input, "Recherche BnF en cours...", "info");
         
         const data = await fetchFromBNF(cleanVal);
         
         if (data) {
-          // On définit quel champ reçoit quelle donnée
+          // Tableau de correspondance entre les données BnF et vos cases HTML
           const mapping = {
             'f_titre': data.titre,
             'f_noms': data.auteur,
@@ -2153,22 +2153,43 @@ if (records.length > 0) {
             'f_collection': data.collection
           };
 
-          // Remplissage automatique
+          // On remplit chaque case automatiquement
           Object.entries(mapping).forEach(([id, value]) => {
             const el = document.getElementById(id);
             if (el && value) {
               el.value = value;
-              // On force la mise à jour de la citation finale
+              // On force la mise à jour de la citation
               el.dispatchEvent(new Event('input', { bubbles: true }));
             }
           });
           
-          setFeedback(input, "✅ ISBN trouvé dans la BnF 4 !", "success");
+          setFeedback(input, "✅ Données BnF importées !", "success");
+        } else {
+          setFeedback(input, "ISBN valide (non trouvé sur BnF)", "warning");
         }
       }
     }, 500));
   }
 
+  function scanInputs(root) {
+    detectISBNFields(root).forEach(attachListeners);
+  }
+
+  function startObserver() {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach(mutation => {
+        mutation.addedNodes.forEach(node => {
+          if (node.nodeType === 1) scanInputs(node);
+        });
+      });
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+  }
+
+  // Lancement
+  scanInputs(document.body);
+  startObserver();
+  
   /* ══════════════════════════════════════════════════════════════════
      9. DÉTECTION DES CHAMPS ISBN
   ══════════════════════════════════════════════════════════════════ */
