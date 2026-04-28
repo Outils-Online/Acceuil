@@ -1333,6 +1333,29 @@ renderHistory();
     }
   }
 
+  /* ── fillFromBNF ────────────────────────────────────────── */
+
+function fillFromBNF(xmlText) {
+  const parser = new DOMParser();
+  const xml = parser.parseFromString(xmlText, "text/xml");
+
+  const get = (selector) => xml.querySelector(selector)?.textContent?.trim() || '';
+
+  const titre   = get('datafield[tag="200"] subfield[code="a"]');
+  const auteur  = get('datafield[tag="700"] subfield[code="a"]');
+  const prenom  = get('datafield[tag="700"] subfield[code="b"]');
+  const editeur = get('datafield[tag="210"] subfield[code="c"]');
+  const annee   = get('datafield[tag="210"] subfield[code="d"]');
+
+  if (titre)   setField('titre', titre);
+  if (editeur) setField('editeur', editeur);
+  if (annee)   setField('annee', extractYear(annee));
+
+  if (auteur || prenom) {
+    setField('prenoms', prenom);
+    setField('noms', auteur);
+  }
+}
   /* ── Cascade API : OpenLibrary → Google Books ───────────────────── */
   async function fetchISBN(isbn) {
     const clean = isbn.replace(/[^0-9Xx]/g, '').toUpperCase();
@@ -1347,6 +1370,19 @@ renderHistory();
         return;
       }
     } catch (_) {}
+    // 2. BnF
+try {
+  const res = await fetch(`https://catalogue.bnf.fr/api/SRU?operation=searchRetrieve&version=1.2&query=bib.isbn all "${clean}"`);
+  const text = await res.text();
+
+  if (text.includes('<record>')) {
+    fillFromBNF(text);
+    setFeedback('✓ Données récupérées via BnF', 'success');
+    if (typeof showToast === 'function') showToast('✓ BnF');
+    return;
+  }
+  // 2. Google Books
+} catch (_) {}
     try {
       const gbData = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${clean}`).then(r => r.json());
       if (gbData.items?.length) {
