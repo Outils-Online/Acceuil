@@ -46,11 +46,32 @@
             transition: background var(--transition);
         }
 
+        /* --- BOUTON FERMER (IFRAME) --- */
+        .exit-btn {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1001;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            color: var(--ink);
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+
         /* --- LAYOUT FOCUS --- */
         .main-container {
             max-width: 700px;
             margin: 0 auto;
-            padding: 2rem 1rem 5rem 1rem;
+            padding: 3.5rem 1rem 10rem 1rem; /* Padding bas augmenté pour les boutons */
         }
 
         /* --- RECHERCHE --- */
@@ -71,9 +92,7 @@
             font-size: 1rem;
             outline: none;
             box-shadow: var(--shadow);
-            transition: var(--transition);
         }
-        input#search:focus { border-color: var(--accent); }
 
         .type-filter {
             display: flex;
@@ -95,11 +114,7 @@
             cursor: pointer;
             white-space: nowrap;
         }
-        .filter-btn.active {
-            background: var(--accent);
-            color: white;
-            border-color: var(--accent);
-        }
+        .filter-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
 
         /* --- CARTES --- */
         .citation-card {
@@ -114,7 +129,7 @@
         .cite-content { font-family: 'Libre Baskerville', serif; font-size: 1.05rem; line-height: 1.6; margin-bottom: 1.2rem; }
         .cite-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--ink-light); }
 
-        /* --- DRAWER (ONGLET FERMABLE) --- */
+        /* --- DRAWER --- */
         .side-drawer {
             position: fixed;
             top: 0;
@@ -142,31 +157,46 @@
         .drawer-overlay.visible { display: block; }
 
         .drawer-section { margin-bottom: 2rem; }
-        .drawer-title { 
-            font-family: 'Libre Baskerville', serif; 
-            font-size: 1rem; 
-            margin-bottom: 1rem; 
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 0.5rem;
+        .drawer-title { font-family: 'Libre Baskerville', serif; font-size: 1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+        .backup-card { background: var(--bg); padding: 12px; border-radius: var(--radius); border: 1px solid var(--border); font-size: 0.85rem; }
+
+        /* --- BOUTONS FLOTTANTS (ALIGNÉS À GAUCHE) --- */
+        .fab-container {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 100;
         }
 
-        .backup-card {
-            background: var(--bg);
-            padding: 12px;
-            border-radius: var(--radius);
-            border: 1px solid var(--border);
-            font-size: 0.85rem;
+        .btn-fab {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: none;
+            color: white;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: transform 0.2s;
         }
+        .btn-fab:active { transform: scale(0.9); }
+        
+        .fab-clean { background: var(--ink); }
+        .fab-stats { background: var(--accent); }
 
-        /* --- BOUTONS FLOTTANTS --- */
-        .fab-stats { position: fixed; bottom: 20px; left: 20px; background: var(--ink); color: white; border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; z-index: 100; box-shadow: var(--shadow); }
-        .fab-clean { position: fixed; bottom: 20px; right: 20px; background: var(--accent); color: white; border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; z-index: 100; box-shadow: var(--shadow); }
-        .theme-toggle { margin-top: 1rem; padding: 8px; width: 100%; border: 1px solid var(--border); background: var(--bg); border-radius: var(--radius); cursor: pointer; color: var(--ink); }
-
+        .theme-toggle { margin-top: 1rem; padding: 12px; width: 100%; border: 1px solid var(--border); background: var(--bg); border-radius: var(--radius); cursor: pointer; color: var(--ink); font-weight: 600; }
         .yt-tag { display: inline-block; background: var(--accent-light); color: var(--accent); padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; margin: 2px; font-weight: 600; }
     </style>
 </head>
 <body>
+
+<div class="exit-btn" onclick="window.parent.postMessage('close-iframe', '*')" title="Fermer">✕</div>
 
 <div class="drawer-overlay" id="overlay" onclick="toggleDrawer()"></div>
 
@@ -184,16 +214,16 @@
     </div>
 
     <div class="drawer-section">
-        <h3 class="drawer-title">📺 YouTube Tags</h3>
+        <h3 class="drawer-title">📺 Tags YouTube</h3>
         <div id="ytList"></div>
     </div>
 
-    <button class="theme-toggle" onclick="toggleTheme()">🌓 Inverser les couleurs</button>
+    <button class="theme-toggle" onclick="toggleTheme()">🌓 Inverser le thème</button>
 </aside>
 
 <main class="main-container">
     <section class="search-area">
-        <input type="text" id="search" placeholder="Filtrer vos notes..." oninput="render()">
+        <input type="text" id="search" placeholder="Rechercher..." oninput="render()">
         <div class="type-filter">
             <button class="filter-btn active" onclick="setFilter('all', this)">Tous</button>
             <button class="filter-btn" onclick="setFilter('livre', this)">Livres</button>
@@ -205,8 +235,10 @@
     <div id="citationList"></div>
 </main>
 
-<button class="fab-stats" onclick="toggleDrawer()" title="Infos et Stats">📊</button>
-<button class="fab-clean" onclick="smartClean()" title="Nettoyer les doublons">🧹</button>
+<div class="fab-container">
+    <button class="btn-fab fab-stats" onclick="toggleDrawer()" title="Statistiques">📊</button>
+    <button class="btn-fab fab-clean" onclick="smartClean()" title="Nettoyer doublons">🧹</button>
+</div>
 
 <script>
     const getD = (k) => JSON.parse(localStorage.getItem(k) || '[]');
@@ -252,7 +284,7 @@
                 <div class="cite-content">${cite.html}</div>
                 <div class="cite-meta">
                     <span>${cite.date}</span>
-                    <button onclick="copyText('${cite.id}')" style="background:none; border:none; color:var(--accent); font-weight:700; cursor:pointer;">COPIER</button>
+                    <button onclick="copyText('${cite.id}')" style="background:none; border:1px solid var(--accent); color:var(--accent); padding:5px 12px; border-radius:4px; font-weight:700; cursor:pointer;">COPIER</button>
                 </div>
             `;
             container.appendChild(card);
@@ -262,6 +294,7 @@
     window.copyText = (id) => {
         const c = citations.find(x => x.id == id);
         navigator.clipboard.writeText(c.text);
+        // Feedback visuel simple
     };
 
     window.smartClean = () => {
@@ -278,22 +311,19 @@
     };
 
     function initStats() {
-        // Infos Sauvegarde
         document.getElementById('backupInfo').innerHTML = `
-            <strong>Dernière synchronisation</strong><br>
-            ${backupDate ? new Date(backupDate).toLocaleString('fr-FR') : 'Aucun backup trouvé'}
+            <strong>Dernier backup :</strong><br>
+            ${backupDate ? new Date(backupDate).toLocaleString('fr-FR') : 'Non disponible'}
         `;
 
-        // YouTube Tags
-        document.getElementById('ytList').innerHTML = yt.map(t => `<span class="yt-tag">#${t}</span>`).join('');
+        document.getElementById('ytList').innerHTML = yt.length ? yt.map(t => `<span class="yt-tag">#${t}</span>`).join('') : 'Aucun tag';
 
-        // Chart
         const ctx = document.getElementById('clickChart').getContext('2d');
         new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: Object.keys(clics),
-                datasets: [{ data: Object.values(clics), backgroundColor: '#c0392b' }]
+                datasets: [{ data: Object.values(clics), backgroundColor: '#c0392b', borderRadius: 4 }]
             },
             options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { display: false } } } }
         });
