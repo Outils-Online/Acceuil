@@ -23,8 +23,6 @@
             background: radial-gradient(circle at top, #2a2a40, #171723);
             color: white; min-height: 100vh; overflow-x: hidden;
         }
-
-        /* NAV */
         .nav-shell {
             display: grid;
             grid-template-columns: 1fr auto 1fr;
@@ -63,8 +61,6 @@
         }
         .config-btn.active { background: white; color: #171723; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
         .spacer { justify-self: end; width: 40px; }
-
-        /* FILTRES — 2 lignes max */
         .filters-container {
             display: flex; justify-content: space-between; align-items: flex-start;
             max-width: 1000px; margin: 0 auto 25px; gap: 10px;
@@ -101,8 +97,6 @@
             flex-shrink: 0;
         }
         #btnMultiview.active { background: var(--primary); box-shadow: 0 0 12px rgba(75,75,230,0.6); }
-
-        /* GRILLE NORMALE */
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -137,72 +131,55 @@
         .btn-orange { background: #c97b27; }
         .btn-purple { background: #8a3ebf; }
         .btn-red    { background: #d93025; }
-/* Effet Aura Pleine pour tous les boutons sélectionnés */
-[data-id="photo-recu"] .favicon-badge,
-[data-id="calculette"] .favicon-badge,
-[data-id="minuteur"] .favicon-badge,
-[data-id="sign-pdf"] .favicon-badge, 
-[data-id="ocr-lines"] .favicon-badge,
-[data-id="ytlive-lines"] .favicon-badge{
-    position: relative;
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    overflow: hidden; /* Important : pour que le dégradé reste dans le rond */
-    background: rgba(255, 255, 255, 0.1) !important; /* Un léger fond pour l'unité */
-    border: none !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    z-index: 1;
-}
-
-/* Le fond plein qui tourne */
-[data-id="photo-recu"] .favicon-badge::before,
-[data-id="calculette"] .favicon-badge::before,
-[data-id="minuteur"] .favicon-badge::before,
-[data-id="sign-pdf"] .favicon-badge::before, 
-[data-id="ocr-lines"] .favicon-badge::before, 
-[data-id="ytlive-lines"] .favicon-badge::before {
-    content: "";
-    position: absolute;
-    /* On l'agrandit pour que les bords du dégradé ne se voient pas */
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    
-    /* Dégradé conique plein et transparent */
-    background: conic-gradient(
-        rgba(75, 75, 230, 0.7), 
-        rgba(50, 168, 82, 0.7), 
-        rgba(230, 75, 230, 0.7), 
-        rgba(168, 138, 50, 0.7), 
-        rgba(75, 75, 230, 0.7)
-    ) !important;
-    
-    /* Rotation lente */
-    animation: rotateRing 20s linear infinite !important;
-    z-index: -1; /* Passe derrière l'icône */
-}
-
-/* Réglage standard pour les autres */
-[data-id="calculette"] .favicon-badge span,
-[data-id="minuteur"] .favicon-badge span,
-[data-id="sign-pdf"] .favicon-badge span, 
-[data-id="ocr-lines"] .favicon-badge span,
-[data-id="ytlive-lines"] .favicon-badge span{
-    display: flex !important;
-    transform: translate(0px, -2px) !important;
-    font-size: 22px !important;
-}
-
-@keyframes rotateRing {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-        /* IFRAMES */
+        [data-id="photo-recu"] .favicon-badge,
+        [data-id="calculette"] .favicon-badge,
+        [data-id="minuteur"] .favicon-badge,
+        [data-id="sign-pdf"] .favicon-badge,
+        [data-id="ocr-lines"] .favicon-badge,
+        [data-id="ytlive-lines"] .favicon-badge {
+            position: relative;
+            width: 44px; height: 44px; border-radius: 50%;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.1) !important;
+            border: none !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            z-index: 1;
+        }
+        [data-id="photo-recu"] .favicon-badge::before,
+        [data-id="calculette"] .favicon-badge::before,
+        [data-id="minuteur"] .favicon-badge::before,
+        [data-id="sign-pdf"] .favicon-badge::before,
+        [data-id="ocr-lines"] .favicon-badge::before,
+        [data-id="ytlive-lines"] .favicon-badge::before {
+            content: "";
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: conic-gradient(
+                rgba(75, 75, 230, 0.7),
+                rgba(50, 168, 82, 0.7),
+                rgba(230, 75, 230, 0.7),
+                rgba(168, 138, 50, 0.7),
+                rgba(75, 75, 230, 0.7)
+            ) !important;
+            animation: rotateRing 20s linear infinite !important;
+            z-index: -1;
+        }
+        [data-id="calculette"] .favicon-badge span,
+        [data-id="minuteur"] .favicon-badge span,
+        [data-id="sign-pdf"] .favicon-badge span,
+        [data-id="ocr-lines"] .favicon-badge span,
+        [data-id="ytlive-lines"] .favicon-badge span {
+            display: flex !important;
+            transform: translate(0px, -2px) !important;
+            font-size: 22px !important;
+        }
+        @keyframes rotateRing {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
         .iframe-container { display: none; position: fixed; inset: 0; background: #000; z-index: 9999; }
         .iframe-container iframe { width: 100%; height: 100%; border: none; }
         .close-iframe {
@@ -210,8 +187,6 @@
             background: var(--danger); color: white; border: none;
             padding: 12px 24px; border-radius: 50px; font-weight: 800; cursor: pointer; z-index: 10000;
         }
-
-        /* MODAL */
         .modal {
             display: none; position: fixed; inset: 0;
             background: rgba(0,0,0,0.9); z-index: 5000;
@@ -228,10 +203,6 @@
             border-radius: 12px; color: white; width: 100%;
             margin-bottom: 10px; font-size: 14px;
         }
-
-        /* ══ MULTIVIEW ══
-           Mobile : 2 colonnes fixes. Desktop : affichage libre.
-        */
         #multiviewContainer {
             max-width: 1000px;
             margin: 0 auto;
@@ -239,36 +210,24 @@
             grid-template-columns: 1fr 1fr;
             gap: 15px;
         }
-
-        /* Desktop : affichage libre par section (1 section = 1 tag) */
         #multiviewContainer.mv-desktop {
             display: flex;
             flex-direction: column;
             gap: 20px;
         }
-        /* Sur desktop, chaque "col" devient une section pleine largeur */
-        #multiviewContainer.mv-desktop .mv-col {
-            width: 100%;
-        }
-        /* Grille libre sur desktop */
+        #multiviewContainer.mv-desktop .mv-col { width: 100%; }
         #multiviewContainer.mv-desktop .mv-col-inner {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             gap: 15px;
         }
-        #multiviewContainer.mv-desktop .mv-col .btn-3d {
-            width: 100%;
-        }
-
-        /* Une colonne MV */
+        #multiviewContainer.mv-desktop .mv-col .btn-3d { width: 100%; }
         .mv-col {
             display: flex;
             flex-direction: column;
             gap: 10px;
             min-width: 0;
         }
-
-        /* Label de section dans une colonne (optionnel, affiché si tag unique dans la colonne) */
         .mv-col-header {
             font-size: 10px; font-weight: 800;
             text-transform: uppercase; letter-spacing: 1px;
@@ -278,13 +237,7 @@
             border: 1px solid rgba(255,255,255,0.1);
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
-
-        /* Bouton dans multiview */
-        .mv-col .btn-3d {
-            width: 100%;
-        }
-
-        /* TOAST — message d'erreur mobile MV */
+        .mv-col .btn-3d { width: 100%; }
         #mvToast {
             display: none;
             position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
@@ -301,7 +254,52 @@
             to   { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
 
-        /* RESPONSIVE */
+        /* ══ NOUVEAU : ALERTE HEBDOMADAIRE ══ */
+        #weeklyAlert {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 199999;
+            justify-content: center; align-items: center; padding: 20px;
+            backdrop-filter: blur(6px);
+        }
+        #weeklyAlert.visible { display: flex; }
+        .weekly-alert-box {
+            background: linear-gradient(135deg, #1c1c30, #252540);
+            border: 1px solid rgba(255,204,0,0.4);
+            border-radius: 24px; padding: 30px 28px;
+            max-width: 440px; width: 100%;
+            box-shadow: 0 0 40px rgba(255,204,0,0.15), 0 20px 60px rgba(0,0,0,0.6);
+            text-align: center;
+        }
+        .weekly-alert-icon { font-size: 48px; margin-bottom: 16px; display: block; animation: pulse 2s ease-in-out infinite; }
+        @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+        .weekly-alert-title { font-size: 16px; font-weight: 900; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; }
+        .weekly-alert-msg { font-size: 13px; line-height: 1.7; color: rgba(255,255,255,0.85); margin-bottom: 24px; }
+        .weekly-alert-close {
+            background: var(--gold); color: #171723; border: none;
+            padding: 12px 32px; border-radius: 50px; font-weight: 800; font-size: 13px;
+            cursor: pointer; font-family: 'Poppins', sans-serif; transition: 0.2s;
+        }
+        .weekly-alert-close:hover { opacity: 0.85; }
+
+        /* ══ NOUVEAU : MODAL FUSION ══ */
+        #fusionModal .box-content { max-width: 560px; }
+        .fusion-textarea {
+            background: #0a0a0f; border: 1px solid rgba(255,255,255,0.1);
+            padding: 12px; border-radius: 12px; color: #a0ffa0; width: 100%;
+            margin-bottom: 10px; font-size: 12px; font-family: monospace;
+            resize: vertical; min-height: 120px;
+        }
+        .fusion-result-box {
+            background: #050510; border: 1px solid rgba(75,75,230,0.3);
+            border-radius: 12px; padding: 12px; max-height: 200px;
+            overflow-y: auto; margin-bottom: 12px; display: none;
+        }
+        .fusion-result-box pre { font-size: 11px; color: #7fc; font-family: monospace; white-space: pre-wrap; word-break: break-all; }
+        .fusion-btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+        .fusion-btn-row .btn-3d { min-height: 44px; flex: 1; min-width: 100px; }
+
         @media (max-width: 768px) {
             .nav-shell { grid-template-columns: auto 1fr; padding: 6px 12px; }
             .logo-text-stack, .spacer { display: none; }
@@ -312,10 +310,21 @@
         @media (max-width: 480px) {
             .grid { grid-template-columns: repeat(2, 1fr); }
             .filters-group { grid-template-columns: repeat(3, 1fr); }
+            .fusion-btn-row .btn-3d { min-width: 80px; font-size: 11px; }
         }
     </style>
 </head>
 <body>
+
+<!-- ══ NOUVEAU : ALERTE HEBDOMADAIRE ══ -->
+<div id="weeklyAlert">
+    <div class="weekly-alert-box">
+        <span class="weekly-alert-icon">💾</span>
+        <div class="weekly-alert-title">Rappel sauvegarde hebdomadaire</div>
+        <div class="weekly-alert-msg">Sauvegarde hebdomadaire recommandée : il est fortement conseillé de sauvegarder au moins une fois par semaine afin d'éviter toute perte de données et repartir de zéro.</div>
+        <button class="weekly-alert-close" onclick="closeWeeklyAlert()">Compris ✓</button>
+    </div>
+</div>
 
 <div id="mvToast"></div>
 
@@ -385,30 +394,24 @@
         <div class="btn-star">★</div><div class="favicon-badge">✉️</div><div>Gmail</div><div class="count-badge">0</div>
     </button>
     <button class="btn-3d btn-green" data-id="photo-recu" data-main="bureau" data-tags="compta" onclick="openIframe('iframe_photo_recu', this)">
-    <div class="btn-star">★</div>
-    <div class="favicon-badge rainbow-mode"><span>📷</span></div>
-    <div>Reçu-Lines</div>
-    <div class="count-badge">0</div>
-</button>
-
-<button class="btn-3d btn-blue" 
-    data-id="cite-lines" 
-    data-main="bureau" 
-    data-tags="recherche" 
-    onclick="openIframe('iframe_cite_lines', this)">
-
-    <div class="btn-star">★</div>
-    <div class="favicon-badge"><span>📚</span></div>
-    <div>Cite-Lines</div>
-    <div class="count-badge">0</div>
-</button>
-<button class="btn-3d btn-red" data-id="ytlive-lines" data-main="creative" data-tags="radio" onclick="openIframe('iframe_ytlive_lines', this)">
-    <div class="btn-star">★</div>
-    <div class="favicon-badge"><span>🎬</span></div>
-    <div>Ytlive-Lines</div>
-    <div class="count-badge">0</div>
-</button>
-<button class="btn-3d btn-blue" data-id="local-lines" data-main="perso" data-tags="local" onclick="openIframe('iframe_local_lines', this)">
+        <div class="btn-star">★</div>
+        <div class="favicon-badge rainbow-mode"><span>📷</span></div>
+        <div>Reçu-Lines</div>
+        <div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-blue" data-id="cite-lines" data-main="bureau" data-tags="recherche" onclick="openIframe('iframe_cite_lines', this)">
+        <div class="btn-star">★</div>
+        <div class="favicon-badge"><span>📚</span></div>
+        <div>Cite-Lines</div>
+        <div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-red" data-id="ytlive-lines" data-main="creative" data-tags="radio" onclick="openIframe('iframe_ytlive_lines', this)">
+        <div class="btn-star">★</div>
+        <div class="favicon-badge"><span>🎬</span></div>
+        <div>Ytlive-Lines</div>
+        <div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-blue" data-id="local-lines" data-main="perso" data-tags="local" onclick="openIframe('iframe_local_lines', this)">
     <div class="btn-star">★</div>
     <div class="favicon-badge">🏠</div>
     <div>Local-Lines</div>
@@ -462,8 +465,11 @@
     <button id="btnAddPerso" class="btn-3d hidden" style="border:2px dashed rgba(255,255,255,0.2);background:none" onclick="openTool('addModal')">
         <div style="font-size:30px">+</div><div>Ajouter</div>
     </button>
+    
 </div>
 
+
+<!-- MODAL AJOUT PERSO -->
 <div id="addModal" class="modal">
     <div class="box-content">
         <h3 style="margin-bottom:15px">Nouveau Lien Perso</h3>
@@ -483,6 +489,23 @@
     </div>
 </div>
 
+<!-- ══ NOUVEAU : MODAL FUSION ══ -->
+<div id="fusionModal" class="modal">
+    <div class="box-content" style="max-width:560px;">
+        <h3 style="margin-bottom:6px">🔀 Fusionner des données JSON</h3>
+        <p style="font-size:11px;opacity:0.5;margin-bottom:14px;">Collez un JSON à fusionner avec les données existantes (<code>fusionJSON</code> dans localStorage).</p>
+        <textarea id="fusionInput" class="fusion-textarea" placeholder='{"clics":{"mon-outil":5},"favs":["id1","id2"]}'></textarea>
+        <div id="fusionResultBox" class="fusion-result-box">
+            <pre id="fusionResultPre"></pre>
+        </div>
+        <div class="fusion-btn-row">
+            <button class="btn-3d btn-blue" onclick="previewFusion()">👁️ Prévisualiser</button>
+            <button class="btn-3d btn-green" id="btnSaveFusion" style="display:none;" onclick="saveFusion()">💾 Sauvegarder</button>
+        </div>
+        <button onclick="closeTool('fusionModal')" style="margin-top:14px;background:none;border:none;color:#777;width:100%;cursor:pointer;font-family:inherit;">Annuler</button>
+    </div>
+</div>
+
 <script>
 /* ══════════════════════════════════════════════
    ÉTAT GLOBAL
@@ -495,33 +518,39 @@ let favOnly     = localStorage.getItem('favOnly') === 'true';
 
 let activeTag             = null;
 let multiviewActive       = false;
-let multiviewSelectedTags = [];    // tags sélectionnés en MV (dans l'ordre de sélection)
+let multiviewSelectedTags = [];
 
 const ALL_TAGS = ['admin','compta','recherche','video','texte','radio'];
-
 const MODE_TAGS = {
     bureau:   ['admin','compta','recherche'],
     creative: ['video','texte','radio'],
     perso:    []
 };
-
 const TAG_LABELS = {
-    admin:     '💼 Admin',
-    compta:    '📂 Compta',
-    recherche: '🔍 Recherche',
-    video:     '🎬 Vidéo',
-    texte:     '✍️ Texte',
-    radio:     '📻 Radio'
+    admin:'💼 Admin', compta:'📂 Compta', recherche:'🔍 Recherche',
+    video:'🎬 Vidéo', texte:'✍️ Texte', radio:'📻 Radio'
+};
+const TAG_DISPLAY = {
+    admin:'💼 ADMIN', compta:'📂 COMPTA', recherche:'🔍 RECH.',
+    video:'🎬 VIDÉO', texte:'✍️ TEXTE', radio:'📻 RADIO'
 };
 
-const TAG_DISPLAY = {
-    admin:     '💼 ADMIN',
-    compta:    '📂 COMPTA',
-    recherche: '🔍 RECH.',
-    video:     '🎬 VIDÉO',
-    texte:     '✍️ TEXTE',
-    radio:     '📻 RADIO'
-};
+/* ══════════════════════════════════════════════
+   ALERTE HEBDOMADAIRE — Mardi > 09h30, 1x/jour
+══════════════════════════════════════════════ */
+function checkWeeklyAlert() {
+    const now = new Date();
+    if (now.getDay() !== 2) return;
+    const h = now.getHours(), m = now.getMinutes();
+    if (h < 9 || (h === 9 && m < 30)) return;
+    const today = now.toISOString().slice(0, 10);
+    if (localStorage.getItem('__weekly_alert_shown__') === today) return;
+    setTimeout(() => { document.getElementById('weeklyAlert').classList.add('visible'); }, 800);
+}
+function closeWeeklyAlert() {
+    localStorage.setItem('__weekly_alert_shown__', new Date().toISOString().slice(0, 10));
+    document.getElementById('weeklyAlert').classList.remove('visible');
+}
 
 /* ══════════════════════════════════════════════
    INIT
@@ -531,6 +560,7 @@ window.onload = () => {
     initUI();
     setMode(mode);
     document.getElementById('mainGrid').style.visibility = 'visible';
+    checkWeeklyAlert();
 };
 
 function initUI() {
@@ -541,13 +571,9 @@ function initUI() {
     });
 }
 
-/* ══════════════════════════════════════════════
-   CALCUL DES 6 TAGS LES PLUS CLIQUÉS
-══════════════════════════════════════════════ */
 function getTop6Tags() {
     const tagScore = {};
     ALL_TAGS.forEach(t => { tagScore[t] = 0; });
-
     document.querySelectorAll('.btn-3d[data-id]').forEach(btn => {
         const bTags = btn.dataset.tags || '';
         const id    = btn.dataset.id;
@@ -555,24 +581,18 @@ function getTop6Tags() {
             if (bTags.includes(t)) tagScore[t] += (clics[id] || 0);
         });
     });
-
-    return ALL_TAGS
-        .slice()
-        .sort((a, b) => tagScore[b] - tagScore[a])
-        .slice(0, 6);
+    return ALL_TAGS.slice().sort((a, b) => tagScore[b] - tagScore[a]).slice(0, 6);
 }
 
 /* ══════════════════════════════════════════════
-   MODE (bureau / creative / perso)
+   MODE
 ══════════════════════════════════════════════ */
 function setMode(m) {
     mode = m;
     localStorage.setItem('mode', m);
-
     document.querySelectorAll('.config-btn').forEach(b => b.classList.remove('active'));
     const btnId = 'btn' + m.charAt(0).toUpperCase() + m.slice(1);
     if (document.getElementById(btnId)) document.getElementById(btnId).classList.add('active');
-
     if (multiviewActive) {
         multiviewActive = false;
         multiviewSelectedTags = [];
@@ -581,37 +601,33 @@ function setMode(m) {
         if (mv) mv.remove();
         document.getElementById('mainGrid').style.display = '';
     }
-
     const tags = MODE_TAGS[m] || [];
     activeTag = tags.length > 0 ? tags[0] : null;
-
     renderTagFilters();
     document.getElementById('btnAddPerso').classList.toggle('hidden', m !== 'perso');
     applyFilters();
 }
 
 /* ══════════════════════════════════════════════
-   RENDU DES BOUTONS TAG
+   FILTRES
 ══════════════════════════════════════════════ */
 function renderTagFilters() {
-    const filtersGroup = document.getElementById('filtersGroup');
-    filtersGroup.innerHTML = '';
-
+    const fg = document.getElementById('filtersGroup');
+    fg.innerHTML = '';
     if (multiviewActive) {
-        const top6 = getTop6Tags();
-        top6.forEach(tag => {
+        getTop6Tags().forEach(tag => {
             const btn = document.createElement('button');
             btn.className = 'tag-btn';
             btn.textContent = TAG_DISPLAY[tag] || tag.toUpperCase();
             btn.dataset.tag = tag;
             if (multiviewSelectedTags.includes(tag)) btn.classList.add('tag-mv-selected');
             btn.addEventListener('click', () => onTagClick(tag));
-            filtersGroup.appendChild(btn);
+            fg.appendChild(btn);
         });
     } else {
         const tags = MODE_TAGS[mode] || [];
         if (tags.length === 0) {
-            filtersGroup.innerHTML = '<span style="font-size:10px;opacity:0.5">Tes liens personnalisés</span>';
+            fg.innerHTML = '<span style="font-size:10px;opacity:0.5">Tes liens personnalisés</span>';
             return;
         }
         tags.forEach(tag => {
@@ -621,18 +637,16 @@ function renderTagFilters() {
             btn.dataset.tag = tag;
             if (activeTag === tag) btn.classList.add('tag-active');
             btn.addEventListener('click', () => onTagClick(tag));
-            filtersGroup.appendChild(btn);
+            fg.appendChild(btn);
         });
     }
 }
 
-/* Détection mobile automatique */
 function isMobile() {
     return window.matchMedia('(max-width: 768px)').matches ||
            /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
 }
 
-/* Toast d'erreur */
 let toastTimer = null;
 function showToast(msg) {
     const toast = document.getElementById('mvToast');
@@ -642,17 +656,13 @@ function showToast(msg) {
     toastTimer = setTimeout(() => { toast.style.display = 'none'; }, 4000);
 }
 
-/* ══════════════════════════════════════════════
-   CLIC SUR UN TAG
-══════════════════════════════════════════════ */
 function onTagClick(tag) {
     if (multiviewActive) {
         const idx = multiviewSelectedTags.indexOf(tag);
         if (idx === -1) {
-            // Tentative d'ajout : vérifier limite mobile
             if (isMobile() && multiviewSelectedTags.length >= 3) {
                 showToast('Vous ne pouvez sélectionner que 3 tags maximum sur mobile. Désélectionnez-en un pour en choisir un autre.');
-                return; // bloquer sans modifier la sélection
+                return;
             }
             multiviewSelectedTags.push(tag);
         } else {
@@ -667,9 +677,6 @@ function onTagClick(tag) {
     }
 }
 
-/* ══════════════════════════════════════════════
-   FILTRES — GRILLE NORMALE
-══════════════════════════════════════════════ */
 function applyFilters() {
     document.querySelectorAll('.btn-3d[data-id]').forEach(btn => {
         const bMain = btn.dataset.main || 'custom';
@@ -689,7 +696,7 @@ function toggleFavFilter() {
 }
 
 /* ══════════════════════════════════════════════
-   OUTILS — INTERACTIONS
+   OUTILS
 ══════════════════════════════════════════════ */
 function handleTool(btn) {
     const id = btn.dataset.id;
@@ -710,7 +717,6 @@ function handleTool(btn) {
 function openIframe(id, btn) {
     if (event.target.closest('.btn-star')) { handleTool(btn); return; }
     const container = document.getElementById(id);
-    // Lazy-load : charger l'iframe seulement au premier clic (caméra jamais demandée au chargement)
     const iframe = container.querySelector('iframe');
     if (iframe && iframe.dataset.src && !iframe.src) {
         iframe.src = iframe.dataset.src;
@@ -770,48 +776,31 @@ function resetFilters() {
 }
 
 /* ══════════════════════════════════════════════
-   MULTIVIEW — TOGGLE
+   MULTIVIEW
 ══════════════════════════════════════════════ */
 function toggleMultiview() {
     multiviewActive = !multiviewActive;
     document.getElementById('btnMultiview').classList.toggle('active', multiviewActive);
-
     if (!multiviewActive) {
-        // Désactiver MV → conserver le premier tag sélectionné comme tag actif
-        if (multiviewSelectedTags.length > 0) {
-            activeTag = multiviewSelectedTags[0];
-        }
+        if (multiviewSelectedTags.length > 0) activeTag = multiviewSelectedTags[0];
         if (!activeTag) {
             const tags = MODE_TAGS[mode] || [];
             activeTag = tags.length > 0 ? tags[0] : null;
         }
-
         multiviewSelectedTags = [];
         const mv = document.getElementById('multiviewContainer');
         if (mv) mv.remove();
         document.getElementById('mainGrid').style.display = '';
-
         renderTagFilters();
         applyFilters();
-
     } else {
-        // Activer MV → conserver le tag actif comme première sélection
         multiviewSelectedTags = activeTag ? [activeTag] : [];
         renderTagFilters();
         renderMultiviewGrid();
     }
 }
 
-/* ══════════════════════════════════════════════
-   MULTIVIEW — SÉLECTIONNER LES 6 BOUTONS
-   Règles :
-   - Exactement 6 boutons (ou moins si pas assez)
-   - Priorité aux plus cliqués
-   - Pour 3 tags : ordre vertical (col1: items tag1,tag2,tag3 / col2: items tag1,tag2,tag3)
-   - Pour 2 tags : répartition équilibrée 3/3 sans contrainte de tag par colonne
-══════════════════════════════════════════════ */
 function getButtonsSortedByClics(tag) {
-    /* Retourne les boutons d'un tag triés par nombre de clics décroissant */
     const allBtns = Array.from(document.querySelectorAll('#mainGrid .btn-3d[data-id]'));
     return allBtns
         .filter(btn => (btn.dataset.tags || '').includes(tag))
@@ -819,15 +808,11 @@ function getButtonsSortedByClics(tag) {
 }
 
 function renderMultiviewGrid() {
-    // Nettoyer l'ancien rendu
     const existing = document.getElementById('multiviewContainer');
     if (existing) existing.remove();
-
-    // Masquer grille principale
     document.getElementById('mainGrid').style.display = 'none';
 
     if (multiviewSelectedTags.length === 0) {
-        // Aucun tag → grille principale vide
         document.getElementById('mainGrid').style.display = '';
         document.querySelectorAll('#mainGrid .btn-3d[data-id]').forEach(b => b.classList.add('hidden'));
         return;
@@ -837,21 +822,17 @@ function renderMultiviewGrid() {
     container.id = 'multiviewContainer';
     const mobile = isMobile();
     if (!mobile) container.classList.add('mv-desktop');
-
     const n = multiviewSelectedTags.length;
 
-    /* ── DESKTOP : 1 section par tag, grille libre, aucune limite de boutons ── */
     if (!mobile) {
         multiviewSelectedTags.forEach(tag => {
             const btns = getButtonsSortedByClics(tag);
             const col = document.createElement('div');
             col.className = 'mv-col';
-
             const header = document.createElement('div');
             header.className = 'mv-col-header';
             header.textContent = TAG_LABELS[tag] || tag.toUpperCase();
             col.appendChild(header);
-
             if (btns.length === 0) {
                 const empty = document.createElement('div');
                 empty.style.cssText = 'font-size:11px;opacity:0.4;padding:20px 0;';
@@ -877,12 +858,8 @@ function renderMultiviewGrid() {
             }
             container.appendChild(col);
         });
-
-    /* ── MOBILE : 2 colonnes fixes, max 6 boutons (comportement inchangé) ── */
     } else {
-        let col0 = [];
-        let col1 = [];
-
+        let col0 = [], col1 = [];
         if (n === 1) {
             const allBtns = getButtonsSortedByClics(multiviewSelectedTags[0]).slice(0, 6);
             const half = Math.ceil(allBtns.length / 2);
@@ -896,11 +873,9 @@ function renderMultiviewGrid() {
             col0 = tagBtns.map(tb => tb[0] || null).filter(Boolean);
             col1 = tagBtns.map(tb => tb[1] || null).filter(Boolean);
         }
-
         [col0, col1].forEach((colBtns, colIdx) => {
             const col = document.createElement('div');
             col.className = 'mv-col';
-
             const header = document.createElement('div');
             header.className = 'mv-col-header';
             if (n === 1) {
@@ -911,7 +886,6 @@ function renderMultiviewGrid() {
                 header.textContent = multiviewSelectedTags.slice(0, 3).map(t => TAG_DISPLAY[t] || t).join(' · ');
             }
             col.appendChild(header);
-
             if (colBtns.length === 0) {
                 const empty = document.createElement('div');
                 empty.style.cssText = 'font-size:11px;opacity:0.4;padding:20px 0;text-align:center;';
@@ -940,8 +914,82 @@ function renderMultiviewGrid() {
         container, document.getElementById('mainGrid').nextSibling
     );
 }
-</script>
 
+/* ══════════════════════════════════════════════
+   FUSION JSON — Deep Merge
+══════════════════════════════════════════════ */
+function deepMerge(base, patch) {
+    if (base === undefined || base === null) return patch;
+    if (patch === undefined || patch === null) return base;
+    if (typeof base === 'object' && !Array.isArray(base) &&
+        typeof patch === 'object' && !Array.isArray(patch)) {
+        const result = Object.assign({}, base);
+        Object.keys(patch).forEach(key => { result[key] = deepMerge(base[key], patch[key]); });
+        return result;
+    }
+    if (typeof base === 'number' && typeof patch === 'number') return base + patch;
+    if (Array.isArray(base) && Array.isArray(patch)) {
+        const seen = new Map();
+        return base.concat(patch).filter(item => {
+            let key;
+            if (item && typeof item === 'object') {
+                key = item.id !== undefined ? 'id:' + item.id
+                    : item.text !== undefined ? 'text:' + item.text
+                    : 'json:' + JSON.stringify(item);
+            } else {
+                key = 'val:' + item;
+            }
+            if (seen.has(key)) return false;
+            seen.set(key, true);
+            return true;
+        });
+    }
+    return patch;
+}
+
+let _pendingFusionResult = null;
+
+function previewFusion() {
+    const input = document.getElementById('fusionInput').value.trim();
+    if (!input) { alert('Veuillez coller un JSON valide dans le champ.'); return; }
+    let patchData;
+    try { patchData = JSON.parse(input); }
+    catch(e) { alert('JSON invalide : ' + e.message); return; }
+
+    let baseData;
+    const existing = localStorage.getItem('fusionJSON');
+    if (existing) {
+        try { baseData = JSON.parse(existing); } catch(e) { baseData = {}; }
+    } else {
+        baseData = {};
+        for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            if (!k.startsWith('__')) baseData[k] = localStorage.getItem(k);
+        }
+    }
+    _pendingFusionResult = deepMerge(baseData, patchData);
+    document.getElementById('fusionResultPre').textContent = JSON.stringify(_pendingFusionResult, null, 2);
+    document.getElementById('fusionResultBox').style.display = 'block';
+    document.getElementById('btnSaveFusion').style.display = '';
+}
+
+function saveFusion() {
+    if (!_pendingFusionResult) return;
+    localStorage.setItem('fusionJSON', JSON.stringify(_pendingFusionResult));
+    closeTool('fusionModal');
+    _pendingFusionResult = null;
+    document.getElementById('fusionInput').value = '';
+    document.getElementById('fusionResultBox').style.display = 'none';
+    document.getElementById('btnSaveFusion').style.display = 'none';
+    const t = document.getElementById('__sm_toast__') || document.getElementById('mvToast');
+    if (t) {
+        t.textContent = '✓ Fusion sauvegardée dans fusionJSON';
+        t.style.background = '#32a852';
+        t.style.display = 'block';
+        setTimeout(() => { t.style.display = 'none'; }, 3000);
+    }
+}
+</script>
 
 <!-- ══════════════════════════════════════════════
      STORAGE MANAGER v2 — Persistance & Sauvegarde
@@ -952,101 +1000,64 @@ function renderMultiviewGrid() {
 (function (global) {
   'use strict';
 
-  /* ─────────────────────────────────────────────
-     CONFIGURATION
-  ───────────────────────────────────────────── */
   var CONFIG = {
-    /* Clés localStorage internes */
-    BACKUP_FILE_KEY  : '__last_backup_file__',    // date du dernier export fichier
-    BACKUP_IDB_KEY   : '__last_backup_idb__',     // date de la dernière sauvegarde IndexedDB
-
-    /* IndexedDB */
+    BACKUP_FILE_KEY  : '__last_backup_file__',
+    BACKUP_IDB_KEY   : '__last_backup_idb__',
     IDB_NAME         : 'StorageManagerDB',
     IDB_STORE        : 'backups',
     IDB_RECORD_KEY   : 'latest',
-
-    /* Export fichier */
     FILENAME         : 'backup-app.json',
-
-    /* UI */
     INDICATOR_ID     : '__sm_indicator__',
     FILE_INPUT_ID    : '__sm_file_input__',
     TOAST_ID         : '__sm_toast__',
     TOAST_DURATION   : 3000,
     Z_INDEX          : 99990,
-
-    /* Règles sauvegarde auto */
-    CLIC_THRESHOLD   : 50,    // sauvegarde IndexedDB tous les 50 clics
-    MIN_CHARS        : 30     // alerte backup fichier si localStorage > 30 caractères
+    CLIC_THRESHOLD   : 50,
+    MIN_CHARS        : 30
   };
 
-  /* Compteur de clics depuis la dernière sauvegarde IDB */
   var _clicsSinceBackup = 0;
 
-  /* ─────────────────────────────────────────────
-     1. PERSISTANCE AUTOMATIQUE
-  ───────────────────────────────────────────── */
+  /* 1. PERSISTANCE */
   function initStoragePersistence() {
     if (navigator.storage && navigator.storage.persist) {
       navigator.storage.persist().then(function (granted) {
         console.log('[StorageManager] Persistance : ' + (granted ? 'activée ✓' : 'refusée'));
-      }).catch(function (err) {
-        console.warn('[StorageManager] persist() :', err);
-      });
+      }).catch(function (err) { console.warn('[StorageManager] persist() :', err); });
     }
   }
 
-  /* ─────────────────────────────────────────────
-     2. INDEXEDDB — sauvegarde temporaire silencieuse
-  ───────────────────────────────────────────── */
+  /* 2. INDEXEDDB */
   function _openIDB(callback) {
     try {
       var req = indexedDB.open(CONFIG.IDB_NAME, 1);
-
       req.onupgradeneeded = function (e) {
         var db = e.target.result;
-        if (!db.objectStoreNames.contains(CONFIG.IDB_STORE)) {
+        if (!db.objectStoreNames.contains(CONFIG.IDB_STORE))
           db.createObjectStore(CONFIG.IDB_STORE);
-        }
       };
-
       req.onsuccess = function (e) { callback(null, e.target.result); };
       req.onerror   = function (e) { callback(e.target.error, null); };
-    } catch (err) {
-      callback(err, null);
-    }
+    } catch (err) { callback(err, null); }
   }
 
-  /** Sauvegarde tout le localStorage dans IndexedDB (silencieux) */
   function saveToIDB(onDone) {
     _openIDB(function (err, db) {
-      if (err || !db) {
-        console.warn('[StorageManager] IDB non disponible :', err);
-        if (onDone) onDone(false);
-        return;
-      }
+      if (err || !db) { if (onDone) onDone(false); return; }
       try {
         var data = {};
         for (var i = 0; i < localStorage.length; i++) {
           var key = localStorage.key(i);
-          if (key !== CONFIG.BACKUP_FILE_KEY && key !== CONFIG.BACKUP_IDB_KEY) {
+          if (key !== CONFIG.BACKUP_FILE_KEY && key !== CONFIG.BACKUP_IDB_KEY)
             data[key] = localStorage.getItem(key);
-          }
         }
-
-        var tx    = db.transaction(CONFIG.IDB_STORE, 'readwrite');
+        var tx = db.transaction(CONFIG.IDB_STORE, 'readwrite');
         var store = tx.objectStore(CONFIG.IDB_STORE);
-        var putReq = store.put({
-          data      : data,
-          savedAt   : new Date().toISOString()
-        }, CONFIG.IDB_RECORD_KEY);
-
+        var putReq = store.put({ data: data, savedAt: new Date().toISOString() }, CONFIG.IDB_RECORD_KEY);
         putReq.onsuccess = function () {
-          /* Mémorise la date dans localStorage (lecture rapide pour UI) */
           Storage.prototype._setItem
             ? Storage.prototype._setItem.call(localStorage, CONFIG.BACKUP_IDB_KEY, new Date().toISOString())
             : localStorage.setItem(CONFIG.BACKUP_IDB_KEY, new Date().toISOString());
-
           refreshIndicatorState();
           if (onDone) onDone(true);
         };
@@ -1054,38 +1065,29 @@ function renderMultiviewGrid() {
           console.warn('[StorageManager] Erreur écriture IDB :', e.target.error);
           if (onDone) onDone(false);
         };
-      } catch (txErr) {
-        console.warn('[StorageManager] Transaction IDB :', txErr);
-        if (onDone) onDone(false);
-      }
+      } catch (txErr) { console.warn('[StorageManager] Transaction IDB :', txErr); if (onDone) onDone(false); }
     });
   }
 
-  /** Restaure depuis IndexedDB vers localStorage */
   function restoreFromIDB(onDone) {
     _openIDB(function (err, db) {
       if (err || !db) { if (onDone) onDone(false); return; }
       try {
-        var tx    = db.transaction(CONFIG.IDB_STORE, 'readonly');
+        var tx = db.transaction(CONFIG.IDB_STORE, 'readonly');
         var store = tx.objectStore(CONFIG.IDB_STORE);
         var getReq = store.get(CONFIG.IDB_RECORD_KEY);
-
         getReq.onsuccess = function (e) {
           var record = e.target.result;
           if (!record || !record.data) { if (onDone) onDone(false); return; }
-
           var data = record.data;
           var keys = Object.keys(data).length;
-          var ok   = global.confirm(
-            'Restaurer ' + keys + ' entrée(s) depuis la sauvegarde temporaire ?\n(' + _formatDate(new Date(record.savedAt)) + ')\n\nLes données actuelles seront remplacées.'
+          var ok = global.confirm(
+            'Restaurer ' + keys + ' entrée(s) depuis la sauvegarde temporaire ?\n(' +
+            _formatDate(new Date(record.savedAt)) + ')\n\nLes données actuelles seront remplacées.'
           );
           if (!ok) { if (onDone) onDone(false); return; }
-
           localStorage.clear();
-          Object.keys(data).forEach(function (k) {
-            try { localStorage.setItem(k, data[k]); } catch (e) {}
-          });
-
+          Object.keys(data).forEach(function (k) { try { localStorage.setItem(k, data[k]); } catch (e) {} });
           showToast('✓ Données restaurées — rechargement…');
           setTimeout(function () { global.location.reload(); }, 900);
           if (onDone) onDone(true);
@@ -1095,47 +1097,32 @@ function renderMultiviewGrid() {
     });
   }
 
-  /* ─────────────────────────────────────────────
-     3. EXPORT FICHIER — backup-app.json (manuel)
-  ───────────────────────────────────────────── */
+  /* 3. EXPORT FICHIER */
   function exportToFile() {
     try {
       var data = {};
       for (var i = 0; i < localStorage.length; i++) {
         var key = localStorage.key(i);
-        if (key !== CONFIG.BACKUP_FILE_KEY && key !== CONFIG.BACKUP_IDB_KEY) {
+        if (key !== CONFIG.BACKUP_FILE_KEY && key !== CONFIG.BACKUP_IDB_KEY)
           data[key] = localStorage.getItem(key);
-        }
       }
-
       var json = JSON.stringify(data, null, 2);
       var blob = new Blob([json], { type: 'application/json' });
       var url  = URL.createObjectURL(blob);
       var a    = document.createElement('a');
-      a.href     = url;
-      a.download = CONFIG.FILENAME;
-      a.style.display = 'none';
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(function () {
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      }, 1500);
-
-      /* Mémorise la date du dernier export fichier */
+      a.href = url; a.download = CONFIG.FILENAME; a.style.display = 'none';
+      document.body.appendChild(a); a.click();
+      setTimeout(function () { document.body.removeChild(a); URL.revokeObjectURL(url); }, 1500);
       localStorage.setItem(CONFIG.BACKUP_FILE_KEY, new Date().toISOString());
       refreshIndicatorState();
       showToast('✓ Backup téléchargé');
-
     } catch (err) {
       console.error('[StorageManager] Erreur export fichier :', err);
       showToast('Erreur lors de l\'export', true);
     }
   }
 
-  /* ─────────────────────────────────────────────
-     4. IMPORT FICHIER
-  ───────────────────────────────────────────── */
+  /* 4. IMPORT FICHIER */
   function importFromFile() {
     var fi = document.getElementById(CONFIG.FILE_INPUT_ID);
     if (fi) fi.click();
@@ -1145,7 +1132,6 @@ function renderMultiviewGrid() {
     var file = event.target.files && event.target.files[0];
     if (!file) return;
     event.target.value = '';
-
     var reader = new FileReader();
     reader.onload = function (e) {
       try {
@@ -1153,19 +1139,13 @@ function renderMultiviewGrid() {
         var cleaned = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
         var data    = JSON.parse(cleaned);
         if (typeof data !== 'object' || data === null) throw new Error('Format invalide');
-
         var keys = Object.keys(data).length;
         var ok   = global.confirm('Restaurer ' + keys + ' entrée(s) depuis le backup ?\n\nLes données actuelles seront remplacées.');
         if (!ok) return;
-
         localStorage.clear();
-        Object.keys(data).forEach(function (k) {
-          try { localStorage.setItem(k, data[k]); } catch (e) {}
-        });
-
+        Object.keys(data).forEach(function (k) { try { localStorage.setItem(k, data[k]); } catch (e) {} });
         showToast('✓ Données restaurées — rechargement…');
         setTimeout(function () { global.location.reload(); }, 900);
-
       } catch (err) {
         console.error('[StorageManager] Erreur import :', err);
         showToast('Fichier invalide ou corrompu', true);
@@ -1175,106 +1155,64 @@ function renderMultiviewGrid() {
     reader.readAsText(file);
   }
 
-  /* ─────────────────────────────────────────────
-     4b. PARTAGE — Web Share API (menu natif Android)
-  ───────────────────────────────────────────── */
+  /* 4b. PARTAGE */
   function shareBackup() {
     try {
       var data = {};
       for (var i = 0; i < localStorage.length; i++) {
         var key = localStorage.key(i);
-        if (key !== CONFIG.BACKUP_FILE_KEY && key !== CONFIG.BACKUP_IDB_KEY) {
+        if (key !== CONFIG.BACKUP_FILE_KEY && key !== CONFIG.BACKUP_IDB_KEY)
           data[key] = localStorage.getItem(key);
-        }
       }
-
       var json = JSON.stringify(data, null, 2);
       var blob = new Blob([json], { type: 'application/json' });
       var file = new File([blob], CONFIG.FILENAME, { type: 'application/json' });
-
-      /* Web Share API niveau 2 — partage de fichier natif Android */
       if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-        navigator.share({
-          title   : 'Backup application',
-          text    : 'Sauvegarde des données — ' + _formatDate(new Date()),
-          files   : [file]
-        }).then(function () {
-          showToast('✓ Backup partagé');
-        }).catch(function (err) {
-          /* Annulation volontaire de l'utilisateur — pas d'erreur affichée */
-          if (err.name !== 'AbortError') {
-            showToast('Erreur lors du partage', true);
-          }
-        });
-
-      /* Fallback : Web Share API niveau 1 (sans fichier) */
+        navigator.share({ title: 'Backup application', text: 'Sauvegarde des données — ' + _formatDate(new Date()), files: [file] })
+          .then(function () { showToast('✓ Backup partagé'); })
+          .catch(function (err) { if (err.name !== 'AbortError') showToast('Erreur lors du partage', true); });
       } else if (navigator.share) {
-        navigator.share({
-          title : 'Backup application',
-          text  : json
-        }).catch(function (err) {
-          if (err.name !== 'AbortError') showToast('Erreur lors du partage', true);
-        });
-
-      /* Fallback navigateur desktop : copie dans le presse-papier */
+        navigator.share({ title: 'Backup application', text: json })
+          .catch(function (err) { if (err.name !== 'AbortError') showToast('Erreur lors du partage', true); });
       } else if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(json).then(function () {
-          showToast('✓ Backup copié dans le presse-papier');
-        }).catch(function () {
-          showToast('Partage non supporté sur cet appareil', true);
-        });
-
+        navigator.clipboard.writeText(json)
+          .then(function () { showToast('✓ Backup copié dans le presse-papier'); })
+          .catch(function () { showToast('Partage non supporté sur cet appareil', true); });
       } else {
         showToast('Partage non supporté sur cet appareil', true);
       }
-
     } catch (err) {
       console.error('[StorageManager] Erreur partage :', err);
       showToast('Erreur lors du partage', true);
     }
   }
 
-  /* ─────────────────────────────────────────────
-     5. LOGIQUE SAUVEGARDE AUTOMATIQUE (IDB)
-     - clics       → tous les 50 clics
-     - favs        → ignoré
-     - tout le reste → immédiat dans IDB
-  ───────────────────────────────────────────── */
+  /* 5. SAUVEGARDE AUTO */
   function handleAutoSave(key) {
-    if (key === 'favs')                 return;
-    if (key === CONFIG.BACKUP_FILE_KEY) return;
-    if (key === CONFIG.BACKUP_IDB_KEY)  return;
-
+    if (key === 'favs')                        return;
+    if (key === CONFIG.BACKUP_FILE_KEY)        return;
+    if (key === CONFIG.BACKUP_IDB_KEY)         return;
+    if (key === '__weekly_alert_shown__')      return;
     if (key === 'clics') {
       _clicsSinceBackup++;
-      if (_clicsSinceBackup >= CONFIG.CLIC_THRESHOLD) {
-        _clicsSinceBackup = 0;
-        saveToIDB();
-      }
+      if (_clicsSinceBackup >= CONFIG.CLIC_THRESHOLD) { _clicsSinceBackup = 0; saveToIDB(); }
       return;
     }
-
-    /* customTools, données -Lines, mode, favOnly, etc. → immédiat */
     saveToIDB();
   }
 
-  /* ─────────────────────────────────────────────
-     6. CALCUL TAILLE localStorage
-  ───────────────────────────────────────────── */
+  /* 6. TAILLE localStorage */
   function _getLocalStorageSize() {
     var total = 0;
     for (var i = 0; i < localStorage.length; i++) {
       var key = localStorage.key(i);
-      if (key !== CONFIG.BACKUP_FILE_KEY && key !== CONFIG.BACKUP_IDB_KEY) {
+      if (key !== CONFIG.BACKUP_FILE_KEY && key !== CONFIG.BACKUP_IDB_KEY)
         total += (localStorage.getItem(key) || '').length;
-      }
     }
     return total;
   }
 
-  /* ─────────────────────────────────────────────
-     7. TOAST
-  ───────────────────────────────────────────── */
+  /* 7. TOAST */
   function showToast(message, isError) {
     var toast = document.getElementById(CONFIG.TOAST_ID);
     if (!toast) return;
@@ -1289,13 +1227,11 @@ function renderMultiviewGrid() {
     }, CONFIG.TOAST_DURATION);
   }
 
-  /* ─────────────────────────────────────────────
-     8. UI — Indicateur flottant
-  ───────────────────────────────────────────── */
+  /* 8. UI — Indicateur flottant */
   function createUIIndicator() {
     if (document.getElementById(CONFIG.INDICATOR_ID)) return;
 
-    /* Toast */
+    /* Toast — réutilise #mvToast existant */
     var existingToast = document.getElementById('mvToast');
     if (!existingToast) {
       var toast = document.createElement('div');
@@ -1318,12 +1254,11 @@ function renderMultiviewGrid() {
     /* Input file caché */
     var fileInput = document.createElement('input');
     fileInput.type = 'file'; fileInput.accept = '.json';
-    fileInput.id = CONFIG.FILE_INPUT_ID;
-    fileInput.style.display = 'none';
+    fileInput.id = CONFIG.FILE_INPUT_ID; fileInput.style.display = 'none';
     fileInput.addEventListener('change', _handleFileImport);
     document.body.appendChild(fileInput);
 
-    /* Conteneur principal */
+    /* Conteneur indicateur */
     var indicator = document.createElement('div');
     indicator.id = CONFIG.INDICATOR_ID;
     _applyStyles(indicator, {
@@ -1350,7 +1285,6 @@ function renderMultiviewGrid() {
     });
     mainBtn.textContent = '☁️';
 
-    /* Pastille d'état globale */
     var dot = document.createElement('span');
     dot.id = '__sm_dot__';
     _applyStyles(dot, {
@@ -1371,10 +1305,9 @@ function renderMultiviewGrid() {
       borderRadius: '20px', padding: '16px',
       boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
       backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-      minWidth: '230px'
+      minWidth: '270px'
     });
 
-    /* Titre panel */
     var panelTitle = document.createElement('div');
     panelTitle.textContent = '☁️ Sauvegardes';
     _applyStyles(panelTitle, {
@@ -1384,148 +1317,92 @@ function renderMultiviewGrid() {
     });
     panel.appendChild(panelTitle);
 
-    /* ── Bloc Sauvegarde temporaire (IDB) ── */
+    /* Bloc IDB */
     var idbBlock = document.createElement('div');
     idbBlock.id = '__sm_idb_block__';
-    _applyStyles(idbBlock, {
-      padding: '10px 12px', borderRadius: '12px',
-      background: 'rgba(255,255,255,0.05)',
-      border: '1px solid rgba(255,255,255,0.08)'
-    });
-
+    _applyStyles(idbBlock, { padding: '10px 12px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' });
     var idbRow = document.createElement('div');
     _applyStyles(idbRow, { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px' });
-
     var idbDot = document.createElement('span');
     idbDot.id = '__sm_idb_dot__';
-    _applyStyles(idbDot, {
-      width: '8px', height: '8px', borderRadius: '50%',
-      background: '#32a852', flexShrink: '0',
-      transition: 'background 0.3s ease'
-    });
-
+    _applyStyles(idbDot, { width: '8px', height: '8px', borderRadius: '50%', background: '#32a852', flexShrink: '0', transition: 'background 0.3s ease' });
     var idbTitle = document.createElement('span');
     idbTitle.textContent = '⚡ Sauvegarde temporaire';
-    _applyStyles(idbTitle, {
-      fontSize: '11px', fontWeight: '700', color: 'white', fontFamily: 'inherit'
-    });
-
-    idbRow.appendChild(idbDot);
-    idbRow.appendChild(idbTitle);
-
+    _applyStyles(idbTitle, { fontSize: '11px', fontWeight: '700', color: 'white', fontFamily: 'inherit' });
+    idbRow.appendChild(idbDot); idbRow.appendChild(idbTitle);
     var idbDate = document.createElement('div');
     idbDate.id = '__sm_idb_date__';
-    _applyStyles(idbDate, {
-      fontSize: '10px', opacity: '0.5', color: 'white',
-      fontFamily: 'inherit', paddingLeft: '16px'
-    });
-
-    idbBlock.appendChild(idbRow);
-    idbBlock.appendChild(idbDate);
-
-    /* Bouton restaurer depuis IDB */
-    var restoreIdbBtn = _createPanelButton('↩️ Restaurer cette sauvegarde', 'rgba(255,255,255,0.08)', function () {
-      restoreFromIDB();
-      togglePanel(false);
-    });
-    restoreIdbBtn.style.fontSize   = '11px';
-    restoreIdbBtn.style.padding    = '8px 12px';
-    restoreIdbBtn.style.marginTop  = '6px';
-    restoreIdbBtn.style.borderRadius = '10px';
+    _applyStyles(idbDate, { fontSize: '10px', opacity: '0.5', color: 'white', fontFamily: 'inherit', paddingLeft: '16px' });
+    idbBlock.appendChild(idbRow); idbBlock.appendChild(idbDate);
+    var restoreIdbBtn = _createPanelButton('↩️ Restaurer cette sauvegarde', 'rgba(255,255,255,0.08)', function () { restoreFromIDB(); togglePanel(false); });
+    restoreIdbBtn.style.fontSize = '11px'; restoreIdbBtn.style.padding = '8px 12px';
+    restoreIdbBtn.style.marginTop = '6px'; restoreIdbBtn.style.borderRadius = '10px';
     idbBlock.appendChild(restoreIdbBtn);
     panel.appendChild(idbBlock);
 
-    /* ── Bloc Backup fichier ── */
+    /* Bloc Fichier */
     var fileBlock = document.createElement('div');
     fileBlock.id = '__sm_file_block__';
-    _applyStyles(fileBlock, {
-      padding: '10px 12px', borderRadius: '12px',
-      background: 'rgba(255,255,255,0.05)',
-      border: '1px solid rgba(255,255,255,0.08)'
-    });
-
+    _applyStyles(fileBlock, { padding: '10px 12px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' });
     var fileRow = document.createElement('div');
     _applyStyles(fileRow, { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px' });
-
     var fileDot = document.createElement('span');
     fileDot.id = '__sm_file_dot__';
-    _applyStyles(fileDot, {
-      width: '8px', height: '8px', borderRadius: '50%',
-      background: '#ff8c00', flexShrink: '0',
-      transition: 'background 0.3s ease'
-    });
-
+    _applyStyles(fileDot, { width: '8px', height: '8px', borderRadius: '50%', background: '#ff8c00', flexShrink: '0', transition: 'background 0.3s ease' });
     var fileTitle = document.createElement('span');
     fileTitle.textContent = '📁 Backup fichier';
-    _applyStyles(fileTitle, {
-      fontSize: '11px', fontWeight: '700', color: 'white', fontFamily: 'inherit'
-    });
-
-    fileRow.appendChild(fileDot);
-    fileRow.appendChild(fileTitle);
-
+    _applyStyles(fileTitle, { fontSize: '11px', fontWeight: '700', color: 'white', fontFamily: 'inherit' });
+    fileRow.appendChild(fileDot); fileRow.appendChild(fileTitle);
     var fileDate = document.createElement('div');
     fileDate.id = '__sm_file_date__';
-    _applyStyles(fileDate, {
-      fontSize: '10px', opacity: '0.5', color: 'white',
-      fontFamily: 'inherit', paddingLeft: '16px'
-    });
+    _applyStyles(fileDate, { fontSize: '10px', opacity: '0.5', color: 'white', fontFamily: 'inherit', paddingLeft: '16px' });
+    fileBlock.appendChild(fileRow); fileBlock.appendChild(fileDate);
 
-    fileBlock.appendChild(fileRow);
-    fileBlock.appendChild(fileDate);
-
-    /* Ligne de boutons Restaurer + Envoyer dans le bloc fichier */
+    /* ── Ligne 3 boutons : Restaurer | Fusionner | Envoyer ── */
     var fileBtnRow = document.createElement('div');
-    _applyStyles(fileBtnRow, { display: 'flex', gap: '6px', marginTop: '8px' });
+    _applyStyles(fileBtnRow, { display: 'flex', gap: '5px', marginTop: '8px', flexWrap: 'wrap' });
 
-    /* Bouton Restaurer */
     var restoreFileBtn = document.createElement('button');
-    restoreFileBtn.textContent = '\u21a9\ufe0f Restaurer';
-    _applyStyles(restoreFileBtn, {
-      flex: '1', padding: '9px 8px', border: 'none',
-      borderRadius: '10px', background: 'rgba(58,58,191,0.7)',
-      color: 'white', fontSize: '11px', fontWeight: '700',
-      cursor: 'pointer', fontFamily: 'inherit',
-      WebkitTapHighlightColor: 'transparent', outline: 'none',
-      transition: 'opacity 0.15s ease'
-    });
+    restoreFileBtn.textContent = '↩️ Restaurer';
+    _applyStyles(restoreFileBtn, { flex: '1', minWidth: '72px', padding: '9px 6px', border: 'none', borderRadius: '10px', background: 'rgba(58,58,191,0.7)', color: 'white', fontSize: '11px', fontWeight: '700', cursor: 'pointer', fontFamily: 'inherit', WebkitTapHighlightColor: 'transparent', outline: 'none', transition: 'opacity 0.15s ease' });
     restoreFileBtn.addEventListener('click', function () { importFromFile(); togglePanel(false); });
     restoreFileBtn.addEventListener('touchstart', function () { restoreFileBtn.style.opacity = '0.7'; }, { passive: true });
-    restoreFileBtn.addEventListener('touchend',   function () { restoreFileBtn.style.opacity = '1';   }, { passive: true });
+    restoreFileBtn.addEventListener('touchend',   function () { restoreFileBtn.style.opacity = '1'; },   { passive: true });
 
-    /* Bouton Envoyer (Web Share API — menu natif Android) */
-    var shareFileBtn = document.createElement('button');
-    shareFileBtn.textContent = '\ud83d\udce4 Envoyer';
-    _applyStyles(shareFileBtn, {
-      flex: '1', padding: '9px 8px', border: 'none',
-      borderRadius: '10px', background: 'rgba(45,138,78,0.7)',
-      color: 'white', fontSize: '11px', fontWeight: '700',
-      cursor: 'pointer', fontFamily: 'inherit',
-      WebkitTapHighlightColor: 'transparent', outline: 'none',
-      transition: 'opacity 0.15s ease'
+    /* ══ BOUTON FUSIONNER (NOUVEAU) ══ */
+    var fusionBtn = document.createElement('button');
+    fusionBtn.textContent = '🔀 Fusionner';
+    _applyStyles(fusionBtn, { flex: '1', minWidth: '72px', padding: '9px 6px', border: 'none', borderRadius: '10px', background: 'rgba(138,62,191,0.75)', color: 'white', fontSize: '11px', fontWeight: '700', cursor: 'pointer', fontFamily: 'inherit', WebkitTapHighlightColor: 'transparent', outline: 'none', transition: 'opacity 0.15s ease' });
+    fusionBtn.addEventListener('click', function () {
+      togglePanel(false);
+      document.getElementById('fusionInput').value = '';
+      document.getElementById('fusionResultBox').style.display = 'none';
+      document.getElementById('btnSaveFusion').style.display = 'none';
+      _pendingFusionResult = null;
+      openTool('fusionModal');
     });
+    fusionBtn.addEventListener('touchstart', function () { fusionBtn.style.opacity = '0.7'; }, { passive: true });
+    fusionBtn.addEventListener('touchend',   function () { fusionBtn.style.opacity = '1'; },   { passive: true });
+
+    var shareFileBtn = document.createElement('button');
+    shareFileBtn.textContent = '📤 Envoyer';
+    _applyStyles(shareFileBtn, { flex: '1', minWidth: '72px', padding: '9px 6px', border: 'none', borderRadius: '10px', background: 'rgba(45,138,78,0.7)', color: 'white', fontSize: '11px', fontWeight: '700', cursor: 'pointer', fontFamily: 'inherit', WebkitTapHighlightColor: 'transparent', outline: 'none', transition: 'opacity 0.15s ease' });
     shareFileBtn.addEventListener('click', function () { shareBackup(); togglePanel(false); });
     shareFileBtn.addEventListener('touchstart', function () { shareFileBtn.style.opacity = '0.7'; }, { passive: true });
-    shareFileBtn.addEventListener('touchend',   function () { shareFileBtn.style.opacity = '1';   }, { passive: true });
+    shareFileBtn.addEventListener('touchend',   function () { shareFileBtn.style.opacity = '1'; },   { passive: true });
 
     fileBtnRow.appendChild(restoreFileBtn);
+    fileBtnRow.appendChild(fusionBtn);
     fileBtnRow.appendChild(shareFileBtn);
     fileBlock.appendChild(fileBtnRow);
     panel.appendChild(fileBlock);
 
-    /* Séparateur */
     var sep = document.createElement('div');
     _applyStyles(sep, { height: '1px', background: 'rgba(255,255,255,0.08)', margin: '2px 0' });
     panel.appendChild(sep);
 
-    /* Bouton export manuel */
-    var exportBtn = _createPanelButton('\u2b07\ufe0f Créer un backup maintenant', '#3a3abf', function () {
-      exportToFile();
-      togglePanel(false);
-    });
-    panel.appendChild(exportBtn);
+    panel.appendChild(_createPanelButton('⬇️ Créer un backup maintenant', '#3a3abf', function () { exportToFile(); togglePanel(false); }));
 
-    /* Toggle panel */
     mainBtn.addEventListener('click', function (e) {
       e.stopPropagation();
       var isOpen = panel.style.display === 'flex';
@@ -1534,17 +1411,12 @@ function renderMultiviewGrid() {
     document.addEventListener('click', function (e) {
       if (!indicator.contains(e.target)) togglePanel(false);
     });
-    mainBtn.addEventListener('touchstart', function () {
-      mainBtn.style.transform = 'scale(0.93)';
-    }, { passive: true });
-    mainBtn.addEventListener('touchend', function () {
-      mainBtn.style.transform = 'scale(1)';
-    }, { passive: true });
+    mainBtn.addEventListener('touchstart', function () { mainBtn.style.transform = 'scale(0.93)'; }, { passive: true });
+    mainBtn.addEventListener('touchend',   function () { mainBtn.style.transform = 'scale(1)'; },   { passive: true });
 
     indicator.appendChild(panel);
     indicator.appendChild(mainBtn);
     document.body.appendChild(indicator);
-
     refreshIndicatorState();
 
     function togglePanel(open) {
@@ -1553,11 +1425,9 @@ function renderMultiviewGrid() {
     }
   }
 
-  /* Met à jour les dates affichées dans le panel */
   function _updatePanelDates() {
     var idbDate  = document.getElementById('__sm_idb_date__');
     var fileDate = document.getElementById('__sm_file_date__');
-
     if (idbDate) {
       var idbRaw = localStorage.getItem(CONFIG.BACKUP_IDB_KEY);
       idbDate.textContent = idbRaw ? _timeAgo(new Date(idbRaw)) : 'Aucune sauvegarde';
@@ -1568,33 +1438,25 @@ function renderMultiviewGrid() {
     }
   }
 
-  /* Met à jour les pastilles colorées */
   function refreshIndicatorState() {
-    /* Pastille IDB */
-    var idbDot  = document.getElementById('__sm_idb_dot__');
-    var idbRaw  = localStorage.getItem(CONFIG.BACKUP_IDB_KEY);
+    var idbDot = document.getElementById('__sm_idb_dot__');
+    var idbRaw = localStorage.getItem(CONFIG.BACKUP_IDB_KEY);
     if (idbDot) idbDot.style.background = idbRaw ? '#32a852' : '#ff8c00';
-
-    /* Pastille fichier — orange si localStorage > 30 chars et pas encore de backup fichier */
     var fileDot = document.getElementById('__sm_file_dot__');
     var fileRaw = localStorage.getItem(CONFIG.BACKUP_FILE_KEY);
     if (fileDot) {
-      var size       = _getLocalStorageSize();
+      var size = _getLocalStorageSize();
       var needsAlert = size > CONFIG.MIN_CHARS && !fileRaw;
       fileDot.style.background = needsAlert ? '#ff8c00' : (fileRaw ? '#32a852' : '#888');
     }
-
-    /* Pastille globale du bouton ☁️ */
     var dot = document.getElementById('__sm_dot__');
     if (dot) {
-      var globalAlert = !idbRaw || (_getLocalStorageSize() > CONFIG.MIN_CHARS && !fileRaw);
+      var globalAlert = !idbRaw || (_getLocalStorageSize() > CONFIG.MIN_CHARS && !localStorage.getItem(CONFIG.BACKUP_FILE_KEY));
       dot.style.background = globalAlert ? '#ff8c00' : '#32a852';
     }
   }
 
-  /* ─────────────────────────────────────────────
-     UTILITAIRES
-  ───────────────────────────────────────────── */
+  /* UTILITAIRES */
   function _applyStyles(el, styles) {
     Object.keys(styles).forEach(function (p) { el.style[p] = styles[p]; });
   }
@@ -1621,9 +1483,9 @@ function renderMultiviewGrid() {
     var diffMins = Math.floor(diffMs / 60000);
     var diffH    = Math.floor(diffMs / 3600000);
     var diffD    = Math.floor(diffMs / 86400000);
-    if (diffMins < 1)       return 'à l\'instant';
-    if (diffMins < 60)      return 'il y a ' + diffMins + ' min';
-    if (diffH < 24)         return 'il y a ' + diffH + 'h';
+    if (diffMins < 1)  return 'à l\'instant';
+    if (diffMins < 60) return 'il y a ' + diffMins + ' min';
+    if (diffH < 24)    return 'il y a ' + diffH + 'h';
     return 'il y a ' + diffD + ' jour' + (diffD > 1 ? 's' : '');
   }
 
@@ -1636,20 +1498,7 @@ function renderMultiviewGrid() {
     } catch (e) { return date.toString(); }
   }
 
-  function _getLocalStorageSize() {
-    var total = 0;
-    for (var i = 0; i < localStorage.length; i++) {
-      var key = localStorage.key(i);
-      if (key !== CONFIG.BACKUP_FILE_KEY && key !== CONFIG.BACKUP_IDB_KEY) {
-        total += (localStorage.getItem(key) || '').length;
-      }
-    }
-    return total;
-  }
-
-  /* ─────────────────────────────────────────────
-     9. INIT + INTERCEPTION localStorage
-  ───────────────────────────────────────────── */
+  /* 9. INIT + INTERCEPTION localStorage */
   function init() {
     initStoragePersistence();
     createUIIndicator();
@@ -1659,8 +1508,6 @@ function renderMultiviewGrid() {
       removeItem: Storage.prototype.removeItem,
       clear     : Storage.prototype.clear
     };
-
-    /* Référence interne pour contourner la boucle d'interception sur les clés internes */
     Storage.prototype._setItem = _orig.setItem;
 
     Storage.prototype.setItem = function (key, value) {
@@ -1669,26 +1516,19 @@ function renderMultiviewGrid() {
     };
     Storage.prototype.removeItem = function (key) {
       _orig.removeItem.call(this, key);
-      if (this === localStorage
-          && key !== 'favs'
-          && key !== CONFIG.BACKUP_FILE_KEY
-          && key !== CONFIG.BACKUP_IDB_KEY) {
+      if (this === localStorage &&
+          key !== 'favs' &&
+          key !== CONFIG.BACKUP_FILE_KEY &&
+          key !== CONFIG.BACKUP_IDB_KEY) {
         saveToIDB();
       }
     };
-    Storage.prototype.clear = function () {
-      _orig.clear.call(this);
-    };
+    Storage.prototype.clear = function () { _orig.clear.call(this); };
   }
 
-  /* API publique */
   global.StorageManager = {
-    init           : init,
-    exportToFile   : exportToFile,
-    importFromFile : importFromFile,
-    saveToIDB      : saveToIDB,
-    restoreFromIDB : restoreFromIDB,
-    refreshState   : refreshIndicatorState
+    init: init, exportToFile: exportToFile, importFromFile: importFromFile,
+    saveToIDB: saveToIDB, restoreFromIDB: restoreFromIDB, refreshState: refreshIndicatorState
   };
 
   if (document.readyState === 'loading') {
