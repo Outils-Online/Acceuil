@@ -512,40 +512,84 @@
       .type-btn { font-size: 0.8rem; padding: 6px 13px; }
     }
 
-    /* ===== SCAN GLOBAL BANNER ===== */
-    .scan-banner {
-      background: var(--bg-card);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 14px 18px;
+    /* ===== ACTION BAR (scan + sélecteur source) ===== */
+    .action-bar {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Ligne ISBN — accent, immédiatement identifiable */
+    .action-isbn {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
       gap: 10px;
-      box-shadow: var(--shadow);
+      flex-wrap: wrap;
     }
-    .scan-banner-text {
-      font-size: 0.88rem;
-      color: var(--ink-muted);
-    }
-    .scan-banner-text strong { color: var(--ink); }
+
     .btn-scan-global {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 9px 20px;
+      padding: 10px 22px;
       background: var(--accent);
       color: #fff;
       border: none;
       border-radius: var(--radius);
       font-family: inherit;
-      font-size: 0.88rem;
-      font-weight: 600;
+      font-size: 0.9rem;
+      font-weight: 700;
       cursor: pointer;
       transition: all 0.2s;
+      letter-spacing: 0.01em;
     }
-    .btn-scan-global:hover { background: #a93226; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(192,57,43,0.3); }
+    .btn-scan-global:hover {
+      background: #a93226;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(192,57,43,0.35);
+    }
+
+    .isbn-hint {
+      font-size: 0.8rem;
+      color: var(--ink-light);
+      font-style: italic;
+    }
+
+    /* Séparateur entre ISBN et sélecteur type */
+    .action-divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--ink-light);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .action-divider::before,
+    .action-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* Ligne type de source — neutre, secondaire */
+    .action-source {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .action-source-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--ink-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    @media (max-width: 600px) {
+      .btn-scan-global { width: 100%; justify-content: center; }
+    }
 
     /* ===== BOUTON QUITTER ===== */
     .btn-quitter {
@@ -584,21 +628,25 @@
 <!-- MAIN -->
 <div class="container">
 
-  <!-- SCAN ISBN BANNER -->
-  <div class="scan-banner">
-    <div class="scan-banner-text">
-      <strong>📖 Ouvrage ?</strong> Scannez directement le code-barres ISBN pour remplir le formulaire automatiquement.
-    </div>
-    <button class="btn-scan-global" id="btn-scan-global" onclick="globalStartScanner()">
-      📷 Scanner un ISBN
-    </button>
-  </div>
+  <!-- ACTION BAR — ISBN + sélecteur de source regroupés -->
+  <div class="action-bar">
 
-  <!-- TYPE SELECTOR -->
-  <div>
-    <p class="section-title">Générateur de citations</p>
-    <p class="section-sub" style="margin-bottom:1rem;">Sélectionnez le type de source à citer</p>
-    <div class="type-grid" id="type-grid"></div>
+    <!-- Capture ISBN : action principale, visuellement distincte -->
+    <div class="action-isbn">
+      <button class="btn-scan-global" id="btn-scan-global" onclick="globalStartScanner()">
+        📷 Capturer ISBN
+      </button>
+      <span class="isbn-hint">Scannez un code-barres pour remplir automatiquement</span>
+    </div>
+
+    <div class="action-divider">ou choisissez un type de source</div>
+
+    <!-- Sélecteur de source : secondaire, neutre -->
+    <div class="action-source">
+      <span class="action-source-label">Type de source</span>
+      <div class="type-grid" id="type-grid"></div>
+    </div>
+
   </div>
 
   <!-- FORM CARD -->
