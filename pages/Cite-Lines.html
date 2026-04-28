@@ -1346,97 +1346,141 @@ renderHistory();
   }
 
   /* ══════════════════════════════════════════════════════════════════
-     ACQUISITION CAMÉRA — stratégie cross-browser
+     ACQUISITION CAMÉRA — stratégie cross-browser robuste
      ─────────────────────────────────────────────────────────────────
-     Problème fondamental :
-       • Chrome mobile  : `min` bloquant + besoin de `exact:'environment'`
-                          pour éviter l'objectif ultra-grand-angle flou.
-                          Ne jamais mettre `min` — utiliser uniquement `ideal`.
-       • Firefox mobile : accepte `ideal` mais rejette `exact` sur desktop.
-       • Safari iOS     : très stricte, accepte peu de contraintes avancées.
-       • Desktop        : pas de `environment`, `video:true` suffit.
+     Problème réel sur Chrome Android (multi-objectifs) :
+       Chrome ne respecte pas facingMode pour choisir le BON objectif.
+       Sur un téléphone avec 3-4 caméras, il peut choisir l'ultra-grand-
+       angle ou le téléobjectif selon la résolution demandée.
 
-     Solution : 5 tentatives ordonnées, aucun `min` (= jamais bloquant),
-     puis applyConstraints HD après connexion du flux.
+     Solution en 3 couches :
+       1. enumerateDevices() → identifier la caméra principale par label
+          (mots-clés : "back", "rear", "0" = index 0 = caméra principale)
+       2. Cibler par deviceId exact → bypass facingMode non fiable
+       3. Fallback facingMode classique si enumerate échoue
   ══════════════════════════════════════════════════════════════════ */
 
-  /* Détecte si on est sur un appareil mobile */
   const IS_MOBILE = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
+  /* ── Identifier la caméra arrière principale via enumerateDevices ── */
+  async function findMainBackCamera() {
+    if (!navigator.mediaDevices?.enumerateDevices) return null;
+
+    let devices;
+    try { devices = await navigator.mediaDevices.enumerateDevices(); }
+    catch(_) { return null; }
+
+    const videoCams = devices.filter(d => d.kind === 'videoinput');
+    if (!videoCams.length) return null;
+
+    /*  Sur Chrome Android, les labels ressemblent à :
+          "camera2 0, facing back"   ← caméra principale (index 0)
+          "camera2 1, facing back"   ← ultra-grand-angle ou téléobjectif
+          "camera2 2, facing front"  ← frontale
+        Sur Firefox : "Integrated Camera" ou "Back Camera"
+        Sur iOS Safari : labels vides jusqu'à la 1re autorisation.
+
+        Stratégie de scoring :
+          +3  label contient "0" ET "back"/"rear"  → caméra principale arrière
+          +2  label contient "back" ou "rear"
+          +1  label contient "environment"
+          -2  label contient "front" ou "user" ou "selfie"
+          -1  label contient "wide" ou "ultra"       */
+    function scoreDevice(d) {
+      const lbl = (d.label || '').toLowerCase();
+      let score = 0;
+      if (/back|rear/i.test(lbl))      score += 2;
+      if (/0/.test(lbl) && /back|rear/i.test(lbl)) score += 1; // "camera2 0, facing back"
+      if (/environment/i.test(lbl))    score += 1;
+      if (/front|user|selfie/i.test(lbl)) score -= 2;
+      if (/ultra|wide/i.test(lbl))     score -= 1;
+      return score;
+    }
+
+    /* Trier par score décroissant */
+    const ranked = [...videoCams].sort((a, b) => scoreDevice(b) - scoreDevice(a));
+    const best   = ranked[0];
+    const score  = scoreDevice(best);
+
+    /* N'utiliser le deviceId que si le score est positif (vraiment identifié) */
+    if (score > 0 && best.deviceId) {
+      console.info(`[ISBN Scanner] caméra identifiée : "${best.label}" (score ${score})`);
+      return best.deviceId;
+    }
+
+    /* Labels vides (iOS avant 1re permission, certains Firefox) → ne pas forcer */
+    return null;
+  }
+
+  /* ── Obtenir le flux — couche principale ────────────────────────── */
   async function getStream() {
     releaseStream();
-    /* Pause hardware : Chrome Android a besoin de ~150ms après track.stop() */
+    /* Pause hardware : Chrome Android libère le sensor en ~150ms */
     await new Promise(r => setTimeout(r, 150));
 
-    /*
-      Règles clés :
-      - PAS de `min` sur width/height → Chrome rejette la contrainte entière
-        si la caméra ne peut pas garantir le minimum, et tombe sur un fallback nul.
-      - `ideal` seulement → le navigateur fait de son mieux sans rejeter.
-      - `exact:'environment'` en premier sur mobile → force l'objectif arrière
-        principal sur Chrome (évite l'ultra-grand-angle ou la caméra frontale).
-      - `ideal:'environment'` en deuxième → compatibilité Firefox mobile + iOS.
-      - `video:true` en dernier → desktop sans caméra directionnelle.
-    */
-    const attempts = IS_MOBILE ? [
-      /* Mobile — tentative 1 : objectif arrière exact + HD */
-      { video: {
-          facingMode: { exact: 'environment' },
-          width:  { ideal: 1920 },
-          height: { ideal: 1080 },
-          frameRate: { ideal: 30 },
-      }},
-      /* Mobile — tentative 2 : objectif arrière exact + 720p */
-      { video: {
-          facingMode: { exact: 'environment' },
-          width:  { ideal: 1280 },
-          height: { ideal: 720 },
-      }},
-      /* Mobile — tentative 3 : objectif arrière idéal (Firefox/Safari) */
-      { video: {
-          facingMode: { ideal: 'environment' },
-          width:  { ideal: 1280 },
-          height: { ideal: 720 },
-      }},
-      /* Mobile — tentative 4 : toute caméra */
+    /* ── Étape 1 : tenter de cibler la caméra principale par deviceId ── */
+    if (IS_MOBILE) {
+      const deviceId = await findMainBackCamera();
+      if (deviceId) {
+        /* Contraintes par deviceId — contourne facingMode non fiable sur Chrome */
+        const byDeviceConstraints = [
+          { video: { deviceId: { exact: deviceId }, width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30 } } },
+          { video: { deviceId: { exact: deviceId }, width: { ideal: 1280 }, height: { ideal: 720  } } },
+          { video: { deviceId: { exact: deviceId } } },
+        ];
+        for (const c of byDeviceConstraints) {
+          try {
+            const s = await navigator.mediaDevices.getUserMedia(c);
+            logStream(s, 'deviceId ciblé');
+            return s;
+          } catch(e) {
+            console.info('[ISBN Scanner] deviceId échec →', e.name);
+          }
+        }
+      }
+    }
+
+    /* ── Étape 2 : fallback facingMode (Firefox/Safari/desktop) ────── */
+    const fallbackAttempts = IS_MOBILE ? [
+      { video: { facingMode: { exact: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30 } } },
+      { video: { facingMode: { exact: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720  } } },
+      { video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720  } } },
       { video: { facingMode: { ideal: 'environment' } } },
       { video: true },
     ] : [
-      /* Desktop — tentative 1 : Full HD */
       { video: { width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30 } } },
-      /* Desktop — tentative 2 : HD */
-      { video: { width: { ideal: 1280 }, height: { ideal: 720 } } },
+      { video: { width: { ideal: 1280 }, height: { ideal: 720  } } },
       { video: true },
     ];
 
-    for (const c of attempts) {
+    for (const c of fallbackAttempts) {
       try {
         const s = await navigator.mediaDevices.getUserMedia(c);
-        const t = s.getVideoTracks()[0];
-        const settings = t?.getSettings?.() ?? {};
-        console.info(`[ISBN Scanner] flux obtenu — ${settings.width}×${settings.height} facingMode=${settings.facingMode}`);
+        logStream(s, 'fallback facingMode');
         return s;
-      } catch (e) {
-        console.info('[ISBN Scanner] échec →', e.name, e.message);
+      } catch(e) {
+        console.info('[ISBN Scanner] fallback échec →', e.name, e.message);
       }
     }
+
     return null;
+  }
+
+  function logStream(stream, method) {
+    const t = stream.getVideoTracks()[0];
+    const s = t?.getSettings?.() ?? {};
+    console.info(`[ISBN Scanner][${method}] ${s.width ?? '?'}×${s.height ?? '?'} | facing=${s.facingMode ?? '?'} | fps=${s.frameRate ?? '?'}`);
   }
 
   /* ── Autofocus/exposition après play() ──────────────────────────── */
   async function applyAdvancedConstraints(stream) {
     if (!stream) return;
     const track = stream.getVideoTracks()[0];
-    if (!track) return;
+    if (!track || typeof track.getCapabilities !== 'function') return;
 
-    /*  getCapabilities() n'est pas dispo sur Firefox et iOS Safari.
-        Sur Chrome Android, il faut attendre que la vidéo soit en lecture
-        (readyState >= 2) avant que les capabilities soient peuplées.    */
-    if (typeof track.getCapabilities !== 'function') return;
-
-    /* Attendre que les capabilities soient disponibles (Chrome Android) */
+    /* Chrome Android expose les capabilities avec un délai après play() */
     let caps = {};
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 6; i++) {
       caps = track.getCapabilities();
       if (Object.keys(caps).length > 2) break;
       await new Promise(r => setTimeout(r, 200));
@@ -1446,17 +1490,13 @@ renderHistory();
     if (caps.focusMode?.includes('continuous'))        adv.focusMode        = 'continuous';
     if (caps.exposureMode?.includes('continuous'))     adv.exposureMode     = 'continuous';
     if (caps.whiteBalanceMode?.includes('continuous')) adv.whiteBalanceMode = 'continuous';
-    /* Zoom minimal pour éviter le zoom numérique qui floute */
-    if (caps.zoom)  adv.zoom  = caps.zoom.min ?? 1;
+    /* Zoom minimal — évite tout zoom numérique résiduel */
+    if (caps.zoom) adv.zoom = caps.zoom.min ?? 1;
 
-    if (!Object.keys(adv).length) {
-      console.info('[ISBN Scanner] capabilities vides ou non supportées');
-      return;
-    }
-
+    if (!Object.keys(adv).length) return;
     try {
       await track.applyConstraints({ advanced: [adv] });
-      console.info('[ISBN Scanner] applyConstraints réussi :', adv);
+      console.info('[ISBN Scanner] applyConstraints :', adv);
     } catch(e) {
       console.info('[ISBN Scanner] applyConstraints échoué :', e.message);
     }
