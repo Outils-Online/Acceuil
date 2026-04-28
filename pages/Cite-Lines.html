@@ -2136,19 +2136,24 @@ if (records.length > 0) {
         const data = await fetchFromBNF(val);
         
         if (data) {
-          // Remplissage automatique des champs du formulaire
-          const f_titre = document.getElementById('f_titre');
-          const f_noms = document.getElementById('f_noms');
-          const f_editeur = document.getElementById('f_editeur');
-          const f_annee = document.getElementById('f_annee');
+          // On cible les IDs standards de Cite-Lines pour le type "Ouvrage"
+          const mapping = {
+            'f_titre': data.titre,
+            'f_noms': data.auteurs,
+            'f_editeur': data.editeur,
+            'f_annee': data.annee
+          };
 
-          if (f_titre) f_titre.value = data.titre;
-          if (f_noms) f_noms.value = data.auteurs;
-          if (f_editeur) f_editeur.value = data.editeur;
-          if (f_annee) f_annee.value = data.annee;
+          for (let [id, value] of Object.entries(mapping)) {
+            const el = document.getElementById(id);
+            if (el) {
+              el.value = value;
+              // On force le navigateur à détecter le changement
+              el.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+          }
           
-          // Petit feedback visuel (si votre fonction showToast existe)
-          if (typeof showToast === 'function') showToast("Données BnF récupérées !");
+          if (typeof showToast === 'function') showToast("✅ Ouvrage complété !");
         }
       }
     }, 500));
@@ -2237,15 +2242,20 @@ if (records.length > 0) {
       const parser = new DOMParser();
       const xml = parser.parseFromString(xmlText, "text/xml");
 
-      // On vérifie si un résultat existe
-      if (!xml.getElementsByTagName('srw:recordData')[0]) return null;
+      // On cherche l'enregistrement sans se soucier du préfixe XML
+      const record = xml.querySelector('recordData');
+      if (!record) return null;
 
-      // Extraction des champs selon la norme INTERMARC de la BnF
+      // Fonction helper pour trouver les champs MarcXML (ex: 200 $a)
+      const getMarc = (tag, code) => {
+        return xml.querySelector(`datafield[tag="${tag}"] subfield[code="${code}"]`)?.textContent || '';
+      };
+
       return {
-        titre: xml.querySelector('datafield[tag="200"] subfield[code="a"]')?.textContent || '',
-        auteurs: xml.querySelector('datafield[tag="200"] subfield[code="f"]')?.textContent || '',
-        editeur: xml.querySelector('datafield[tag="210"] subfield[code="c"]')?.textContent || '',
-        annee: (xml.querySelector('datafield[tag="210"] subfield[code="d"]')?.textContent || '').match(/\d{4}/)?.[0] || ''
+        titre: getMarc('200', 'a'),
+        auteurs: getMarc('200', 'f'),
+        editeur: getMarc('210', 'c'),
+        annee: (getMarc('210', 'd').match(/\d{4}/) || [''])[0]
       };
     } catch (e) {
       console.error("Erreur BnF:", e);
