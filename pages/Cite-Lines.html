@@ -1385,10 +1385,13 @@ const annee   = get('210', 'd');
     } catch (_) {}
     // 2. BnF
 try {
-  const res = await fetch(`https://catalogue.bnf.fr/api/SRU?operation=searchRetrieve&version=1.2&query=bib.isbn all "${clean}"`);
+  const res = await fetch(`https://catalogue.bnf.fr/api/SRU?operation=searchRetrieve&version=1.2&query=bib.isbn any "${clean}"`);
   const text = await res.text();
 
-  if (text.includes('<record>')) {
+const xml = new DOMParser().parseFromString(text, "text/xml");
+const records = xml.getElementsByTagName('record');
+
+if (records.length > 0) {
     fillFromBNF(text);
     setFeedback('✓ Données récupérées via BnF', 'success');
     if (typeof showToast === 'function') showToast('✓ BnF');
