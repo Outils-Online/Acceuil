@@ -46,7 +46,7 @@
             transition: background var(--transition);
         }
 
-        /* --- BOUTON FERMER (IFRAME) --- */
+        /* --- BOUTON FERMER --- */
         .exit-btn {
             position: fixed;
             top: 15px;
@@ -64,17 +64,16 @@
             box-shadow: var(--shadow);
             color: var(--ink);
             font-size: 1.2rem;
-            line-height: 1;
         }
 
-        /* --- LAYOUT FOCUS --- */
+        /* --- LAYOUT --- */
         .main-container {
             max-width: 700px;
             margin: 0 auto;
-            padding: 3.5rem 1rem 10rem 1rem; /* Padding bas augmenté pour les boutons */
+            padding: 3.5rem 1rem 10rem 1rem;
         }
 
-        /* --- RECHERCHE --- */
+        /* --- RECHERCHE & FILTRES --- */
         .search-area {
             position: sticky;
             top: 10px;
@@ -94,11 +93,18 @@
             box-shadow: var(--shadow);
         }
 
+        .filter-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
         .type-filter {
             display: flex;
             gap: 8px;
             overflow-x: auto;
-            padding: 10px 0;
+            flex: 1;
             scrollbar-width: none;
         }
         .type-filter::-webkit-scrollbar { display: none; }
@@ -113,8 +119,27 @@
             font-weight: 600;
             cursor: pointer;
             white-space: nowrap;
+            transition: 0.2s;
         }
         .filter-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+        /* Bouton Spécial A-Z */
+        .sort-btn {
+            background: var(--bg-card);
+            border: 1.5px solid var(--border);
+            color: var(--ink);
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.7rem;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .sort-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
 
         /* --- CARTES --- */
         .citation-card {
@@ -131,104 +156,49 @@
 
         /* --- DRAWER --- */
         .side-drawer {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 85%;
-            max-width: 350px;
-            height: 100%;
-            background: var(--bg-card);
-            z-index: 1000;
-            box-shadow: 20px 0 50px rgba(0,0,0,0.2);
-            transform: translateX(-100%);
-            transition: var(--transition);
-            padding: 2rem;
-            overflow-y: auto;
+            position: fixed; top: 0; left: 0; width: 85%; max-width: 350px; height: 100%;
+            background: var(--bg-card); z-index: 1000; transform: translateX(-100%);
+            transition: var(--transition); padding: 2rem; overflow-y: auto;
         }
         .side-drawer.open { transform: translateX(0); }
-        .drawer-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.4);
-            backdrop-filter: blur(2px);
-            z-index: 999;
-            display: none;
-        }
+        .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 999; display: none; }
         .drawer-overlay.visible { display: block; }
-
         .drawer-section { margin-bottom: 2rem; }
         .drawer-title { font-family: 'Libre Baskerville', serif; font-size: 1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
-        .backup-card { background: var(--bg); padding: 12px; border-radius: var(--radius); border: 1px solid var(--border); font-size: 0.85rem; }
 
-        /* --- BOUTONS FLOTTANTS (ALIGNÉS À GAUCHE) --- */
-        .fab-container {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            z-index: 100;
-        }
-
-        .btn-fab {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            border: none;
-            color: white;
-            cursor: pointer;
-            box-shadow: var(--shadow);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            transition: transform 0.2s;
-        }
-        .btn-fab:active { transform: scale(0.9); }
-        
+        /* --- BOUTONS FLOTTANTS --- */
+        .fab-container { position: fixed; bottom: 20px; left: 20px; display: flex; flex-direction: column; gap: 12px; z-index: 100; }
+        .btn-fab { width: 48px; height: 48px; border-radius: 50%; border: none; color: white; cursor: pointer; box-shadow: var(--shadow); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
         .fab-clean { background: var(--ink); }
         .fab-stats { background: var(--accent); }
 
-        .theme-toggle { margin-top: 1rem; padding: 12px; width: 100%; border: 1px solid var(--border); background: var(--bg); border-radius: var(--radius); cursor: pointer; color: var(--ink); font-weight: 600; }
-        .yt-tag { display: inline-block; background: var(--accent-light); color: var(--accent); padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; margin: 2px; font-weight: 600; }
+        .theme-toggle { margin-top: 1rem; padding: 12px; width: 100%; border: 1px solid var(--border); background: var(--bg); border-radius: var(--radius); cursor: pointer; font-weight: 600; }
     </style>
 </head>
 <body>
 
 <div class="exit-btn" onclick="window.parent.postMessage('close-iframe', '*')" title="Fermer">✕</div>
-
 <div class="drawer-overlay" id="overlay" onclick="toggleDrawer()"></div>
 
 <aside class="side-drawer" id="drawer">
     <h2 style="font-family: 'Libre Baskerville'; margin-bottom: 1.5rem;">Citatio Pro</h2>
-    
-    <div class="drawer-section">
-        <h3 class="drawer-title">📈 Usage</h3>
-        <canvas id="clickChart" style="max-height: 150px;"></canvas>
-    </div>
-
-    <div class="drawer-section">
-        <h3 class="drawer-title">💾 Sauvegarde</h3>
-        <div id="backupInfo" class="backup-card"></div>
-    </div>
-
-    <div class="drawer-section">
-        <h3 class="drawer-title">📺 Tags YouTube</h3>
-        <div id="ytList"></div>
-    </div>
-
+    <div class="drawer-section"><h3 class="drawer-title">📈 Usage</h3><canvas id="clickChart" style="max-height: 150px;"></canvas></div>
+    <div class="drawer-section"><h3 class="drawer-title">💾 Sauvegarde</h3><div id="backupInfo" style="font-size:0.85rem; padding:10px; background:var(--bg); border-radius:4px;"></div></div>
     <button class="theme-toggle" onclick="toggleTheme()">🌓 Inverser le thème</button>
 </aside>
 
 <main class="main-container">
     <section class="search-area">
         <input type="text" id="search" placeholder="Rechercher..." oninput="render()">
-        <div class="type-filter">
-            <button class="filter-btn active" onclick="setFilter('all', this)">Tous</button>
-            <button class="filter-btn" onclick="setFilter('livre', this)">Livres</button>
-            <button class="filter-btn" onclick="setFilter('web', this)">Web</button>
-            <button class="filter-btn" onclick="setFilter('video', this)">Vidéos</button>
+        
+        <div class="filter-row">
+            <button id="alphaBtn" class="sort-btn" onclick="toggleAlphaSort()" title="Tri Alphabétique">A-Z</button>
+            <div class="type-filter">
+                <button class="filter-btn active" onclick="setFilter('all', this)">Tous</button>
+                <button class="filter-btn" onclick="setFilter('livre', this)">Livres</button>
+                <button class="filter-btn" onclick="setFilter('web', this)">Web</button>
+                <button class="filter-btn" onclick="setFilter('video', this)">Vidéos</button>
+            </div>
         </div>
     </section>
 
@@ -236,17 +206,18 @@
 </main>
 
 <div class="fab-container">
-    <button class="btn-fab fab-stats" onclick="toggleDrawer()" title="Statistiques">📊</button>
-    <button class="btn-fab fab-clean" onclick="smartClean()" title="Nettoyer doublons">🧹</button>
+    <button class="btn-fab fab-stats" onclick="toggleDrawer()">📊</button>
+    <button class="btn-fab fab-clean" onclick="smartClean()">🧹</button>
 </div>
 
 <script>
     const getD = (k) => JSON.parse(localStorage.getItem(k) || '[]');
-    let citations = getD('citatio_history').sort((a,b) => b.id - a.id);
+    let citations = getD('citatio_history');
     const clics = JSON.parse(localStorage.getItem('clics') || '{}');
-    const yt = getD('yt_history');
     const backupDate = localStorage.getItem('__last_backup_date__');
+    
     let currentType = 'all';
+    let isAlphaSort = false;
 
     function toggleDrawer() {
         document.getElementById('drawer').classList.toggle('open');
@@ -256,6 +227,12 @@
     function toggleTheme() {
         const doc = document.documentElement;
         doc.setAttribute('data-theme', doc.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    }
+
+    function toggleAlphaSort() {
+        isAlphaSort = !isAlphaSort;
+        document.getElementById('alphaBtn').classList.toggle('active', isAlphaSort);
+        render();
     }
 
     function setFilter(type, btn) {
@@ -270,13 +247,24 @@
         const search = document.getElementById('search').value.toLowerCase();
         container.innerHTML = "";
 
-        const filtered = citations.filter(c => {
+        // 1. Filtrage
+        let list = citations.filter(c => {
             const matchesSearch = c.text.toLowerCase().includes(search);
             const matchesType = currentType === 'all' || c.typeLabel.toLowerCase().includes(currentType);
             return matchesSearch && matchesType;
         });
 
-        filtered.forEach(cite => {
+        // 2. Tri
+        if (isAlphaSort) {
+            // Tri A-Z sur le texte (ignorer la casse)
+            list.sort((a, b) => a.text.localeCompare(b.text, 'fr', {sensitivity: 'base'}));
+        } else {
+            // Tri par ID décroissant (plus récent d'abord)
+            list.sort((a, b) => b.id - a.id);
+        }
+
+        // 3. Affichage
+        list.forEach(cite => {
             const card = document.createElement('div');
             card.className = "citation-card";
             card.innerHTML = `
@@ -294,7 +282,6 @@
     window.copyText = (id) => {
         const c = citations.find(x => x.id == id);
         navigator.clipboard.writeText(c.text);
-        // Feedback visuel simple
     };
 
     window.smartClean = () => {
@@ -311,13 +298,7 @@
     };
 
     function initStats() {
-        document.getElementById('backupInfo').innerHTML = `
-            <strong>Dernier backup :</strong><br>
-            ${backupDate ? new Date(backupDate).toLocaleString('fr-FR') : 'Non disponible'}
-        `;
-
-        document.getElementById('ytList').innerHTML = yt.length ? yt.map(t => `<span class="yt-tag">#${t}</span>`).join('') : 'Aucun tag';
-
+        document.getElementById('backupInfo').innerHTML = backupDate ? `Synchro : ${new Date(backupDate).toLocaleString('fr-FR')}` : 'Aucun backup';
         const ctx = document.getElementById('clickChart').getContext('2d');
         new Chart(ctx, {
             type: 'bar',
