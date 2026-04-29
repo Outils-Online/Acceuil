@@ -88,13 +88,16 @@
             background: var(--card-bg); border: none; color: white;
             cursor: pointer; font-size: 16px;
             flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            padding: 0;
         }
         #btnMultiview {
             width: 40px; height: 40px; border-radius: 12px;
             background: var(--card-bg); border: none; color: white;
-            font-size: 11px; font-weight: 800; letter-spacing: -0.5px;
             cursor: pointer; transition: 0.2s;
             flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            padding: 0;
         }
         #btnMultiview.active { background: var(--primary); box-shadow: 0 0 12px rgba(75,75,230,0.6); }
         .grid {
@@ -183,10 +186,16 @@
         .iframe-container { display: none; position: fixed; inset: 0; background: #000; z-index: 9999; }
         .iframe-container iframe { width: 100%; height: 100%; border: none; }
         .close-iframe {
-            position: absolute; top: 20px; right: 20px;
+            position: fixed; top: 16px; right: 16px;
             background: var(--danger); color: white; border: none;
-            padding: 12px 24px; border-radius: 50px; font-weight: 800; cursor: pointer; z-index: 10000;
+            padding: 10px 20px; border-radius: 50px; font-weight: 800;
+            font-size: 13px; cursor: pointer; z-index: 10001;
+            display: flex; align-items: center; gap: 6px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+            font-family: 'Poppins', sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
+        .close-iframe:active { opacity: 0.8; transform: scale(0.96); }
         .modal {
             display: none; position: fixed; inset: 0;
             background: rgba(0,0,0,0.9); z-index: 5000;
@@ -308,7 +317,7 @@
             .nav-shell { grid-template-columns: auto 1fr; padding: 6px 12px; }
             .logo-text-stack, .spacer { display: none; }
             .config-bar { width: 100%; }
-            .close-iframe { top: 10px; right: 10px; padding: 6px 12px; font-size: 10px; border-radius: 15px; display: none; }
+            .close-iframe { top: 10px; right: 10px; padding: 8px 16px; font-size: 11px; border-radius: 15px; display: flex; }
             #multiviewContainer { grid-template-columns: 1fr 1fr; gap: 10px; }
         }
         @media (max-width: 480px) {
@@ -333,36 +342,32 @@
 <div id="mvToast"></div>
 
 <div id="iframe_ytlive_lines" class="iframe-container">
-    <button class="close-iframe" onclick="closeIframe('iframe_ytlive_lines')">FERMER X</button>
+    <button class="close-iframe" onclick="closeIframe('iframe_ytlive_lines')">✕ Fermer</button>
     <iframe data-src="pages/Ytlive-Lines.html" allow="camera; microphone"></iframe>
 </div>
 <div id="iframe_calculette" class="iframe-container">
-    <button class="close-iframe" onclick="closeIframe('iframe_calculette')">FERMER X</button>
+    <button class="close-iframe" onclick="closeIframe('iframe_calculette')">✕ Fermer</button>
     <iframe src="https://es-d-0544653420260421-019da75d-1b6e-7819-b877-2b48cfb03541.codepen.dev/"></iframe>
 </div>
 <div id="iframe_minuteur" class="iframe-container">
-    <button class="close-iframe" onclick="closeIframe('iframe_minuteur')">FERMER X</button>
+    <button class="close-iframe" onclick="closeIframe('iframe_minuteur')">✕ Fermer</button>
     <iframe src="https://es-d-0544653420260421-019da784-8528-73d9-b9de-3f2eb3988b3e.codepen.dev/"></iframe>
 </div>
 <div id="iframe_sign_pdf" class="iframe-container">
-    <button class="close-iframe" onclick="closeIframe('iframe_sign_pdf')">FERMER X</button>
+    <button class="close-iframe" onclick="closeIframe('iframe_sign_pdf')">✕ Fermer</button>
     <iframe src="pages/sign-pdf.html" allow="camera; microphone"></iframe>
 </div>
 <div id="iframe_photo_recu" class="iframe-container">
-    <button class="close-iframe" onclick="closeIframe('iframe_photo_recu')">FERMER X</button>
+    <button class="close-iframe" onclick="closeIframe('iframe_photo_recu')">✕ Fermer</button>
     <iframe data-src="pages/photo-recu.html" allow="camera; microphone"></iframe>
 </div>
 <div id="iframe_cite_lines" class="iframe-container">
-    <button class="close-iframe" onclick="closeIframe('iframe_cite_lines')">FERMER X</button>
+    <button class="close-iframe" onclick="closeIframe('iframe_cite_lines')">✕ Fermer</button>
     <iframe data-src="pages/Cite-Lines.html"></iframe>
 </div>
 <div id="iframe_ocr_lines" class="iframe-container">
-    <button class="close-iframe" onclick="closeIframe('iframe_ocr_lines')">FERMER X</button>
+    <button class="close-iframe" onclick="closeIframe('iframe_ocr_lines')">✕ Fermer</button>
     <iframe data-src="pages/OCR-lines.html" allow="camera; microphone"></iframe>
-</div>
-<div id="iframe_local_lines" class="iframe-container">
-    <button class="close-iframe" onclick="closeIframe('iframe_local_lines')">FERMER X</button>
-    <iframe data-src="pages/Local-Lines.html" allow="camera; microphone"></iframe>
 </div>
 
 <div class="nav-shell">
@@ -381,7 +386,14 @@
 <div class="filters-container">
     <button id="favFilterMain" class="icon-btn" onclick="toggleFavFilter()">☆</button>
     <div class="filters-group" id="filtersGroup"></div>
-    <button id="btnMultiview" onclick="toggleMultiview()">MV</button>
+    <button id="btnMultiview" onclick="toggleMultiview()" title="Multiview" aria-label="Multiview">
+    <svg viewBox="0 0 18 18" width="20" height="20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="display:block;flex-shrink:0">
+        <rect x="1" y="1" width="7" height="7" rx="1.5"/>
+        <rect x="10" y="1" width="7" height="7" rx="1.5"/>
+        <rect x="1" y="10" width="7" height="7" rx="1.5"/>
+        <rect x="10" y="10" width="7" height="7" rx="1.5"/>
+    </svg>
+</button>
 </div>
 
 <div class="grid" id="mainGrid">
@@ -415,12 +427,6 @@
         <div>Ytlive-Lines</div>
         <div class="count-badge">0</div>
     </button>
-    <button class="btn-3d btn-blue" data-id="local-lines" data-main="perso" data-tags="local" onclick="openIframe('iframe_local_lines', this)">
-    <div class="btn-star">★</div>
-    <div class="favicon-badge">🏠</div>
-    <div>Local-Lines</div>
-    <div class="count-badge">0</div>
-</button>
     <button class="btn-3d btn-green"  data-id="calculette"     data-main="bureau"   data-tags="compta"    onclick="openIframe('iframe_calculette', this)">
         <div class="btn-star">★</div><div class="favicon-badge">🔢</div><div>Calculette</div><div class="count-badge">0</div>
     </button>
@@ -980,69 +986,79 @@ function renderMultiviewGrid() {
 ══════════════════════════════════════════════ */
 
 /**
- * deepMerge(base, patch)
- * - Objets  → fusion récursive
- * - Nombres → addition
- * - Tableaux → concat + déduplication (id > text > valeur brute)
- * - Autres  → patch écrase base
+ * mergeValues(baseStr, patchStr)
+ * Les deux arguments sont des STRINGS telles que stockées dans localStorage.
+ * On les désérialise, on fusionne, on resérialise.
  *
- * IMPORTANT : base et patch sont des objets "localStorage sérialisé"
- * dont les valeurs sont des STRING (JSON.stringify de chaque clé).
- * On désérialise chaque valeur avant de fusionner, puis on resérialise.
+ * Règles :
+ *  - Objets  → fusion récursive des clés
+ *  - Nombres → addition
+ *  - Tableaux → concat + déduplication (par .id, .text, ou JSON complet)
+ *  - Strings simples / autres → patch écrase base
  */
-function deepMerge(baseVal, patchVal) {
-    // Tenter de désérialiser si c'est une string JSON
+function mergeValues(baseStr, patchStr) {
     function tryParse(v) {
-        if (typeof v !== 'string') return v;
-        try { return JSON.parse(v); } catch(e) { return v; }
-    }
-    function tryStringify(v) {
-        if (typeof v === 'string') return v;
-        return JSON.stringify(v);
+        if (typeof v !== 'string') return { val: v, parsed: true };
+        try { return { val: JSON.parse(v), parsed: true }; }
+        catch(e) { return { val: v, parsed: false }; }
     }
 
-    const base  = tryParse(baseVal);
-    const patch = tryParse(patchVal);
+    const b = tryParse(baseStr);
+    const p = tryParse(patchStr);
 
-    function merge(b, p) {
-        if (b === undefined || b === null) return p;
-        if (p === undefined || p === null) return b;
-        if (typeof b === 'object' && !Array.isArray(b) &&
-            typeof p === 'object' && !Array.isArray(p)) {
-            const r = Object.assign({}, b);
-            Object.keys(p).forEach(k => { r[k] = merge(b[k], p[k]); });
+    // Si l'un des deux n'est pas du JSON valide → patch écrase
+    if (!b.parsed || !p.parsed) return patchStr;
+
+    function merge(bv, pv) {
+        if (bv === undefined || bv === null) return pv;
+        if (pv === undefined || pv === null) return bv;
+
+        // Deux objets non-tableau
+        if (typeof bv === 'object' && !Array.isArray(bv) &&
+            typeof pv === 'object' && !Array.isArray(pv)) {
+            const r = Object.assign({}, bv);
+            Object.keys(pv).forEach(k => { r[k] = merge(bv[k], pv[k]); });
             return r;
         }
-        if (typeof b === 'number' && typeof p === 'number') return b + p;
-        if (Array.isArray(b) && Array.isArray(p)) {
+
+        // Deux nombres → addition
+        if (typeof bv === 'number' && typeof pv === 'number') return bv + pv;
+
+        // Deux tableaux → concat + déduplication
+        if (Array.isArray(bv) && Array.isArray(pv)) {
             const seen = new Map();
-            return b.concat(p).filter(item => {
+            return bv.concat(pv).filter(item => {
                 let key;
                 if (item && typeof item === 'object') {
-                    key = item.id !== undefined ? 'id:' + item.id
-                        : item.text !== undefined ? 'text:' + item.text
+                    // Déduplication par id, puis text, puis JSON complet
+                    key = item.id   !== undefined ? 'id:'   + String(item.id)
+                        : item.text !== undefined ? 'text:' + String(item.text)
                         : 'json:' + JSON.stringify(item);
-                } else { key = 'val:' + item; }
+                } else {
+                    key = 'prim:' + String(item);
+                }
                 if (seen.has(key)) return false;
-                seen.set(key, true); return true;
+                seen.set(key, true);
+                return true;
             });
         }
-        return p; // patch écrase base
+
+        // Sinon → patch écrase
+        return pv;
     }
 
-    const merged = merge(base, patch);
-    return tryStringify(merged);
+    const merged = merge(b.val, p.val);
+    return JSON.stringify(merged);
 }
 
-let _pendingFusionResult = null; // { clé: valeur_string, ... } prêt à écrire dans localStorage
+let _pendingFusionResult = null;
 
-/* Appelé quand l'utilisateur choisit un fichier */
+/* Appelé quand l'utilisateur choisit un fichier via input ou drag */
 function onFusionFileSelected(input) {
     const file = input.files && input.files[0];
     if (!file) return;
-
     const label = document.getElementById('fusionFileName');
-    label.textContent = file.name;
+    if (label) label.textContent = file.name;
 
     const reader = new FileReader();
     reader.onload = function(e) {
@@ -1056,30 +1072,37 @@ function onFusionFileSelected(input) {
             return;
         }
 
-        // Base = localStorage actuel (toutes les clés non-internes)
+        // ── Base = localStorage actuel (clés applicatives uniquement) ──
+        const INTERNAL_KEYS = new Set(['__last_backup_file__', '__last_backup_idb__', '__weekly_alert_shown__']);
         const baseData = {};
         for (let i = 0; i < localStorage.length; i++) {
             const k = localStorage.key(i);
-            if (!k.startsWith('__') && k !== '__last_backup_file__' && k !== '__last_backup_idb__') {
+            if (!INTERNAL_KEYS.has(k) && !k.startsWith('__')) {
                 baseData[k] = localStorage.getItem(k);
             }
         }
 
-        // Fusionner clé par clé
+        // ── Fusion clé par clé ──
         const merged = Object.assign({}, baseData);
         Object.keys(patchData).forEach(k => {
-            if (k.startsWith('__')) return; // ignorer clés internes du patch
-            const patchVal = typeof patchData[k] === 'string' ? patchData[k] : JSON.stringify(patchData[k]);
+            // Ignorer clés internes du fichier importé
+            if (INTERNAL_KEYS.has(k) || k.startsWith('__')) return;
+
+            // Normaliser la valeur du patch en string
+            const patchStr = typeof patchData[k] === 'string'
+                ? patchData[k]
+                : JSON.stringify(patchData[k]);
+
             if (merged[k] !== undefined) {
-                merged[k] = deepMerge(merged[k], patchVal);
+                merged[k] = mergeValues(merged[k], patchStr);
             } else {
-                merged[k] = patchVal;
+                merged[k] = patchStr;
             }
         });
 
         _pendingFusionResult = merged;
 
-        // Afficher un résumé lisible (pas le raw string)
+        // ── Aperçu lisible ──
         const preview = {};
         Object.keys(merged).forEach(k => {
             try { preview[k] = JSON.parse(merged[k]); } catch(e) { preview[k] = merged[k]; }
@@ -1095,11 +1118,23 @@ function onFusionFileSelected(input) {
 function saveFusion() {
     if (!_pendingFusionResult) return;
 
-    // Écrire chaque clé directement dans localStorage
-    // (on contourne l'interception StorageManager pour les clés internes)
+    // ── Écrire uniquement les clés applicatives dans localStorage ──
+    // Les clés de sauvegarde (__last_backup_*) sont PRÉSERVÉES (on ne les touche pas)
+    const SKIP = new Set(['__last_backup_file__', '__last_backup_idb__', '__weekly_alert_shown__']);
     Object.keys(_pendingFusionResult).forEach(k => {
-        try { localStorage.setItem(k, _pendingFusionResult[k]); } catch(e) {}
+        if (SKIP.has(k)) return;
+        try {
+            // Contourner l'interception StorageManager pour éviter les sauvegardes en cascade
+            Storage.prototype._setItem
+                ? Storage.prototype._setItem.call(localStorage, k, _pendingFusionResult[k])
+                : localStorage.setItem(k, _pendingFusionResult[k]);
+        } catch(ex) {}
     });
+
+    // Déclencher une sauvegarde IDB unique après la fusion complète
+    if (window.StorageManager && window.StorageManager.saveToIDB) {
+        window.StorageManager.saveToIDB();
+    }
 
     closeFusionModal();
     _pendingFusionResult = null;
@@ -1109,6 +1144,7 @@ function saveFusion() {
         t.textContent = '✓ Fusion appliquée — rechargement…';
         t.style.background = '#32a852';
         t.style.display = 'block';
+        t.style.opacity = '1';
     }
     setTimeout(() => { location.reload(); }, 900);
 }
@@ -1426,7 +1462,7 @@ function closeFusionModal() {
       transition: 'transform 0.15s ease',
       outline: 'none', padding: '0', position: 'relative'
     });
-    mainBtn.textContent = '☁️';
+    mainBtn.textContent = '💾';
 
     var dot = document.createElement('span');
     dot.id = '__sm_dot__';
@@ -1452,7 +1488,7 @@ function closeFusionModal() {
     });
 
     var panelTitle = document.createElement('div');
-    panelTitle.textContent = '☁️ Sauvegardes';
+    panelTitle.textContent = '💾 Sauvegardes';
     _applyStyles(panelTitle, {
       fontSize: '12px', fontWeight: '800', textTransform: 'uppercase',
       letterSpacing: '0.8px', opacity: '0.7', color: 'white',
