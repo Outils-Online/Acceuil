@@ -369,7 +369,10 @@
     <button class="close-iframe" onclick="closeIframe('iframe_ocr_lines')">✕ Fermer</button>
     <iframe data-src="pages/OCR-lines.html" allow="camera; microphone"></iframe>
 </div>
-
+<div id="iframe_local_lines" class="iframe-container">
+    <button class="close-iframe" onclick="closeIframe('iframe_local_lines')">FERMER X</button>
+    <iframe data-src="pages/Local-Lines.html" allow="camera; microphone"></iframe>
+</div>
 <div class="nav-shell">
     <div class="logo-box">
         <span class="logo-icon">🧰</span>
@@ -427,6 +430,12 @@
         <div>Ytlive-Lines</div>
         <div class="count-badge">0</div>
     </button>
+    <button class="btn-3d btn-blue" data-id="local-lines" data-main="perso" data-tags="local" onclick="openIframe('iframe_local_lines', this)">
+    <div class="btn-star">★</div>
+    <div class="favicon-badge">🏠</div>
+    <div>Local-Lines</div>
+    <div class="count-badge">0</div>
+</button>
     <button class="btn-3d btn-green"  data-id="calculette"     data-main="bureau"   data-tags="compta"    onclick="openIframe('iframe_calculette', this)">
         <div class="btn-star">★</div><div class="favicon-badge">🔢</div><div>Calculette</div><div class="count-badge">0</div>
     </button>
