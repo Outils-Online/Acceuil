@@ -173,6 +173,78 @@
         .fab-stats { background: var(--accent); }
 
         .theme-toggle { margin-top: 1rem; padding: 12px; width: 100%; border: 1px solid var(--border); background: var(--bg); border-radius: var(--radius); cursor: pointer; font-weight: 600; }
+
+        /* --- OCR CARDS --- */
+        .ocr-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 1.2rem;
+            box-shadow: var(--shadow);
+        }
+        .ocr-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.8rem;
+            gap: 1rem;
+        }
+        .ocr-source {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--accent);
+            flex-shrink: 0;
+        }
+        .ocr-page {
+            font-size: 0.7rem;
+            color: var(--ink-light);
+            background: var(--bg);
+            padding: 2px 8px;
+            border-radius: 20px;
+            flex-shrink: 0;
+        }
+        .ocr-text {
+            font-family: 'Libre Baskerville', serif;
+            font-size: 0.95rem;
+            line-height: 1.65;
+            color: var(--ink);
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .ocr-text mark {
+            background: var(--accent-light);
+            color: var(--ink);
+            border-radius: 2px;
+            padding: 0 2px;
+        }
+        .ocr-actions {
+            margin-top: 1rem;
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+        .ocr-empty {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--ink-muted);
+            font-size: 0.9rem;
+        }
+        .ocr-empty .ocr-empty-icon { font-size: 2.5rem; margin-bottom: 0.8rem; }
+        .ocr-stats-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 1.2rem;
+            font-size: 0.78rem;
+            color: var(--ink-muted);
+        }
+        .ocr-stat-pill {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 4px 12px;
+        }
     </style>
 </head>
 <body>
@@ -194,15 +266,17 @@
         <div class="filter-row">
             <button id="alphaBtn" class="sort-btn" onclick="toggleAlphaSort()" title="Tri Alphabétique">A-Z</button>
             <div class="type-filter">
-                <button class="filter-btn active" onclick="setFilter('all', this)">Tous</button>
-                <button class="filter-btn" onclick="setFilter('livre', this)">Livres</button>
-                <button class="filter-btn" onclick="setFilter('web', this)">Web</button>
-                <button class="filter-btn" onclick="setFilter('video', this)">Vidéos</button>
+                <button class="filter-btn active" onclick="setView('citations'); setFilter('all', this)">Tous</button>
+                <button class="filter-btn" onclick="setView('citations'); setFilter('livre', this)">Livres</button>
+                <button class="filter-btn" onclick="setView('citations'); setFilter('web', this)">Web</button>
+                <button class="filter-btn" onclick="setView('citations'); setFilter('video', this)">Vidéos</button>
+                <button class="filter-btn" id="ocrTabBtn" onclick="setView('ocr', this)">📷 OCR</button>
             </div>
         </div>
     </section>
 
     <div id="citationList"></div>
+    <div id="ocrList" style="display:none;"></div>
 </main>
 
 <div class="fab-container">
@@ -218,6 +292,8 @@
     
     let currentType = 'all';
     let isAlphaSort = false;
+    let currentView = 'citations'; // 'citations' | 'ocr'
+    let ocrSearch = '';
 
     function toggleDrawer() {
         document.getElementById('drawer').classList.toggle('open');
@@ -232,7 +308,8 @@
     function toggleAlphaSort() {
         isAlphaSort = !isAlphaSort;
         document.getElementById('alphaBtn').classList.toggle('active', isAlphaSort);
-        render();
+        if (currentView === 'citations') render();
+        else renderOCR();
     }
 
     function setFilter(type, btn) {
@@ -242,28 +319,39 @@
         render();
     }
 
+    function setView(view, btn) {
+        currentView = view;
+        document.getElementById('citationList').style.display = view === 'citations' ? '' : 'none';
+        document.getElementById('ocrList').style.display = view === 'ocr' ? '' : 'none';
+        document.getElementById('alphaBtn').style.display = view === 'ocr' ? 'none' : '';
+
+        if (view === 'ocr') {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('ocrTabBtn').classList.add('active');
+            document.getElementById('search').placeholder = 'Rechercher dans les textes OCR...';
+            renderOCR();
+        } else {
+            document.getElementById('search').placeholder = 'Rechercher...';
+        }
+    }
+
     function render() {
         const container = document.getElementById('citationList');
         const search = document.getElementById('search').value.toLowerCase();
         container.innerHTML = "";
 
-        // 1. Filtrage
         let list = citations.filter(c => {
             const matchesSearch = c.text.toLowerCase().includes(search);
             const matchesType = currentType === 'all' || c.typeLabel.toLowerCase().includes(currentType);
             return matchesSearch && matchesType;
         });
 
-        // 2. Tri
         if (isAlphaSort) {
-            // Tri A-Z sur le texte (ignorer la casse)
             list.sort((a, b) => a.text.localeCompare(b.text, 'fr', {sensitivity: 'base'}));
         } else {
-            // Tri par ID décroissant (plus récent d'abord)
             list.sort((a, b) => b.id - a.id);
         }
 
-        // 3. Affichage
         list.forEach(cite => {
             const card = document.createElement('div');
             card.className = "citation-card";
@@ -278,6 +366,136 @@
             container.appendChild(card);
         });
     }
+
+    /* ========== OCR ========== */
+
+    function loadOCRData() {
+        // Cherche toutes les clés du localStorage qui contiennent des données OCR
+        const results = [];
+        const knownOCRKeys = [];
+
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            try {
+                const raw = localStorage.getItem(key);
+                if (!raw) continue;
+                const parsed = JSON.parse(raw);
+
+                // Détecte les structures OCR : tableaux avec objets ayant "text" ou "texts"
+                if (Array.isArray(parsed)) {
+                    parsed.forEach((item, idx) => {
+                        // Format: [{source, texts:[{text, page}]}] ou [{text, page, source}]
+                        if (item && typeof item === 'object') {
+                            const source = item.source || item.title || item.name || key;
+
+                            if (Array.isArray(item.texts)) {
+                                item.texts.forEach(t => {
+                                    if (t && t.text) {
+                                        results.push({ source, page: t.page || t.p || '', text: t.text, storageKey: key });
+                                    }
+                                });
+                                knownOCRKeys.push(key);
+                            } else if (Array.isArray(item.pages)) {
+                                item.pages.forEach(p => {
+                                    const txt = p.text || p.content || '';
+                                    if (txt) results.push({ source, page: p.page || p.num || '', text: txt, storageKey: key });
+                                });
+                                knownOCRKeys.push(key);
+                            } else if (item.text && typeof item.text === 'string' && item.text.length > 30) {
+                                results.push({ source, page: item.page || item.p || '', text: item.text, storageKey: key });
+                            }
+                        }
+                    });
+                } else if (parsed && typeof parsed === 'object') {
+                    // Format objet direct: {source, texts:[...]}
+                    if (Array.isArray(parsed.texts)) {
+                        const source = parsed.source || parsed.title || key;
+                        parsed.texts.forEach(t => {
+                            if (t && t.text) results.push({ source, page: t.page || '', text: t.text, storageKey: key });
+                        });
+                        knownOCRKeys.push(key);
+                    }
+                }
+            } catch(e) { /* pas du JSON */ }
+        }
+
+        return results;
+    }
+
+    function highlight(text, query) {
+        if (!query) return text;
+        const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        return text.replace(new RegExp(`(${escaped})`, 'gi'), '<mark>$1</mark>');
+    }
+
+    function renderOCR() {
+        const container = document.getElementById('ocrList');
+        const search = document.getElementById('search').value.toLowerCase().trim();
+        container.innerHTML = '';
+
+        let data = loadOCRData();
+
+        if (data.length === 0) {
+            container.innerHTML = `
+                <div class="ocr-empty">
+                    <div class="ocr-empty-icon">📷</div>
+                    <strong>Aucune donnée OCR trouvée</strong>
+                    <p style="margin-top:0.5rem; font-size:0.82rem;">Les données OCR doivent être stockées dans le localStorage sous forme de tableaux avec des champs <code>text</code>.</p>
+                    <p style="margin-top:0.8rem; font-size:0.78rem; color:var(--ink-light);">Clés scannées : ${localStorage.length} entrées</p>
+                </div>`;
+            return;
+        }
+
+        // Filtrage
+        if (search) {
+            data = data.filter(d => d.text.toLowerCase().includes(search) || d.source.toLowerCase().includes(search));
+        }
+
+        // Tri
+        if (isAlphaSort) {
+            data.sort((a, b) => a.source.localeCompare(b.source, 'fr', {sensitivity: 'base'}));
+        }
+
+        // Stats
+        const sources = [...new Set(data.map(d => d.source))];
+        const statsBar = document.createElement('div');
+        statsBar.className = 'ocr-stats-bar';
+        statsBar.innerHTML = `
+            <span class="ocr-stat-pill">📄 ${data.length} passage${data.length > 1 ? 's' : ''}</span>
+            <span class="ocr-stat-pill">📚 ${sources.length} source${sources.length > 1 ? 's' : ''}</span>
+        `;
+        container.appendChild(statsBar);
+
+        if (data.length === 0) {
+            container.innerHTML += `<div class="ocr-empty"><div class="ocr-empty-icon">🔍</div><strong>Aucun résultat pour "${search}"</strong></div>`;
+            return;
+        }
+
+        data.forEach((item, idx) => {
+            const card = document.createElement('div');
+            card.className = 'ocr-card';
+            const displayText = highlight(item.text.replace(/</g, '&lt;').replace(/>/g, '&gt;'), search);
+            card.innerHTML = `
+                <div class="ocr-header">
+                    <span class="ocr-source">📷 ${item.source}</span>
+                    ${item.page ? `<span class="ocr-page">p. ${item.page}</span>` : ''}
+                </div>
+                <div class="ocr-text">${displayText}</div>
+                <div class="ocr-actions">
+                    <button onclick="copyOCR(${idx})" data-idx="${idx}" style="background:none; border:1px solid var(--accent); color:var(--accent); padding:5px 12px; border-radius:4px; font-weight:700; cursor:pointer; font-size:0.78rem;">COPIER</button>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+
+        // Stocker les données filtrées pour copie
+        window.__ocrRendered = data;
+    }
+
+    window.copyOCR = (idx) => {
+        const item = window.__ocrRendered[idx];
+        if (item) navigator.clipboard.writeText(item.text);
+    };
 
     window.copyText = (id) => {
         const c = citations.find(x => x.id == id);
@@ -296,6 +514,13 @@
             location.reload();
         }
     };
+
+    // Relancer le rendu OCR quand on tape dans la recherche
+    const origSearch = document.getElementById('search');
+    origSearch.addEventListener('input', () => {
+        if (currentView === 'ocr') renderOCR();
+        else render();
+    });
 
     function initStats() {
         document.getElementById('backupInfo').innerHTML = backupDate ? `Synchro : ${new Date(backupDate).toLocaleString('fr-FR')}` : 'Aucun backup';
