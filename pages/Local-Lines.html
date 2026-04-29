@@ -276,7 +276,25 @@
     </section>
 
     <div id="citationList"></div>
+
+    <!-- Contrôles spécifiques OCR (cachés par défaut) -->
+    <div id="ocrControls" style="display:none; margin-bottom:1rem;">
+        <select id="ocrSourceFilter" onchange="ocrState.sourceFiler = this.value; ocrState.page = 0; renderOCR();"
+            style="width:100%; padding:10px 14px; border:1.5px solid var(--border); border-radius:var(--radius-lg);
+                   background:var(--bg-card); color:var(--ink); font-size:0.85rem; font-family:'DM Sans',sans-serif;
+                   outline:none; cursor:pointer; box-shadow:var(--shadow);">
+            <option value="">— Toutes les sources —</option>
+        </select>
+    </div>
+
     <div id="ocrList" style="display:none;"></div>
+    <div id="ocrLoadMore" style="display:none; text-align:center; margin-bottom:2rem;">
+        <button onclick="ocrLoadMore()"
+            style="padding:10px 28px; border:1.5px solid var(--accent); border-radius:20px; background:none;
+                   color:var(--accent); font-weight:700; font-size:0.85rem; cursor:pointer;">
+            Charger plus…
+        </button>
+    </div>
 </main>
 
 <div class="fab-container">
@@ -323,12 +341,15 @@
         currentView = view;
         document.getElementById('citationList').style.display = view === 'citations' ? '' : 'none';
         document.getElementById('ocrList').style.display = view === 'ocr' ? '' : 'none';
+        document.getElementById('ocrControls').style.display = view === 'ocr' ? '' : 'none';
+        document.getElementById('ocrLoadMore').style.display = 'none';
         document.getElementById('alphaBtn').style.display = view === 'ocr' ? 'none' : '';
 
         if (view === 'ocr') {
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('ocrTabBtn').classList.add('active');
             document.getElementById('search').placeholder = 'Rechercher dans les textes OCR...';
+            ocrState.page = 0;
             renderOCR();
         } else {
             document.getElementById('search').placeholder = 'Rechercher...';
@@ -367,134 +388,203 @@
         });
     }
 
-    /* ========== OCR ========== */
+    /* ================================================================
+       OCR — Système v2
+       parseOCRData()  : lecture & structuration depuis ocr_history_v1
+       filterOCRData() : filtrage texte + source
+       renderOCR()     : rendu paginé (BATCH_SIZE items par lot)
+    ================================================================ */
 
-    function loadOCRData() {
-        // Cherche toutes les clés du localStorage qui contiennent des données OCR
+    const BATCH_SIZE = 20;
+
+    // État OCR centralisé
+    const ocrState = {
+        all: [],       // données brutes parsées (cache)
+        filtered: [],  // après filtres actifs
+        page: 0,       // lot courant
+        sourceFiler: '', // valeur du <select>
+    };
+
+    /**
+     * Lit ocr_history_v1 depuis le localStorage et retourne un tableau plat
+     * d'objets { text, page, source, meta, savedAt }.
+     * Chaque entry brute se termine par « p. XX » → extrait via regex.
+     */
+    function parseOCRData() {
+        const PAGE_RE = /\bp\.?\s*(\d+)\s*$/i;
+        const raw = localStorage.getItem('ocr_history_v1');
+        if (!raw) return [];
+
+        let parsed;
+        try { parsed = JSON.parse(raw); } catch { return []; }
+        if (!Array.isArray(parsed)) return [];
+
         const results = [];
-        const knownOCRKeys = [];
 
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            try {
-                const raw = localStorage.getItem(key);
-                if (!raw) continue;
-                const parsed = JSON.parse(raw);
+        for (const doc of parsed) {
+            if (!doc || typeof doc !== 'object') continue;
 
-                // Détecte les structures OCR : tableaux avec objets ayant "text" ou "texts"
-                if (Array.isArray(parsed)) {
-                    parsed.forEach((item, idx) => {
-                        // Format: [{source, texts:[{text, page}]}] ou [{text, page, source}]
-                        if (item && typeof item === 'object') {
-                            const source = item.source || item.title || item.name || key;
+            const meta    = doc.meta    || {};
+            const savedAt = doc.savedAt || '';
+            const source  = meta.title  || meta.auteur || meta.author || meta.name || 'Source inconnue';
+            const entries = Array.isArray(doc.entries) ? doc.entries : [];
 
-                            if (Array.isArray(item.texts)) {
-                                item.texts.forEach(t => {
-                                    if (t && t.text) {
-                                        results.push({ source, page: t.page || t.p || '', text: t.text, storageKey: key });
-                                    }
-                                });
-                                knownOCRKeys.push(key);
-                            } else if (Array.isArray(item.pages)) {
-                                item.pages.forEach(p => {
-                                    const txt = p.text || p.content || '';
-                                    if (txt) results.push({ source, page: p.page || p.num || '', text: txt, storageKey: key });
-                                });
-                                knownOCRKeys.push(key);
-                            } else if (item.text && typeof item.text === 'string' && item.text.length > 30) {
-                                results.push({ source, page: item.page || item.p || '', text: item.text, storageKey: key });
-                            }
-                        }
-                    });
-                } else if (parsed && typeof parsed === 'object') {
-                    // Format objet direct: {source, texts:[...]}
-                    if (Array.isArray(parsed.texts)) {
-                        const source = parsed.source || parsed.title || key;
-                        parsed.texts.forEach(t => {
-                            if (t && t.text) results.push({ source, page: t.page || '', text: t.text, storageKey: key });
-                        });
-                        knownOCRKeys.push(key);
-                    }
-                }
-            } catch(e) { /* pas du JSON */ }
+            for (const entry of entries) {
+                if (typeof entry !== 'string' || !entry.trim()) continue;
+
+                const match = PAGE_RE.exec(entry);
+                const page  = match ? match[1] : '';
+                // Supprime « p. XX » de fin pour l'affichage
+                const text  = entry.replace(PAGE_RE, '').trimEnd();
+
+                results.push({ text, page, source, meta, savedAt });
+            }
         }
 
         return results;
     }
 
-    function highlight(text, query) {
-        if (!query) return text;
-        const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        return text.replace(new RegExp(`(${escaped})`, 'gi'), '<mark>$1</mark>');
+    /**
+     * Filtre ocrState.all selon la recherche textuelle et le select source.
+     * Met à jour ocrState.filtered et remet page à 0.
+     */
+    function filterOCRData(search = '', source = '') {
+        const q = search.toLowerCase().trim();
+        ocrState.filtered = ocrState.all.filter(item => {
+            const matchText   = !q || item.text.toLowerCase().includes(q) || item.source.toLowerCase().includes(q);
+            const matchSource = !source || item.source === source;
+            return matchText && matchSource;
+        });
+        ocrState.page = 0;
     }
 
-    function renderOCR() {
-        const container = document.getElementById('ocrList');
-        const search = document.getElementById('search').value.toLowerCase().trim();
-        container.innerHTML = '';
-
-        let data = loadOCRData();
-
-        if (data.length === 0) {
-            container.innerHTML = `
-                <div class="ocr-empty">
-                    <div class="ocr-empty-icon">📷</div>
-                    <strong>Aucune donnée OCR trouvée</strong>
-                    <p style="margin-top:0.5rem; font-size:0.82rem;">Les données OCR doivent être stockées dans le localStorage sous forme de tableaux avec des champs <code>text</code>.</p>
-                    <p style="margin-top:0.8rem; font-size:0.78rem; color:var(--ink-light);">Clés scannées : ${localStorage.length} entrées</p>
-                </div>`;
-            return;
+    /** Popule le <select> avec les sources uniques */
+    function populateSourceSelect() {
+        const sel = document.getElementById('ocrSourceFilter');
+        const sources = [...new Set(ocrState.all.map(d => d.source))].sort((a, b) =>
+            a.localeCompare(b, 'fr', { sensitivity: 'base' })
+        );
+        // Vider sauf le premier option "Toutes"
+        while (sel.options.length > 1) sel.remove(1);
+        for (const s of sources) {
+            const opt = document.createElement('option');
+            opt.value = s;
+            opt.textContent = s;
+            sel.appendChild(opt);
         }
+    }
 
-        // Filtrage
-        if (search) {
-            data = data.filter(d => d.text.toLowerCase().includes(search) || d.source.toLowerCase().includes(search));
-        }
+    /** Échappe le HTML et surligne la query */
+    function highlight(rawText, query) {
+        const escaped = rawText.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        if (!query) return escaped;
+        const safe = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        return escaped.replace(new RegExp(`(${safe})`, 'gi'), '<mark>$1</mark>');
+    }
 
-        // Tri
-        if (isAlphaSort) {
-            data.sort((a, b) => a.source.localeCompare(b.source, 'fr', {sensitivity: 'base'}));
-        }
-
-        // Stats
-        const sources = [...new Set(data.map(d => d.source))];
-        const statsBar = document.createElement('div');
-        statsBar.className = 'ocr-stats-bar';
-        statsBar.innerHTML = `
-            <span class="ocr-stat-pill">📄 ${data.length} passage${data.length > 1 ? 's' : ''}</span>
-            <span class="ocr-stat-pill">📚 ${sources.length} source${sources.length > 1 ? 's' : ''}</span>
-        `;
-        container.appendChild(statsBar);
-
-        if (data.length === 0) {
-            container.innerHTML += `<div class="ocr-empty"><div class="ocr-empty-icon">🔍</div><strong>Aucun résultat pour "${search}"</strong></div>`;
-            return;
-        }
-
-        data.forEach((item, idx) => {
+    /** Construit et insère un lot de cartes OCR dans le container */
+    function appendOCRBatch(container, items, startIdx, search) {
+        const frag = document.createDocumentFragment();
+        for (let i = startIdx; i < items.length && i < startIdx + BATCH_SIZE; i++) {
+            const item = items[i];
             const card = document.createElement('div');
             card.className = 'ocr-card';
-            const displayText = highlight(item.text.replace(/</g, '&lt;').replace(/>/g, '&gt;'), search);
             card.innerHTML = `
                 <div class="ocr-header">
                     <span class="ocr-source">📷 ${item.source}</span>
                     ${item.page ? `<span class="ocr-page">p. ${item.page}</span>` : ''}
                 </div>
-                <div class="ocr-text">${displayText}</div>
+                <div class="ocr-text">${highlight(item.text, search)}</div>
                 <div class="ocr-actions">
-                    <button onclick="copyOCR(${idx})" data-idx="${idx}" style="background:none; border:1px solid var(--accent); color:var(--accent); padding:5px 12px; border-radius:4px; font-weight:700; cursor:pointer; font-size:0.78rem;">COPIER</button>
-                </div>
-            `;
-            container.appendChild(card);
-        });
-
-        // Stocker les données filtrées pour copie
-        window.__ocrRendered = data;
+                    <button data-global-idx="${i}"
+                        style="background:none; border:1px solid var(--accent); color:var(--accent);
+                               padding:5px 12px; border-radius:4px; font-weight:700; cursor:pointer; font-size:0.78rem;"
+                        onclick="copyOCR(this)">COPIER</button>
+                </div>`;
+            frag.appendChild(card);
+        }
+        container.appendChild(frag);
     }
 
-    window.copyOCR = (idx) => {
-        const item = window.__ocrRendered[idx];
-        if (item) navigator.clipboard.writeText(item.text);
+    /**
+     * Rendu principal OCR.
+     * Si reset=true (défaut), vide le container et repart du lot 0.
+     * Si reset=false, ajoute simplement le lot suivant (bouton "Charger plus").
+     */
+    function renderOCR(reset = true) {
+        const container    = document.getElementById('ocrList');
+        const loadMoreBtn  = document.getElementById('ocrLoadMore');
+        const search       = document.getElementById('search').value;
+
+        // Premier appel : charger & cacher les données
+        if (reset) {
+            if (ocrState.all.length === 0) {
+                ocrState.all = parseOCRData();
+                populateSourceSelect();
+            }
+            filterOCRData(search, ocrState.sourceFiler);
+            container.innerHTML = '';
+        }
+
+        const { filtered, page } = ocrState;
+
+        // Aucune donnée dans le storage
+        if (ocrState.all.length === 0) {
+            container.innerHTML = `
+                <div class="ocr-empty">
+                    <div class="ocr-empty-icon">📷</div>
+                    <strong>Aucune donnée OCR trouvée</strong>
+                    <p style="margin-top:.5rem;font-size:.82rem;">
+                        La clé <code>ocr_history_v1</code> est absente ou vide dans le localStorage.
+                    </p>
+                </div>`;
+            loadMoreBtn.style.display = 'none';
+            return;
+        }
+
+        // Stats bar (seulement au premier rendu du filtre)
+        if (page === 0) {
+            const allSources = [...new Set(filtered.map(d => d.source))];
+            const statsBar = document.createElement('div');
+            statsBar.className = 'ocr-stats-bar';
+            statsBar.innerHTML = `
+                <span class="ocr-stat-pill">📄 ${filtered.length} passage${filtered.length !== 1 ? 's' : ''}</span>
+                <span class="ocr-stat-pill">📚 ${allSources.length} source${allSources.length !== 1 ? 's' : ''}</span>`;
+            container.appendChild(statsBar);
+        }
+
+        // Aucun résultat après filtrage
+        if (filtered.length === 0) {
+            container.innerHTML += `
+                <div class="ocr-empty">
+                    <div class="ocr-empty-icon">🔍</div>
+                    <strong>Aucun résultat</strong>
+                </div>`;
+            loadMoreBtn.style.display = 'none';
+            return;
+        }
+
+        const startIdx = page * BATCH_SIZE;
+        appendOCRBatch(container, filtered, startIdx, search);
+        ocrState.page++;
+
+        // Afficher ou cacher le bouton "Charger plus"
+        loadMoreBtn.style.display = ocrState.page * BATCH_SIZE < filtered.length ? '' : 'none';
+    }
+
+    /** Appelé par le bouton "Charger plus" */
+    function ocrLoadMore() {
+        renderOCR(false);
+    }
+
+    window.copyOCR = (btn) => {
+        const idx = parseInt(btn.dataset.globalIdx, 10);
+        const item = ocrState.filtered[idx];
+        if (!item) return;
+        navigator.clipboard.writeText(`${item.text}${item.page ? ` (p. ${item.page})` : ''}`);
+        const orig = btn.textContent;
+        btn.textContent = '✓ COPIÉ';
+        setTimeout(() => { btn.textContent = orig; }, 1500);
     };
 
     window.copyText = (id) => {
@@ -515,11 +605,14 @@
         }
     };
 
-    // Relancer le rendu OCR quand on tape dans la recherche
-    const origSearch = document.getElementById('search');
-    origSearch.addEventListener('input', () => {
-        if (currentView === 'ocr') renderOCR();
-        else render();
+    // Relancer le rendu quand on tape dans la recherche
+    document.getElementById('search').addEventListener('input', () => {
+        if (currentView === 'ocr') {
+            ocrState.page = 0;
+            renderOCR(true);
+        } else {
+            render();
+        }
     });
 
     function initStats() {
