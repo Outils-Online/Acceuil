@@ -48,7 +48,6 @@ body {
   overflow-x: hidden;
 }
 
-/* ─── GRID NOISE BACKGROUND ─── */
 body::before {
   content: '';
   position: fixed; inset: 0;
@@ -57,7 +56,6 @@ body::before {
   pointer-events: none; z-index: 0;
 }
 
-/* ─── HEADER ─── */
 header {
   position: sticky; top: 0; z-index: 100;
   background: rgba(8,12,20,0.92);
@@ -88,7 +86,6 @@ header {
 .btn-ghost.accent-ghost { border-color: rgba(200,255,87,0.3); color: var(--accent); }
 .btn-ghost.accent-ghost:hover { background: var(--accent-dim); }
 
-/* ─── TABS ─── */
 .tab-strip {
   display: flex; gap: 4px;
   background: rgba(255,255,255,0.03);
@@ -118,12 +115,10 @@ header {
   font-size: 0.65rem;
 }
 
-/* ─── SECTIONS ─── */
 .section { display: none; padding: 16px; animation: fadeUp 0.3s ease; }
 .section.active { display: block; }
 @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
 
-/* ─── CARDS ─── */
 .card {
   background: var(--card);
   border: 1px solid var(--border);
@@ -139,12 +134,26 @@ header {
   font-size: 0.7rem; font-weight: 700;
   letter-spacing: 1.5px; text-transform: uppercase;
   color: var(--accent);
-  display: flex; align-items: center; gap: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 14px;
+  cursor: pointer;
+  user-select: none;
 }
-.card-title i { font-size: 0.8rem; opacity: 0.8; }
+.card-title .title-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-title i:first-child { font-size: 0.8rem; opacity: 0.8; }
+.card-title .toggle-icon {
+  transition: transform 0.2s;
+  font-size: 0.75rem;
+}
+.card.collapsed .card-body { display: none; }
+.card.collapsed .toggle-icon { transform: rotate(-90deg); }
 
-/* ─── FORM ELEMENTS ─── */
 .field-group { margin-bottom: 10px; }
 .field-label { font-size: 0.68rem; color: var(--text-muted); font-weight: 600; letter-spacing: 0.5px; margin-bottom: 5px; }
 input, select, textarea {
@@ -166,7 +175,6 @@ select option { background: var(--card); }
 .row { display: flex; gap: 8px; }
 .row > * { flex: 1; }
 
-/* ─── BUTTONS ─── */
 .btn {
   display: inline-flex; align-items: center; justify-content: center;
   gap: 7px; padding: 12px 16px;
@@ -199,7 +207,6 @@ select option { background: var(--card); }
 .btn-icon-edit { background: var(--primary-dim); color: var(--primary); border: 1px solid rgba(59,130,246,0.2); }
 .btn-icon-edit:hover { background: var(--primary); color: #fff; }
 
-/* ─── SESSION BANNER ─── */
 .session-banner {
   background: linear-gradient(135deg, #0d1a30, #0a1520);
   border: 1px solid rgba(59,130,246,0.25);
@@ -214,12 +221,12 @@ select option { background: var(--card); }
   border-radius: 3px;
 }
 .session-label { font-size: 0.62rem; font-weight: 700; letter-spacing: 1.5px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; }
-.session-text { font-size: 0.95rem; font-weight: 700; }
+.session-text { font-size: 0.95rem; font-weight: 700; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .session-text .tag {
-  display: inline-flex; align-items: center; gap: 4px;
+  display: inline-flex; align-items: center; gap: 6px;
   background: var(--primary-dim); border: 1px solid rgba(59,130,246,0.2);
-  color: var(--primary); border-radius: 6px;
-  padding: 2px 8px; font-size: 0.78rem; margin: 2px 3px 2px 0;
+  color: var(--primary); border-radius: 30px;
+  padding: 3px 10px; font-size: 0.78rem;
 }
 .session-tag-qty { font-weight: 900; color: var(--accent); }
 .session-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
@@ -230,7 +237,6 @@ select option { background: var(--card); }
 .btn-reset { background: none; border: none; color: var(--danger); font-size: 0.68rem; font-weight: 700; cursor: pointer; opacity: 0.7; }
 .btn-reset:hover { opacity: 1; }
 
-/* ─── LIST ITEMS ─── */
 .category-header {
   font-size: 0.62rem; font-weight: 800; letter-spacing: 2px;
   text-transform: uppercase; color: var(--accent);
@@ -254,13 +260,20 @@ select option { background: var(--card); }
 .list-item:hover { border-color: var(--border2); transform: translateY(-1px); }
 .list-item.done { opacity: 0.45; }
 .list-item.done .item-name { text-decoration: line-through; }
-.item-name { font-weight: 700; font-size: 0.9rem; display: block; }
-.item-cat { font-size: 0.62rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+.item-name { font-weight: 700; font-size: 0.9rem; display: inline-block; margin-right: 8px; }
+.recipe-dots { display: inline-flex; gap: 4px; align-items: center; }
+.recipe-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15);
+  flex-shrink: 0;
+}
 .qty-big { font-size: 1.5rem; font-weight: 900; color: var(--accent); display: block; text-align: center; line-height: 1.1; }
 .qty-unit { font-size: 0.62rem; color: var(--text-muted); text-align: center; display: block; }
 .item-actions { display: flex; gap: 6px; justify-content: flex-end; align-items: center; }
 
-/* ─── DRAG SORT ─── */
 .sortable-category {
   cursor: grab; display: flex; align-items: center;
   gap: 8px; background: var(--card2); border: 1px solid var(--border);
@@ -272,7 +285,6 @@ select option { background: var(--card); }
 .sortable-category.drag-over { border-color: var(--primary); background: var(--primary-dim); }
 .drag-handle { color: var(--text-muted); font-size: 0.9rem; }
 
-/* ─── RECIPE EDITOR ROWS ─── */
 .recipe-card {
   background: var(--surface);
   border: 1px solid var(--border2);
@@ -281,18 +293,36 @@ select option { background: var(--card); }
   margin-bottom: 8px;
   animation: itemIn 0.2s ease;
   position: relative;
+  transition: all 0.2s ease;
+}
+.recipe-card.collapsed .recipe-card-grid, 
+.recipe-card.collapsed .ing-cost-line { 
+  display: none; 
+}
+.recipe-card.collapsed {
+  padding: 8px 12px;
+  background: var(--card);
 }
 .recipe-card-header {
   display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+  cursor: pointer;
 }
+.recipe-card.collapsed .recipe-card-header { margin-bottom: 0; }
 .recipe-card-header .ac-wrapper { flex: 1; }
 .recipe-card-header input { margin: 0; font-weight: 700; }
+.recipe-card.collapsed .in-n { background: transparent; border-color: transparent; padding-left: 0; }
+
+.toggle-icon {
+  width: 24px; font-size: 0.7rem; color: var(--text-muted);
+  transition: transform 0.3s; text-align: center;
+}
+.recipe-card.collapsed .toggle-icon { transform: rotate(-90deg); }
+
 .recipe-card-grid {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr;
   gap: 6px;
 }
-.recipe-card-grid .field-sub { }
 .recipe-card-grid .field-sub label { font-size: 0.6rem; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px; display: block; margin-bottom: 3px; }
 .recipe-card-grid input, .recipe-card-grid select { padding: 8px; font-size: 0.82rem; margin: 0; }
 .ing-cost-line {
@@ -322,7 +352,6 @@ select option { background: var(--card); }
 .ac-item:hover { background: var(--primary-dim); }
 .ac-item span { color: var(--text-muted); font-size: 0.7rem; margin-left: 6px; }
 
-/* ─── CATALOG CARDS ─── */
 .catalog-card {
   background: var(--card); border: 1px solid var(--border);
   border-radius: var(--radius); padding: 14px 16px;
@@ -337,17 +366,91 @@ select option { background: var(--card); }
 .catalog-cost { font-size: 0.8rem; color: var(--amber); font-weight: 700; margin-top: 3px; }
 .catalog-actions { display: flex; gap: 6px; }
 
-/* ─── SEARCH ─── */
 .search-field {
-  position: relative; margin-bottom: 12px;
+  position: relative;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
-.search-field i {
+.search-field i:first-child {
   position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
   color: var(--text-muted); font-size: 0.85rem;
+  pointer-events: none;
 }
-.search-field input { padding-left: 36px; }
+.search-field input {
+  padding-left: 36px;
+  flex: 1;
+}
+.import-icon-btn {
+  background: var(--card2);
+  border: 1px solid var(--border2);
+  border-radius: 40px;
+  width: 42px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text-soft);
+  font-size: 1rem;
+}
+.import-icon-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-dim);
+}
 
-/* ─── TOAST ─── */
+/* Discret session bar */
+.session-bar {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 30px;
+  padding: 6px 12px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.session-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-soft);
+}
+.session-bar select {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 4px 24px 4px 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+}
+.session-bar button {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.7rem;
+  padding: 4px 6px;
+  border-radius: 20px;
+  transition: all 0.2s;
+}
+.session-bar button:hover {
+  background: var(--card2);
+  color: var(--text);
+}
+.session-bar .danger-btn:hover {
+  color: var(--danger);
+}
+
 #toast-container { position: fixed; bottom: 95px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .toast {
   background: var(--card2); border: 1px solid var(--border2);
@@ -364,7 +467,6 @@ select option { background: var(--card); }
 .toast.error { border-color: rgba(239,68,68,0.3); color: var(--danger); }
 .toast.info { border-color: rgba(59,130,246,0.3); color: var(--primary); }
 
-/* ─── BOTTOM NAV ─── */
 .bottom-nav {
   position: fixed; bottom: 0; left: 0; right: 0;
   height: 78px;
@@ -396,7 +498,6 @@ select option { background: var(--card); }
   min-width: 16px; text-align: center;
 }
 
-/* ─── EMPTY STATE ─── */
 .empty { text-align: center; padding: 40px 20px; color: var(--text-muted); }
 .empty i { font-size: 2.5rem; opacity: 0.3; margin-bottom: 12px; display: block; }
 .empty p { font-size: 0.85rem; }
@@ -416,38 +517,11 @@ select option { background: var(--card); }
   font-size: 0.72rem; font-weight: 700; color: var(--amber);
 }
 
-/* ─── IMPORT ZONE ─── */
-.import-zone {
-  border: 2px dashed var(--border2);
-  border-radius: var(--radius);
-  padding: 22px 16px;
-  text-align: center;
-  margin-bottom: 14px;
-  transition: all 0.25s;
-  display: flex; flex-direction: column; align-items: center; gap: 6px;
-  background: var(--surface);
+.tag .recipe-dot {
+  width: 10px; height: 10px;
+  margin-right: 5px;
 }
-.import-zone:hover, .import-zone.drag-active {
-  border-color: var(--primary);
-  background: var(--primary-dim);
-}
-.import-zone.drag-active { transform: scale(1.01); }
-.import-zone > i { font-size: 1.6rem; color: var(--text-muted); transition: color 0.2s; }
-.import-zone.drag-active > i { color: var(--primary); }
-.import-zone > span { font-size: 0.85rem; color: var(--text-soft); font-weight: 600; }
-.import-hint { font-size: 0.68rem !important; color: var(--text-muted) !important; font-weight: 400 !important; }
-.btn-import-pick {
-  margin-top: 6px;
-  display: inline-flex; align-items: center; gap: 6px;
-  background: var(--card2); border: 1px solid var(--border2);
-  color: var(--text-soft); padding: 7px 14px;
-  border-radius: var(--radius-sm); font-size: 0.75rem; font-weight: 700;
-  cursor: pointer; transition: all 0.2s;
-  font-family: var(--font-body);
-}
-.btn-import-pick:hover { border-color: var(--primary); color: var(--text); }
 
-/* ─── IMPORT MODAL ─── */
 .modal-overlay {
   position: fixed; inset: 0; z-index: 2000;
   background: rgba(0,0,0,0.72);
@@ -483,7 +557,6 @@ select option { background: var(--card); }
 .import-check { width: 20px; height: 20px; accent-color: var(--primary); cursor: pointer; flex-shrink: 0; }
 .modal-actions { display: flex; gap: 10px; margin-top: 16px; }
 .modal-actions .btn { flex: 1; }
-.import-error { background: var(--danger-dim); border: 1px solid rgba(239,68,68,0.2); border-radius: 10px; padding: 14px; font-size: 0.82rem; color: var(--danger); }
 </style>
 </head>
 <body>
@@ -505,113 +578,127 @@ select option { background: var(--card); }
   </div>
 </header>
 
-<!-- ── PROD VIEW ── -->
 <div id="sec-prod" class="section active">
-  <div class="card">
-    <div class="card-title"><i class="fa-solid fa-bolt"></i>Lancer une Production</div>
-    <div class="row" style="margin-bottom:10px;">
-      <div class="field-group" style="flex:2; margin:0">
-        <div class="field-label">Fiche technique</div>
-        <select id="prod-select"></select>
-      </div>
-      <div class="field-group" style="flex:1; margin:0">
-        <div class="field-label">Quantité</div>
-        <input type="number" id="prod-qty" value="1" min="1">
-      </div>
+  <!-- Barre discrète de sélection de liste -->
+  <div class="session-bar" id="session-bar-prod">
+    <div class="session-bar-left">
+      <i class="fa-solid fa-list-check"></i>
+      <span>Liste active :</span>
+      <select id="session-select-prod"></select>
     </div>
-    <div id="prod-cost-preview" style="margin-bottom:10px; display:none;">
-      <span class="cost-pill"><i class="fa-solid fa-euro-sign"></i> Coût estimé : <strong id="prod-cost-val">0.00 €</strong></span>
+    <div>
+      <button onclick="createNewSession()" title="Nouvelle liste"><i class="fa-solid fa-plus"></i></button>
+      <button onclick="renameCurrentSession()" title="Renommer"><i class="fa-solid fa-pen"></i></button>
+      <button class="danger-btn" onclick="deleteCurrentSession()" title="Supprimer"><i class="fa-solid fa-trash"></i></button>
     </div>
-    <button class="btn btn-primary" onclick="addProduction()"><i class="fa-solid fa-plus"></i> AJOUTER À LA SESSION</button>
   </div>
 
   <div class="card">
-    <div class="card-title"><i class="fa-solid fa-pen"></i>Article Hors-Fiche</div>
-    <div class="field-group">
-      <div class="field-label">Nom de l'article</div>
-      <input type="text" id="s-name" placeholder="ex: Sel fin" oninput="validateSingle()">
+    <div class="card-title">
+      <div class="title-left"><i class="fa-solid fa-bolt"></i> Lancer une Production</div>
     </div>
-    <div class="row" style="margin-bottom:10px;">
-      <div>
-        <div class="field-label">Quantité</div>
-        <input type="number" id="s-qty" placeholder="0" min="0" step="0.001">
+    <div class="card-body">
+      <div class="row" style="margin-bottom:10px;">
+        <div class="field-group" style="flex:2; margin:0">
+          <div class="field-label">Fiche technique</div>
+          <select id="prod-select"></select>
+        </div>
+        <div class="field-group" style="flex:1; margin:0">
+          <div class="field-label">Quantité</div>
+          <input type="number" id="prod-qty" value="1" min="1">
+        </div>
       </div>
-      <div>
-        <div class="field-label">Unité</div>
-        <select id="s-unit">
-          <option>kg</option><option>g</option><option>L</option><option>cl</option><option>pièce</option><option>boîte</option>
-        </select>
+      <div id="prod-cost-preview" style="margin-bottom:10px; display:none;">
+        <span class="cost-pill"><i class="fa-solid fa-euro-sign"></i> Coût estimé : <strong id="prod-cost-val">0.00 €</strong></span>
       </div>
-      <div>
-        <div class="field-label">Rayon</div>
-        <select id="s-cat">
-          <option>Fruits &amp; Légumes</option><option>Viandes</option><option>Poissons</option>
-          <option>Épicerie salée</option><option>Épicerie sucrée</option><option>Liquides</option>
-          <option>Produits frais</option><option>Surgelés</option><option>Autre</option>
-        </select>
-      </div>
+      <button class="btn btn-primary" onclick="addProduction()"><i class="fa-solid fa-plus"></i> AJOUTER À LA LISTE ACTIVE</button>
     </div>
-    <button class="btn btn-neutral" onclick="addSingle()"><i class="fa-solid fa-cart-plus"></i> AJOUTER SEUL</button>
+  </div>
+
+  <div class="card" id="card-single">
+    <div class="card-title" onclick="toggleCard(this)">
+      <div class="title-left"><i class="fa-solid fa-pen"></i> Article Hors-Fiche</div>
+      <i class="fa-solid fa-chevron-down toggle-icon"></i>
+    </div>
+    <div class="card-body">
+      <div class="field-group">
+        <div class="field-label">Nom de l'article</div>
+        <input type="text" id="s-name" placeholder="ex: Sel fin" oninput="validateSingle()">
+      </div>
+      <div class="row" style="margin-bottom:10px;">
+        <div>
+          <div class="field-label">Quantité</div>
+          <input type="number" id="s-qty" placeholder="0" min="0" step="0.001">
+        </div>
+        <div>
+          <div class="field-label">Unité</div>
+          <select id="s-unit">
+            <option>kg</option><option>g</option><option>L</option><option>cl</option><option>pièce</option><option>boîte</option>
+          </select>
+        </div>
+        <div>
+          <div class="field-label">Rayon</div>
+          <select id="s-cat">
+            <option>Fruits &amp; Légumes</option><option>Viandes</option><option>Poissons</option>
+            <option>Épicerie salée</option><option>Épicerie sucrée</option><option>Liquides</option>
+            <option>Produits frais</option><option>Surgelés</option><option>Autre</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-neutral" onclick="addSingle()"><i class="fa-solid fa-cart-plus"></i> AJOUTER SEUL</button>
+    </div>
   </div>
 </div>
 
-<!-- ── LIST VIEW ── -->
 <div id="sec-list" class="section">
   <div class="session-banner">
-    <div class="session-label">Session en cours</div>
+    <div class="session-label">Liste active : <span id="active-session-name"></span></div>
     <div id="session-text" class="session-text">—</div>
     <div class="session-footer">
       <div class="session-cost" id="session-cost-badge" style="display:none;">
         <i class="fa-solid fa-coins"></i> <span id="session-cost-total"></span>
       </div>
-      <button class="btn-reset" onclick="resetSession()">⟳ RÉINITIALISER</button>
+      <button class="btn-reset" onclick="resetSession()">⟳ VIDER LA LISTE</button>
     </div>
   </div>
   <div id="list-display"></div>
 </div>
 
-<!-- ── LABO VIEW ── -->
 <div id="sec-labo" class="section">
-  <div class="card">
-    <div class="card-title" id="labo-title"><i class="fa-solid fa-flask"></i>Créer une Fiche</div>
-    <div class="field-group">
-      <div class="field-label">Nom de la recette</div>
-      <input type="text" id="recipe-name" placeholder="ex: Burger Signature">
+  <div class="card" id="card-create-recipe">
+    <div class="card-title" onclick="toggleCard(this)">
+      <div class="title-left"><i class="fa-solid fa-flask"></i> Créer une Fiche</div>
+      <i class="fa-solid fa-chevron-down toggle-icon"></i>
     </div>
-    <div id="recipe-rows"></div>
-    <div id="recipe-total-cost" class="cost-pill" style="display:none; margin-bottom:12px;"><i class="fa-solid fa-coins"></i> </div>
-    <button class="btn btn-neutral" onclick="addRow()" style="margin-bottom:12px;">
-      <i class="fa-solid fa-plus"></i> Ajouter un ingrédient
-    </button>
-    <div class="row">
-      <button class="btn btn-success" onclick="saveRecipe()"><i class="fa-solid fa-floppy-disk"></i> ENREGISTRER</button>
-      <button class="btn btn-danger" id="btn-cancel" style="display:none;" onclick="cancelEdit()">ANNULER</button>
+    <div class="card-body">
+      <div class="field-group">
+        <div class="field-label">Nom de la recette</div>
+        <input type="text" id="recipe-name" placeholder="ex: Burger Signature">
+      </div>
+      <div id="recipe-rows"></div>
+      <div id="recipe-total-cost" class="cost-pill" style="display:none; margin-bottom:12px;"><i class="fa-solid fa-coins"></i> </div>
+      <div class="row" style="margin-bottom:12px;">
+        <button class="btn btn-neutral" onclick="addRow()"><i class="fa-solid fa-plus"></i> Ajouter un ingrédient</button>
+      </div>
+      <div class="row">
+        <button class="btn btn-success" onclick="saveRecipe()"><i class="fa-solid fa-floppy-disk"></i> ENREGISTRER</button>
+        <button class="btn btn-danger" id="btn-cancel" style="display:none;" onclick="cancelEdit()">ANNULER</button>
+      </div>
     </div>
-  </div>
-
-  <!-- IMPORT -->
-  <div class="import-zone" id="import-zone"
-    ondragover="event.preventDefault(); this.classList.add('drag-active')"
-    ondragleave="this.classList.remove('drag-active')"
-    ondrop="handleImportDrop(event)">
-    <i class="fa-solid fa-file-import"></i>
-    <span>Glisse un fichier <strong>JSON</strong> ici</span>
-    <span class="import-hint">Fiche unique · Tableau · Backup complet</span>
-    <label class="btn-import-pick">
-      <i class="fa-solid fa-folder-open"></i> Parcourir
-      <input type="file" accept=".json" style="display:none" onchange="handleImportFile(this)">
-    </label>
   </div>
 
   <div class="search-field">
     <i class="fa-solid fa-magnifying-glass"></i>
     <input type="text" id="labo-search" placeholder="Rechercher une fiche…" oninput="renderLabo()">
+    <div class="import-icon-btn" onclick="document.getElementById('discreet-import').click()" title="Importer des fiches JSON">
+      <i class="fa-solid fa-file-import"></i> 📂
+    </div>
+    <input type="file" id="discreet-import" accept=".json" style="display:none" onchange="handleImportFile(this)">
   </div>
 
   <div id="catalog-display"></div>
 </div>
 
-<!-- ── BOTTOM NAV ── -->
 <nav class="bottom-nav">
   <div class="nav-item active" id="nav-prod" onclick="switchView('prod')">
     <i class="fa-solid fa-rocket"></i>PROD
@@ -626,9 +713,7 @@ select option { background: var(--card); }
 </nav>
 
 <script>
-// ═══════════════════════════════════════════
-//  STATE
-// ═══════════════════════════════════════════
+// ======================== STATE WITH MULTIPLE SESSIONS ========================
 const DEFAULT_CATEGORIES = [
   'Fruits & Légumes','Viandes','Poissons','Produits frais',
   'Épicerie salée','Épicerie sucrée','Liquides','Surgelés','Autre'
@@ -638,8 +723,8 @@ let state = {
   view: 'prod',
   listMode: 'todo',
   editingId: null,
-  session: { recipes: {}, singles: 0, totalCost: 0 },
-  list: [],
+  sessions: {},
+  currentSessionId: null,
   recipes: [
     {
       id: 1, name: 'OVNI Burger',
@@ -655,7 +740,82 @@ let state = {
   categoryOrder: [...DEFAULT_CATEGORIES]
 };
 
-// ─── PERSISTENCE ───
+// Toggle collapsible cards
+function toggleCard(titleElement) {
+  const card = titleElement.closest('.card');
+  if (card) {
+    card.classList.toggle('collapsed');
+  }
+}
+
+function currentSession() {
+  if (!state.currentSessionId || !state.sessions[state.currentSessionId]) {
+    const id = 'default_' + Date.now();
+    state.sessions[id] = { id, name: 'Liste principale', recipes: {}, singles: 0, totalCost: 0, list: [] };
+    state.currentSessionId = id;
+  }
+  return state.sessions[state.currentSessionId];
+}
+
+function createNewSession() {
+  let name = prompt('Nom de la nouvelle liste :', 'Courses ' + (Object.keys(state.sessions).length+1));
+  if (!name) return;
+  const id = 'sess_' + Date.now();
+  state.sessions[id] = { id, name, recipes: {}, singles: 0, totalCost: 0, list: [] };
+  state.currentSessionId = id;
+  saveState();
+  renderSessionSelector();
+  render();
+  toast(`Liste "${name}" créée`);
+}
+
+function renameCurrentSession() {
+  const sess = currentSession();
+  const newName = prompt('Nouveau nom :', sess.name);
+  if (newName && newName.trim()) {
+    sess.name = newName.trim();
+    saveState();
+    renderSessionSelector();
+    render();
+    toast('Liste renommée');
+  }
+}
+
+function deleteCurrentSession() {
+  if (Object.keys(state.sessions).length <= 1) {
+    toast('Impossible de supprimer la seule liste restante', 'error');
+    return;
+  }
+  const sess = currentSession();
+  if (confirm(`Supprimer définitivement la liste "${sess.name}" ?`)) {
+    delete state.sessions[state.currentSessionId];
+    state.currentSessionId = Object.keys(state.sessions)[0];
+    saveState();
+    renderSessionSelector();
+    render();
+    toast(`Liste supprimée`);
+  }
+}
+
+function selectSession(id) {
+  if (state.sessions[id]) {
+    state.currentSessionId = id;
+    saveState();
+    render();
+  }
+}
+
+function renderSessionSelector() {
+  const selProd = document.getElementById('session-select-prod');
+  const activeNameSpan = document.getElementById('active-session-name');
+  if (selProd) {
+    const curId = state.currentSessionId;
+    selProd.innerHTML = Object.values(state.sessions).map(s => `<option value="${s.id}" ${s.id === curId ? 'selected' : ''}>${escapeHtml(s.name)}</option>`).join('');
+    selProd.onchange = (e) => selectSession(e.target.value);
+  }
+  if (activeNameSpan && currentSession()) activeNameSpan.innerText = currentSession().name;
+}
+
 function loadState() {
   try {
     const saved = localStorage.getItem('ovni_v9');
@@ -663,18 +823,51 @@ function loadState() {
       const parsed = JSON.parse(saved);
       state = { ...state, ...parsed };
       if (!state.categoryOrder || !state.categoryOrder.length) state.categoryOrder = [...DEFAULT_CATEGORIES];
+      if (!state.sessions || Object.keys(state.sessions).length === 0) {
+        const oldList = state.list || [];
+        const oldSession = state.session || { recipes: {}, singles: 0, totalCost: 0 };
+        const newId = 'sess_' + Date.now();
+        state.sessions = {
+          [newId]: {
+            id: newId,
+            name: 'Liste principale',
+            recipes: oldSession.recipes,
+            singles: oldSession.singles,
+            totalCost: oldSession.totalCost,
+            list: oldList
+          }
+        };
+        state.currentSessionId = newId;
+        delete state.list;
+        delete state.session;
+      }
+      if (!state.currentSessionId || !state.sessions[state.currentSessionId]) {
+        state.currentSessionId = Object.keys(state.sessions)[0];
+      }
+    } else {
+      const defaultId = 'sess_default';
+      state.sessions = {
+        [defaultId]: { id: defaultId, name: 'Liste principale', recipes: {}, singles: 0, totalCost: 0, list: [] }
+      };
+      state.currentSessionId = defaultId;
     }
   } catch(e) { console.warn('Load error', e); }
 }
 
 function saveState() {
-  try { localStorage.setItem('ovni_v9', JSON.stringify(state)); } catch(e) {}
+  const toStore = {
+    view: state.view,
+    listMode: state.listMode,
+    editingId: state.editingId,
+    sessions: state.sessions,
+    currentSessionId: state.currentSessionId,
+    recipes: state.recipes,
+    categoryOrder: state.categoryOrder
+  };
+  try { localStorage.setItem('ovni_v9', JSON.stringify(toStore)); } catch(e) {}
   render();
 }
 
-// ═══════════════════════════════════════════
-//  TOAST
-// ═══════════════════════════════════════════
 function toast(msg, type = 'success') {
   const el = document.createElement('div');
   el.className = `toast ${type}`;
@@ -684,9 +877,6 @@ function toast(msg, type = 'success') {
   setTimeout(() => { el.classList.add('hide'); setTimeout(() => el.remove(), 400); }, 2200);
 }
 
-// ═══════════════════════════════════════════
-//  NAVIGATION
-// ═══════════════════════════════════════════
 function switchView(v) {
   state.view = v;
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -706,9 +896,6 @@ function setMode(m) {
   render();
 }
 
-// ═══════════════════════════════════════════
-//  PRODUCTION
-// ═══════════════════════════════════════════
 function addProduction() {
   const name = document.getElementById('prod-select').value;
   const qty = parseInt(document.getElementById('prod-qty').value);
@@ -718,20 +905,19 @@ function addProduction() {
   const recipe = state.recipes.find(r => r.name === name);
   if (!recipe) return;
 
-  state.session.recipes[name] = (state.session.recipes[name] || 0) + qty;
-
-  // Calculate cost: recipeUnitCost = cost for 1 unit, multiply by production qty
+  const sess = currentSession();
+  sess.recipes[name] = (sess.recipes[name] || 0) + qty;
   const batchCost = recipeUnitCost(recipe) * qty;
 
   recipe.ingredients.forEach(ing => {
-    const exist = state.list.find(i => i.name === ing.name && i.unit === ing.unit);
+    const exist = sess.list.find(i => i.name === ing.name && i.unit === ing.unit);
     if (exist) { exist.qty = parseFloat((exist.qty + ing.qty * qty).toFixed(4)); exist.done = false; }
-    else state.list.push({ ...ing, qty: parseFloat((ing.qty * qty).toFixed(4)), done: false });
+    else sess.list.push({ ...ing, qty: parseFloat((ing.qty * qty).toFixed(4)), done: false });
   });
-  state.session.totalCost = (state.session.totalCost || 0) + batchCost;
+  sess.totalCost = (sess.totalCost || 0) + batchCost;
 
   saveState();
-  toast(`${qty}× ${name} ajouté${qty > 1 ? 's' : ''} ✓`);
+  toast(`${qty}× ${name} ajouté à "${sess.name}" ✓`);
 }
 
 function addSingle() {
@@ -739,50 +925,54 @@ function addSingle() {
   const qty = parseFloat(document.getElementById('s-qty').value);
   const unit = document.getElementById('s-unit').value;
   const cat = document.getElementById('s-cat').value;
-
   if (!name) return toast('Nom requis', 'error');
   if (isNaN(qty) || qty <= 0) return toast('Quantité invalide', 'error');
 
-  state.session.singles++;
-  const exist = state.list.find(i => i.name.toLowerCase() === name.toLowerCase() && i.unit === unit);
+  const sess = currentSession();
+  sess.singles = (sess.singles || 0) + 1;
+  const exist = sess.list.find(i => i.name.toLowerCase() === name.toLowerCase() && i.unit === unit);
   if (exist) { exist.qty = parseFloat((exist.qty + qty).toFixed(4)); exist.done = false; }
-  else state.list.push({ name, qty, unit, cat, done: false });
+  else sess.list.push({ name, qty, unit, cat, done: false });
 
   document.getElementById('s-name').value = '';
   document.getElementById('s-qty').value = '';
   saveState();
-  toast(`${name} ajouté`);
+  toast(`${name} ajouté à "${sess.name}"`);
 }
 
-function validateSingle() {}
-
 function resetSession() {
-  if (!confirm('Vider toute la liste de courses ?')) return;
-  state.list = [];
-  state.session = { recipes: {}, singles: 0, totalCost: 0 };
+  const sess = currentSession();
+  if (!confirm(`Vider toute la liste "${sess.name}" ?`)) return;
+  sess.list = [];
+  sess.recipes = {};
+  sess.singles = 0;
+  sess.totalCost = 0;
   saveState();
-  toast('Session réinitialisée', 'info');
+  toast('Liste réinitialisée', 'info');
 }
 
 function toggleItem(name, unit) {
-  const item = state.list.find(i => i.name === name && i.unit === unit);
+  const sess = currentSession();
+  const item = sess.list.find(i => i.name === name && i.unit === unit);
   if (item) { item.done = !item.done; saveState(); }
 }
 
 function delItem(name, unit) {
-  state.list = state.list.filter(i => !(i.name === name && i.unit === unit));
+  const sess = currentSession();
+  sess.list = sess.list.filter(i => !(i.name === name && i.unit === unit));
   saveState();
   toast('Article supprimé', 'info');
 }
 
-// ═══════════════════════════════════════════
-//  RECIPE EDITOR
-// ═══════════════════════════════════════════
+// ======================== RECIPE EDITOR ========================
+function toggleRow(header) {
+  const card = header.closest('.recipe-card');
+  card.classList.toggle('collapsed');
+}
+
 function addRow(data = {}) {
-  const cats = [
-    'Fruits & Légumes','Viandes','Poissons','Produits frais',
-    'Épicerie salée','Épicerie sucrée','Liquides','Surgelés','Autre'
-  ];
+  document.querySelectorAll('.recipe-card').forEach(c => c.classList.add('collapsed'));
+  const cats = DEFAULT_CATEGORIES;
   const units = ['kg','g','L','cl','ml','pièce','boîte','sachet','botte','tranche','portion','dose'];
   const catOpts = cats.map(c => `<option value="${c}" ${data.cat === c ? 'selected' : ''}>${c}</option>`).join('');
   const unitOpts = units.map(u => `<option value="${u}" ${data.unit === u ? 'selected' : ''}>${u}</option>`).join('');
@@ -790,37 +980,22 @@ function addRow(data = {}) {
   const div = document.createElement('div');
   div.className = 'recipe-card';
   div.innerHTML = `
-    <div class="recipe-card-header">
-      <div class="ac-wrapper" style="flex:1">
-        <input type="text" class="in-n" placeholder="Nom de l'ingrédient" value="${escHtml(data.name||'')}" oninput="handleAC(this); updateRowCost(this)">
+    <div class="recipe-card-header" onclick="toggleRow(this)">
+      <i class="fa-solid fa-chevron-down toggle-icon"></i>
+      <div class="ac-wrapper" style="flex:1" onclick="event.stopPropagation()">
+        <input type="text" class="in-n" placeholder="Nom de l'ingrédient" value="${escapeHtml(data.name||'')}" oninput="handleAC(this); updateRowCost(this)">
         <div class="ac-box"></div>
       </div>
-      <button class="btn-del-row" onclick="this.closest('.recipe-card').remove(); updateRecipeTotalCost()">×</button>
+      <button class="btn-del-row" onclick="event.stopPropagation(); this.closest('.recipe-card').remove(); updateRecipeTotalCost()">×</button>
     </div>
     <div class="recipe-card-grid">
-      <div class="field-sub">
-        <label>Quantité</label>
-        <input type="number" class="in-q" placeholder="0" step="0.001" min="0" value="${data.qty||''}" oninput="updateRowCost(this)">
-      </div>
-      <div class="field-sub">
-        <label>Unité</label>
-        <select class="in-u">${unitOpts}</select>
-      </div>
-      <div class="field-sub">
-        <label>Rayon</label>
-        <select class="in-c">${catOpts}</select>
-      </div>
-      <div class="field-sub">
-        <label>Prix (€) pour cette qté</label>
-        <input type="number" class="in-p" placeholder="0.00" step="0.001" min="0" value="${data.price != null && data.price > 0 ? data.price : ''}" oninput="updateRowCost(this)">
-      </div>
+      <div class="field-sub"><label>Quantité</label><input type="number" class="in-q" placeholder="0" step="0.001" min="0" value="${data.qty||''}" oninput="updateRowCost(this)"></div>
+      <div class="field-sub"><label>Unité</label><select class="in-u">${unitOpts}</select></div>
+      <div class="field-sub"><label>Rayon</label><select class="in-c">${catOpts}</select></div>
+      <div class="field-sub"><label>Prix (€) pour cette qté</label><input type="number" class="in-p" placeholder="0.00" step="0.001" min="0" value="${data.price != null && data.price > 0 ? data.price : ''}" oninput="updateRowCost(this)"></div>
     </div>
-    <div class="ing-cost-line">
-      <span style="font-size:0.65rem;color:var(--text-muted);">Coût de cet ingrédient</span>
-      <span class="ing-cost-preview">—</span>
-    </div>`;
-  document.getElementById('recipe-rows').appendChild(div);
-  // init cost display
+    <div class="ing-cost-line"><span style="font-size:0.65rem;color:var(--text-muted);">Coût de cet ingrédient</span><span class="ing-cost-preview">—</span></div>`;
+  document.getElementById('recipe-rows').prepend(div);
   updateRowCost(div.querySelector('.in-q'));
 }
 
@@ -834,9 +1009,7 @@ function handleAC(input) {
   }));
   const matches = known.filter(i => i.name.toLowerCase().includes(val)).slice(0, 5);
   if (matches.length) {
-    box.innerHTML = matches.map(m =>
-      `<div class="ac-item" onclick="selectAC(this,'${escAttr(m.name)}','${escAttr(m.unit)}','${escAttr(m.cat)}')">${escHtml(m.name)}<span>${m.unit} · ${m.cat}</span></div>`
-    ).join('');
+    box.innerHTML = matches.map(m => `<div class="ac-item" onclick="selectAC(this,'${escapeAttr(m.name)}','${escapeAttr(m.unit)}','${escapeAttr(m.cat)}')">${escapeHtml(m.name)}<span>${m.unit} · ${m.cat}</span></div>`).join('');
     box.style.display = 'block';
   } else { box.style.display = 'none'; }
 }
@@ -859,21 +1032,16 @@ function updateRowCost(input) {
 function updateRecipeTotalCost() {
   let total = 0;
   document.querySelectorAll('.recipe-card').forEach(card => {
-    const qty = parseFloat(card.querySelector('.in-q').value) || 0;
-    const price = parseFloat(card.querySelector('.in-p').value) || 0;
-    total += qty * price;
+    total += parseFloat(card.querySelector('.in-p').value) || 0;
   });
   const el = document.getElementById('recipe-total-cost');
   if (el) {
     if (total > 0) {
       el.innerHTML = `<i class="fa-solid fa-coins"></i> Coût total fiche : ${total.toFixed(2)} €`;
       el.style.display = 'inline-flex';
-    } else {
-      el.style.display = 'none';
-    }
+    } else { el.style.display = 'none'; }
   }
 }
-
 
 function selectAC(el, n, u, c) {
   const card = el.closest('.recipe-card');
@@ -887,16 +1055,12 @@ function selectAC(el, n, u, c) {
 }
 
 document.addEventListener('click', e => {
-  if (!e.target.closest('.ac-wrapper')) {
-    document.querySelectorAll('.ac-box').forEach(b => b.style.display = 'none');
-  }
+  if (!e.target.closest('.ac-wrapper')) document.querySelectorAll('.ac-box').forEach(b => b.style.display = 'none');
 });
 
 function saveRecipe() {
   const name = document.getElementById('recipe-name').value.trim();
   if (!name) return toast('Nom de fiche requis', 'error');
-
-  // Duplicate name check
   const dupCheck = state.recipes.find(r => r.name.toLowerCase() === name.toLowerCase() && r.id !== state.editingId);
   if (dupCheck) return toast('Ce nom existe déjà', 'error');
 
@@ -909,7 +1073,6 @@ function saveRecipe() {
     if (!n || isNaN(q) || q <= 0) { valid = false; return; }
     ings.push({ name: n, qty: q, unit: row.querySelector('.in-u').value, cat: row.querySelector('.in-c').value, price: p });
   });
-
   if (!valid) return toast('Vérifie les ingrédients (nom & quantité)', 'error');
   if (!ings.length) return toast('Ajoute au moins un ingrédient', 'error');
 
@@ -931,9 +1094,12 @@ function editRecipe(id) {
   state.editingId = id;
   document.getElementById('recipe-name').value = r.name;
   document.getElementById('recipe-rows').innerHTML = '';
-  r.ingredients.forEach(i => addRow(i));
-  document.getElementById('labo-title').innerHTML = `<i class="fa-solid fa-pen"></i>Modifier : ${escHtml(r.name)}`;
+  r.ingredients.slice().reverse().forEach(i => addRow(i));
+  document.getElementById('labo-title').innerHTML = `<i class="fa-solid fa-pen"></i>Modifier : ${escapeHtml(r.name)}`;
   document.getElementById('btn-cancel').style.display = '';
+  // open the create card if collapsed
+  const createCard = document.getElementById('card-create-recipe');
+  if (createCard.classList.contains('collapsed')) createCard.classList.remove('collapsed');
   document.getElementById('sec-labo').scrollIntoView({ behavior: 'smooth' });
 }
 
@@ -948,43 +1114,30 @@ function cancelEdit() {
   state.editingId = null;
   document.getElementById('recipe-name').value = '';
   document.getElementById('recipe-rows').innerHTML = '';
-  const costEl = document.getElementById('recipe-total-cost');
-  if (costEl) costEl.style.display = 'none';
+  document.getElementById('recipe-total-cost').style.display = 'none';
   document.getElementById('labo-title').innerHTML = `<i class="fa-solid fa-flask"></i>Créer une Fiche`;
   document.getElementById('btn-cancel').style.display = 'none';
   addRow();
 }
 
-// ═══════════════════════════════════════════
-//  DRAG-SORT CATEGORIES
-// ═══════════════════════════════════════════
+// ======================== DRAG SORT ========================
 let dragSrc = null;
-
 function buildSortView() {
+  const sess = currentSession();
   const container = document.getElementById('list-display');
   container.innerHTML = '';
-
   const header = document.createElement('div');
-  header.innerHTML = `<div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:10px;padding:0 2px;">
-    <i class="fa-solid fa-info-circle" style="color:var(--primary)"></i>
-    Glisse pour réorganiser les rayons
-  </div>`;
+  header.innerHTML = `<div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:10px;padding:0 2px;"><i class="fa-solid fa-info-circle" style="color:var(--primary)"></i> Glisse pour réorganiser les rayons</div>`;
   container.appendChild(header);
-
-  // Merge: existing categories from list + default order
-  const listCats = [...new Set(state.list.map(i => i.cat))];
+  const listCats = [...new Set(sess.list.map(i => i.cat))];
   const allCats = [...new Set([...state.categoryOrder, ...listCats, ...DEFAULT_CATEGORIES])];
-
   allCats.forEach(cat => {
     const div = document.createElement('div');
     div.className = 'sortable-category';
     div.draggable = true;
     div.dataset.cat = cat;
-    const count = state.list.filter(i => i.cat === cat).length;
-    div.innerHTML = `<span class="drag-handle"><i class="fa-solid fa-grip-lines"></i></span>
-      <span style="flex:1; font-weight:700; font-size:0.88rem;">${escHtml(cat)}</span>
-      ${count ? `<span style="font-size:0.7rem;color:var(--text-muted);">${count} article${count>1?'s':''}</span>` : ''}`;
-
+    const count = sess.list.filter(i => i.cat === cat).length;
+    div.innerHTML = `<span class="drag-handle"><i class="fa-solid fa-grip-lines"></i></span><span style="flex:1; font-weight:700; font-size:0.88rem;">${escapeHtml(cat)}</span>${count ? `<span style="font-size:0.7rem;color:var(--text-muted);">${count} article${count>1?'s':''}</span>` : ''}`;
     div.addEventListener('dragstart', () => { dragSrc = div; div.style.opacity = '0.4'; });
     div.addEventListener('dragend', () => { div.style.opacity = '1'; dragSrc = null; });
     div.addEventListener('dragover', e => { e.preventDefault(); div.classList.add('drag-over'); });
@@ -1005,136 +1158,74 @@ function buildSortView() {
   });
 }
 
-// ═══════════════════════════════════════════
-//  EXPORT
-// ═══════════════════════════════════════════
+// ======================== HELPERS ========================
+function convertToKgAndCeil(qty, unit) {
+  let value = qty;
+  let displayUnit = unit;
+  if (unit === 'g') { value = qty / 1000; displayUnit = 'kg'; }
+  else if (unit === 'kg') { value = qty; displayUnit = 'kg'; }
+  else if (unit === 'L' || unit === 'cl' || unit === 'ml') {
+    if (unit === 'cl') value = qty / 100;
+    else if (unit === 'ml') value = qty / 1000;
+    displayUnit = 'kg';
+  } else { displayUnit = unit; }
+  const rounded = Math.ceil(value * 100) / 100;
+  return { value: rounded, unit: displayUnit };
+}
+
+function hashCode(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) { hash = ((hash << 5) - hash) + str.charCodeAt(i); hash |= 0; }
+  return Math.abs(hash);
+}
+function recipeColor(recipeName) { return `hsl(${hashCode(recipeName) % 360}, 70%, 65%)`; }
+
 function exportJSON() {
   const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
   a.download = `ovni_backup_${dateStr()}.json`; a.click();
   toast('JSON exporté', 'info');
 }
-
 function exportPDF() {
-  if (!state.list.length) return toast('La liste est vide', 'error');
-
+  const sess = currentSession();
+  if (!sess.list.length) return toast('La liste est vide', 'error');
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-
-  // Header
-  doc.setFillColor(8, 12, 20);
-  doc.rect(0, 0, 210, 297, 'F');
-  doc.setTextColor(248, 250, 252);
-  doc.setFontSize(22);
-  doc.setFont('helvetica', 'bold');
-  doc.text('OVNI CONTROL', 14, 22);
-  doc.setFontSize(10);
-  doc.setTextColor(100, 116, 139);
-  doc.text('Liste de courses — ' + new Date().toLocaleDateString('fr-FR'), 14, 30);
-
-  // Session info
+  doc.setFillColor(8, 12, 20); doc.rect(0, 0, 210, 297, 'F');
+  doc.setTextColor(248, 250, 252); doc.setFontSize(22); doc.setFont('helvetica', 'bold'); doc.text('OVNI CONTROL', 14, 22);
+  doc.setFontSize(10); doc.setTextColor(100, 116, 139); doc.text('Liste de courses — ' + new Date().toLocaleDateString('fr-FR'), 14, 30);
+  doc.text(`Liste : ${sess.name}`, 14, 37);
   const sessionParts = [];
-  for (const [n, q] of Object.entries(state.session.recipes)) sessionParts.push(`${q}× ${n}`);
-  if (sessionParts.length) {
-    doc.setFontSize(8); doc.setTextColor(200, 255, 87);
-    doc.text('Session : ' + sessionParts.join(' · '), 14, 37);
-  }
-
-  // Cost
-  if (state.session.totalCost > 0) {
-    doc.setFontSize(8); doc.setTextColor(245, 158, 11);
-    doc.text(`Coût estimé : ${state.session.totalCost.toFixed(2)} €`, 14, 43);
-  }
-
-  // Group by category
+  for (const [n, q] of Object.entries(sess.recipes)) sessionParts.push(`${q}× ${n}`);
+  if (sessionParts.length) { doc.setFontSize(8); doc.setTextColor(200, 255, 87); doc.text('Productions : ' + sessionParts.join(' · '), 14, 44); }
+  if (sess.totalCost > 0) { doc.setFontSize(8); doc.setTextColor(245, 158, 11); doc.text(`Coût estimé : ${sess.totalCost.toFixed(2)} €`, 14, 51); }
   const grouped = {};
-  state.list.forEach(item => {
-    if (!grouped[item.cat]) grouped[item.cat] = [];
-    grouped[item.cat].push(item);
-  });
-
-  const ordered = state.categoryOrder.filter(c => grouped[c]).concat(
-    Object.keys(grouped).filter(c => !state.categoryOrder.includes(c))
-  );
-
-  let yOffset = 50;
+  sess.list.forEach(item => { if (!grouped[item.cat]) grouped[item.cat] = []; grouped[item.cat].push(item); });
+  const ordered = state.categoryOrder.filter(c => grouped[c]).concat(Object.keys(grouped).filter(c => !state.categoryOrder.includes(c)));
+  let yOffset = 58;
   ordered.forEach(cat => {
     if (!grouped[cat]) return;
-    const rows = grouped[cat].map(i => [
-      i.done ? '✓' : '□',
-      i.name,
-      `${formatQty(i.qty)} ${i.unit}`,
-      i.cat
-    ]);
-    doc.autoTable({
-      startY: yOffset,
-      head: [[{ content: cat, colSpan: 4, styles: { fillColor: [30, 41, 59], textColor: [200, 255, 87], fontStyle: 'bold', fontSize: 9 } }]],
-      body: rows,
-      columns: [
-        { header: '', dataKey: 0 },
-        { header: 'Article', dataKey: 1 },
-        { header: 'Quantité', dataKey: 2 },
-        { header: 'Rayon', dataKey: 3 }
-      ],
-      theme: 'plain',
-      styles: { fillColor: [13, 20, 32], textColor: [241, 245, 249], fontSize: 9, cellPadding: 3 },
-      alternateRowStyles: { fillColor: [17, 24, 39] },
-      margin: { left: 14, right: 14 },
-      didParseCell: (data) => {
-        if (data.row.raw && data.row.raw[0] === '✓') {
-          data.cell.styles.textColor = [100, 116, 139];
-        }
-      }
-    });
+    const rows = grouped[cat].map(i => [ i.done ? '✓' : '□', i.name, `${formatQty(i.qty)} ${i.unit}`, i.cat ]);
+    doc.autoTable({ startY: yOffset, head: [[{ content: cat, colSpan: 4, styles: { fillColor: [30, 41, 59], textColor: [200, 255, 87], fontStyle: 'bold', fontSize: 9 } }]], body: rows, columns: [ { header: '', dataKey: 0 }, { header: 'Article', dataKey: 1 }, { header: 'Quantité', dataKey: 2 }, { header: 'Rayon', dataKey: 3 } ], theme: 'plain', styles: { fillColor: [13, 20, 32], textColor: [241, 245, 249], fontSize: 9, cellPadding: 3 }, alternateRowStyles: { fillColor: [17, 24, 39] }, margin: { left: 14, right: 14 }, didParseCell: (data) => { if (data.row.raw && data.row.raw[0] === '✓') data.cell.styles.textColor = [100, 116, 139]; } });
     yOffset = doc.lastAutoTable.finalY + 6;
   });
-
   doc.save(`ovni_courses_${dateStr()}.pdf`);
   toast('PDF généré ✓');
 }
+function dateStr() { const d = new Date(); return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`; }
+function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escapeAttr(s) { return String(s).replace(/'/g, "\\'"); }
+function formatQty(n) { return parseFloat(n).toString().replace('.', ','); }
+function recipeUnitCost(recipe) { return recipe.ingredients.reduce((sum, i) => sum + (i.price || 0), 0); }
 
-function dateStr() {
-  const d = new Date();
-  return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
-}
-
-// ═══════════════════════════════════════════
-//  UTILS
-// ═══════════════════════════════════════════
-function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-function escAttr(s) { return String(s).replace(/'/g, "\\'"); }
-function formatQty(n) {
-  const s = parseFloat(n).toString();
-  return s.replace('.', ',');
-}
-function recipeUnitCost(recipe) {
-  // price field = cost for that ingredient's qty in one production unit
-  // e.g. 180g steak at price=1.20 means 1.20€ for 180g (not per gram)
-  return recipe.ingredients.reduce((sum, i) => sum + (i.price || 0), 0);
-}
-
-// ═══════════════════════════════════════════
-//  RENDER
-// ═══════════════════════════════════════════
-function render() {
-  renderProdView();
-  renderListView();
-  renderLabo();
-  renderNav();
-}
-
+// ======================== RENDERS ========================
 function renderProdView() {
   const sel = document.getElementById('prod-select');
   if (!sel) return;
   const cur = sel.value;
-  sel.innerHTML = state.recipes.length
-    ? state.recipes.map(r => `<option ${r.name===cur?'selected':''}>${escHtml(r.name)}</option>`).join('')
-    : '<option disabled>Aucune fiche</option>';
+  sel.innerHTML = state.recipes.length ? state.recipes.map(r => `<option ${r.name===cur?'selected':''}>${escapeHtml(r.name)}</option>`).join('') : '<option disabled>Aucune fiche</option>';
   updateCostPreview();
 }
-
 function updateCostPreview() {
   const name = document.getElementById('prod-select')?.value;
   const qty = parseInt(document.getElementById('prod-qty')?.value) || 0;
@@ -1143,274 +1234,136 @@ function updateCostPreview() {
   const val = document.getElementById('prod-cost-val');
   if (recipe && qty > 0) {
     const cost = recipeUnitCost(recipe) * qty;
-    if (cost > 0) {
-      val.textContent = `${cost.toFixed(2)} €`;
-      preview.style.display = '';
-      return;
-    }
+    if (cost > 0) { val.textContent = `${cost.toFixed(2)} €`; preview.style.display = ''; return; }
   }
   preview.style.display = 'none';
 }
-
-document.addEventListener('change', e => {
-  if (e.target.id === 'prod-select' || e.target.id === 'prod-qty') updateCostPreview();
-});
-document.addEventListener('input', e => {
-  if (e.target.id === 'prod-qty') updateCostPreview();
-});
+document.addEventListener('change', e => { if (e.target.id === 'prod-select' || e.target.id === 'prod-qty') updateCostPreview(); });
+document.addEventListener('input', e => { if (e.target.id === 'prod-qty') updateCostPreview(); });
 
 function renderListView() {
   if (state.view !== 'list') return;
   if (state.listMode === 'sort') { buildSortView(); return; }
-
-  // Session banner
+  const sess = currentSession();
   const parts = [];
-  for (const [n, q] of Object.entries(state.session.recipes))
-    parts.push(`<span class="tag"><span class="session-tag-qty">${q}×</span> ${escHtml(n)}</span>`);
-  if (state.session.singles > 0)
-    parts.push(`<span class="tag"><span class="session-tag-qty">${state.session.singles}</span> manuelle${state.session.singles>1?'s':''}</span>`);
-
+  for (const [n, q] of Object.entries(sess.recipes)) {
+    const color = recipeColor(n);
+    parts.push(`<span class="tag"><span class="recipe-dot" style="background:${color};"></span><span class="session-tag-qty">${q}×</span> ${escapeHtml(n)}</span>`);
+  }
+  if (sess.singles > 0) parts.push(`<span class="tag"><span class="recipe-dot" style="background:#64748b;"></span><span class="session-tag-qty">${sess.singles}</span> manuelle${sess.singles>1?'s':''}</span>`);
   document.getElementById('session-text').innerHTML = parts.length ? parts.join('') : '<span style="color:var(--text-muted);font-size:0.85rem;">Aucune production lancée</span>';
-
   const costBadge = document.getElementById('session-cost-badge');
-  if (state.session.totalCost > 0) {
-    document.getElementById('session-cost-total').textContent = state.session.totalCost.toFixed(2) + ' €';
-    costBadge.style.display = 'flex';
-  } else { costBadge.style.display = 'none'; }
-
-  // Counts
-  document.getElementById('cnt-todo').textContent = state.list.filter(i => !i.done).length;
-  document.getElementById('cnt-done').textContent = state.list.filter(i => i.done).length;
-
+  if (sess.totalCost > 0) { document.getElementById('session-cost-total').textContent = sess.totalCost.toFixed(2) + ' €'; costBadge.style.display = 'flex'; } else { costBadge.style.display = 'none'; }
+  document.getElementById('cnt-todo').textContent = sess.list.filter(i => !i.done).length;
+  document.getElementById('cnt-done').textContent = sess.list.filter(i => i.done).length;
   const display = document.getElementById('list-display');
   display.innerHTML = '';
+  const items = sess.list.filter(i => i.done === (state.listMode === 'done'));
+  if (!items.length) { display.innerHTML = `<div class="empty"><i class="fa-solid fa-${state.listMode==='done'?'check-double':'list-check'}"></i><p>${state.listMode==='done'?'Aucun article coché':'La liste est vide'}</p></div>`; return; }
 
-  const items = state.list.filter(i => i.done === (state.listMode === 'done'));
-
-  if (!items.length) {
-    display.innerHTML = `<div class="empty"><i class="fa-solid fa-${state.listMode==='done'?'check-double':'list-check'}"></i><p>${state.listMode==='done'?'Aucun article coché':'La liste est vide'}</p></div>`;
-    return;
-  }
-
-  // Group by ordered categories
+  const producedRecipeNames = new Set(Object.keys(sess.recipes));
   const grouped = {};
   items.forEach(i => { grouped[i.cat] = grouped[i.cat] || []; grouped[i.cat].push(i); });
-
-  const ordered = state.categoryOrder.filter(c => grouped[c]).concat(
-    Object.keys(grouped).filter(c => !state.categoryOrder.includes(c))
-  );
+  const ordered = state.categoryOrder.filter(c => grouped[c]).concat(Object.keys(grouped).filter(c => !state.categoryOrder.includes(c)));
 
   ordered.forEach(cat => {
     if (!grouped[cat]) return;
-    display.innerHTML += `<div class="category-header">${escHtml(cat)}</div>`;
+    display.innerHTML += `<div class="category-header">${escapeHtml(cat)}</div>`;
     grouped[cat].forEach(item => {
-      const key = `${escAttr(item.name)}|${escAttr(item.unit)}`;
-      display.innerHTML += `
-        <div class="list-item ${item.done ? 'done' : ''}">
-          <div>
-            <span class="item-name">${escHtml(item.name)}</span>
-            <span class="item-cat">${escHtml(item.cat)}</span>
-          </div>
-          <div>
-            <span class="qty-big">${formatQty(item.qty)}</span>
-            <span class="qty-unit">${escHtml(item.unit)}</span>
-          </div>
-          <div class="item-actions">
-            <button class="btn-icon btn-icon-check" onclick="toggleItem('${escAttr(item.name)}','${escAttr(item.unit)}')">
-              <i class="fa-solid fa-${item.done ? 'rotate-left' : 'check'}"></i>
-            </button>
-            <button class="btn-icon btn-icon-trash" onclick="delItem('${escAttr(item.name)}','${escAttr(item.unit)}')">
-              <i class="fa-solid fa-trash"></i>
-            </button>
-          </div>
-        </div>`;
+      const relatedRecipes = state.recipes.filter(recipe => producedRecipeNames.has(recipe.name) && recipe.ingredients.some(ing => ing.name === item.name && ing.unit === item.unit));
+      const dotsHtml = relatedRecipes.map(recipe => `<span class="recipe-dot" style="background:${recipeColor(recipe.name)};" title="${escapeAttr(recipe.name)}"></span>`).join('');
+      const converted = convertToKgAndCeil(item.qty, item.unit);
+      const displayQty = converted.value.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(',', '.');
+      display.innerHTML += `<div class="list-item ${item.done ? 'done' : ''}"><div><span class="item-name">${escapeHtml(item.name)}</span><span class="recipe-dots">${dotsHtml}</span></div><div><span class="qty-big">${displayQty}</span><span class="qty-unit">${converted.unit}</span></div><div class="item-actions"><button class="btn-icon btn-icon-check" onclick="toggleItem('${escapeAttr(item.name)}','${escapeAttr(item.unit)}')"><i class="fa-solid fa-${item.done ? 'rotate-left' : 'check'}"></i></button><button class="btn-icon btn-icon-trash" onclick="delItem('${escapeAttr(item.name)}','${escapeAttr(item.unit)}')"><i class="fa-solid fa-trash"></i></button></div></div>`;
     });
   });
 }
 
 function renderLabo() {
   const q = (document.getElementById('labo-search')?.value || '').toLowerCase();
-  const filtered = q
-    ? state.recipes.filter(r => r.name.toLowerCase().includes(q))
-    : state.recipes;
-
+  const filtered = q ? state.recipes.filter(r => r.name.toLowerCase().includes(q)) : state.recipes;
   const container = document.getElementById('catalog-display');
   if (!container) return;
-
-  if (!filtered.length) {
-    container.innerHTML = `<div class="empty"><i class="fa-solid fa-book-open"></i><p>${q ? 'Aucun résultat' : 'Aucune fiche créée'}</p></div>`;
-    return;
-  }
-
+  if (!filtered.length) { container.innerHTML = `<div class="empty"><i class="fa-solid fa-book-open"></i><p>${q ? 'Aucun résultat' : 'Aucune fiche créée'}</p></div>`; return; }
   container.innerHTML = filtered.map(r => {
     const cost = recipeUnitCost(r);
-    return `
-    <div class="catalog-card">
-      <div>
-        <div class="catalog-name">${escHtml(r.name)}</div>
-        <div class="catalog-meta">${r.ingredients.length} ingrédient${r.ingredients.length>1?'s':''}</div>
-        ${cost > 0 ? `<div class="catalog-cost"><i class="fa-solid fa-euro-sign" style="font-size:0.7rem"></i> ${cost.toFixed(2)} € / unité</div>` : ''}
-      </div>
-      <div class="catalog-actions">
-        <button class="btn-icon btn-icon-edit" onclick="editRecipe(${r.id})"><i class="fa-solid fa-pen"></i></button>
-        <button class="btn-icon btn-icon-trash" onclick="deleteRecipe(${r.id})"><i class="fa-solid fa-trash"></i></button>
-      </div>
-    </div>`;
+    return `<div class="catalog-card"><div><div class="catalog-name">${escapeHtml(r.name)}</div><div class="catalog-meta">${r.ingredients.length} ingrédient${r.ingredients.length>1?'s':''}</div>${cost > 0 ? `<div class="catalog-cost"><i class="fa-solid fa-euro-sign" style="font-size:0.7rem"></i> ${cost.toFixed(2)} € / unité</div>` : ''}</div><div class="catalog-actions"><button class="btn-icon btn-icon-edit" onclick="editRecipe(${r.id})"><i class="fa-solid fa-pen"></i></button><button class="btn-icon btn-icon-trash" onclick="deleteRecipe(${r.id})"><i class="fa-solid fa-trash"></i></button></div></div>`;
   }).join('');
 }
-
 function renderNav() {
-  const todoCount = state.list.filter(i => !i.done).length;
+  const sess = currentSession();
+  const todoCount = sess.list.filter(i => !i.done).length;
   const badge = document.getElementById('nav-badge');
-  if (todoCount > 0) { badge.textContent = todoCount; badge.style.display = ''; }
-  else { badge.style.display = 'none'; }
+  if (todoCount > 0) { badge.textContent = todoCount; badge.style.display = ''; } else { badge.style.display = 'none'; }
 }
 
-// ═══════════════════════════════════════════
-//  IMPORT JSON
-// ═══════════════════════════════════════════
-function handleImportDrop(e) {
-  e.preventDefault();
-  document.getElementById('import-zone').classList.remove('drag-active');
-  const file = e.dataTransfer.files[0];
-  if (!file || !file.name.endsWith('.json')) return toast('Fichier JSON requis', 'error');
-  readImportFile(file);
+function render() {
+  renderSessionSelector();
+  renderProdView();
+  renderListView();
+  renderLabo();
+  renderNav();
 }
 
+// ======================== IMPORT JSON ========================
 function handleImportFile(input) {
   const file = input.files[0];
   if (!file) return;
   readImportFile(file);
-  input.value = ''; // reset so same file can be re-selected
+  input.value = '';
 }
-
 function readImportFile(file) {
   const reader = new FileReader();
   reader.onload = e => {
     try {
       const data = JSON.parse(e.target.result);
       const recipes = parseImportedRecipes(data);
-      if (!recipes.length) return toast('Aucune fiche valide trouvée', 'error');
+      if (!recipes.length) { toast('Aucune fiche valide trouvée', 'error'); return; }
       showImportModal(recipes);
-    } catch(err) {
-      toast('Fichier JSON invalide', 'error');
-    }
+    } catch(err) { toast('Fichier JSON invalide', 'error'); }
   };
   reader.readAsText(file);
 }
-
 function parseImportedRecipes(data) {
-  // Support 3 formats:
-  // 1. Full backup: { recipes: [...] }
-  // 2. Array of recipes: [{ name, ingredients }, ...]
-  // 3. Single recipe: { name, ingredients: [...] }
   let candidates = [];
-
-  if (data && Array.isArray(data.recipes)) {
-    candidates = data.recipes;
-  } else if (Array.isArray(data)) {
-    candidates = data;
-  } else if (data && typeof data === 'object' && data.name) {
-    candidates = [data];
-  }
-
-  return candidates.filter(r =>
-    r && typeof r.name === 'string' && r.name.trim() &&
-    Array.isArray(r.ingredients) && r.ingredients.length > 0
-  ).map(r => ({
-    id: r.id || Date.now() + Math.random(),
-    name: r.name.trim(),
-    ingredients: r.ingredients.map(i => ({
-      name: i.name || '',
-      qty: parseFloat(i.qty) || 0,
-      unit: i.unit || 'pièce',
-      cat: i.cat || 'Autre',
-      price: parseFloat(i.price) || 0
-    })).filter(i => i.name && i.qty > 0)
-  })).filter(r => r.ingredients.length > 0);
+  if (data && Array.isArray(data.recipes)) candidates = data.recipes;
+  else if (Array.isArray(data)) candidates = data;
+  else if (data && typeof data === 'object' && data.name && Array.isArray(data.ingredients)) candidates = [data];
+  return candidates.filter(r => r && typeof r.name === 'string' && r.name.trim() && Array.isArray(r.ingredients) && r.ingredients.length > 0).map(r => ({ id: r.id || Date.now() + Math.random(), name: r.name.trim(), ingredients: r.ingredients.map(i => ({ name: i.name || '', qty: parseFloat(i.qty) || 0, unit: i.unit || 'pièce', cat: i.cat || 'Autre', price: parseFloat(i.price) || 0 })).filter(i => i.name && i.qty > 0) })).filter(r => r.ingredients.length > 0);
 }
-
 function showImportModal(recipes) {
-  const existing = new Set(state.recipes.map(r => r.name.toLowerCase()));
-
+  const existingNames = new Set(state.recipes.map(r => r.name.toLowerCase()));
   const itemsHtml = recipes.map((r, idx) => {
-    const isExisting = existing.has(r.name.toLowerCase());
     const cost = r.ingredients.reduce((s, i) => s + (i.price || 0), 0);
     const costText = cost > 0 ? ` · ${cost.toFixed(2)} €` : '';
-    const badge = isExisting
-      ? `<span class="badge-exists"><i class="fa-solid fa-triangle-exclamation"></i> Existe déjà</span>`
-      : `<span class="badge-new"><i class="fa-solid fa-plus"></i> Nouveau</span>`;
-    return `
-      <label class="import-recipe-item" style="cursor:pointer">
-        <input type="checkbox" class="import-check" data-idx="${idx}" ${isExisting ? '' : 'checked'}>
-        <div class="info">
-          <div class="name">${escHtml(r.name)}</div>
-          <div class="meta">${r.ingredients.length} ingrédient${r.ingredients.length>1?'s':''}${costText}</div>
-          <div>${badge}</div>
-        </div>
-      </label>`;
+    const exists = existingNames.has(r.name.toLowerCase());
+    const badge = exists ? `<span class="badge-exists"><i class="fa-solid fa-triangle-exclamation"></i> Existe déjà</span>` : `<span class="badge-new"><i class="fa-solid fa-plus"></i> Nouveau</span>`;
+    return `<label class="import-recipe-item"><input type="checkbox" class="import-check" data-idx="${idx}" ${exists ? '' : 'checked'}><div class="info"><div class="name">${escapeHtml(r.name)}</div><div class="meta">${r.ingredients.length} ingrédient${r.ingredients.length>1?'s':''}${costText}</div><div>${badge}</div></div></label>`;
   }).join('');
-
-  const modal = document.createElement('div');
-  modal.className = 'modal-overlay';
-  modal.id = 'import-modal';
-  modal.innerHTML = `
-    <div class="modal-sheet">
-      <div class="modal-handle"></div>
-      <div class="modal-title"><i class="fa-solid fa-file-import" style="color:var(--primary);margin-right:8px;"></i>${recipes.length} fiche${recipes.length>1?'s':''} détectée${recipes.length>1?'s':''}</div>
-      <div class="modal-sub">Sélectionne les fiches à importer. Les fiches existantes seront <strong style="color:var(--amber)">écrasées</strong> si cochées.</div>
-      <div id="import-list">${itemsHtml}</div>
-      <div class="modal-actions">
-        <button class="btn btn-neutral" onclick="closeImportModal()">Annuler</button>
-        <button class="btn btn-success" onclick="confirmImport(${JSON.stringify(recipes).replace(/</g,'\\u003c')})">
-          <i class="fa-solid fa-check"></i> Importer la sélection
-        </button>
-      </div>
-    </div>`;
-
-  // Close on overlay click
+  const modal = document.createElement('div'); modal.className = 'modal-overlay'; modal.id = 'import-modal';
+  modal.innerHTML = `<div class="modal-sheet"><div class="modal-handle"></div><div class="modal-title"><i class="fa-solid fa-file-import" style="color:var(--primary);margin-right:8px;"></i>${recipes.length} fiche${recipes.length>1?'s':''} détectée${recipes.length>1?'s':''}</div><div class="modal-sub">Sélectionne les fiches à importer. Les fiches existantes seront <strong style="color:var(--amber)">écrasées</strong> si cochées.</div><div id="import-list">${itemsHtml}</div><div class="modal-actions"><button class="btn btn-neutral" onclick="closeImportModal()">Annuler</button><button class="btn btn-success" id="confirm-import-btn">Importer la sélection</button></div></div>`;
   modal.addEventListener('click', e => { if (e.target === modal) closeImportModal(); });
   document.body.appendChild(modal);
+  document.getElementById('confirm-import-btn').onclick = () => confirmImport(recipes);
 }
-
 function confirmImport(recipes) {
-  const checked = [...document.querySelectorAll('.import-check:checked')].map(c => parseInt(c.dataset.idx));
-  if (!checked.length) return toast('Aucune fiche sélectionnée', 'error');
-
+  const checks = document.querySelectorAll('#import-modal .import-check');
+  const selectedIndices = []; checks.forEach(cb => { if (cb.checked) selectedIndices.push(parseInt(cb.dataset.idx)); });
+  if (selectedIndices.length === 0) { toast('Aucune fiche sélectionnée', 'error'); return; }
   let added = 0, replaced = 0;
-  checked.forEach(idx => {
+  selectedIndices.forEach(idx => {
     const r = recipes[idx];
-    const existIdx = state.recipes.findIndex(x => x.name.toLowerCase() === r.name.toLowerCase());
-    if (existIdx >= 0) {
-      state.recipes[existIdx] = { ...r, id: state.recipes[existIdx].id };
-      replaced++;
-    } else {
-      state.recipes.push({ ...r, id: Date.now() + Math.random() });
-      added++;
-    }
+    const existingIdx = state.recipes.findIndex(x => x.name.toLowerCase() === r.name.toLowerCase());
+    if (existingIdx >= 0) { state.recipes[existingIdx] = { ...r, id: state.recipes[existingIdx].id }; replaced++; }
+    else { state.recipes.push({ ...r, id: Date.now() + Math.random() }); added++; }
   });
-
-  closeImportModal();
-  saveState();
-
-  const parts = [];
-  if (added) parts.push(`${added} ajoutée${added>1?'s':''}`);
-  if (replaced) parts.push(`${replaced} mise${replaced>1?'s':''} à jour`);
-  toast(parts.join(', ') + ' ✓');
+  closeImportModal(); saveState();
+  const msgParts = []; if (added) msgParts.push(`${added} ajoutée${added>1?'s':''}`); if (replaced) msgParts.push(`${replaced} mise${replaced>1?'s':''} à jour`);
+  toast(msgParts.join(', ') + ' ✓', 'success');
 }
+function closeImportModal() { const modal = document.getElementById('import-modal'); if (modal) modal.remove(); }
 
-function closeImportModal() {
-  const el = document.getElementById('import-modal');
-  if (el) el.remove();
-}
-
-
-function init() {
-  loadState();
-  cancelEdit();
-  render();
-}
-
+function init() { loadState(); cancelEdit(); render(); }
 init();
 </script>
 </body>

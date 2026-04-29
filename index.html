@@ -368,10 +368,15 @@
     <button class="close-iframe" onclick="closeIframe('iframe_ocr_lines')">✕ Fermer</button>
     <iframe data-src="pages/OCR-lines.html" allow="camera; microphone"></iframe>
 </div>
+<div id="iframe_course_lines" class="iframe-container">
+    <button class="close-iframe" onclick="closeIframe('iframe_course_lines')">✕ Fermer</button>
+    <iframe src="pages/Course-Lines.html" allow="camera; microphone"></iframe>
+</div>
 <div id="iframe_local_lines" class="iframe-container">
     <button class="close-iframe" onclick="closeIframe('iframe_local_lines')">FERMER X</button>
     <iframe data-src="pages/Local-Lines.html" allow="camera; microphone"></iframe>
 </div>
+
 <div class="nav-shell">
     <div class="logo-box">
         <span class="logo-icon">🧰</span>
@@ -415,6 +420,12 @@
         <div class="btn-star">★</div>
         <div class="favicon-badge rainbow-mode"><span>📷</span></div>
         <div>Reçu-Lines</div>
+        <div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-purple" data-id="course-lines" data-main="bureau" data-tags="admin" onclick="openIframe('iframe_course_lines', this)">
+        <div class="btn-star">★</div>
+        <div class="favicon-badge"><span>🛒</span></div>
+        <div>Course-Lines</div>
         <div class="count-badge">0</div>
     </button>
     <button class="btn-3d btn-blue" data-id="cite-lines" data-main="bureau" data-tags="recherche" onclick="openIframe('iframe_cite_lines', this)">
