@@ -429,8 +429,58 @@
     let ocrCancelled = false;
     let videoRect = { x: 0, y: 0, w: 0, h: 0 };
 
+    // ── localStorage ─────────────────────────────────────────────────────────
+    const LS_KEY = "ocr_history_v1";
+
+    function lsSave(meta = null) {
+        try {
+            const existing = lsLoadRaw();
+            const session = {
+                savedAt: new Date().toISOString(),
+                meta,
+                entries: historyData
+            };
+            // Append : conserve les sessions précédentes
+            const sessions = Array.isArray(existing) ? existing : [];
+            sessions.push(session);
+            localStorage.setItem(LS_KEY, JSON.stringify(sessions));
+        } catch(e) {
+            console.warn("localStorage indisponible :", e);
+        }
+    }
+
+    function lsLoadRaw() {
+        try {
+            const raw = localStorage.getItem(LS_KEY);
+            if (!raw) return null;
+            return JSON.parse(raw);
+        } catch(e) {
+            console.warn("Erreur lecture localStorage :", e);
+            return null;
+        }
+    }
+
+    function lsLoad() {
+        try {
+            const sessions = lsLoadRaw();
+            if (!Array.isArray(sessions) || sessions.length === 0) return;
+            // Restaure la dernière session
+            const last = sessions[sessions.length - 1];
+            if (last && Array.isArray(last.entries) && last.entries.length > 0) {
+                historyData = last.entries;
+                updateCount();
+            }
+        } catch(e) {
+            console.warn("Erreur restauration localStorage :", e);
+        }
+    }
+
     // ── Caméra ────────────────────────────────────────────────────────────────
-    window.onload = () => initCamera();
+    // MODIF : lsLoad() appelé au démarrage pour restaurer la dernière session
+    window.onload = () => {
+        lsLoad();
+        initCamera();
+    };
 
     async function initCamera() {
         try {
@@ -515,11 +565,28 @@
         };
     }
 
+    // MODIF : double contour (blanc halo + violet vif) + glow — lisible fond sombre ET clair
     function drawRect(p) {
         sctx.clearRect(0, 0, selectCanvas.width, selectCanvas.height);
+        const rx = startX, ry = startY, rw = p.x - startX, rh = p.y - startY;
+
+        // Contour extérieur blanc (halo de lisibilité)
+        sctx.strokeStyle = "rgba(255, 255, 255, 0.85)";
+        sctx.lineWidth   = 9;
+        sctx.shadowColor = "rgba(255, 255, 255, 0.4)";
+        sctx.shadowBlur  = 8;
+        sctx.strokeRect(rx, ry, rw, rh);
+
+        // Contour intérieur violet vif avec glow
         sctx.strokeStyle = "#4b4be6";
-        sctx.lineWidth   = 3;
-        sctx.strokeRect(startX, startY, p.x - startX, p.y - startY);
+        sctx.lineWidth   = 4;
+        sctx.shadowColor = "rgba(75, 75, 230, 0.9)";
+        sctx.shadowBlur  = 14;
+        sctx.strokeRect(rx, ry, rw, rh);
+
+        // Reset shadow pour ne pas polluer les autres rendus
+        sctx.shadowColor = "transparent";
+        sctx.shadowBlur  = 0;
     }
 
     // ── Touch ─────────────────────────────────────────────────────────────────
@@ -770,6 +837,9 @@
         const annee      = document.getElementById('metaAnnee').value.trim();
 
         if (!prenom || !titre) return alert("Prénom Nom et Titre sont requis.");
+
+        // MODIF : sauvegarde localStorage avant export
+        lsSave({ prenom, titre, ville, editeur, collection, annee });
 
         closeMetaModal();
 
