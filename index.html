@@ -300,6 +300,10 @@
         .fusion-btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
         .fusion-btn-row .btn-3d { min-height: 44px; flex: 1; min-width: 100px; }
 
+        /* Drop zone fusion */
+        #fusionDropZone:hover { border-color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.04); }
+        #fusionDropZone.drag-over { border-color: var(--primary); background: rgba(75,75,230,0.1); }
+
         @media (max-width: 768px) {
             .nav-shell { grid-template-columns: auto 1fr; padding: 6px 12px; }
             .logo-text-stack, .spacer { display: none; }
@@ -465,9 +469,7 @@
     <button id="btnAddPerso" class="btn-3d hidden" style="border:2px dashed rgba(255,255,255,0.2);background:none" onclick="openTool('addModal')">
         <div style="font-size:30px">+</div><div>Ajouter</div>
     </button>
-    
 </div>
-
 
 <!-- MODAL AJOUT PERSO -->
 <div id="addModal" class="modal">
@@ -490,19 +492,46 @@
 </div>
 
 <!-- ══ NOUVEAU : MODAL FUSION ══ -->
+<!-- input file en dehors du modal pour éviter les conflits de z-index/pointer -->
+<input type="file" id="fusionFileInput" accept=".json" style="display:none;" onchange="onFusionFileSelected(this)">
+
 <div id="fusionModal" class="modal">
-    <div class="box-content" style="max-width:560px;">
-        <h3 style="margin-bottom:6px">🔀 Fusionner des données JSON</h3>
-        <p style="font-size:11px;opacity:0.5;margin-bottom:14px;">Collez un JSON à fusionner avec les données existantes (<code>fusionJSON</code> dans localStorage).</p>
-        <textarea id="fusionInput" class="fusion-textarea" placeholder='{"clics":{"mon-outil":5},"favs":["id1","id2"]}'></textarea>
+    <div class="box-content" style="max-width:480px;">
+        <h3 style="margin-bottom:8px">🔀 Fusionner un backup JSON</h3>
+        <p style="font-size:11px;opacity:0.55;margin-bottom:18px;line-height:1.6;">
+            Chargez un fichier <code>backup-app.json</code>.<br>
+            Ses données seront <strong>fusionnées</strong> avec votre localStorage actuel<br>
+            (nombres additionnés · tableaux combinés · autres valeurs remplacées).
+        </p>
+
+        <!-- Bouton de sélection de fichier — onclick direct sur l'input -->
+        <div id="fusionDropZone"
+             onclick="document.getElementById('fusionFileInput').click()"
+             style="display:flex;flex-direction:column;align-items:center;justify-content:center;
+                    gap:10px;padding:28px 16px;border:2px dashed rgba(255,255,255,0.25);
+                    border-radius:16px;cursor:pointer;transition:0.2s;margin-bottom:14px;
+                    background:rgba(255,255,255,0.03);">
+            <span style="font-size:36px;pointer-events:none">📂</span>
+            <span id="fusionFileName"
+                  style="font-size:12px;font-weight:700;opacity:0.75;pointer-events:none;text-align:center;">
+                Appuyez ici pour choisir un fichier JSON
+            </span>
+            <span style="font-size:10px;opacity:0.4;pointer-events:none">(ou glissez-déposez)</span>
+        </div>
+
+        <!-- Résultat preview -->
         <div id="fusionResultBox" class="fusion-result-box">
             <pre id="fusionResultPre"></pre>
         </div>
         <div class="fusion-btn-row">
-            <button class="btn-3d btn-blue" onclick="previewFusion()">👁️ Prévisualiser</button>
-            <button class="btn-3d btn-green" id="btnSaveFusion" style="display:none;" onclick="saveFusion()">💾 Sauvegarder</button>
+            <button class="btn-3d btn-green" id="btnSaveFusion" style="display:none;" onclick="saveFusion()">
+                💾 Appliquer la fusion
+            </button>
         </div>
-        <button onclick="closeTool('fusionModal')" style="margin-top:14px;background:none;border:none;color:#777;width:100%;cursor:pointer;font-family:inherit;">Annuler</button>
+        <button onclick="closeFusionModal()"
+                style="margin-top:14px;background:none;border:none;color:#777;width:100%;cursor:pointer;font-family:inherit;">
+            Annuler
+        </button>
     </div>
 </div>
 
@@ -561,6 +590,37 @@ window.onload = () => {
     setMode(mode);
     document.getElementById('mainGrid').style.visibility = 'visible';
     checkWeeklyAlert();
+    // Drag & drop sur la zone fusion
+    const dz = document.getElementById('fusionDropZone');
+    if (dz) {
+        dz.addEventListener('dragover', e => {
+            e.preventDefault(); e.stopPropagation();
+            dz.style.borderColor = 'var(--primary)';
+            dz.style.background  = 'rgba(75,75,230,0.1)';
+        });
+        dz.addEventListener('dragleave', () => {
+            dz.style.borderColor = 'rgba(255,255,255,0.25)';
+            dz.style.background  = 'rgba(255,255,255,0.03)';
+        });
+        dz.addEventListener('drop', e => {
+            e.preventDefault(); e.stopPropagation();
+            dz.style.borderColor = 'rgba(255,255,255,0.25)';
+            dz.style.background  = 'rgba(255,255,255,0.03)';
+            const dropped = e.dataTransfer.files;
+            if (dropped && dropped.length) {
+                const fi = document.getElementById('fusionFileInput');
+                if (fi) {
+                    try {
+                        const dt = new DataTransfer();
+                        dt.items.add(dropped[0]);
+                        fi.files = dt.files;
+                    } catch(err) {}
+                }
+                // Appel direct avec le File object (contourne l'input si DataTransfer échoue)
+                onFusionFileDirect(dropped[0]);
+            }
+        });
+    }
 };
 
 function initUI() {
@@ -918,76 +978,159 @@ function renderMultiviewGrid() {
 /* ══════════════════════════════════════════════
    FUSION JSON — Deep Merge
 ══════════════════════════════════════════════ */
-function deepMerge(base, patch) {
-    if (base === undefined || base === null) return patch;
-    if (patch === undefined || patch === null) return base;
-    if (typeof base === 'object' && !Array.isArray(base) &&
-        typeof patch === 'object' && !Array.isArray(patch)) {
-        const result = Object.assign({}, base);
-        Object.keys(patch).forEach(key => { result[key] = deepMerge(base[key], patch[key]); });
-        return result;
+
+/**
+ * deepMerge(base, patch)
+ * - Objets  → fusion récursive
+ * - Nombres → addition
+ * - Tableaux → concat + déduplication (id > text > valeur brute)
+ * - Autres  → patch écrase base
+ *
+ * IMPORTANT : base et patch sont des objets "localStorage sérialisé"
+ * dont les valeurs sont des STRING (JSON.stringify de chaque clé).
+ * On désérialise chaque valeur avant de fusionner, puis on resérialise.
+ */
+function deepMerge(baseVal, patchVal) {
+    // Tenter de désérialiser si c'est une string JSON
+    function tryParse(v) {
+        if (typeof v !== 'string') return v;
+        try { return JSON.parse(v); } catch(e) { return v; }
     }
-    if (typeof base === 'number' && typeof patch === 'number') return base + patch;
-    if (Array.isArray(base) && Array.isArray(patch)) {
-        const seen = new Map();
-        return base.concat(patch).filter(item => {
-            let key;
-            if (item && typeof item === 'object') {
-                key = item.id !== undefined ? 'id:' + item.id
-                    : item.text !== undefined ? 'text:' + item.text
-                    : 'json:' + JSON.stringify(item);
-            } else {
-                key = 'val:' + item;
-            }
-            if (seen.has(key)) return false;
-            seen.set(key, true);
-            return true;
-        });
+    function tryStringify(v) {
+        if (typeof v === 'string') return v;
+        return JSON.stringify(v);
     }
-    return patch;
+
+    const base  = tryParse(baseVal);
+    const patch = tryParse(patchVal);
+
+    function merge(b, p) {
+        if (b === undefined || b === null) return p;
+        if (p === undefined || p === null) return b;
+        if (typeof b === 'object' && !Array.isArray(b) &&
+            typeof p === 'object' && !Array.isArray(p)) {
+            const r = Object.assign({}, b);
+            Object.keys(p).forEach(k => { r[k] = merge(b[k], p[k]); });
+            return r;
+        }
+        if (typeof b === 'number' && typeof p === 'number') return b + p;
+        if (Array.isArray(b) && Array.isArray(p)) {
+            const seen = new Map();
+            return b.concat(p).filter(item => {
+                let key;
+                if (item && typeof item === 'object') {
+                    key = item.id !== undefined ? 'id:' + item.id
+                        : item.text !== undefined ? 'text:' + item.text
+                        : 'json:' + JSON.stringify(item);
+                } else { key = 'val:' + item; }
+                if (seen.has(key)) return false;
+                seen.set(key, true); return true;
+            });
+        }
+        return p; // patch écrase base
+    }
+
+    const merged = merge(base, patch);
+    return tryStringify(merged);
 }
 
-let _pendingFusionResult = null;
+let _pendingFusionResult = null; // { clé: valeur_string, ... } prêt à écrire dans localStorage
 
-function previewFusion() {
-    const input = document.getElementById('fusionInput').value.trim();
-    if (!input) { alert('Veuillez coller un JSON valide dans le champ.'); return; }
-    let patchData;
-    try { patchData = JSON.parse(input); }
-    catch(e) { alert('JSON invalide : ' + e.message); return; }
+/* Appelé quand l'utilisateur choisit un fichier */
+function onFusionFileSelected(input) {
+    const file = input.files && input.files[0];
+    if (!file) return;
 
-    let baseData;
-    const existing = localStorage.getItem('fusionJSON');
-    if (existing) {
-        try { baseData = JSON.parse(existing); } catch(e) { baseData = {}; }
-    } else {
-        baseData = {};
+    const label = document.getElementById('fusionFileName');
+    label.textContent = file.name;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        let patchData;
+        try {
+            const raw = e.target.result.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
+            patchData = JSON.parse(raw);
+            if (typeof patchData !== 'object' || patchData === null) throw new Error('Format invalide');
+        } catch(err) {
+            alert('Fichier JSON invalide : ' + err.message);
+            return;
+        }
+
+        // Base = localStorage actuel (toutes les clés non-internes)
+        const baseData = {};
         for (let i = 0; i < localStorage.length; i++) {
             const k = localStorage.key(i);
-            if (!k.startsWith('__')) baseData[k] = localStorage.getItem(k);
+            if (!k.startsWith('__') && k !== '__last_backup_file__' && k !== '__last_backup_idb__') {
+                baseData[k] = localStorage.getItem(k);
+            }
         }
-    }
-    _pendingFusionResult = deepMerge(baseData, patchData);
-    document.getElementById('fusionResultPre').textContent = JSON.stringify(_pendingFusionResult, null, 2);
-    document.getElementById('fusionResultBox').style.display = 'block';
-    document.getElementById('btnSaveFusion').style.display = '';
+
+        // Fusionner clé par clé
+        const merged = Object.assign({}, baseData);
+        Object.keys(patchData).forEach(k => {
+            if (k.startsWith('__')) return; // ignorer clés internes du patch
+            const patchVal = typeof patchData[k] === 'string' ? patchData[k] : JSON.stringify(patchData[k]);
+            if (merged[k] !== undefined) {
+                merged[k] = deepMerge(merged[k], patchVal);
+            } else {
+                merged[k] = patchVal;
+            }
+        });
+
+        _pendingFusionResult = merged;
+
+        // Afficher un résumé lisible (pas le raw string)
+        const preview = {};
+        Object.keys(merged).forEach(k => {
+            try { preview[k] = JSON.parse(merged[k]); } catch(e) { preview[k] = merged[k]; }
+        });
+        document.getElementById('fusionResultPre').textContent = JSON.stringify(preview, null, 2);
+        document.getElementById('fusionResultBox').style.display = 'block';
+        document.getElementById('btnSaveFusion').style.display = '';
+    };
+    reader.onerror = function() { alert('Impossible de lire le fichier.'); };
+    reader.readAsText(file);
 }
 
 function saveFusion() {
     if (!_pendingFusionResult) return;
-    localStorage.setItem('fusionJSON', JSON.stringify(_pendingFusionResult));
-    closeTool('fusionModal');
+
+    // Écrire chaque clé directement dans localStorage
+    // (on contourne l'interception StorageManager pour les clés internes)
+    Object.keys(_pendingFusionResult).forEach(k => {
+        try { localStorage.setItem(k, _pendingFusionResult[k]); } catch(e) {}
+    });
+
+    closeFusionModal();
     _pendingFusionResult = null;
-    document.getElementById('fusionInput').value = '';
-    document.getElementById('fusionResultBox').style.display = 'none';
-    document.getElementById('btnSaveFusion').style.display = 'none';
+
     const t = document.getElementById('__sm_toast__') || document.getElementById('mvToast');
     if (t) {
-        t.textContent = '✓ Fusion sauvegardée dans fusionJSON';
+        t.textContent = '✓ Fusion appliquée — rechargement…';
         t.style.background = '#32a852';
         t.style.display = 'block';
-        setTimeout(() => { t.style.display = 'none'; }, 3000);
     }
+    setTimeout(() => { location.reload(); }, 900);
+}
+
+/* Lecture directe d'un File object (drag & drop) */
+function onFusionFileDirect(file) {
+    if (!file) return;
+    const label = document.getElementById('fusionFileName');
+    if (label) label.textContent = file.name;
+    const fakeInput = { files: [file] };
+    onFusionFileSelected(fakeInput);
+}
+
+function closeFusionModal() {
+    closeTool('fusionModal');
+    _pendingFusionResult = null;
+    const fi = document.getElementById('fusionFileInput');
+    if (fi) fi.value = '';
+    const lbl = document.getElementById('fusionFileName');
+    if (lbl) lbl.textContent = 'Appuyez ici pour choisir un fichier JSON';
+    document.getElementById('fusionResultBox').style.display = 'none';
+    document.getElementById('btnSaveFusion').style.display = 'none';
 }
 </script>
 
@@ -1375,10 +1518,16 @@ function saveFusion() {
     _applyStyles(fusionBtn, { flex: '1', minWidth: '72px', padding: '9px 6px', border: 'none', borderRadius: '10px', background: 'rgba(138,62,191,0.75)', color: 'white', fontSize: '11px', fontWeight: '700', cursor: 'pointer', fontFamily: 'inherit', WebkitTapHighlightColor: 'transparent', outline: 'none', transition: 'opacity 0.15s ease' });
     fusionBtn.addEventListener('click', function () {
       togglePanel(false);
-      document.getElementById('fusionInput').value = '';
-      document.getElementById('fusionResultBox').style.display = 'none';
-      document.getElementById('btnSaveFusion').style.display = 'none';
+      // Réinitialiser l'état de la modale avant ouverture
       _pendingFusionResult = null;
+      var fi2 = document.getElementById('fusionFileInput');
+      if (fi2) fi2.value = '';
+      var lbl2 = document.getElementById('fusionFileName');
+      if (lbl2) lbl2.textContent = 'Appuyez ici pour choisir un fichier JSON';
+      var rb = document.getElementById('fusionResultBox');
+      if (rb) rb.style.display = 'none';
+      var sb = document.getElementById('btnSaveFusion');
+      if (sb) sb.style.display = 'none';
       openTool('fusionModal');
     });
     fusionBtn.addEventListener('touchstart', function () { fusionBtn.style.opacity = '0.7'; }, { passive: true });
