@@ -685,7 +685,7 @@ input[type="number"]::-webkit-outer-spin-button { opacity: 0.5; }
       </div>
       <div style="display:flex;gap:7px;align-items:center;">
         <button class="btn-export-list" onclick="exportListJSON()" title="Exporter la liste"><i class="fa-solid fa-arrow-up-from-bracket"></i></button>
-        <button class="btn-export-list" onclick="document.getElementById('import-list-file').click()" title="Importer une liste"><i class="fa-solid fa-arrow-down-to-bracket"></i></button>
+        <button class="btn-export-list" onclick="document.getElementById('import-list-file').click()" title="Importer une liste"><i class="fa-solid fa-download"></i></button>
         <input type="file" id="import-list-file" accept=".json" style="display:none" onchange="importListJSON(this)">
         <button class="btn-reset" onclick="resetSession()">⟳ VIDER</button>
       </div>
