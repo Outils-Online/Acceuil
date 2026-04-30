@@ -1,1472 +1,1747 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>OVNI CONTROL V9</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap');
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <title>Boîte à outils Online</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='80'>🧰</text></svg>">
+    <meta name="theme-color" content="#4b4be6">
+    <style>
+        :root {
+            --bg: #171723;
+            --card-bg: rgba(255,255,255,0.08);
+            --primary: #4b4be6;
+            --gold: #ffcc00;
+            --success: #32a852;
+            --danger: #ff4b4b;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            padding: 15px;
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at top, #2a2a40, #171723);
+            color: white; min-height: 100vh; overflow-x: hidden;
+        }
+        .nav-shell {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            width: 100%; max-width: 900px;
+            margin: 0 auto 25px;
+            padding: 8px 20px;
+            border-radius: 60px;
+            background: linear-gradient(120deg, #4b4be6, #32a852, #e64be6, #a88a32);
+            background-size: 300% 300%;
+            animation: gradientMove 8s ease infinite;
+            border: 1px solid rgba(255,255,255,0.4);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+        }
+        @keyframes gradientMove {
+            0%   { background-position: 0% 50%; }
+            50%  { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .logo-box { display: flex; align-items: center; gap: 12px; color: white; justify-self: start; }
+        .logo-icon { font-size: 30px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
+        .logo-text-stack { display: flex; flex-direction: column; line-height: 1.1; }
+        .logo-text-stack span:first-child { font-size: 15px; font-weight: 900; text-transform: uppercase; }
+        .logo-text-stack span:last-child  { font-size: 12px; font-weight: 700; text-transform: uppercase; opacity: 0.9; }
+        .config-bar {
+            display: flex; gap: 6px;
+            background: rgba(0,0,0,0.3);
+            padding: 5px; border-radius: 40px; width: 400px;
+        }
+        .config-btn {
+            flex: 1; display: flex; align-items: center; justify-content: center;
+            padding: 10px 5px; border: none; border-radius: 30px;
+            background: transparent; color: white;
+            font-weight: 700; font-size: 13px; cursor: pointer;
+            transition: 0.3s; white-space: nowrap;
+        }
+        .config-btn.active { background: white; color: #171723; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .spacer { justify-self: end; width: 40px; }
+        .filters-container {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            max-width: 1000px; margin: 0 auto 25px; gap: 10px;
+        }
+        .filters-group {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+        }
+        .tag-btn {
+            background: var(--card-bg);
+            padding: 8px 6px; border-radius: 12px;
+            font-size: 10px; font-weight: 700;
+            cursor: pointer; border: 1px solid rgba(255,255,255,0.05);
+            color: white; transition: 0.2s;
+            font-family: 'Poppins', sans-serif;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            text-align: center;
+        }
+        .tag-btn.tag-active      { background: var(--primary); border-color: rgba(255,255,255,0.2); }
+        .tag-btn.tag-mv-selected { background: var(--primary); border-color: rgba(255,255,255,0.3); }
+        .icon-btn {
+            width: 40px; height: 40px; border-radius: 12px;
+            background: var(--card-bg); border: none; color: white;
+            cursor: pointer; font-size: 16px;
+            flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            padding: 0;
+        }
+        #btnMultiview {
+            width: 40px; height: 40px; border-radius: 12px;
+            background: var(--card-bg); border: none; color: white;
+            cursor: pointer; transition: 0.2s;
+            flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            padding: 0;
+        }
+        #btnMultiview.active { background: var(--primary); box-shadow: 0 0 12px rgba(75,75,230,0.6); }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px; max-width: 1000px; margin: 0 auto;
+            visibility: hidden;
+        }
+        .btn-3d {
+            min-height: 130px; border-radius: 22px; border: none; cursor: pointer;
+            color: white; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 8px;
+            position: relative; transition: 0.3s;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+        .btn-3d.hidden { display: none !important; }
+        .favicon-badge {
+            width: 44px; height: 44px; border-radius: 50%;
+            background-color: rgba(255,255,255,0.1);
+            display: flex; align-items: center; justify-content: center; font-size: 22px;
+        }
+        .btn-star { position: absolute; top: 10px; right: 10px; font-size: 18px; color: rgba(255,255,255,0.15); cursor: pointer; }
+        .btn-star.active { color: var(--gold); }
+        .btn-del { position: absolute; top: 10px; left: 10px; font-size: 14px; opacity: 0.4; display: none; }
+        .btn-3d:hover .btn-del { display: block; }
+        .count-badge {
+            position: absolute; bottom: 10px; right: 12px;
+            font-size: 9px; font-weight: 800;
+            background: rgba(0,0,0,0.5); padding: 2px 7px; border-radius: 10px;
+        }
+        .btn-blue   { background: #3a3abf; }
+        .btn-google { background: #4285F4; }
+        .btn-green  { background: #2d8a4e; }
+        .btn-orange { background: #c97b27; }
+        .btn-purple { background: #8a3ebf; }
+        .btn-red    { background: #d93025; }
+        [data-id="photo-recu"] .favicon-badge,
+        [data-id="calculette"] .favicon-badge,
+        [data-id="minuteur"] .favicon-badge,
+        [data-id="sign-pdf"] .favicon-badge,
+        [data-id="ocr-lines"] .favicon-badge,
+        [data-id="ytlive-lines"] .favicon-badge {
+            position: relative;
+            width: 44px; height: 44px; border-radius: 50%;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.1) !important;
+            border: none !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            z-index: 1;
+        }
+        [data-id="photo-recu"] .favicon-badge::before,
+        [data-id="calculette"] .favicon-badge::before,
+        [data-id="minuteur"] .favicon-badge::before,
+        [data-id="sign-pdf"] .favicon-badge::before,
+        [data-id="ocr-lines"] .favicon-badge::before,
+        [data-id="ytlive-lines"] .favicon-badge::before {
+            content: "";
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: conic-gradient(
+                rgba(75, 75, 230, 0.7),
+                rgba(50, 168, 82, 0.7),
+                rgba(230, 75, 230, 0.7),
+                rgba(168, 138, 50, 0.7),
+                rgba(75, 75, 230, 0.7)
+            ) !important;
+            animation: rotateRing 20s linear infinite !important;
+            z-index: -1;
+        }
+        [data-id="calculette"] .favicon-badge span,
+        [data-id="minuteur"] .favicon-badge span,
+        [data-id="sign-pdf"] .favicon-badge span,
+        [data-id="ocr-lines"] .favicon-badge span,
+        [data-id="ytlive-lines"] .favicon-badge span {
+            display: flex !important;
+            transform: translate(0px, -2px) !important;
+            font-size: 22px !important;
+        }
+        @keyframes rotateRing {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .iframe-container { display: none; position: fixed; inset: 0; background: #000; z-index: 9999; }
+        .iframe-container iframe { width: 100%; height: 100%; border: none; }
+        .close-iframe {
+            position: fixed; top: 16px; right: 16px;
+            background: var(--danger); color: white; border: none;
+            padding: 10px 20px; border-radius: 50px; font-weight: 800;
+            font-size: 13px; cursor: pointer; z-index: 10001;
+            display: flex; align-items: center; gap: 6px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+            font-family: 'Poppins', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .close-iframe:active { opacity: 0.8; transform: scale(0.96); }
+        .modal {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.9); z-index: 5000;
+            justify-content: center; align-items: center; padding: 15px;
+            backdrop-filter: blur(8px);
+        }
+        .box-content {
+            background: #1c1c28; border-radius: 30px;
+            width: 100%; max-width: 400px; padding: 25px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .cam-input {
+            background: #0a0a0f; border: none; padding: 12px;
+            border-radius: 12px; color: white; width: 100%;
+            margin-bottom: 10px; font-size: 14px;
+        }
+        #multiviewContainer {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        #multiviewContainer.mv-desktop {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        #multiviewContainer.mv-desktop .mv-col { width: 100%; }
+        #multiviewContainer.mv-desktop .mv-col-inner {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        #multiviewContainer.mv-desktop .mv-col .btn-3d { width: 100%; }
+        .mv-col {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-width: 0;
+        }
+        .mv-col-header {
+            font-size: 10px; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 1px;
+            opacity: 0.85; padding: 6px 12px;
+            border-radius: 10px;
+            background: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.1);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .mv-col .btn-3d { width: 100%; }
+        #mvToast {
+            display: none;
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: #ff4b4b; color: white;
+            padding: 12px 20px; border-radius: 16px;
+            font-size: 12px; font-weight: 700; text-align: center;
+            max-width: 320px; width: 90%;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            z-index: 99999;
+            animation: fadeInUp 0.25s ease;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+            to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
 
-:root {
-  --bg: #080c14;
-  --surface: #0d1420;
-  --card: #111827;
-  --card2: #161f2e;
-  --border: #1e2d40;
-  --border2: #243346;
-  --primary: #3b82f6;
-  --primary-dim: rgba(59,130,246,0.15);
-  --accent: #c8ff57;
-  --accent-dim: rgba(200,255,87,0.12);
-  --danger: #ef4444;
-  --danger-dim: rgba(239,68,68,0.12);
-  --success: #22c55e;
-  --success-dim: rgba(34,197,94,0.12);
-  --amber: #f59e0b;
-  --amber-dim: rgba(245,158,11,0.12);
-  --text: #f1f5f9;
-  --text-muted: #64748b;
-  --text-soft: #94a3b8;
-  --font-display: 'Syne', sans-serif;
-  --font-body: 'Space Grotesk', sans-serif;
-  --radius: 14px;
-  --radius-sm: 8px;
-  --shadow: 0 4px 24px rgba(0,0,0,0.4);
-}
+        /* ══ NOUVEAU : ALERTE HEBDOMADAIRE ══ */
+        #weeklyAlert {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 199999;
+            justify-content: center; align-items: center; padding: 20px;
+            backdrop-filter: blur(6px);
+        }
+        #weeklyAlert.visible { display: flex; }
+        .weekly-alert-box {
+            background: linear-gradient(135deg, #1c1c30, #252540);
+            border: 1px solid rgba(255,204,0,0.4);
+            border-radius: 24px; padding: 30px 28px;
+            max-width: 440px; width: 100%;
+            box-shadow: 0 0 40px rgba(255,204,0,0.15), 0 20px 60px rgba(0,0,0,0.6);
+            text-align: center;
+        }
+        .weekly-alert-icon { font-size: 48px; margin-bottom: 16px; display: block; animation: pulse 2s ease-in-out infinite; }
+        @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+        .weekly-alert-title { font-size: 16px; font-weight: 900; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; }
+        .weekly-alert-msg { font-size: 13px; line-height: 1.7; color: rgba(255,255,255,0.85); margin-bottom: 24px; }
+        .weekly-alert-close {
+            background: var(--gold); color: #171723; border: none;
+            padding: 12px 32px; border-radius: 50px; font-weight: 800; font-size: 13px;
+            cursor: pointer; font-family: 'Poppins', sans-serif; transition: 0.2s;
+        }
+        .weekly-alert-close:hover { opacity: 0.85; }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
-body {
-  font-family: var(--font-body);
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  padding-bottom: 90px;
-  overflow-x: hidden;
-}
+        /* ══ NOUVEAU : MODAL FUSION ══ */
+        #fusionModal .box-content { max-width: 560px; }
+        .fusion-textarea {
+            background: #0a0a0f; border: 1px solid rgba(255,255,255,0.1);
+            padding: 12px; border-radius: 12px; color: #a0ffa0; width: 100%;
+            margin-bottom: 10px; font-size: 12px; font-family: monospace;
+            resize: vertical; min-height: 120px;
+        }
+        .fusion-result-box {
+            background: #050510; border: 1px solid rgba(75,75,230,0.3);
+            border-radius: 12px; padding: 12px; max-height: 200px;
+            overflow-y: auto; margin-bottom: 12px; display: none;
+        }
+        .fusion-result-box pre { font-size: 11px; color: #7fc; font-family: monospace; white-space: pre-wrap; word-break: break-all; }
+        .fusion-btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+        .fusion-btn-row .btn-3d { min-height: 44px; flex: 1; min-width: 100px; }
 
-body::before {
-  content: '';
-  position: fixed; inset: 0;
-  background-image: radial-gradient(ellipse 80% 50% at 20% -20%, rgba(59,130,246,0.08) 0%, transparent 60%),
-                    radial-gradient(ellipse 60% 40% at 80% 110%, rgba(200,255,87,0.05) 0%, transparent 50%);
-  pointer-events: none; z-index: 0;
-}
+        /* Drop zone fusion */
+        #fusionDropZone:hover { border-color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.04); }
+        #fusionDropZone.drag-over { border-color: var(--primary); background: rgba(75,75,230,0.1); }
 
-header {
-  position: sticky; top: 0; z-index: 100;
-  background: rgba(8,12,20,0.92);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border);
-  padding: 14px 16px;
-}
-.header-inner { display: flex; align-items: center; justify-content: space-between; }
-.logo {
-  font-family: var(--font-display);
-  font-size: 1.1rem; font-weight: 800;
-  letter-spacing: 2px;
-  color: var(--text);
-}
-.logo span { color: var(--accent); }
-.logo sub { font-size: 0.5rem; color: var(--text-muted); letter-spacing: 0; vertical-align: middle; }
-
-.header-actions { display: flex; gap: 8px; align-items: center; }
-.btn-ghost {
-  background: var(--card); border: 1px solid var(--border2);
-  color: var(--text-soft); padding: 7px 12px;
-  border-radius: var(--radius-sm); font-size: 0.72rem; font-weight: 600;
-  cursor: pointer; display: flex; align-items: center; gap: 6px;
-  transition: all 0.2s;
-  font-family: var(--font-body);
-}
-.btn-ghost:hover { border-color: var(--primary); color: var(--text); }
-.btn-ghost.accent-ghost { border-color: rgba(200,255,87,0.3); color: var(--accent); }
-.btn-ghost.accent-ghost:hover { background: var(--accent-dim); }
-
-.tab-strip {
-  display: flex; gap: 4px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid var(--border);
-  border-radius: 10px; padding: 3px;
-  margin-top: 12px;
-}
-.tab {
-  flex: 1; text-align: center;
-  padding: 9px 6px;
-  font-size: 0.7rem; font-weight: 700;
-  letter-spacing: 0.5px;
-  border-radius: 7px; cursor: pointer;
-  color: var(--text-muted);
-  transition: all 0.25s;
-}
-.tab.active {
-  background: var(--primary);
-  color: #fff;
-  box-shadow: 0 2px 12px rgba(59,130,246,0.35);
-}
-.tab .badge {
-  display: inline-block;
-  background: rgba(255,255,255,0.2);
-  border-radius: 99px;
-  padding: 1px 6px; margin-left: 4px;
-  font-size: 0.65rem;
-}
-
-.section { display: none; padding: 16px; animation: fadeUp 0.3s ease; }
-.section.active { display: block; }
-@keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
-
-.card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 16px;
-  margin-bottom: 14px;
-  position: relative;
-  overflow: hidden;
-  transition: border-color 0.2s;
-}
-.card:hover { border-color: var(--border2); }
-.card-title {
-  font-size: 0.7rem; font-weight: 700;
-  letter-spacing: 1.5px; text-transform: uppercase;
-  color: var(--accent);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 14px;
-  cursor: pointer;
-  user-select: none;
-}
-.card-title .title-left {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.card-title i:first-child { font-size: 0.8rem; opacity: 0.8; }
-.card-title .toggle-icon {
-  transition: transform 0.2s;
-  font-size: 0.75rem;
-}
-.card.collapsed .card-body { display: none; }
-.card.collapsed .toggle-icon { transform: rotate(-90deg); }
-
-.field-group { margin-bottom: 10px; }
-.field-label { font-size: 0.68rem; color: var(--text-muted); font-weight: 600; letter-spacing: 0.5px; margin-bottom: 5px; }
-input, select, textarea {
-  width: 100%;
-  background: var(--surface);
-  border: 1px solid var(--border2);
-  border-radius: var(--radius-sm);
-  color: var(--text);
-  padding: 10px 12px;
-  font-size: 0.9rem;
-  font-family: var(--font-body);
-  outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
-input.error { border-color: var(--danger); box-shadow: 0 0 0 3px rgba(239,68,68,0.12); }
-select option { background: var(--card); }
-
-.row { display: flex; gap: 8px; }
-.row > * { flex: 1; }
-
-.btn {
-  display: inline-flex; align-items: center; justify-content: center;
-  gap: 7px; padding: 12px 16px;
-  border: none; border-radius: var(--radius-sm);
-  font-family: var(--font-body); font-size: 0.85rem; font-weight: 700;
-  cursor: pointer; transition: all 0.2s;
-  position: relative; overflow: hidden;
-  letter-spacing: 0.3px;
-}
-.btn:active { transform: scale(0.97); }
-.btn-primary { background: var(--primary); color: #fff; width: 100%; }
-.btn-primary:hover { background: #2563eb; box-shadow: 0 4px 20px rgba(59,130,246,0.4); }
-.btn-success { background: var(--success); color: #fff; flex: 2; }
-.btn-success:hover { box-shadow: 0 4px 20px rgba(34,197,94,0.3); }
-.btn-danger { background: var(--danger); color: #fff; }
-.btn-danger:hover { box-shadow: 0 4px 20px rgba(239,68,68,0.3); }
-.btn-neutral { background: var(--card2); border: 1px solid var(--border2); color: var(--text-soft); width: 100%; }
-.btn-neutral:hover { border-color: var(--border); color: var(--text); }
-.btn-icon {
-  width: 36px; height: 36px; border-radius: 50%;
-  border: none; cursor: pointer;
-  display: inline-flex; align-items: center; justify-content: center;
-  font-size: 0.8rem; transition: all 0.2s;
-}
-.btn-icon:active { transform: scale(0.9); }
-.btn-icon-check { background: var(--success-dim); color: var(--success); border: 1px solid rgba(34,197,94,0.2); }
-.btn-icon-check:hover { background: var(--success); color: #fff; }
-.btn-icon-trash { background: var(--danger-dim); color: var(--danger); border: 1px solid rgba(239,68,68,0.2); }
-.btn-icon-trash:hover { background: var(--danger); color: #fff; }
-.btn-icon-edit { background: var(--primary-dim); color: var(--primary); border: 1px solid rgba(59,130,246,0.2); }
-.btn-icon-edit:hover { background: var(--primary); color: #fff; }
-
-.session-banner {
-  background: linear-gradient(135deg, #0d1a30, #0a1520);
-  border: 1px solid rgba(59,130,246,0.25);
-  border-radius: var(--radius);
-  padding: 14px 16px;
-  margin-bottom: 14px;
-  position: relative; overflow: hidden;
-}
-.session-banner::before {
-  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
-  background: linear-gradient(180deg, var(--primary), var(--accent));
-  border-radius: 3px;
-}
-.session-label { font-size: 0.62rem; font-weight: 700; letter-spacing: 1.5px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; }
-.session-text { font-size: 0.95rem; font-weight: 700; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.session-text .tag {
-  display: inline-flex; align-items: center; gap: 6px;
-  background: var(--primary-dim); border: 1px solid rgba(59,130,246,0.2);
-  color: var(--primary); border-radius: 30px;
-  padding: 3px 10px; font-size: 0.78rem;
-}
-.session-tag-qty { font-weight: 900; color: var(--accent); }
-.session-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
-.session-cost {
-  font-size: 0.8rem; color: var(--amber);
-  display: flex; align-items: center; gap: 5px;
-}
-.btn-reset { background: none; border: none; color: var(--danger); font-size: 0.68rem; font-weight: 700; cursor: pointer; opacity: 0.7; }
-.btn-reset:hover { opacity: 1; }
-
-.category-header {
-  font-size: 0.62rem; font-weight: 800; letter-spacing: 2px;
-  text-transform: uppercase; color: var(--accent);
-  padding: 12px 4px 6px;
-  display: flex; align-items: center; gap: 8px;
-}
-.category-header::after {
-  content: ''; flex: 1; height: 1px; background: var(--border);
-}
-.list-item {
-  display: grid;
-  grid-template-columns: 1fr 72px 82px;
-  align-items: center;
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 12px; padding: 12px 14px;
-  margin-bottom: 7px;
-  transition: all 0.25s;
-  animation: itemIn 0.3s ease;
-}
-@keyframes itemIn { from { opacity:0; transform:translateX(-8px); } to { opacity:1; transform:none; } }
-.list-item:hover { border-color: var(--border2); transform: translateY(-1px); }
-.list-item.done { opacity: 0.45; }
-.list-item.done .item-name { text-decoration: line-through; }
-.item-name { font-weight: 700; font-size: 0.9rem; display: inline-block; margin-right: 8px; }
-.recipe-dots { display: inline-flex; gap: 4px; align-items: center; }
-.recipe-dot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  box-shadow: 0 0 0 1px rgba(255,255,255,0.15);
-  flex-shrink: 0;
-}
-.qty-big { font-size: 1.5rem; font-weight: 900; color: var(--accent); display: block; text-align: center; line-height: 1.1; }
-.qty-unit { font-size: 0.62rem; color: var(--text-muted); text-align: center; display: block; }
-.item-actions { display: flex; gap: 6px; justify-content: flex-end; align-items: center; }
-
-.sortable-category {
-  cursor: grab; display: flex; align-items: center;
-  gap: 8px; background: var(--card2); border: 1px solid var(--border);
-  border-radius: var(--radius-sm); padding: 10px 12px;
-  margin-bottom: 6px; transition: all 0.2s;
-  user-select: none;
-}
-.sortable-category:hover { border-color: var(--border2); }
-.sortable-category.drag-over { border-color: var(--primary); background: var(--primary-dim); }
-.drag-handle { color: var(--text-muted); font-size: 0.9rem; }
-
-.recipe-card {
-  background: var(--surface);
-  border: 1px solid var(--border2);
-  border-radius: 12px;
-  padding: 12px;
-  margin-bottom: 8px;
-  animation: itemIn 0.2s ease;
-  position: relative;
-  transition: all 0.2s ease;
-}
-.recipe-card.collapsed .recipe-card-grid, 
-.recipe-card.collapsed .ing-cost-line { 
-  display: none; 
-}
-.recipe-card.collapsed {
-  padding: 8px 12px;
-  background: var(--card);
-}
-.recipe-card-header {
-  display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
-  cursor: pointer;
-}
-.recipe-card.collapsed .recipe-card-header { margin-bottom: 0; }
-.recipe-card-header .ac-wrapper { flex: 1; }
-.recipe-card-header input { margin: 0; font-weight: 700; }
-.recipe-card.collapsed .in-n { background: transparent; border-color: transparent; padding-left: 0; }
-
-.toggle-icon {
-  width: 24px; font-size: 0.7rem; color: var(--text-muted);
-  transition: transform 0.3s; text-align: center;
-}
-.recipe-card.collapsed .toggle-icon { transform: rotate(-90deg); }
-
-.recipe-card-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
-  gap: 6px;
-}
-.recipe-card-grid .field-sub label { font-size: 0.6rem; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px; display: block; margin-bottom: 3px; }
-.recipe-card-grid input, .recipe-card-grid select { padding: 8px; font-size: 0.82rem; margin: 0; }
-.ing-cost-line {
-  margin-top: 8px; padding-top: 8px;
-  border-top: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: space-between;
-}
-.ing-cost-preview { font-size: 0.72rem; color: var(--amber); font-weight: 700; }
-.btn-del-row {
-  width: 32px; height: 32px; flex-shrink: 0;
-  background: var(--danger-dim); border: 1px solid rgba(239,68,68,0.2);
-  color: var(--danger); border-radius: 8px;
-  cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center;
-  transition: all 0.2s;
-}
-.btn-del-row:hover { background: var(--danger); color: #fff; }
-
-.ac-wrapper { position: relative; }
-.ac-box {
-  position: absolute; top: calc(100% + 4px); left: 0; right: 0;
-  background: var(--card2); border: 1px solid var(--border2);
-  border-radius: var(--radius-sm); z-index: 500;
-  display: none; overflow: hidden;
-  box-shadow: var(--shadow);
-}
-.ac-item { padding: 9px 12px; font-size: 0.82rem; cursor: pointer; transition: background 0.15s; }
-.ac-item:hover { background: var(--primary-dim); }
-.ac-item span { color: var(--text-muted); font-size: 0.7rem; margin-left: 6px; }
-
-.catalog-card {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 14px 16px;
-  margin-bottom: 10px;
-  display: flex; align-items: center; justify-content: space-between;
-  transition: all 0.2s;
-  animation: itemIn 0.3s ease;
-}
-.catalog-card:hover { border-color: var(--border2); transform: translateX(2px); }
-.catalog-name { font-weight: 700; font-size: 0.95rem; }
-.catalog-meta { font-size: 0.7rem; color: var(--text-muted); margin-top: 3px; }
-.catalog-cost { font-size: 0.8rem; color: var(--amber); font-weight: 700; margin-top: 3px; }
-.catalog-actions { display: flex; gap: 6px; }
-
-.search-field {
-  position: relative;
-  margin-bottom: 12px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.search-field i:first-child {
-  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
-  color: var(--text-muted); font-size: 0.85rem;
-  pointer-events: none;
-}
-.search-field input {
-  padding-left: 36px;
-  flex: 1;
-}
-.import-icon-btn {
-  background: var(--card2);
-  border: 1px solid var(--border2);
-  border-radius: 40px;
-  width: 42px;
-  height: 38px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  cursor: pointer;
-  transition: all 0.2s;
-  color: var(--text-soft);
-  font-size: 1rem;
-}
-.import-icon-btn:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-  background: var(--primary-dim);
-}
-
-/* Discret session bar */
-.session-bar {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid var(--border);
-  border-radius: 30px;
-  padding: 6px 12px;
-  margin-bottom: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 0.75rem;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.session-bar-left {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--text-soft);
-}
-.session-bar select {
-  background: var(--surface);
-  border: 1px solid var(--border2);
-  border-radius: 20px;
-  padding: 4px 24px 4px 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--text);
-  cursor: pointer;
-}
-.session-bar button {
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  font-size: 0.7rem;
-  padding: 4px 6px;
-  border-radius: 20px;
-  transition: all 0.2s;
-}
-.session-bar button:hover {
-  background: var(--card2);
-  color: var(--text);
-}
-.session-bar .danger-btn:hover {
-  color: var(--danger);
-}
-
-#toast-container { position: fixed; bottom: 95px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; align-items: center; gap: 6px; }
-.toast {
-  background: var(--card2); border: 1px solid var(--border2);
-  border-radius: 99px; padding: 9px 18px;
-  font-size: 0.8rem; font-weight: 600;
-  display: flex; align-items: center; gap: 8px;
-  box-shadow: var(--shadow); white-space: nowrap;
-  animation: toastIn 0.3s ease; opacity: 1;
-  transition: opacity 0.3s;
-}
-.toast.hide { opacity: 0; }
-@keyframes toastIn { from { opacity:0; transform:translateY(10px) scale(0.95); } to { opacity:1; transform:none; } }
-.toast.success { border-color: rgba(34,197,94,0.3); color: var(--success); }
-.toast.error { border-color: rgba(239,68,68,0.3); color: var(--danger); }
-.toast.info { border-color: rgba(59,130,246,0.3); color: var(--primary); }
-
-.bottom-nav {
-  position: fixed; bottom: 0; left: 0; right: 0;
-  height: 78px;
-  background: rgba(8,12,20,0.97);
-  backdrop-filter: blur(20px);
-  border-top: 1px solid var(--border);
-  display: flex;
-}
-.nav-item {
-  flex: 1; display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  color: var(--text-muted); cursor: pointer;
-  font-size: 0.65rem; font-weight: 700;
-  letter-spacing: 0.5px; gap: 5px;
-  transition: color 0.2s;
-  position: relative;
-}
-.nav-item i { font-size: 1.3rem; }
-.nav-item.active { color: var(--accent); }
-.nav-item.active::before {
-  content: ''; position: absolute; top: 0; left: 25%; right: 25%; height: 2px;
-  background: var(--accent); border-radius: 0 0 4px 4px;
-}
-.nav-badge {
-  position: absolute; top: 8px; right: calc(25% - 6px);
-  background: var(--primary); color: #fff;
-  font-size: 0.55rem; font-weight: 900;
-  border-radius: 99px; padding: 1px 5px;
-  min-width: 16px; text-align: center;
-}
-
-.empty { text-align: center; padding: 40px 20px; color: var(--text-muted); }
-.empty i { font-size: 2.5rem; opacity: 0.3; margin-bottom: 12px; display: block; }
-.empty p { font-size: 0.85rem; }
-
-.cost-pill {
-  display: inline-flex; align-items: center; gap: 5px;
-  background: var(--amber-dim); border: 1px solid rgba(245,158,11,0.2);
-  border-radius: 99px; padding: 3px 10px;
-  font-size: 0.72rem; font-weight: 700; color: var(--amber);
-}
-
-.tag .recipe-dot {
-  width: 10px; height: 10px;
-  margin-right: 5px;
-}
-
-.modal-overlay {
-  position: fixed; inset: 0; z-index: 2000;
-  background: rgba(0,0,0,0.72);
-  backdrop-filter: blur(6px);
-  display: flex; align-items: flex-end;
-  animation: fadeOverlay 0.2s ease;
-}
-@keyframes fadeOverlay { from { opacity:0 } to { opacity:1 } }
-.modal-sheet {
-  background: var(--card2);
-  border: 1px solid var(--border2);
-  border-radius: 24px 24px 0 0;
-  padding: 12px 16px 36px;
-  width: 100%; max-height: 82vh; overflow-y: auto;
-  animation: slideUp 0.3s cubic-bezier(.16,1,.3,1);
-}
-@keyframes slideUp { from { transform: translateY(100%) } to { transform: none } }
-.modal-handle { width: 40px; height: 4px; background: var(--border2); border-radius: 2px; margin: 0 auto 18px; }
-.modal-title { font-family: var(--font-display); font-size: 1.05rem; font-weight: 800; margin-bottom: 4px; }
-.modal-sub { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5; }
-.import-recipe-item {
-  display: flex; align-items: center; gap: 12px;
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 10px; padding: 12px 14px; margin-bottom: 8px;
-  transition: border-color 0.15s;
-}
-.import-recipe-item:has(.import-check:checked) { border-color: var(--primary); background: var(--primary-dim); }
-.import-recipe-item .info { flex: 1; }
-.import-recipe-item .name { font-weight: 700; font-size: 0.9rem; }
-.import-recipe-item .meta { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
-.badge-exists { display: inline-flex; align-items: center; gap: 3px; font-size: 0.62rem; color: var(--amber); font-weight: 700; background: var(--amber-dim); border: 1px solid rgba(245,158,11,0.2); border-radius: 4px; padding: 1px 6px; margin-top: 3px; }
-.badge-new { display: inline-flex; align-items: center; gap: 3px; font-size: 0.62rem; color: var(--success); font-weight: 700; background: var(--success-dim); border: 1px solid rgba(34,197,94,0.2); border-radius: 4px; padding: 1px 6px; margin-top: 3px; }
-.import-check { width: 20px; height: 20px; accent-color: var(--primary); cursor: pointer; flex-shrink: 0; }
-.modal-actions { display: flex; gap: 10px; margin-top: 16px; }
-.modal-actions .btn { flex: 1; }
-
-/* ========== MOBILE ERGONOMY ENHANCEMENTS - DEEPLY REFINED ========== */
-@media (max-width: 640px) {
-  body { padding-bottom: 78px; }
-  .section { padding: 12px; }
-  .card { padding: 14px; border-radius: 18px; }
-  .btn, .btn-primary, .btn-neutral, .btn-success, .btn-danger {
-    min-height: 48px;
-    padding: 12px 14px;
-    font-size: 0.9rem;
-    border-radius: 14px;
-  }
-  .btn-icon {
-    width: 44px;
-    height: 44px;
-    font-size: 1rem;
-  }
-  input, select, textarea {
-    font-size: 16px;
-    padding: 12px 12px;
-    min-height: 48px;
-  }
-  .card-title {
-    font-size: 0.75rem;
-    padding: 8px 0;
-  }
-  .list-item {
-    grid-template-columns: minmax(0, 1fr) auto minmax(85px, auto);
-    padding: 12px 12px;
-    gap: 8px;
-  }
-  .qty-big { font-size: 1.3rem; }
-  .item-actions { gap: 8px; }
-  .recipe-card-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-  .recipe-card-grid .field-sub input,
-  .recipe-card-grid .field-sub select { min-height: 44px; }
-  .recipe-card-header .ac-wrapper input { min-height: 44px; }
-  .tab { padding: 12px 4px; font-size: 0.75rem; }
-  .session-bar { flex-wrap: wrap; justify-content: center; padding: 8px 12px; gap: 12px; }
-  .session-bar select { font-size: 0.85rem; padding: 8px 28px 8px 14px; min-height: 44px; }
-  .session-bar button { padding: 8px 12px; font-size: 0.8rem; min-height: 44px; }
-  .session-text .tag { padding: 6px 12px; font-size: 0.8rem; }
-  .session-banner { padding: 16px; }
-  .sortable-category { padding: 14px 12px; margin-bottom: 10px; touch-action: manipulation; }
-  .drag-handle i { font-size: 1.2rem; }
-  .ac-item { padding: 12px 14px; font-size: 0.9rem; }
-  .catalog-card { flex-wrap: wrap; gap: 10px; }
-  .catalog-actions { gap: 12px; }
-  .catalog-actions .btn-icon { width: 44px; height: 44px; }
-  .modal-sheet { padding: 12px 16px 28px; }
-  .import-recipe-item { padding: 14px; gap: 14px; }
-  .import-recipe-item .name { font-size: 1rem; }
-  .import-check { width: 24px; height: 24px; }
-  .toast { font-size: 0.85rem; padding: 12px 20px; white-space: normal; text-align: center; max-width: 90vw; }
-  .cost-pill { font-size: 0.8rem; padding: 4px 12px; }
-  .row { flex-wrap: wrap; }
-  .row > * { flex: 1 1 100%; }
-  .row .field-group { min-width: 100%; }
-  .header-actions .btn-ghost { padding: 6px 12px; min-height: 42px; }
-  .bottom-nav { height: 72px; }
-  .nav-item i { font-size: 1.5rem; }
-  .nav-item { font-size: 0.7rem; gap: 4px; }
-  .nav-badge { top: 8px; right: calc(25% - 6px); font-size: 0.65rem; padding: 2px 7px; }
-}
-@media (max-width: 480px) {
-  .list-item {
-    grid-template-columns: 1fr auto 70px;
-    padding: 10px 10px;
-  }
-  .qty-big { font-size: 1.1rem; }
-  .btn-icon { width: 40px; height: 40px; }
-  .recipe-card-grid { grid-template-columns: 1fr; gap: 8px; }
-  .recipe-card-grid .field-sub label { font-size: 0.7rem; }
-  .category-header { font-size: 0.7rem; padding: 10px 2px 4px; }
-  .item-name { font-size: 0.85rem; }
-  .recipe-dots { gap: 3px; }
-  .session-text .tag { font-size: 0.7rem; padding: 4px 8px; }
-  .session-cost { font-size: 0.7rem; }
-  .btn-reset { font-size: 0.65rem; }
-  .catalog-name { font-size: 0.85rem; }
-}
-@media (max-width: 360px) {
-  .list-item {
-    grid-template-columns: 1fr 50px 60px;
-    padding: 8px 8px;
-  }
-  .qty-big { font-size: 1rem; }
-  .qty-unit { font-size: 0.55rem; }
-  .btn-icon { width: 36px; height: 36px; font-size: 0.8rem; }
-  .item-actions { gap: 5px; }
-  .session-bar select { max-width: 130px; }
-  .header-actions .btn-ghost span { display: none; }
-  .header-actions .btn-ghost { padding: 6px 10px; }
-}
-@media (hover: none) and (pointer: coarse) {
-  .btn, .btn-icon, .tab, .sortable-category, .nav-item, .card-title {
-    cursor: default;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .btn:active { transform: scale(0.96); }
-}
-
-/* Additional fixes for number inputs to prevent overflow */
-input[type="number"] {
-  -moz-appearance: textfield;
-}
-input[type="number"]::-webkit-inner-spin-button, 
-input[type="number"]::-webkit-outer-spin-button {
-  opacity: 0.5;
-}
-</style>
+        @media (max-width: 768px) {
+            .nav-shell { grid-template-columns: auto 1fr; padding: 6px 12px; }
+            .logo-text-stack, .spacer { display: none; }
+            .config-bar { width: 100%; }
+            .close-iframe { top: 10px; right: 10px; padding: 8px 16px; font-size: 11px; border-radius: 15px; display: flex; }
+            #multiviewContainer { grid-template-columns: 1fr 1fr; gap: 10px; }
+        }
+        @media (max-width: 480px) {
+            .grid { grid-template-columns: repeat(2, 1fr); }
+            .filters-group { grid-template-columns: repeat(3, 1fr); }
+            .fusion-btn-row .btn-3d { min-width: 80px; font-size: 11px; }
+        }
+    </style>
 </head>
 <body>
 
-<div id="toast-container"></div>
-
-<header>
-  <div class="header-inner">
-    <div class="logo">OVNI <span>CTRL</span> <sub>V9</sub></div>
-    <div class="header-actions">
-      <button class="btn-ghost accent-ghost" onclick="exportPDF()"><i class="fa-solid fa-file-pdf"></i> PDF</button>
-      <button class="btn-ghost" onclick="exportJSON()"><i class="fa-solid fa-download"></i> JSON</button>
+<!-- ══ NOUVEAU : ALERTE HEBDOMADAIRE ══ -->
+<div id="weeklyAlert">
+    <div class="weekly-alert-box">
+        <span class="weekly-alert-icon">💾</span>
+        <div class="weekly-alert-title">Rappel sauvegarde hebdomadaire</div>
+        <div class="weekly-alert-msg">Sauvegarde hebdomadaire recommandée : il est fortement conseillé de sauvegarder au moins une fois par semaine afin d'éviter toute perte de données et repartir de zéro.</div>
+        <button class="weekly-alert-close" onclick="closeWeeklyAlert()">Compris ✓</button>
     </div>
-  </div>
-  <div id="shopping-tabs" class="tab-strip" style="display:none;">
-    <div class="tab active" id="tab-todo" onclick="setMode('todo')">À ACHETER <span class="badge" id="cnt-todo">0</span></div>
-    <div class="tab" id="tab-done" onclick="setMode('done')">PANIER <span class="badge" id="cnt-done">0</span></div>
-    <div class="tab" id="tab-sort" onclick="setMode('sort')"><i class="fa-solid fa-arrows-up-down"></i> RAYONS</div>
-  </div>
-</header>
-
-<div id="sec-prod" class="section active">
-  <!-- Barre discrète de sélection de liste -->
-  <div class="session-bar" id="session-bar-prod">
-    <div class="session-bar-left">
-      <i class="fa-solid fa-list-check"></i>
-      <span>Liste active :</span>
-      <select id="session-select-prod"></select>
-    </div>
-    <div>
-      <button onclick="createNewSession()" title="Nouvelle liste"><i class="fa-solid fa-plus"></i></button>
-      <button onclick="renameCurrentSession()" title="Renommer"><i class="fa-solid fa-pen"></i></button>
-      <button class="danger-btn" onclick="deleteCurrentSession()" title="Supprimer"><i class="fa-solid fa-trash"></i></button>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">
-      <div class="title-left"><i class="fa-solid fa-bolt"></i> Lancer une Production</div>
-    </div>
-    <div class="card-body">
-      <div class="row" style="margin-bottom:10px;">
-        <div class="field-group" style="flex:2; margin:0">
-          <div class="field-label">Fiche technique</div>
-          <select id="prod-select"></select>
-        </div>
-        <div class="field-group" style="flex:1; margin:0">
-          <div class="field-label">Quantité</div>
-          <input type="number" id="prod-qty" value="1" min="1">
-        </div>
-      </div>
-      <div id="prod-cost-preview" style="margin-bottom:10px; display:none;">
-        <span class="cost-pill"><i class="fa-solid fa-euro-sign"></i> Coût estimé : <strong id="prod-cost-val">0.00 €</strong></span>
-      </div>
-      <button class="btn btn-primary" onclick="addProduction()"><i class="fa-solid fa-plus"></i> AJOUTER À LA LISTE ACTIVE</button>
-    </div>
-  </div>
-
-  <div class="card" id="card-single">
-    <div class="card-title" onclick="toggleCard(this)">
-      <div class="title-left"><i class="fa-solid fa-pen"></i> Article Hors-Fiche</div>
-      <i class="fa-solid fa-chevron-down toggle-icon"></i>
-    </div>
-    <div class="card-body">
-      <div class="field-group">
-        <div class="field-label">Nom de l'article</div>
-        <input type="text" id="s-name" placeholder="ex: Sel fin" oninput="validateSingle()">
-      </div>
-      <div class="row" style="margin-bottom:10px;">
-        <div>
-          <div class="field-label">Quantité</div>
-          <input type="number" id="s-qty" placeholder="0" min="0" step="0.001">
-        </div>
-        <div>
-          <div class="field-label">Unité</div>
-          <select id="s-unit">
-            <option>kg</option><option>g</option><option>L</option><option>cl</option><option>pièce</option><option>boîte</option>
-          </select>
-        </div>
-        <div>
-          <div class="field-label">Rayon</div>
-          <select id="s-cat">
-            <option>Fruits &amp; Légumes</option><option>Viandes</option><option>Poissons</option>
-            <option>Épicerie salée</option><option>Épicerie sucrée</option><option>Liquides</option>
-            <option>Produits frais</option><option>Surgelés</option><option>Autre</option>
-          </select>
-        </div>
-      </div>
-      <button class="btn btn-neutral" onclick="addSingle()"><i class="fa-solid fa-cart-plus"></i> AJOUTER SEUL</button>
-    </div>
-  </div>
 </div>
 
-<div id="sec-list" class="section">
-  <div class="session-banner">
-    <div class="session-label">Liste active : <span id="active-session-name"></span></div>
-    <div id="session-text" class="session-text">—</div>
-    <div class="session-footer">
-      <div class="session-cost" id="session-cost-badge" style="display:none;">
-        <i class="fa-solid fa-coins"></i> <span id="session-cost-total"></span>
-      </div>
-      <button class="btn-reset" onclick="resetSession()">⟳ VIDER LA LISTE</button>
-    </div>
-  </div>
-  <div id="list-display"></div>
+<div id="mvToast"></div>
+
+<div id="iframe_ytlive_lines" class="iframe-container">
+    <button class="close-iframe" onclick="closeIframe('iframe_ytlive_lines')">✕ Fermer</button>
+    <iframe data-src="pages/Ytlive-Lines.html" allow="camera; microphone"></iframe>
+</div>
+<div id="iframe_calculette" class="iframe-container">
+    <button class="close-iframe" onclick="closeIframe('iframe_calculette')">✕ Fermer</button>
+    <iframe src="https://es-d-0544653420260421-019da75d-1b6e-7819-b877-2b48cfb03541.codepen.dev/"></iframe>
+</div>
+<div id="iframe_minuteur" class="iframe-container">
+    <button class="close-iframe" onclick="closeIframe('iframe_minuteur')">✕ Fermer</button>
+    <iframe src="https://es-d-0544653420260421-019da784-8528-73d9-b9de-3f2eb3988b3e.codepen.dev/"></iframe>
+</div>
+<div id="iframe_sign_pdf" class="iframe-container">
+    <button class="close-iframe" onclick="closeIframe('iframe_sign_pdf')">✕ Fermer</button>
+    <iframe src="pages/sign-pdf.html" allow="camera; microphone"></iframe>
+</div>
+<div id="iframe_photo_recu" class="iframe-container">
+    <iframe data-src="pages/photo-recu.html" allow="camera; microphone"></iframe>
+</div>
+<div id="iframe_cite_lines" class="iframe-container">
+    <button class="close-iframe" onclick="closeIframe('iframe_cite_lines')">✕ Fermer</button>
+    <iframe data-src="pages/Cite-Lines.html"></iframe>
+</div>
+<div id="iframe_ocr_lines" class="iframe-container">
+    <button class="close-iframe" onclick="closeIframe('iframe_ocr_lines')">✕ Fermer</button>
+    <iframe data-src="pages/OCR-lines.html" allow="camera; microphone"></iframe>
+</div>
+<div id="iframe_course_lines" class="iframe-container">
+    <button class="close-iframe" onclick="closeIframe('iframe_course_lines')">✕ Fermer</button>
+    <iframe src="pages/Course-Lines.html" allow="camera; microphone"></iframe>
+</div>
+<div id="iframe_local_lines" class="iframe-container">
+    <button class="close-iframe" onclick="closeIframe('iframe_local_lines')">FERMER X</button>
+    <iframe data-src="pages/Local-Lines.html" allow="camera; microphone"></iframe>
 </div>
 
-<div id="sec-labo" class="section">
-  <div class="card" id="card-create-recipe">
-    <div class="card-title" onclick="toggleCard(this)">
-      <div class="title-left"><i class="fa-solid fa-flask"></i> Créer une Fiche</div>
-      <i class="fa-solid fa-chevron-down toggle-icon"></i>
+<div class="nav-shell">
+    <div class="logo-box">
+        <span class="logo-icon">🧰</span>
+        <div class="logo-text-stack"><span>Outils</span><span>Online</span></div>
     </div>
-    <div class="card-body">
-      <div class="field-group">
-        <div class="field-label">Nom de la recette</div>
-        <input type="text" id="recipe-name" placeholder="ex: Burger Signature">
-      </div>
-      <div id="recipe-rows"></div>
-      <div id="recipe-total-cost" class="cost-pill" style="display:none; margin-bottom:12px;"><i class="fa-solid fa-coins"></i> </div>
-      <div class="row" style="margin-bottom:12px;">
-        <button class="btn btn-neutral" onclick="addRow()"><i class="fa-solid fa-plus"></i> Ajouter un ingrédient</button>
-      </div>
-      <div class="row">
-        <button class="btn btn-success" onclick="saveRecipe()"><i class="fa-solid fa-floppy-disk"></i> ENREGISTRER</button>
-        <button class="btn btn-danger" id="btn-cancel" style="display:none;" onclick="cancelEdit()">ANNULER</button>
-      </div>
+    <div class="config-bar">
+        <button id="btnBureau"   class="config-btn active" onclick="setMode('bureau')">Bureau</button>
+        <button id="btnCreative" class="config-btn"        onclick="setMode('creative')">Créative</button>
+        <button id="btnPerso"    class="config-btn"        onclick="setMode('perso')">⭐ Perso</button>
     </div>
-  </div>
-
-  <div class="search-field">
-    <i class="fa-solid fa-magnifying-glass"></i>
-    <input type="text" id="labo-search" placeholder="Rechercher une fiche…" oninput="renderLabo()">
-    <div class="import-icon-btn" onclick="document.getElementById('discreet-import').click()" title="Importer des fiches JSON">
-      <i class="fa-solid fa-file-import"></i> 📂
-    </div>
-    <input type="file" id="discreet-import" accept=".json" style="display:none" onchange="handleImportFile(this)">
-  </div>
-
-  <div id="catalog-display"></div>
+    <div class="spacer"></div>
 </div>
 
-<nav class="bottom-nav">
-  <div class="nav-item active" id="nav-prod" onclick="switchView('prod')">
-    <i class="fa-solid fa-rocket"></i>PROD
-  </div>
-  <div class="nav-item" id="nav-list" onclick="switchView('list')">
-    <i class="fa-solid fa-cart-shopping"></i>COURSES
-    <span id="nav-badge" class="nav-badge" style="display:none;"></span>
-  </div>
-  <div class="nav-item" id="nav-labo" onclick="switchView('labo')">
-    <i class="fa-solid fa-book-open"></i>LABO
-  </div>
-</nav>
+<div class="filters-container">
+    <button id="favFilterMain" class="icon-btn" onclick="toggleFavFilter()">☆</button>
+    <div class="filters-group" id="filtersGroup"></div>
+    <button id="btnMultiview" onclick="toggleMultiview()" title="Multiview" aria-label="Multiview">
+    <svg viewBox="0 0 18 18" width="20" height="20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="display:block;flex-shrink:0">
+        <rect x="1" y="1" width="7" height="7" rx="1.5"/>
+        <rect x="10" y="1" width="7" height="7" rx="1.5"/>
+        <rect x="1" y="10" width="7" height="7" rx="1.5"/>
+        <rect x="10" y="10" width="7" height="7" rx="1.5"/>
+    </svg>
+</button>
+</div>
+
+<div class="grid" id="mainGrid">
+    <button class="btn-3d btn-purple" data-id="sign-pdf"       data-main="bureau"   data-tags="admin"     onclick="openIframe('iframe_sign_pdf', this)">
+        <div class="btn-star">★</div><div class="favicon-badge">📄</div><div>Sign-Lines</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-purple" data-id="organise-pdf"   data-main="bureau"   data-tags="admin"     data-url="https://www.ilovepdf.com/fr/organiser-pdf" onclick="handleTool(this)">
+        <div class="btn-star">★</div><div class="favicon-badge">📂</div><div>Organiser PDF</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-purple" data-id="pdf-jpg"        data-main="bureau"   data-tags="admin"     data-url="https://www.ilovepdf.com/pdf_to_jpg" onclick="handleTool(this)">
+        <div class="btn-star">★</div><div class="favicon-badge">🖼️</div><div>PDF -> JPG</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-google" data-id="gmail-admin"    data-main="bureau"   data-tags="admin"     data-url="https://drive.google.com/drive/u/0/" onclick="handleTool(this)">
+        <div class="btn-star">★</div><div class="favicon-badge">✉️</div><div>Gmail</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-green" data-id="photo-recu" data-main="bureau" data-tags="compta" onclick="openIframe('iframe_photo_recu', this)">
+        <div class="btn-star">★</div>
+        <div class="favicon-badge rainbow-mode"><span>📷</span></div>
+        <div>Reçu-Lines</div>
+        <div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-purple" data-id="course-lines" data-main="bureau" data-tags="admin" onclick="openIframe('iframe_course_lines', this)">
+        <div class="btn-star">★</div>
+        <div class="favicon-badge"><span>🛒</span></div>
+        <div>Course-Lines</div>
+        <div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-blue" data-id="cite-lines" data-main="bureau" data-tags="recherche" onclick="openIframe('iframe_cite_lines', this)">
+        <div class="btn-star">★</div>
+        <div class="favicon-badge"><span>📚</span></div>
+        <div>Cite-Lines</div>
+        <div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-red" data-id="ytlive-lines" data-main="creative" data-tags="radio" onclick="openIframe('iframe_ytlive_lines', this)">
+        <div class="btn-star">★</div>
+        <div class="favicon-badge"><span>🎬</span></div>
+        <div>Ytlive-Lines</div>
+        <div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-blue" data-id="local-lines" data-main="perso" data-tags="local" onclick="openIframe('iframe_local_lines', this)">
+    <div class="btn-star">★</div>
+    <div class="favicon-badge">🏠</div>
+    <div>Local-Lines</div>
+    <div class="count-badge">0</div>
+</button>
+    <button class="btn-3d btn-green"  data-id="calculette"     data-main="bureau"   data-tags="compta"    onclick="openIframe('iframe_calculette', this)">
+        <div class="btn-star">★</div><div class="favicon-badge">🔢</div><div>Calculette</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-green"  data-id="drive-compta"   data-main="bureau"   data-tags="compta"    data-url="https://drive.google.com/drive/u/0/" onclick="handleTool(this)">
+        <div class="btn-star">★</div><div class="favicon-badge">📁</div><div>Drive</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-blue"   data-id="archive-url"    data-main="bureau"   data-tags="recherche" data-url="https://web.archive.org/" onclick="handleTool(this)">
+        <div class="btn-star">★</div><div class="favicon-badge">🏛️</div><div>Archive URL</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-blue"   data-id="ign"            data-main="bureau"   data-tags="recherche" data-url="https://remonterletemps.ign.fr/telecharger/" onclick="handleTool(this)">
+        <div class="btn-star">★</div><div class="favicon-badge">🗺️</div><div>IGN</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-blue"   data-id="google-street"  data-main="bureau"   data-tags="recherche" data-url="https://www.google.com/maps" onclick="handleTool(this)">
+        <div class="btn-star">★</div><div class="favicon-badge">📍</div><div>Google Street</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-blue"   data-id="recherche-actu" data-main="bureau"   data-tags="recherche" data-url="https://news.google.com/" onclick="handleTool(this)">
+        <div class="btn-star">★</div><div class="favicon-badge">📰</div><div>Recherche actu</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-blue"   data-id="minuteur"       data-main="bureau"   data-tags="recherche" onclick="openIframe('iframe_minuteur', this)">
+        <div class="btn-star">★</div><div class="favicon-badge">⏲️</div><div>Minuteur</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-blue"   data-id="ocr-lines"      data-main="bureau"   data-tags="recherche" onclick="openIframe('iframe_ocr_lines', this)">
+        <div class="btn-star">★</div><div class="favicon-badge"><span>🔍</span></div><div>OCR-lines</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-orange" data-id="yt-mp4"         data-main="creative" data-tags="video"     data-url="https://fr.ssyoutube.com/" onclick="handleTool(this)">
+        <div class="btn-star">★</div><div class="favicon-badge">🎬</div><div>Youtube MP4</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-orange" data-id="transfer"       data-main="creative" data-tags="video"     data-url="https://www.transfernow.net/fr" onclick="handleTool(this)">
+        <div class="btn-star">★</div><div class="favicon-badge">📤</div><div>Transfer Fichier</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-orange" data-id="transcribe-v"   data-main="creative" data-tags="video"     data-url="https://turboscribe.ai/dashboard" onclick="handleTool(this)">
+        <div class="btn-star">★</div><div class="favicon-badge">🎙️</div><div>Transcription vidéo</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-orange" data-id="transcribe-t"   data-main="creative" data-tags="texte"     data-url="https://turboscribe.ai/dashboard" onclick="handleTool(this)">
+        <div class="btn-star">★</div><div class="favicon-badge">📝</div><div>Transcription texte</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-red"    data-id="yt-radio"       data-main="creative" data-tags="radio"     data-url="https://www.youtube.com/" onclick="handleTool(this)">
+        <div class="btn-star">★</div><div class="favicon-badge">📺</div><div>Youtube</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-red"    data-id="gmail-radio"    data-main="creative" data-tags="radio"     data-url="https://mail.google.com/" onclick="handleTool(this)">
+        <div class="btn-star">★</div><div class="favicon-badge">📧</div><div>Gmail</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-red"    data-id="yt-mp4-radio"   data-main="creative" data-tags="radio"     data-url="https://fr.ssyoutube.com/" onclick="handleTool(this)">
+        <div class="btn-star">★</div><div class="favicon-badge">🎵</div><div>Youtube MP4</div><div class="count-badge">0</div>
+    </button>
+    <button id="btnAddPerso" class="btn-3d hidden" style="border:2px dashed rgba(255,255,255,0.2);background:none" onclick="openTool('addModal')">
+        <div style="font-size:30px">+</div><div>Ajouter</div>
+    </button>
+</div>
+
+<!-- MODAL AJOUT PERSO -->
+<div id="addModal" class="modal">
+    <div class="box-content">
+        <h3 style="margin-bottom:15px">Nouveau Lien Perso</h3>
+        <input type="text" id="newTitle" placeholder="Nom"                  class="cam-input">
+        <input type="text" id="newUrl"   placeholder="URL (ex: google.com)" class="cam-input">
+        <input type="text" id="newIcon"  placeholder="Icône (emoji)"        class="cam-input" value="🔗">
+        <select id="newColor" class="cam-input">
+            <option value="btn-purple">Violet</option>
+            <option value="btn-blue">Bleu</option>
+            <option value="btn-green">Vert</option>
+            <option value="btn-orange">Orange</option>
+            <option value="btn-red">Rouge</option>
+            <option value="btn-google">Google</option>
+        </select>
+        <button class="btn-3d btn-blue" style="min-height:50px;width:100%" onclick="addNewTool()">Enregistrer</button>
+        <button onclick="closeTool('addModal')" style="margin-top:15px;background:none;border:none;color:#777;width:100%;cursor:pointer">Annuler</button>
+    </div>
+</div>
+
+<!-- ══ NOUVEAU : MODAL FUSION ══ -->
+<!-- input file en dehors du modal pour éviter les conflits de z-index/pointer -->
+<input type="file" id="fusionFileInput" accept=".json" style="display:none;" onchange="onFusionFileSelected(this)">
+
+<div id="fusionModal" class="modal">
+    <div class="box-content" style="max-width:480px;">
+        <h3 style="margin-bottom:8px">🔀 Fusionner un backup JSON</h3>
+        <p style="font-size:11px;opacity:0.55;margin-bottom:18px;line-height:1.6;">
+            Chargez un fichier <code>backup-app.json</code>.<br>
+            Ses données seront <strong>fusionnées</strong> avec votre localStorage actuel<br>
+            (nombres additionnés · tableaux combinés · autres valeurs remplacées).
+        </p>
+
+        <!-- Bouton de sélection de fichier — onclick direct sur l'input -->
+        <div id="fusionDropZone"
+             onclick="document.getElementById('fusionFileInput').click()"
+             style="display:flex;flex-direction:column;align-items:center;justify-content:center;
+                    gap:10px;padding:28px 16px;border:2px dashed rgba(255,255,255,0.25);
+                    border-radius:16px;cursor:pointer;transition:0.2s;margin-bottom:14px;
+                    background:rgba(255,255,255,0.03);">
+            <span style="font-size:36px;pointer-events:none">📂</span>
+            <span id="fusionFileName"
+                  style="font-size:12px;font-weight:700;opacity:0.75;pointer-events:none;text-align:center;">
+                Appuyez ici pour choisir un fichier JSON
+            </span>
+            <span style="font-size:10px;opacity:0.4;pointer-events:none">(ou glissez-déposez)</span>
+        </div>
+
+        <!-- Résultat preview -->
+        <div id="fusionResultBox" class="fusion-result-box">
+            <pre id="fusionResultPre"></pre>
+        </div>
+        <div class="fusion-btn-row">
+            <button class="btn-3d btn-green" id="btnSaveFusion" style="display:none;" onclick="saveFusion()">
+                💾 Appliquer la fusion
+            </button>
+        </div>
+        <button onclick="closeFusionModal()"
+                style="margin-top:14px;background:none;border:none;color:#777;width:100%;cursor:pointer;font-family:inherit;">
+            Annuler
+        </button>
+    </div>
+</div>
 
 <script>
-// ======================== STATE WITH MULTIPLE SESSIONS ========================
-const DEFAULT_CATEGORIES = [
-  'Fruits & Légumes','Viandes','Poissons','Produits frais',
-  'Épicerie salée','Épicerie sucrée','Liquides','Surgelés','Autre'
-];
+/* ══════════════════════════════════════════════
+   ÉTAT GLOBAL
+══════════════════════════════════════════════ */
+let mode        = localStorage.getItem('mode') || 'bureau';
+let favs        = JSON.parse(localStorage.getItem('favs')        || '[]');
+let clics       = JSON.parse(localStorage.getItem('clics')       || '{}');
+let customTools = JSON.parse(localStorage.getItem('customTools') || '[]');
+let favOnly     = localStorage.getItem('favOnly') === 'true';
 
-let state = {
-  view: 'prod',
-  listMode: 'todo',
-  editingId: null,
-  sessions: {},
-  currentSessionId: null,
-  recipes: [
-    {
-      id: 1, name: 'OVNI Burger',
-      ingredients: [
-        { name: 'Pain brioche', qty: 1, unit: 'pièce', cat: 'Épicerie salée', price: 0.35 },
-        { name: 'Steak haché', qty: 180, unit: 'g', cat: 'Viandes', price: 1.20 },
-        { name: 'Cheddar', qty: 30, unit: 'g', cat: 'Produits frais', price: 0.40 },
-        { name: 'Laitue', qty: 20, unit: 'g', cat: 'Fruits & Légumes', price: 0.08 },
-        { name: 'Tomate', qty: 50, unit: 'g', cat: 'Fruits & Légumes', price: 0.15 },
-      ]
-    }
-  ],
-  categoryOrder: [...DEFAULT_CATEGORIES]
+let activeTag             = null;
+let multiviewActive       = false;
+let multiviewSelectedTags = [];
+
+const ALL_TAGS = ['admin','compta','recherche','video','texte','radio'];
+const MODE_TAGS = {
+    bureau:   ['admin','compta','recherche'],
+    creative: ['video','texte','radio'],
+    perso:    []
+};
+const TAG_LABELS = {
+    admin:'💼 Admin', compta:'📂 Compta', recherche:'🔍 Recherche',
+    video:'🎬 Vidéo', texte:'✍️ Texte', radio:'📻 Radio'
+};
+const TAG_DISPLAY = {
+    admin:'💼 ADMIN', compta:'📂 COMPTA', recherche:'🔍 RECH.',
+    video:'🎬 VIDÉO', texte:'✍️ TEXTE', radio:'📻 RADIO'
 };
 
-// Toggle collapsible cards
-function toggleCard(titleElement) {
-  const card = titleElement.closest('.card');
-  if (card) {
-    card.classList.toggle('collapsed');
-  }
+/* ══════════════════════════════════════════════
+   ALERTE HEBDOMADAIRE — Mardi > 09h30, 1x/jour
+══════════════════════════════════════════════ */
+function checkWeeklyAlert() {
+    const now = new Date();
+    if (now.getDay() !== 2) return;
+    const h = now.getHours(), m = now.getMinutes();
+    if (h < 9 || (h === 9 && m < 30)) return;
+    const today = now.toISOString().slice(0, 10);
+    if (localStorage.getItem('__weekly_alert_shown__') === today) return;
+    setTimeout(() => { document.getElementById('weeklyAlert').classList.add('visible'); }, 800);
+}
+function closeWeeklyAlert() {
+    localStorage.setItem('__weekly_alert_shown__', new Date().toISOString().slice(0, 10));
+    document.getElementById('weeklyAlert').classList.remove('visible');
 }
 
-function currentSession() {
-  if (!state.currentSessionId || !state.sessions[state.currentSessionId]) {
-    const id = 'default_' + Date.now();
-    state.sessions[id] = { id, name: 'Liste principale', recipes: {}, singles: 0, totalCost: 0, list: [] };
-    state.currentSessionId = id;
-  }
-  return state.sessions[state.currentSessionId];
-}
-
-function createNewSession() {
-  let name = prompt('Nom de la nouvelle liste :', 'Courses ' + (Object.keys(state.sessions).length+1));
-  if (!name) return;
-  const id = 'sess_' + Date.now();
-  state.sessions[id] = { id, name, recipes: {}, singles: 0, totalCost: 0, list: [] };
-  state.currentSessionId = id;
-  saveState();
-  renderSessionSelector();
-  render();
-  toast(`Liste "${name}" créée`);
-}
-
-function renameCurrentSession() {
-  const sess = currentSession();
-  const newName = prompt('Nouveau nom :', sess.name);
-  if (newName && newName.trim()) {
-    sess.name = newName.trim();
-    saveState();
-    renderSessionSelector();
-    render();
-    toast('Liste renommée');
-  }
-}
-
-function deleteCurrentSession() {
-  if (Object.keys(state.sessions).length <= 1) {
-    toast('Impossible de supprimer la seule liste restante', 'error');
-    return;
-  }
-  const sess = currentSession();
-  if (confirm(`Supprimer définitivement la liste "${sess.name}" ?`)) {
-    delete state.sessions[state.currentSessionId];
-    state.currentSessionId = Object.keys(state.sessions)[0];
-    saveState();
-    renderSessionSelector();
-    render();
-    toast(`Liste supprimée`);
-  }
-}
-
-function selectSession(id) {
-  if (state.sessions[id]) {
-    state.currentSessionId = id;
-    saveState();
-    render();
-  }
-}
-
-function renderSessionSelector() {
-  const selProd = document.getElementById('session-select-prod');
-  const activeNameSpan = document.getElementById('active-session-name');
-  if (selProd) {
-    const curId = state.currentSessionId;
-    selProd.innerHTML = Object.values(state.sessions).map(s => `<option value="${s.id}" ${s.id === curId ? 'selected' : ''}>${escapeHtml(s.name)}</option>`).join('');
-    selProd.onchange = (e) => selectSession(e.target.value);
-  }
-  if (activeNameSpan && currentSession()) activeNameSpan.innerText = currentSession().name;
-}
-
-function loadState() {
-  try {
-    const saved = localStorage.getItem('ovni_v9');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      state = { ...state, ...parsed };
-      if (!state.categoryOrder || !state.categoryOrder.length) state.categoryOrder = [...DEFAULT_CATEGORIES];
-      if (!state.sessions || Object.keys(state.sessions).length === 0) {
-        const oldList = state.list || [];
-        const oldSession = state.session || { recipes: {}, singles: 0, totalCost: 0 };
-        const newId = 'sess_' + Date.now();
-        state.sessions = {
-          [newId]: {
-            id: newId,
-            name: 'Liste principale',
-            recipes: oldSession.recipes,
-            singles: oldSession.singles,
-            totalCost: oldSession.totalCost,
-            list: oldList
-          }
-        };
-        state.currentSessionId = newId;
-        delete state.list;
-        delete state.session;
-      }
-      if (!state.currentSessionId || !state.sessions[state.currentSessionId]) {
-        state.currentSessionId = Object.keys(state.sessions)[0];
-      }
-    } else {
-      const defaultId = 'sess_default';
-      state.sessions = {
-        [defaultId]: { id: defaultId, name: 'Liste principale', recipes: {}, singles: 0, totalCost: 0, list: [] }
-      };
-      state.currentSessionId = defaultId;
+/* ══════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════ */
+window.onload = () => {
+    renderCustomTools();
+    initUI();
+    setMode(mode);
+    document.getElementById('mainGrid').style.visibility = 'visible';
+    checkWeeklyAlert();
+    // Drag & drop sur la zone fusion
+    const dz = document.getElementById('fusionDropZone');
+    if (dz) {
+        dz.addEventListener('dragover', e => {
+            e.preventDefault(); e.stopPropagation();
+            dz.style.borderColor = 'var(--primary)';
+            dz.style.background  = 'rgba(75,75,230,0.1)';
+        });
+        dz.addEventListener('dragleave', () => {
+            dz.style.borderColor = 'rgba(255,255,255,0.25)';
+            dz.style.background  = 'rgba(255,255,255,0.03)';
+        });
+        dz.addEventListener('drop', e => {
+            e.preventDefault(); e.stopPropagation();
+            dz.style.borderColor = 'rgba(255,255,255,0.25)';
+            dz.style.background  = 'rgba(255,255,255,0.03)';
+            const dropped = e.dataTransfer.files;
+            if (dropped && dropped.length) {
+                const fi = document.getElementById('fusionFileInput');
+                if (fi) {
+                    try {
+                        const dt = new DataTransfer();
+                        dt.items.add(dropped[0]);
+                        fi.files = dt.files;
+                    } catch(err) {}
+                }
+                // Appel direct avec le File object (contourne l'input si DataTransfer échoue)
+                onFusionFileDirect(dropped[0]);
+            }
+        });
     }
-  } catch(e) { console.warn('Load error', e); }
+};
+
+function initUI() {
+    document.querySelectorAll('.btn-3d[data-id]').forEach(btn => {
+        const id = btn.dataset.id;
+        btn.querySelector('.count-badge').innerText = clics[id] || 0;
+        btn.querySelector('.btn-star').classList.toggle('active', favs.includes(id));
+    });
 }
 
-function saveState() {
-  const toStore = {
-    view: state.view,
-    listMode: state.listMode,
-    editingId: state.editingId,
-    sessions: state.sessions,
-    currentSessionId: state.currentSessionId,
-    recipes: state.recipes,
-    categoryOrder: state.categoryOrder
-  };
-  try { localStorage.setItem('ovni_v9', JSON.stringify(toStore)); } catch(e) {}
-  render();
+function getTop6Tags() {
+    const tagScore = {};
+    ALL_TAGS.forEach(t => { tagScore[t] = 0; });
+    document.querySelectorAll('.btn-3d[data-id]').forEach(btn => {
+        const bTags = btn.dataset.tags || '';
+        const id    = btn.dataset.id;
+        ALL_TAGS.forEach(t => {
+            if (bTags.includes(t)) tagScore[t] += (clics[id] || 0);
+        });
+    });
+    return ALL_TAGS.slice().sort((a, b) => tagScore[b] - tagScore[a]).slice(0, 6);
 }
 
-function toast(msg, type = 'success') {
-  const el = document.createElement('div');
-  el.className = `toast ${type}`;
-  const icons = { success: 'fa-check-circle', error: 'fa-triangle-exclamation', info: 'fa-info-circle' };
-  el.innerHTML = `<i class="fa-solid ${icons[type] || icons.success}"></i>${msg}`;
-  document.getElementById('toast-container').appendChild(el);
-  setTimeout(() => { el.classList.add('hide'); setTimeout(() => el.remove(), 400); }, 2200);
-}
-
-function switchView(v) {
-  state.view = v;
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('sec-' + v).classList.add('active');
-  document.getElementById('nav-' + v).classList.add('active');
-  document.getElementById('shopping-tabs').style.display = v === 'list' ? 'flex' : 'none';
-  render();
-}
-
+/* ══════════════════════════════════════════════
+   MODE
+══════════════════════════════════════════════ */
 function setMode(m) {
-  state.listMode = m;
-  ['todo','done','sort'].forEach(id => {
-    const el = document.getElementById('tab-' + id);
-    if (el) el.classList.toggle('active', id === m);
-  });
-  render();
+    mode = m;
+    localStorage.setItem('mode', m);
+    document.querySelectorAll('.config-btn').forEach(b => b.classList.remove('active'));
+    const btnId = 'btn' + m.charAt(0).toUpperCase() + m.slice(1);
+    if (document.getElementById(btnId)) document.getElementById(btnId).classList.add('active');
+    if (multiviewActive) {
+        multiviewActive = false;
+        multiviewSelectedTags = [];
+        document.getElementById('btnMultiview').classList.remove('active');
+        const mv = document.getElementById('multiviewContainer');
+        if (mv) mv.remove();
+        document.getElementById('mainGrid').style.display = '';
+    }
+    const tags = MODE_TAGS[m] || [];
+    activeTag = tags.length > 0 ? tags[0] : null;
+    renderTagFilters();
+    document.getElementById('btnAddPerso').classList.toggle('hidden', m !== 'perso');
+    applyFilters();
 }
 
-function addProduction() {
-  const name = document.getElementById('prod-select').value;
-  const qty = parseInt(document.getElementById('prod-qty').value);
-  if (!name) return toast('Sélectionne une fiche', 'error');
-  if (!qty || qty <= 0) return toast('Quantité invalide', 'error');
-
-  const recipe = state.recipes.find(r => r.name === name);
-  if (!recipe) return;
-
-  const sess = currentSession();
-  sess.recipes[name] = (sess.recipes[name] || 0) + qty;
-  const batchCost = recipeUnitCost(recipe) * qty;
-
-  recipe.ingredients.forEach(ing => {
-    const exist = sess.list.find(i => i.name === ing.name && i.unit === ing.unit);
-    if (exist) { exist.qty = parseFloat((exist.qty + ing.qty * qty).toFixed(4)); exist.done = false; }
-    else sess.list.push({ ...ing, qty: parseFloat((ing.qty * qty).toFixed(4)), done: false });
-  });
-  sess.totalCost = (sess.totalCost || 0) + batchCost;
-
-  saveState();
-  toast(`${qty}× ${name} ajouté à "${sess.name}" ✓`);
+/* ══════════════════════════════════════════════
+   FILTRES
+══════════════════════════════════════════════ */
+function renderTagFilters() {
+    const fg = document.getElementById('filtersGroup');
+    fg.innerHTML = '';
+    if (multiviewActive) {
+        getTop6Tags().forEach(tag => {
+            const btn = document.createElement('button');
+            btn.className = 'tag-btn';
+            btn.textContent = TAG_DISPLAY[tag] || tag.toUpperCase();
+            btn.dataset.tag = tag;
+            if (multiviewSelectedTags.includes(tag)) btn.classList.add('tag-mv-selected');
+            btn.addEventListener('click', () => onTagClick(tag));
+            fg.appendChild(btn);
+        });
+    } else {
+        const tags = MODE_TAGS[mode] || [];
+        if (tags.length === 0) {
+            fg.innerHTML = '<span style="font-size:10px;opacity:0.5">Tes liens personnalisés</span>';
+            return;
+        }
+        tags.forEach(tag => {
+            const btn = document.createElement('button');
+            btn.className = 'tag-btn';
+            btn.textContent = TAG_DISPLAY[tag] || tag.toUpperCase();
+            btn.dataset.tag = tag;
+            if (activeTag === tag) btn.classList.add('tag-active');
+            btn.addEventListener('click', () => onTagClick(tag));
+            fg.appendChild(btn);
+        });
+    }
 }
 
-function addSingle() {
-  const name = document.getElementById('s-name').value.trim();
-  const qty = parseFloat(document.getElementById('s-qty').value);
-  const unit = document.getElementById('s-unit').value;
-  const cat = document.getElementById('s-cat').value;
-  if (!name) return toast('Nom requis', 'error');
-  if (isNaN(qty) || qty <= 0) return toast('Quantité invalide', 'error');
-
-  const sess = currentSession();
-  sess.singles = (sess.singles || 0) + 1;
-  const exist = sess.list.find(i => i.name.toLowerCase() === name.toLowerCase() && i.unit === unit);
-  if (exist) { exist.qty = parseFloat((exist.qty + qty).toFixed(4)); exist.done = false; }
-  else sess.list.push({ name, qty, unit, cat, done: false });
-
-  document.getElementById('s-name').value = '';
-  document.getElementById('s-qty').value = '';
-  saveState();
-  toast(`${name} ajouté à "${sess.name}"`);
+function isMobile() {
+    return window.matchMedia('(max-width: 768px)').matches ||
+           /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
 }
 
-function resetSession() {
-  const sess = currentSession();
-  if (!confirm(`Vider toute la liste "${sess.name}" ?`)) return;
-  sess.list = [];
-  sess.recipes = {};
-  sess.singles = 0;
-  sess.totalCost = 0;
-  saveState();
-  toast('Liste réinitialisée', 'info');
+let toastTimer = null;
+function showToast(msg) {
+    const toast = document.getElementById('mvToast');
+    toast.textContent = msg;
+    toast.style.display = 'block';
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { toast.style.display = 'none'; }, 4000);
 }
 
-function toggleItem(name, unit) {
-  const sess = currentSession();
-  const item = sess.list.find(i => i.name === name && i.unit === unit);
-  if (item) { item.done = !item.done; saveState(); }
+function onTagClick(tag) {
+    if (multiviewActive) {
+        const idx = multiviewSelectedTags.indexOf(tag);
+        if (idx === -1) {
+            if (isMobile() && multiviewSelectedTags.length >= 3) {
+                showToast('Vous ne pouvez sélectionner que 3 tags maximum sur mobile. Désélectionnez-en un pour en choisir un autre.');
+                return;
+            }
+            multiviewSelectedTags.push(tag);
+        } else {
+            multiviewSelectedTags.splice(idx, 1);
+        }
+        renderTagFilters();
+        renderMultiviewGrid();
+    } else {
+        activeTag = tag;
+        renderTagFilters();
+        applyFilters();
+    }
 }
 
-function delItem(name, unit) {
-  const sess = currentSession();
-  sess.list = sess.list.filter(i => !(i.name === name && i.unit === unit));
-  saveState();
-  toast('Article supprimé', 'info');
-}
-
-// ======================== RECIPE EDITOR ========================
-function toggleRow(header) {
-  const card = header.closest('.recipe-card');
-  card.classList.toggle('collapsed');
-}
-
-function addRow(data = {}) {
-  document.querySelectorAll('.recipe-card').forEach(c => c.classList.add('collapsed'));
-  const cats = DEFAULT_CATEGORIES;
-  const units = ['kg','g','L','cl','ml','pièce','boîte','sachet','botte','tranche','portion','dose'];
-  const catOpts = cats.map(c => `<option value="${c}" ${data.cat === c ? 'selected' : ''}>${c}</option>`).join('');
-  const unitOpts = units.map(u => `<option value="${u}" ${data.unit === u ? 'selected' : ''}>${u}</option>`).join('');
-
-  const div = document.createElement('div');
-  div.className = 'recipe-card';
-  div.innerHTML = `
-    <div class="recipe-card-header" onclick="toggleRow(this)">
-      <i class="fa-solid fa-chevron-down toggle-icon"></i>
-      <div class="ac-wrapper" style="flex:1" onclick="event.stopPropagation()">
-        <input type="text" class="in-n" placeholder="Nom de l'ingrédient" value="${escapeHtml(data.name||'')}" oninput="handleAC(this); updateRowCost(this)">
-        <div class="ac-box"></div>
-      </div>
-      <button class="btn-del-row" onclick="event.stopPropagation(); this.closest('.recipe-card').remove(); updateRecipeTotalCost()">×</button>
-    </div>
-    <div class="recipe-card-grid">
-      <div class="field-sub"><label>Quantité</label><input type="number" class="in-q" placeholder="0" step="0.001" min="0" value="${data.qty||''}" oninput="updateRowCost(this)"></div>
-      <div class="field-sub"><label>Unité</label><select class="in-u">${unitOpts}</select></div>
-      <div class="field-sub"><label>Rayon</label><select class="in-c">${catOpts}</select></div>
-      <div class="field-sub"><label>Prix (€) pour cette qté</label><input type="number" class="in-p" placeholder="0.00" step="0.001" min="0" value="${data.price != null && data.price > 0 ? data.price : ''}" oninput="updateRowCost(this)"></div>
-    </div>
-    <div class="ing-cost-line"><span style="font-size:0.65rem;color:var(--text-muted);">Coût de cet ingrédient</span><span class="ing-cost-preview">—</span></div>`;
-  document.getElementById('recipe-rows').prepend(div);
-  updateRowCost(div.querySelector('.in-q'));
-}
-
-function handleAC(input) {
-  const val = input.value.toLowerCase().trim();
-  const box = input.nextElementSibling;
-  if (val.length < 1) { box.style.display = 'none'; return; }
-  const known = [];
-  state.recipes.forEach(r => r.ingredients.forEach(i => {
-    if (!known.find(k => k.name.toLowerCase() === i.name.toLowerCase())) known.push(i);
-  }));
-  const matches = known.filter(i => i.name.toLowerCase().includes(val)).slice(0, 5);
-  if (matches.length) {
-    box.innerHTML = matches.map(m => `<div class="ac-item" onclick="selectAC(this,'${escapeAttr(m.name)}','${escapeAttr(m.unit)}','${escapeAttr(m.cat)}')">${escapeHtml(m.name)}<span>${m.unit} · ${m.cat}</span></div>`).join('');
-    box.style.display = 'block';
-  } else { box.style.display = 'none'; }
-}
-
-function updateRowCost(input) {
-  const card = input.closest('.recipe-card');
-  if (!card) return;
-  const price = parseFloat(card.querySelector('.in-p').value) || 0;
-  const preview = card.querySelector('.ing-cost-preview');
-  if (price > 0) {
-    preview.textContent = `${price.toFixed(2)} €`;
-    preview.style.color = 'var(--amber)';
-  } else {
-    preview.textContent = '—';
-    preview.style.color = 'var(--text-muted)';
-  }
-  updateRecipeTotalCost();
-}
-
-function updateRecipeTotalCost() {
-  let total = 0;
-  document.querySelectorAll('.recipe-card').forEach(card => {
-    total += parseFloat(card.querySelector('.in-p').value) || 0;
-  });
-  const el = document.getElementById('recipe-total-cost');
-  if (el) {
-    if (total > 0) {
-      el.innerHTML = `<i class="fa-solid fa-coins"></i> Coût total fiche : ${total.toFixed(2)} €`;
-      el.style.display = 'inline-flex';
-    } else { el.style.display = 'none'; }
-  }
-}
-
-function selectAC(el, n, u, c) {
-  const card = el.closest('.recipe-card');
-  card.querySelector('.in-n').value = n;
-  const unitSel = card.querySelector('.in-u');
-  const opt = [...unitSel.options].find(o => o.value === u);
-  if (opt) unitSel.value = u;
-  card.querySelector('.in-c').value = c;
-  el.closest('.ac-box').style.display = 'none';
-  updateRowCost(card.querySelector('.in-q'));
-}
-
-document.addEventListener('click', e => {
-  if (!e.target.closest('.ac-wrapper')) document.querySelectorAll('.ac-box').forEach(b => b.style.display = 'none');
-});
-
-function saveRecipe() {
-  const name = document.getElementById('recipe-name').value.trim();
-  if (!name) return toast('Nom de fiche requis', 'error');
-  const dupCheck = state.recipes.find(r => r.name.toLowerCase() === name.toLowerCase() && r.id !== state.editingId);
-  if (dupCheck) return toast('Ce nom existe déjà', 'error');
-
-  const ings = [];
-  let valid = true;
-  document.querySelectorAll('.recipe-card').forEach(row => {
-    const n = row.querySelector('.in-n').value.trim();
-    const q = parseFloat(row.querySelector('.in-q').value);
-    const p = parseFloat(row.querySelector('.in-p').value) || 0;
-    if (!n || isNaN(q) || q <= 0) { valid = false; return; }
-    ings.push({ name: n, qty: q, unit: row.querySelector('.in-u').value, cat: row.querySelector('.in-c').value, price: p });
-  });
-  if (!valid) return toast('Vérifie les ingrédients (nom & quantité)', 'error');
-  if (!ings.length) return toast('Ajoute au moins un ingrédient', 'error');
-
-  if (state.editingId) {
-    const idx = state.recipes.findIndex(r => r.id === state.editingId);
-    state.recipes[idx] = { id: state.editingId, name, ingredients: ings };
-    toast(`${name} mis à jour`);
-  } else {
-    state.recipes.push({ id: Date.now(), name, ingredients: ings });
-    toast(`${name} créé ✓`);
-  }
-  cancelEdit();
-  saveState();
-}
-
-function editRecipe(id) {
-  const r = state.recipes.find(x => x.id === id);
-  if (!r) return;
-  state.editingId = id;
-  document.getElementById('recipe-name').value = r.name;
-  document.getElementById('recipe-rows').innerHTML = '';
-  r.ingredients.slice().reverse().forEach(i => addRow(i));
-  document.getElementById('labo-title').innerHTML = `<i class="fa-solid fa-pen"></i>Modifier : ${escapeHtml(r.name)}`;
-  document.getElementById('btn-cancel').style.display = '';
-  // open the create card if collapsed
-  const createCard = document.getElementById('card-create-recipe');
-  if (createCard.classList.contains('collapsed')) createCard.classList.remove('collapsed');
-  document.getElementById('sec-labo').scrollIntoView({ behavior: 'smooth' });
-}
-
-function deleteRecipe(id) {
-  if (!confirm('Supprimer cette fiche ?')) return;
-  state.recipes = state.recipes.filter(r => r.id !== id);
-  toast('Fiche supprimée', 'info');
-  saveState();
-}
-
-function cancelEdit() {
-  state.editingId = null;
-  document.getElementById('recipe-name').value = '';
-  document.getElementById('recipe-rows').innerHTML = '';
-  document.getElementById('recipe-total-cost').style.display = 'none';
-  document.getElementById('labo-title').innerHTML = `<i class="fa-solid fa-flask"></i>Créer une Fiche`;
-  document.getElementById('btn-cancel').style.display = 'none';
-  addRow();
-}
-
-// ======================== DRAG SORT ========================
-let dragSrc = null;
-function buildSortView() {
-  const sess = currentSession();
-  const container = document.getElementById('list-display');
-  container.innerHTML = '';
-  const header = document.createElement('div');
-  header.innerHTML = `<div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:10px;padding:0 2px;"><i class="fa-solid fa-info-circle" style="color:var(--primary)"></i> Glisse pour réorganiser les rayons</div>`;
-  container.appendChild(header);
-  const listCats = [...new Set(sess.list.map(i => i.cat))];
-  const allCats = [...new Set([...state.categoryOrder, ...listCats, ...DEFAULT_CATEGORIES])];
-  allCats.forEach(cat => {
-    const div = document.createElement('div');
-    div.className = 'sortable-category';
-    div.draggable = true;
-    div.dataset.cat = cat;
-    const count = sess.list.filter(i => i.cat === cat).length;
-    div.innerHTML = `<span class="drag-handle"><i class="fa-solid fa-grip-lines"></i></span><span style="flex:1; font-weight:700; font-size:0.88rem;">${escapeHtml(cat)}</span>${count ? `<span style="font-size:0.7rem;color:var(--text-muted);">${count} article${count>1?'s':''}</span>` : ''}`;
-    div.addEventListener('dragstart', () => { dragSrc = div; div.style.opacity = '0.4'; });
-    div.addEventListener('dragend', () => { div.style.opacity = '1'; dragSrc = null; });
-    div.addEventListener('dragover', e => { e.preventDefault(); div.classList.add('drag-over'); });
-    div.addEventListener('dragleave', () => div.classList.remove('drag-over'));
-    div.addEventListener('drop', e => {
-      e.preventDefault(); div.classList.remove('drag-over');
-      if (dragSrc && dragSrc !== div) {
-        const rows = [...container.querySelectorAll('.sortable-category')];
-        const srcIdx = rows.indexOf(dragSrc);
-        const dstIdx = rows.indexOf(div);
-        const newOrder = allCats.filter(c => c !== dragSrc.dataset.cat);
-        newOrder.splice(dstIdx, 0, dragSrc.dataset.cat);
-        state.categoryOrder = newOrder;
-        saveState();
-      }
+function applyFilters() {
+    document.querySelectorAll('.btn-3d[data-id]').forEach(btn => {
+        const bMain = btn.dataset.main || 'custom';
+        const bTags = btn.dataset.tags || '';
+        let show = (mode === bMain || (mode === 'perso' && bMain === 'custom'));
+        if (activeTag && !bTags.includes(activeTag)) show = false;
+        if (favOnly && !favs.includes(btn.dataset.id)) show = false;
+        btn.classList.toggle('hidden', !show);
     });
-    container.appendChild(div);
-  });
 }
 
-// ======================== HELPERS ========================
-function convertToKgAndCeil(qty, unit) {
-  let value = qty;
-  let displayUnit = unit;
-  if (unit === 'g') { value = qty / 1000; displayUnit = 'kg'; }
-  else if (unit === 'kg') { value = qty; displayUnit = 'kg'; }
-  else if (unit === 'L' || unit === 'cl' || unit === 'ml') {
-    if (unit === 'cl') value = qty / 100;
-    else if (unit === 'ml') value = qty / 1000;
-    displayUnit = 'kg';
-  } else { displayUnit = unit; }
-  const rounded = Math.ceil(value * 100) / 100;
-  return { value: rounded, unit: displayUnit };
+function toggleFavFilter() {
+    favOnly = !favOnly;
+    localStorage.setItem('favOnly', favOnly);
+    document.getElementById('favFilterMain').innerText = favOnly ? '★' : '☆';
+    applyFilters();
 }
 
-function hashCode(str) {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) { hash = ((hash << 5) - hash) + str.charCodeAt(i); hash |= 0; }
-  return Math.abs(hash);
+/* ══════════════════════════════════════════════
+   OUTILS
+══════════════════════════════════════════════ */
+function handleTool(btn) {
+    const id = btn.dataset.id;
+    if (event.target.closest('.btn-star')) {
+        if (favs.includes(id)) favs = favs.filter(f => f !== id);
+        else favs.push(id);
+        localStorage.setItem('favs', JSON.stringify(favs));
+        btn.querySelector('.btn-star').classList.toggle('active');
+        applyFilters();
+        return;
+    }
+    clics[id] = (clics[id] || 0) + 1;
+    localStorage.setItem('clics', JSON.stringify(clics));
+    btn.querySelector('.count-badge').innerText = clics[id];
+    if (btn.dataset.url) window.open(btn.dataset.url, id);
 }
-function recipeColor(recipeName) { return `hsl(${hashCode(recipeName) % 360}, 70%, 65%)`; }
 
-function exportJSON() {
-  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-  a.download = `ovni_backup_${dateStr()}.json`; a.click();
-  toast('JSON exporté', 'info');
+function openIframe(id, btn) {
+    if (event.target.closest('.btn-star')) { handleTool(btn); return; }
+    const container = document.getElementById(id);
+    const iframe = container.querySelector('iframe');
+    if (iframe && iframe.dataset.src && !iframe.src) {
+        iframe.src = iframe.dataset.src;
+    }
+    container.style.display = 'block';
+    clics[btn.dataset.id] = (clics[btn.dataset.id] || 0) + 1;
+    localStorage.setItem('clics', JSON.stringify(clics));
+    btn.querySelector('.count-badge').innerText = clics[btn.dataset.id];
 }
-function exportPDF() {
-  const sess = currentSession();
-  if (!sess.list.length) return toast('La liste est vide', 'error');
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-  doc.setFillColor(8, 12, 20); doc.rect(0, 0, 210, 297, 'F');
-  doc.setTextColor(248, 250, 252); doc.setFontSize(22); doc.setFont('helvetica', 'bold'); doc.text('OVNI CONTROL', 14, 22);
-  doc.setFontSize(10); doc.setTextColor(100, 116, 139); doc.text('Liste de courses — ' + new Date().toLocaleDateString('fr-FR'), 14, 30);
-  doc.text(`Liste : ${sess.name}`, 14, 37);
-  const sessionParts = [];
-  for (const [n, q] of Object.entries(sess.recipes)) sessionParts.push(`${q}× ${n}`);
-  if (sessionParts.length) { doc.setFontSize(8); doc.setTextColor(200, 255, 87); doc.text('Productions : ' + sessionParts.join(' · '), 14, 44); }
-  if (sess.totalCost > 0) { doc.setFontSize(8); doc.setTextColor(245, 158, 11); doc.text(`Coût estimé : ${sess.totalCost.toFixed(2)} €`, 14, 51); }
-  const grouped = {};
-  sess.list.forEach(item => { if (!grouped[item.cat]) grouped[item.cat] = []; grouped[item.cat].push(item); });
-  const ordered = state.categoryOrder.filter(c => grouped[c]).concat(Object.keys(grouped).filter(c => !state.categoryOrder.includes(c)));
-  let yOffset = 58;
-  ordered.forEach(cat => {
-    if (!grouped[cat]) return;
-    const rows = grouped[cat].map(i => [ i.done ? '✓' : '□', i.name, `${formatQty(i.qty)} ${i.unit}`, i.cat ]);
-    doc.autoTable({ startY: yOffset, head: [[{ content: cat, colSpan: 4, styles: { fillColor: [30, 41, 59], textColor: [200, 255, 87], fontStyle: 'bold', fontSize: 9 } }]], body: rows, columns: [ { header: '', dataKey: 0 }, { header: 'Article', dataKey: 1 }, { header: 'Quantité', dataKey: 2 }, { header: 'Rayon', dataKey: 3 } ], theme: 'plain', styles: { fillColor: [13, 20, 32], textColor: [241, 245, 249], fontSize: 9, cellPadding: 3 }, alternateRowStyles: { fillColor: [17, 24, 39] }, margin: { left: 14, right: 14 }, didParseCell: (data) => { if (data.row.raw && data.row.raw[0] === '✓') data.cell.styles.textColor = [100, 116, 139]; } });
-    yOffset = doc.lastAutoTable.finalY + 6;
-  });
-  doc.save(`ovni_courses_${dateStr()}.pdf`);
-  toast('PDF généré ✓');
+
+function closeIframe(id) { document.getElementById(id).style.display = 'none'; }
+function openTool(id)    { document.getElementById(id).style.display = 'flex'; }
+function closeTool(id)   { document.getElementById(id).style.display = 'none'; }
+
+/* ══════════════════════════════════════════════
+   OUTILS PERSO
+══════════════════════════════════════════════ */
+function addNewTool() {
+    let t = document.getElementById('newTitle').value;
+    let u = document.getElementById('newUrl').value;
+    let i = document.getElementById('newIcon').value  || '🔗';
+    let c = document.getElementById('newColor').value || 'btn-purple';
+    if (!t || !u) return;
+    u = u.startsWith('http') ? u : 'https://' + u;
+    customTools.push({ id: 'c-' + Date.now(), title: t, url: u, tags: 'custom', icon: i, color: c });
+    localStorage.setItem('customTools', JSON.stringify(customTools));
+    location.reload();
 }
-function dateStr() { const d = new Date(); return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`; }
-function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function escapeAttr(s) { return String(s).replace(/'/g, "\\'"); }
-function formatQty(n) { return parseFloat(n).toString().replace('.', ','); }
-function recipeUnitCost(recipe) { return recipe.ingredients.reduce((sum, i) => sum + (i.price || 0), 0); }
 
-// ======================== RENDERS ========================
-function renderProdView() {
-  const sel = document.getElementById('prod-select');
-  if (!sel) return;
-  const cur = sel.value;
-  sel.innerHTML = state.recipes.length ? state.recipes.map(r => `<option ${r.name===cur?'selected':''}>${escapeHtml(r.name)}</option>`).join('') : '<option disabled>Aucune fiche</option>';
-  updateCostPreview();
-}
-function updateCostPreview() {
-  const name = document.getElementById('prod-select')?.value;
-  const qty = parseInt(document.getElementById('prod-qty')?.value) || 0;
-  const recipe = state.recipes.find(r => r.name === name);
-  const preview = document.getElementById('prod-cost-preview');
-  const val = document.getElementById('prod-cost-val');
-  if (recipe && qty > 0) {
-    const cost = recipeUnitCost(recipe) * qty;
-    if (cost > 0) { val.textContent = `${cost.toFixed(2)} €`; preview.style.display = ''; return; }
-  }
-  preview.style.display = 'none';
-}
-document.addEventListener('change', e => { if (e.target.id === 'prod-select' || e.target.id === 'prod-qty') updateCostPreview(); });
-document.addEventListener('input', e => { if (e.target.id === 'prod-qty') updateCostPreview(); });
-
-function renderListView() {
-  if (state.view !== 'list') return;
-  if (state.listMode === 'sort') { buildSortView(); return; }
-  const sess = currentSession();
-  const parts = [];
-  for (const [n, q] of Object.entries(sess.recipes)) {
-    const color = recipeColor(n);
-    parts.push(`<span class="tag"><span class="recipe-dot" style="background:${color};"></span><span class="session-tag-qty">${q}×</span> ${escapeHtml(n)}</span>`);
-  }
-  if (sess.singles > 0) parts.push(`<span class="tag"><span class="recipe-dot" style="background:#64748b;"></span><span class="session-tag-qty">${sess.singles}</span> manuelle${sess.singles>1?'s':''}</span>`);
-  document.getElementById('session-text').innerHTML = parts.length ? parts.join('') : '<span style="color:var(--text-muted);font-size:0.85rem;">Aucune production lancée</span>';
-  const costBadge = document.getElementById('session-cost-badge');
-  if (sess.totalCost > 0) { document.getElementById('session-cost-total').textContent = sess.totalCost.toFixed(2) + ' €'; costBadge.style.display = 'flex'; } else { costBadge.style.display = 'none'; }
-  document.getElementById('cnt-todo').textContent = sess.list.filter(i => !i.done).length;
-  document.getElementById('cnt-done').textContent = sess.list.filter(i => i.done).length;
-  const display = document.getElementById('list-display');
-  display.innerHTML = '';
-  const items = sess.list.filter(i => i.done === (state.listMode === 'done'));
-  if (!items.length) { display.innerHTML = `<div class="empty"><i class="fa-solid fa-${state.listMode==='done'?'check-double':'list-check'}"></i><p>${state.listMode==='done'?'Aucun article coché':'La liste est vide'}</p></div>`; return; }
-
-  const producedRecipeNames = new Set(Object.keys(sess.recipes));
-  const grouped = {};
-  items.forEach(i => { grouped[i.cat] = grouped[i.cat] || []; grouped[i.cat].push(i); });
-  const ordered = state.categoryOrder.filter(c => grouped[c]).concat(Object.keys(grouped).filter(c => !state.categoryOrder.includes(c)));
-
-  ordered.forEach(cat => {
-    if (!grouped[cat]) return;
-    display.innerHTML += `<div class="category-header">${escapeHtml(cat)}</div>`;
-    grouped[cat].forEach(item => {
-      const relatedRecipes = state.recipes.filter(recipe => producedRecipeNames.has(recipe.name) && recipe.ingredients.some(ing => ing.name === item.name && ing.unit === item.unit));
-      const dotsHtml = relatedRecipes.map(recipe => `<span class="recipe-dot" style="background:${recipeColor(recipe.name)};" title="${escapeAttr(recipe.name)}"></span>`).join('');
-      const converted = convertToKgAndCeil(item.qty, item.unit);
-      const displayQty = converted.value.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(',', '.');
-      display.innerHTML += `<div class="list-item ${item.done ? 'done' : ''}"><div><span class="item-name">${escapeHtml(item.name)}</span><span class="recipe-dots">${dotsHtml}</span></div><div><span class="qty-big">${displayQty}</span><span class="qty-unit">${converted.unit}</span></div><div class="item-actions"><button class="btn-icon btn-icon-check" onclick="toggleItem('${escapeAttr(item.name)}','${escapeAttr(item.unit)}')"><i class="fa-solid fa-${item.done ? 'rotate-left' : 'check'}"></i></button><button class="btn-icon btn-icon-trash" onclick="delItem('${escapeAttr(item.name)}','${escapeAttr(item.unit)}')"><i class="fa-solid fa-trash"></i></button></div></div>`;
+function renderCustomTools() {
+    customTools.forEach(t => {
+        const b = document.createElement('button');
+        b.className = 'btn-3d ' + (t.color || 'btn-purple');
+        b.dataset.id = t.id; b.dataset.tags = t.tags;
+        b.dataset.url = t.url; b.dataset.main = 'perso';
+        b.onclick = () => handleTool(b);
+        b.innerHTML = `
+            <div class="btn-del" onclick="deleteTool('${t.id}')">🗑️</div>
+            <div class="btn-star">★</div>
+            <div class="favicon-badge">${t.icon || '🔗'}</div>
+            <div>${t.title}</div>
+            <div class="count-badge">0</div>`;
+        document.getElementById('mainGrid').insertBefore(b, document.getElementById('btnAddPerso'));
     });
-  });
 }
 
-function renderLabo() {
-  const q = (document.getElementById('labo-search')?.value || '').toLowerCase();
-  const filtered = q ? state.recipes.filter(r => r.name.toLowerCase().includes(q)) : state.recipes;
-  const container = document.getElementById('catalog-display');
-  if (!container) return;
-  if (!filtered.length) { container.innerHTML = `<div class="empty"><i class="fa-solid fa-book-open"></i><p>${q ? 'Aucun résultat' : 'Aucune fiche créée'}</p></div>`; return; }
-  container.innerHTML = filtered.map(r => {
-    const cost = recipeUnitCost(r);
-    return `<div class="catalog-card"><div><div class="catalog-name">${escapeHtml(r.name)}</div><div class="catalog-meta">${r.ingredients.length} ingrédient${r.ingredients.length>1?'s':''}</div>${cost > 0 ? `<div class="catalog-cost"><i class="fa-solid fa-euro-sign" style="font-size:0.7rem"></i> ${cost.toFixed(2)} € / unité</div>` : ''}</div><div class="catalog-actions"><button class="btn-icon btn-icon-edit" onclick="editRecipe(${r.id})"><i class="fa-solid fa-pen"></i></button><button class="btn-icon btn-icon-trash" onclick="deleteRecipe(${r.id})"><i class="fa-solid fa-trash"></i></button></div></div>`;
-  }).join('');
-}
-function renderNav() {
-  const sess = currentSession();
-  const todoCount = sess.list.filter(i => !i.done).length;
-  const badge = document.getElementById('nav-badge');
-  if (todoCount > 0) { badge.textContent = todoCount; badge.style.display = ''; } else { badge.style.display = 'none'; }
+function deleteTool(id) {
+    if (confirm('Supprimer ?')) {
+        customTools = customTools.filter(t => t.id !== id);
+        localStorage.setItem('customTools', JSON.stringify(customTools));
+        location.reload();
+    }
 }
 
-function render() {
-  renderSessionSelector();
-  renderProdView();
-  renderListView();
-  renderLabo();
-  renderNav();
+function resetFilters() {
+    if (confirm('Tout réinitialiser ?')) { localStorage.clear(); location.reload(); }
 }
 
-// ======================== IMPORT JSON ========================
-function handleImportFile(input) {
-  const file = input.files[0];
-  if (!file) return;
-  readImportFile(file);
-  input.value = '';
+/* ══════════════════════════════════════════════
+   MULTIVIEW
+══════════════════════════════════════════════ */
+function toggleMultiview() {
+    multiviewActive = !multiviewActive;
+    document.getElementById('btnMultiview').classList.toggle('active', multiviewActive);
+    if (!multiviewActive) {
+        if (multiviewSelectedTags.length > 0) activeTag = multiviewSelectedTags[0];
+        if (!activeTag) {
+            const tags = MODE_TAGS[mode] || [];
+            activeTag = tags.length > 0 ? tags[0] : null;
+        }
+        multiviewSelectedTags = [];
+        const mv = document.getElementById('multiviewContainer');
+        if (mv) mv.remove();
+        document.getElementById('mainGrid').style.display = '';
+        renderTagFilters();
+        applyFilters();
+    } else {
+        multiviewSelectedTags = activeTag ? [activeTag] : [];
+        renderTagFilters();
+        renderMultiviewGrid();
+    }
 }
-function readImportFile(file) {
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const data = JSON.parse(e.target.result);
-      const recipes = parseImportedRecipes(data);
-      if (!recipes.length) { toast('Aucune fiche valide trouvée', 'error'); return; }
-      showImportModal(recipes);
-    } catch(err) { toast('Fichier JSON invalide', 'error'); }
+
+function getButtonsSortedByClics(tag) {
+    const allBtns = Array.from(document.querySelectorAll('#mainGrid .btn-3d[data-id]'));
+    return allBtns
+        .filter(btn => (btn.dataset.tags || '').includes(tag))
+        .sort((a, b) => (clics[b.dataset.id] || 0) - (clics[a.dataset.id] || 0));
+}
+
+function renderMultiviewGrid() {
+    const existing = document.getElementById('multiviewContainer');
+    if (existing) existing.remove();
+    document.getElementById('mainGrid').style.display = 'none';
+
+    if (multiviewSelectedTags.length === 0) {
+        document.getElementById('mainGrid').style.display = '';
+        document.querySelectorAll('#mainGrid .btn-3d[data-id]').forEach(b => b.classList.add('hidden'));
+        return;
+    }
+
+    const container = document.createElement('div');
+    container.id = 'multiviewContainer';
+    const mobile = isMobile();
+    if (!mobile) container.classList.add('mv-desktop');
+    const n = multiviewSelectedTags.length;
+
+    if (!mobile) {
+        multiviewSelectedTags.forEach(tag => {
+            const btns = getButtonsSortedByClics(tag);
+            const col = document.createElement('div');
+            col.className = 'mv-col';
+            const header = document.createElement('div');
+            header.className = 'mv-col-header';
+            header.textContent = TAG_LABELS[tag] || tag.toUpperCase();
+            col.appendChild(header);
+            if (btns.length === 0) {
+                const empty = document.createElement('div');
+                empty.style.cssText = 'font-size:11px;opacity:0.4;padding:20px 0;';
+                empty.textContent = 'Aucun outil';
+                col.appendChild(empty);
+            } else {
+                const inner = document.createElement('div');
+                inner.className = 'mv-col-inner';
+                btns.forEach(orig => {
+                    const clone = orig.cloneNode(true);
+                    clone.classList.remove('hidden');
+                    const star = clone.querySelector('.btn-star');
+                    if (star) star.classList.toggle('active', favs.includes(orig.dataset.id));
+                    const cnt = clone.querySelector('.count-badge');
+                    if (cnt) cnt.innerText = clics[orig.dataset.id] || 0;
+                    clone.onclick = (e) => {
+                        const oc = orig.getAttribute('onclick');
+                        if (oc) { window.event = e; eval(oc.replace('this', 'orig')); }
+                    };
+                    inner.appendChild(clone);
+                });
+                col.appendChild(inner);
+            }
+            container.appendChild(col);
+        });
+    } else {
+        let col0 = [], col1 = [];
+        if (n === 1) {
+            const allBtns = getButtonsSortedByClics(multiviewSelectedTags[0]).slice(0, 6);
+            const half = Math.ceil(allBtns.length / 2);
+            col0 = allBtns.slice(0, half);
+            col1 = allBtns.slice(half);
+        } else if (n === 2) {
+            col0 = getButtonsSortedByClics(multiviewSelectedTags[0]).slice(0, 3);
+            col1 = getButtonsSortedByClics(multiviewSelectedTags[1]).slice(0, 3);
+        } else {
+            const tagBtns = multiviewSelectedTags.slice(0, 3).map(tag => getButtonsSortedByClics(tag));
+            col0 = tagBtns.map(tb => tb[0] || null).filter(Boolean);
+            col1 = tagBtns.map(tb => tb[1] || null).filter(Boolean);
+        }
+        [col0, col1].forEach((colBtns, colIdx) => {
+            const col = document.createElement('div');
+            col.className = 'mv-col';
+            const header = document.createElement('div');
+            header.className = 'mv-col-header';
+            if (n === 1) {
+                header.textContent = TAG_LABELS[multiviewSelectedTags[0]] || multiviewSelectedTags[0];
+            } else if (n === 2) {
+                header.textContent = TAG_LABELS[multiviewSelectedTags[colIdx]] || multiviewSelectedTags[colIdx];
+            } else {
+                header.textContent = multiviewSelectedTags.slice(0, 3).map(t => TAG_DISPLAY[t] || t).join(' · ');
+            }
+            col.appendChild(header);
+            if (colBtns.length === 0) {
+                const empty = document.createElement('div');
+                empty.style.cssText = 'font-size:11px;opacity:0.4;padding:20px 0;text-align:center;';
+                empty.textContent = 'Aucun outil';
+                col.appendChild(empty);
+            } else {
+                colBtns.forEach(orig => {
+                    const clone = orig.cloneNode(true);
+                    clone.classList.remove('hidden');
+                    const star = clone.querySelector('.btn-star');
+                    if (star) star.classList.toggle('active', favs.includes(orig.dataset.id));
+                    const cnt = clone.querySelector('.count-badge');
+                    if (cnt) cnt.innerText = clics[orig.dataset.id] || 0;
+                    clone.onclick = (e) => {
+                        const oc = orig.getAttribute('onclick');
+                        if (oc) { window.event = e; eval(oc.replace('this', 'orig')); }
+                    };
+                    col.appendChild(clone);
+                });
+            }
+            container.appendChild(col);
+        });
+    }
+
+    document.getElementById('mainGrid').parentNode.insertBefore(
+        container, document.getElementById('mainGrid').nextSibling
+    );
+}
+
+/* ══════════════════════════════════════════════
+   FUSION JSON — Deep Merge
+══════════════════════════════════════════════ */
+
+/**
+ * mergeValues(baseStr, patchStr)
+ * Les deux arguments sont des STRINGS telles que stockées dans localStorage.
+ * On les désérialise, on fusionne, on resérialise.
+ *
+ * Règles :
+ *  - Objets  → fusion récursive des clés
+ *  - Nombres → addition
+ *  - Tableaux → concat + déduplication (par .id, .text, ou JSON complet)
+ *  - Strings simples / autres → patch écrase base
+ */
+function mergeValues(baseStr, patchStr) {
+    function tryParse(v) {
+        if (typeof v !== 'string') return { val: v, parsed: true };
+        try { return { val: JSON.parse(v), parsed: true }; }
+        catch(e) { return { val: v, parsed: false }; }
+    }
+
+    const b = tryParse(baseStr);
+    const p = tryParse(patchStr);
+
+    // Si l'un des deux n'est pas du JSON valide → patch écrase
+    if (!b.parsed || !p.parsed) return patchStr;
+
+    function merge(bv, pv) {
+        if (bv === undefined || bv === null) return pv;
+        if (pv === undefined || pv === null) return bv;
+
+        // Deux objets non-tableau
+        if (typeof bv === 'object' && !Array.isArray(bv) &&
+            typeof pv === 'object' && !Array.isArray(pv)) {
+            const r = Object.assign({}, bv);
+            Object.keys(pv).forEach(k => { r[k] = merge(bv[k], pv[k]); });
+            return r;
+        }
+
+        // Deux nombres → addition
+        if (typeof bv === 'number' && typeof pv === 'number') return bv + pv;
+
+        // Deux tableaux → concat + déduplication
+        if (Array.isArray(bv) && Array.isArray(pv)) {
+            const seen = new Map();
+            return bv.concat(pv).filter(item => {
+                let key;
+                if (item && typeof item === 'object') {
+                    // Déduplication par id, puis text, puis JSON complet
+                    key = item.id   !== undefined ? 'id:'   + String(item.id)
+                        : item.text !== undefined ? 'text:' + String(item.text)
+                        : 'json:' + JSON.stringify(item);
+                } else {
+                    key = 'prim:' + String(item);
+                }
+                if (seen.has(key)) return false;
+                seen.set(key, true);
+                return true;
+            });
+        }
+
+        // Sinon → patch écrase
+        return pv;
+    }
+
+    const merged = merge(b.val, p.val);
+    return JSON.stringify(merged);
+}
+
+let _pendingFusionResult = null;
+
+/* Appelé quand l'utilisateur choisit un fichier via input ou drag */
+function onFusionFileSelected(input) {
+    const file = input.files && input.files[0];
+    if (!file) return;
+    const label = document.getElementById('fusionFileName');
+    if (label) label.textContent = file.name;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        let patchData;
+        try {
+            const raw = e.target.result.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
+            patchData = JSON.parse(raw);
+            if (typeof patchData !== 'object' || patchData === null) throw new Error('Format invalide');
+        } catch(err) {
+            alert('Fichier JSON invalide : ' + err.message);
+            return;
+        }
+
+        // ── Base = localStorage actuel (clés applicatives uniquement) ──
+        const INTERNAL_KEYS = new Set(['__last_backup_file__', '__last_backup_idb__', '__weekly_alert_shown__']);
+        const baseData = {};
+        for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            if (!INTERNAL_KEYS.has(k) && !k.startsWith('__')) {
+                baseData[k] = localStorage.getItem(k);
+            }
+        }
+
+        // ── Fusion clé par clé ──
+        const merged = Object.assign({}, baseData);
+        Object.keys(patchData).forEach(k => {
+            // Ignorer clés internes du fichier importé
+            if (INTERNAL_KEYS.has(k) || k.startsWith('__')) return;
+
+            // Normaliser la valeur du patch en string
+            const patchStr = typeof patchData[k] === 'string'
+                ? patchData[k]
+                : JSON.stringify(patchData[k]);
+
+            if (merged[k] !== undefined) {
+                merged[k] = mergeValues(merged[k], patchStr);
+            } else {
+                merged[k] = patchStr;
+            }
+        });
+
+        _pendingFusionResult = merged;
+
+        // ── Aperçu lisible ──
+        const preview = {};
+        Object.keys(merged).forEach(k => {
+            try { preview[k] = JSON.parse(merged[k]); } catch(e) { preview[k] = merged[k]; }
+        });
+        document.getElementById('fusionResultPre').textContent = JSON.stringify(preview, null, 2);
+        document.getElementById('fusionResultBox').style.display = 'block';
+        document.getElementById('btnSaveFusion').style.display = '';
+    };
+    reader.onerror = function() { alert('Impossible de lire le fichier.'); };
+    reader.readAsText(file);
+}
+
+function saveFusion() {
+    if (!_pendingFusionResult) return;
+
+    // ── Écrire uniquement les clés applicatives dans localStorage ──
+    // Les clés de sauvegarde (__last_backup_*) sont PRÉSERVÉES (on ne les touche pas)
+    const SKIP = new Set(['__last_backup_file__', '__last_backup_idb__', '__weekly_alert_shown__']);
+    Object.keys(_pendingFusionResult).forEach(k => {
+        if (SKIP.has(k)) return;
+        try {
+            // Contourner l'interception StorageManager pour éviter les sauvegardes en cascade
+            Storage.prototype._setItem
+                ? Storage.prototype._setItem.call(localStorage, k, _pendingFusionResult[k])
+                : localStorage.setItem(k, _pendingFusionResult[k]);
+        } catch(ex) {}
+    });
+
+    // Déclencher une sauvegarde IDB unique après la fusion complète
+    if (window.StorageManager && window.StorageManager.saveToIDB) {
+        window.StorageManager.saveToIDB();
+    }
+
+    closeFusionModal();
+    _pendingFusionResult = null;
+
+    const t = document.getElementById('__sm_toast__') || document.getElementById('mvToast');
+    if (t) {
+        t.textContent = '✓ Fusion appliquée — rechargement…';
+        t.style.background = '#32a852';
+        t.style.display = 'block';
+        t.style.opacity = '1';
+    }
+    setTimeout(() => { location.reload(); }, 900);
+}
+
+/* Lecture directe d'un File object (drag & drop) */
+function onFusionFileDirect(file) {
+    if (!file) return;
+    const label = document.getElementById('fusionFileName');
+    if (label) label.textContent = file.name;
+    const fakeInput = { files: [file] };
+    onFusionFileSelected(fakeInput);
+}
+
+function closeFusionModal() {
+    closeTool('fusionModal');
+    _pendingFusionResult = null;
+    const fi = document.getElementById('fusionFileInput');
+    if (fi) fi.value = '';
+    const lbl = document.getElementById('fusionFileName');
+    if (lbl) lbl.textContent = 'Appuyez ici pour choisir un fichier JSON';
+    document.getElementById('fusionResultBox').style.display = 'none';
+    document.getElementById('btnSaveFusion').style.display = 'none';
+}
+</script>
+
+<!-- ══════════════════════════════════════════════
+     STORAGE MANAGER v2 — Persistance & Sauvegarde
+     IndexedDB (auto) + Fichier (manuel)
+     Compatible Android WebView · Mobile-First
+══════════════════════════════════════════════ -->
+<script>
+(function (global) {
+  'use strict';
+
+  var CONFIG = {
+    BACKUP_FILE_KEY  : '__last_backup_file__',
+    BACKUP_IDB_KEY   : '__last_backup_idb__',
+    IDB_NAME         : 'StorageManagerDB',
+    IDB_STORE        : 'backups',
+    IDB_RECORD_KEY   : 'latest',
+    FILENAME         : 'backup-app.json',
+    INDICATOR_ID     : '__sm_indicator__',
+    FILE_INPUT_ID    : '__sm_file_input__',
+    TOAST_ID         : '__sm_toast__',
+    TOAST_DURATION   : 3000,
+    Z_INDEX          : 99990,
+    CLIC_THRESHOLD   : 50,
+    MIN_CHARS        : 30
   };
-  reader.readAsText(file);
-}
-function parseImportedRecipes(data) {
-  let candidates = [];
-  if (data && Array.isArray(data.recipes)) candidates = data.recipes;
-  else if (Array.isArray(data)) candidates = data;
-  else if (data && typeof data === 'object' && data.name && Array.isArray(data.ingredients)) candidates = [data];
-  return candidates.filter(r => r && typeof r.name === 'string' && r.name.trim() && Array.isArray(r.ingredients) && r.ingredients.length > 0).map(r => ({ id: r.id || Date.now() + Math.random(), name: r.name.trim(), ingredients: r.ingredients.map(i => ({ name: i.name || '', qty: parseFloat(i.qty) || 0, unit: i.unit || 'pièce', cat: i.cat || 'Autre', price: parseFloat(i.price) || 0 })).filter(i => i.name && i.qty > 0) })).filter(r => r.ingredients.length > 0);
-}
-function showImportModal(recipes) {
-  const existingNames = new Set(state.recipes.map(r => r.name.toLowerCase()));
-  const itemsHtml = recipes.map((r, idx) => {
-    const cost = r.ingredients.reduce((s, i) => s + (i.price || 0), 0);
-    const costText = cost > 0 ? ` · ${cost.toFixed(2)} €` : '';
-    const exists = existingNames.has(r.name.toLowerCase());
-    const badge = exists ? `<span class="badge-exists"><i class="fa-solid fa-triangle-exclamation"></i> Existe déjà</span>` : `<span class="badge-new"><i class="fa-solid fa-plus"></i> Nouveau</span>`;
-    return `<label class="import-recipe-item"><input type="checkbox" class="import-check" data-idx="${idx}" ${exists ? '' : 'checked'}><div class="info"><div class="name">${escapeHtml(r.name)}</div><div class="meta">${r.ingredients.length} ingrédient${r.ingredients.length>1?'s':''}${costText}</div><div>${badge}</div></div></label>`;
-  }).join('');
-  const modal = document.createElement('div'); modal.className = 'modal-overlay'; modal.id = 'import-modal';
-  modal.innerHTML = `<div class="modal-sheet"><div class="modal-handle"></div><div class="modal-title"><i class="fa-solid fa-file-import" style="color:var(--primary);margin-right:8px;"></i>${recipes.length} fiche${recipes.length>1?'s':''} détectée${recipes.length>1?'s':''}</div><div class="modal-sub">Sélectionne les fiches à importer. Les fiches existantes seront <strong style="color:var(--amber)">écrasées</strong> si cochées.</div><div id="import-list">${itemsHtml}</div><div class="modal-actions"><button class="btn btn-neutral" onclick="closeImportModal()">Annuler</button><button class="btn btn-success" id="confirm-import-btn">Importer la sélection</button></div></div>`;
-  modal.addEventListener('click', e => { if (e.target === modal) closeImportModal(); });
-  document.body.appendChild(modal);
-  document.getElementById('confirm-import-btn').onclick = () => confirmImport(recipes);
-}
-function confirmImport(recipes) {
-  const checks = document.querySelectorAll('#import-modal .import-check');
-  const selectedIndices = []; checks.forEach(cb => { if (cb.checked) selectedIndices.push(parseInt(cb.dataset.idx)); });
-  if (selectedIndices.length === 0) { toast('Aucune fiche sélectionnée', 'error'); return; }
-  let added = 0, replaced = 0;
-  selectedIndices.forEach(idx => {
-    const r = recipes[idx];
-    const existingIdx = state.recipes.findIndex(x => x.name.toLowerCase() === r.name.toLowerCase());
-    if (existingIdx >= 0) { state.recipes[existingIdx] = { ...r, id: state.recipes[existingIdx].id }; replaced++; }
-    else { state.recipes.push({ ...r, id: Date.now() + Math.random() }); added++; }
-  });
-  closeImportModal(); saveState();
-  const msgParts = []; if (added) msgParts.push(`${added} ajoutée${added>1?'s':''}`); if (replaced) msgParts.push(`${replaced} mise${replaced>1?'s':''} à jour`);
-  toast(msgParts.join(', ') + ' ✓', 'success');
-}
-function closeImportModal() { const modal = document.getElementById('import-modal'); if (modal) modal.remove(); }
 
-function init() { loadState(); cancelEdit(); render(); }
-init();
+  var _clicsSinceBackup = 0;
+
+  /* 1. PERSISTANCE */
+  function initStoragePersistence() {
+    if (navigator.storage && navigator.storage.persist) {
+      navigator.storage.persist().then(function (granted) {
+        console.log('[StorageManager] Persistance : ' + (granted ? 'activée ✓' : 'refusée'));
+      }).catch(function (err) { console.warn('[StorageManager] persist() :', err); });
+    }
+  }
+
+  /* 2. INDEXEDDB */
+  function _openIDB(callback) {
+    try {
+      var req = indexedDB.open(CONFIG.IDB_NAME, 1);
+      req.onupgradeneeded = function (e) {
+        var db = e.target.result;
+        if (!db.objectStoreNames.contains(CONFIG.IDB_STORE))
+          db.createObjectStore(CONFIG.IDB_STORE);
+      };
+      req.onsuccess = function (e) { callback(null, e.target.result); };
+      req.onerror   = function (e) { callback(e.target.error, null); };
+    } catch (err) { callback(err, null); }
+  }
+
+  function saveToIDB(onDone) {
+    _openIDB(function (err, db) {
+      if (err || !db) { if (onDone) onDone(false); return; }
+      try {
+        var data = {};
+        for (var i = 0; i < localStorage.length; i++) {
+          var key = localStorage.key(i);
+          if (key !== CONFIG.BACKUP_FILE_KEY && key !== CONFIG.BACKUP_IDB_KEY)
+            data[key] = localStorage.getItem(key);
+        }
+        var tx = db.transaction(CONFIG.IDB_STORE, 'readwrite');
+        var store = tx.objectStore(CONFIG.IDB_STORE);
+        var putReq = store.put({ data: data, savedAt: new Date().toISOString() }, CONFIG.IDB_RECORD_KEY);
+        putReq.onsuccess = function () {
+          Storage.prototype._setItem
+            ? Storage.prototype._setItem.call(localStorage, CONFIG.BACKUP_IDB_KEY, new Date().toISOString())
+            : localStorage.setItem(CONFIG.BACKUP_IDB_KEY, new Date().toISOString());
+          refreshIndicatorState();
+          if (onDone) onDone(true);
+        };
+        putReq.onerror = function (e) {
+          console.warn('[StorageManager] Erreur écriture IDB :', e.target.error);
+          if (onDone) onDone(false);
+        };
+      } catch (txErr) { console.warn('[StorageManager] Transaction IDB :', txErr); if (onDone) onDone(false); }
+    });
+  }
+
+  function restoreFromIDB(onDone) {
+    _openIDB(function (err, db) {
+      if (err || !db) { if (onDone) onDone(false); return; }
+      try {
+        var tx = db.transaction(CONFIG.IDB_STORE, 'readonly');
+        var store = tx.objectStore(CONFIG.IDB_STORE);
+        var getReq = store.get(CONFIG.IDB_RECORD_KEY);
+        getReq.onsuccess = function (e) {
+          var record = e.target.result;
+          if (!record || !record.data) { if (onDone) onDone(false); return; }
+          var data = record.data;
+          var keys = Object.keys(data).length;
+          var ok = global.confirm(
+            'Restaurer ' + keys + ' entrée(s) depuis la sauvegarde temporaire ?\n(' +
+            _formatDate(new Date(record.savedAt)) + ')\n\nLes données actuelles seront remplacées.'
+          );
+          if (!ok) { if (onDone) onDone(false); return; }
+          localStorage.clear();
+          Object.keys(data).forEach(function (k) { try { localStorage.setItem(k, data[k]); } catch (e) {} });
+          showToast('✓ Données restaurées — rechargement…');
+          setTimeout(function () { global.location.reload(); }, 900);
+          if (onDone) onDone(true);
+        };
+        getReq.onerror = function () { if (onDone) onDone(false); };
+      } catch (e) { if (onDone) onDone(false); }
+    });
+  }
+
+  /* 3. EXPORT FICHIER */
+  function exportToFile() {
+    try {
+      var data = {};
+      for (var i = 0; i < localStorage.length; i++) {
+        var key = localStorage.key(i);
+        if (key !== CONFIG.BACKUP_FILE_KEY && key !== CONFIG.BACKUP_IDB_KEY)
+          data[key] = localStorage.getItem(key);
+      }
+      var json = JSON.stringify(data, null, 2);
+      var blob = new Blob([json], { type: 'application/json' });
+      var url  = URL.createObjectURL(blob);
+      var a    = document.createElement('a');
+      a.href = url; a.download = CONFIG.FILENAME; a.style.display = 'none';
+      document.body.appendChild(a); a.click();
+      setTimeout(function () { document.body.removeChild(a); URL.revokeObjectURL(url); }, 1500);
+      localStorage.setItem(CONFIG.BACKUP_FILE_KEY, new Date().toISOString());
+      refreshIndicatorState();
+      showToast('✓ Backup téléchargé');
+    } catch (err) {
+      console.error('[StorageManager] Erreur export fichier :', err);
+      showToast('Erreur lors de l\'export', true);
+    }
+  }
+
+  /* 4. IMPORT FICHIER */
+  function importFromFile() {
+    var fi = document.getElementById(CONFIG.FILE_INPUT_ID);
+    if (fi) fi.click();
+  }
+
+  function _handleFileImport(event) {
+    var file = event.target.files && event.target.files[0];
+    if (!file) return;
+    event.target.value = '';
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      try {
+        var raw     = e.target.result;
+        var cleaned = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+        var data    = JSON.parse(cleaned);
+        if (typeof data !== 'object' || data === null) throw new Error('Format invalide');
+        var keys = Object.keys(data).length;
+        var ok   = global.confirm('Restaurer ' + keys + ' entrée(s) depuis le backup ?\n\nLes données actuelles seront remplacées.');
+        if (!ok) return;
+        localStorage.clear();
+        Object.keys(data).forEach(function (k) { try { localStorage.setItem(k, data[k]); } catch (e) {} });
+        showToast('✓ Données restaurées — rechargement…');
+        setTimeout(function () { global.location.reload(); }, 900);
+      } catch (err) {
+        console.error('[StorageManager] Erreur import :', err);
+        showToast('Fichier invalide ou corrompu', true);
+      }
+    };
+    reader.onerror = function () { showToast('Impossible de lire le fichier', true); };
+    reader.readAsText(file);
+  }
+
+  /* 4b. PARTAGE */
+  function shareBackup() {
+    try {
+      var data = {};
+      for (var i = 0; i < localStorage.length; i++) {
+        var key = localStorage.key(i);
+        if (key !== CONFIG.BACKUP_FILE_KEY && key !== CONFIG.BACKUP_IDB_KEY)
+          data[key] = localStorage.getItem(key);
+      }
+      var json = JSON.stringify(data, null, 2);
+      var blob = new Blob([json], { type: 'application/json' });
+      var file = new File([blob], CONFIG.FILENAME, { type: 'application/json' });
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({ title: 'Backup application', text: 'Sauvegarde des données — ' + _formatDate(new Date()), files: [file] })
+          .then(function () { showToast('✓ Backup partagé'); })
+          .catch(function (err) { if (err.name !== 'AbortError') showToast('Erreur lors du partage', true); });
+      } else if (navigator.share) {
+        navigator.share({ title: 'Backup application', text: json })
+          .catch(function (err) { if (err.name !== 'AbortError') showToast('Erreur lors du partage', true); });
+      } else if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(json)
+          .then(function () { showToast('✓ Backup copié dans le presse-papier'); })
+          .catch(function () { showToast('Partage non supporté sur cet appareil', true); });
+      } else {
+        showToast('Partage non supporté sur cet appareil', true);
+      }
+    } catch (err) {
+      console.error('[StorageManager] Erreur partage :', err);
+      showToast('Erreur lors du partage', true);
+    }
+  }
+
+  /* 5. SAUVEGARDE AUTO */
+  function handleAutoSave(key) {
+    if (key === 'favs')                        return;
+    if (key === CONFIG.BACKUP_FILE_KEY)        return;
+    if (key === CONFIG.BACKUP_IDB_KEY)         return;
+    if (key === '__weekly_alert_shown__')      return;
+    if (key === 'clics') {
+      _clicsSinceBackup++;
+      if (_clicsSinceBackup >= CONFIG.CLIC_THRESHOLD) { _clicsSinceBackup = 0; saveToIDB(); }
+      return;
+    }
+    saveToIDB();
+  }
+
+  /* 6. TAILLE localStorage */
+  function _getLocalStorageSize() {
+    var total = 0;
+    for (var i = 0; i < localStorage.length; i++) {
+      var key = localStorage.key(i);
+      if (key !== CONFIG.BACKUP_FILE_KEY && key !== CONFIG.BACKUP_IDB_KEY)
+        total += (localStorage.getItem(key) || '').length;
+    }
+    return total;
+  }
+
+  /* 7. TOAST */
+  function showToast(message, isError) {
+    var toast = document.getElementById(CONFIG.TOAST_ID);
+    if (!toast) return;
+    toast.textContent      = message;
+    toast.style.background = isError ? '#ff4b4b' : '#32a852';
+    toast.style.display    = 'block';
+    toast.style.opacity    = '1';
+    clearTimeout(toast.__smTimer);
+    toast.__smTimer = setTimeout(function () {
+      toast.style.opacity = '0';
+      setTimeout(function () { toast.style.display = 'none'; }, 300);
+    }, CONFIG.TOAST_DURATION);
+  }
+
+  /* 8. UI — Indicateur flottant */
+  function createUIIndicator() {
+    if (document.getElementById(CONFIG.INDICATOR_ID)) return;
+
+    /* Toast — réutilise #mvToast existant */
+    var existingToast = document.getElementById('mvToast');
+    if (!existingToast) {
+      var toast = document.createElement('div');
+      toast.id = CONFIG.TOAST_ID;
+      _applyStyles(toast, {
+        display: 'none', position: 'fixed', bottom: '30px',
+        left: '50%', transform: 'translateX(-50%)', color: 'white',
+        padding: '12px 20px', borderRadius: '16px', fontSize: '12px',
+        fontWeight: '700', textAlign: 'center', maxWidth: '320px',
+        width: '90%', boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+        zIndex: String(CONFIG.Z_INDEX + 1), opacity: '1',
+        transition: 'opacity 0.3s ease', fontFamily: 'inherit',
+        pointerEvents: 'none'
+      });
+      document.body.appendChild(toast);
+    } else {
+      existingToast.id = CONFIG.TOAST_ID;
+    }
+
+    /* Input file caché */
+    var fileInput = document.createElement('input');
+    fileInput.type = 'file'; fileInput.accept = '.json';
+    fileInput.id = CONFIG.FILE_INPUT_ID; fileInput.style.display = 'none';
+    fileInput.addEventListener('change', _handleFileImport);
+    document.body.appendChild(fileInput);
+
+    /* Conteneur indicateur */
+    var indicator = document.createElement('div');
+    indicator.id = CONFIG.INDICATOR_ID;
+    _applyStyles(indicator, {
+      position: 'fixed', bottom: '20px', right: '16px',
+      zIndex: String(CONFIG.Z_INDEX), display: 'flex',
+      flexDirection: 'column', alignItems: 'flex-end', gap: '8px',
+      userSelect: 'none', WebkitUserSelect: 'none'
+    });
+
+    /* Bouton ☁️ */
+    var mainBtn = document.createElement('button');
+    mainBtn.id = '__sm_main_btn__';
+    mainBtn.setAttribute('aria-label', 'Gestionnaire de sauvegarde');
+    _applyStyles(mainBtn, {
+      width: '44px', height: '44px', borderRadius: '14px',
+      border: '1.5px solid rgba(255,255,255,0.15)',
+      background: 'rgba(30,30,50,0.85)', color: 'white',
+      fontSize: '20px', cursor: 'pointer',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      boxShadow: '0 4px 16px rgba(0,0,0,0.35)',
+      backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+      transition: 'transform 0.15s ease',
+      outline: 'none', padding: '0', position: 'relative'
+    });
+    mainBtn.textContent = '💾';
+
+    var dot = document.createElement('span');
+    dot.id = '__sm_dot__';
+    _applyStyles(dot, {
+      position: 'absolute', top: '-3px', right: '-3px',
+      width: '11px', height: '11px', borderRadius: '50%',
+      border: '2px solid rgba(23,23,35,0.9)', background: '#32a852',
+      transition: 'background 0.4s ease'
+    });
+    mainBtn.appendChild(dot);
+
+    /* Panel */
+    var panel = document.createElement('div');
+    panel.id = '__sm_panel__';
+    _applyStyles(panel, {
+      display: 'none', flexDirection: 'column', gap: '10px',
+      background: 'rgba(23,23,40,0.97)',
+      border: '1px solid rgba(255,255,255,0.12)',
+      borderRadius: '20px', padding: '16px',
+      boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+      backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+      minWidth: '270px'
+    });
+
+    var panelTitle = document.createElement('div');
+    panelTitle.textContent = '💾 Sauvegardes';
+    _applyStyles(panelTitle, {
+      fontSize: '12px', fontWeight: '800', textTransform: 'uppercase',
+      letterSpacing: '0.8px', opacity: '0.7', color: 'white',
+      fontFamily: 'inherit', marginBottom: '2px'
+    });
+    panel.appendChild(panelTitle);
+
+    /* Bloc IDB */
+    var idbBlock = document.createElement('div');
+    idbBlock.id = '__sm_idb_block__';
+    _applyStyles(idbBlock, { padding: '10px 12px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' });
+    var idbRow = document.createElement('div');
+    _applyStyles(idbRow, { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px' });
+    var idbDot = document.createElement('span');
+    idbDot.id = '__sm_idb_dot__';
+    _applyStyles(idbDot, { width: '8px', height: '8px', borderRadius: '50%', background: '#32a852', flexShrink: '0', transition: 'background 0.3s ease' });
+    var idbTitle = document.createElement('span');
+    idbTitle.textContent = '⚡ Sauvegarde temporaire';
+    _applyStyles(idbTitle, { fontSize: '11px', fontWeight: '700', color: 'white', fontFamily: 'inherit' });
+    idbRow.appendChild(idbDot); idbRow.appendChild(idbTitle);
+    var idbDate = document.createElement('div');
+    idbDate.id = '__sm_idb_date__';
+    _applyStyles(idbDate, { fontSize: '10px', opacity: '0.5', color: 'white', fontFamily: 'inherit', paddingLeft: '16px' });
+    idbBlock.appendChild(idbRow); idbBlock.appendChild(idbDate);
+    var restoreIdbBtn = _createPanelButton('↩️ Restaurer cette sauvegarde', 'rgba(255,255,255,0.08)', function () { restoreFromIDB(); togglePanel(false); });
+    restoreIdbBtn.style.fontSize = '11px'; restoreIdbBtn.style.padding = '8px 12px';
+    restoreIdbBtn.style.marginTop = '6px'; restoreIdbBtn.style.borderRadius = '10px';
+    idbBlock.appendChild(restoreIdbBtn);
+    panel.appendChild(idbBlock);
+
+    /* Bloc Fichier */
+    var fileBlock = document.createElement('div');
+    fileBlock.id = '__sm_file_block__';
+    _applyStyles(fileBlock, { padding: '10px 12px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' });
+    var fileRow = document.createElement('div');
+    _applyStyles(fileRow, { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px' });
+    var fileDot = document.createElement('span');
+    fileDot.id = '__sm_file_dot__';
+    _applyStyles(fileDot, { width: '8px', height: '8px', borderRadius: '50%', background: '#ff8c00', flexShrink: '0', transition: 'background 0.3s ease' });
+    var fileTitle = document.createElement('span');
+    fileTitle.textContent = '📁 Backup fichier';
+    _applyStyles(fileTitle, { fontSize: '11px', fontWeight: '700', color: 'white', fontFamily: 'inherit' });
+    fileRow.appendChild(fileDot); fileRow.appendChild(fileTitle);
+    var fileDate = document.createElement('div');
+    fileDate.id = '__sm_file_date__';
+    _applyStyles(fileDate, { fontSize: '10px', opacity: '0.5', color: 'white', fontFamily: 'inherit', paddingLeft: '16px' });
+    fileBlock.appendChild(fileRow); fileBlock.appendChild(fileDate);
+
+    /* ── Ligne 3 boutons : Restaurer | Fusionner | Envoyer ── */
+    var fileBtnRow = document.createElement('div');
+    _applyStyles(fileBtnRow, { display: 'flex', gap: '5px', marginTop: '8px', flexWrap: 'wrap' });
+
+    var restoreFileBtn = document.createElement('button');
+    restoreFileBtn.textContent = '↩️ Restaurer';
+    _applyStyles(restoreFileBtn, { flex: '1', minWidth: '72px', padding: '9px 6px', border: 'none', borderRadius: '10px', background: 'rgba(58,58,191,0.7)', color: 'white', fontSize: '11px', fontWeight: '700', cursor: 'pointer', fontFamily: 'inherit', WebkitTapHighlightColor: 'transparent', outline: 'none', transition: 'opacity 0.15s ease' });
+    restoreFileBtn.addEventListener('click', function () { importFromFile(); togglePanel(false); });
+    restoreFileBtn.addEventListener('touchstart', function () { restoreFileBtn.style.opacity = '0.7'; }, { passive: true });
+    restoreFileBtn.addEventListener('touchend',   function () { restoreFileBtn.style.opacity = '1'; },   { passive: true });
+
+    /* ══ BOUTON FUSIONNER (NOUVEAU) ══ */
+    var fusionBtn = document.createElement('button');
+    fusionBtn.textContent = '🔀 Fusionner';
+    _applyStyles(fusionBtn, { flex: '1', minWidth: '72px', padding: '9px 6px', border: 'none', borderRadius: '10px', background: 'rgba(138,62,191,0.75)', color: 'white', fontSize: '11px', fontWeight: '700', cursor: 'pointer', fontFamily: 'inherit', WebkitTapHighlightColor: 'transparent', outline: 'none', transition: 'opacity 0.15s ease' });
+    fusionBtn.addEventListener('click', function () {
+      togglePanel(false);
+      // Réinitialiser l'état de la modale avant ouverture
+      _pendingFusionResult = null;
+      var fi2 = document.getElementById('fusionFileInput');
+      if (fi2) fi2.value = '';
+      var lbl2 = document.getElementById('fusionFileName');
+      if (lbl2) lbl2.textContent = 'Appuyez ici pour choisir un fichier JSON';
+      var rb = document.getElementById('fusionResultBox');
+      if (rb) rb.style.display = 'none';
+      var sb = document.getElementById('btnSaveFusion');
+      if (sb) sb.style.display = 'none';
+      openTool('fusionModal');
+    });
+    fusionBtn.addEventListener('touchstart', function () { fusionBtn.style.opacity = '0.7'; }, { passive: true });
+    fusionBtn.addEventListener('touchend',   function () { fusionBtn.style.opacity = '1'; },   { passive: true });
+
+    var shareFileBtn = document.createElement('button');
+    shareFileBtn.textContent = '📤 Envoyer';
+    _applyStyles(shareFileBtn, { flex: '1', minWidth: '72px', padding: '9px 6px', border: 'none', borderRadius: '10px', background: 'rgba(45,138,78,0.7)', color: 'white', fontSize: '11px', fontWeight: '700', cursor: 'pointer', fontFamily: 'inherit', WebkitTapHighlightColor: 'transparent', outline: 'none', transition: 'opacity 0.15s ease' });
+    shareFileBtn.addEventListener('click', function () { shareBackup(); togglePanel(false); });
+    shareFileBtn.addEventListener('touchstart', function () { shareFileBtn.style.opacity = '0.7'; }, { passive: true });
+    shareFileBtn.addEventListener('touchend',   function () { shareFileBtn.style.opacity = '1'; },   { passive: true });
+
+    fileBtnRow.appendChild(restoreFileBtn);
+    fileBtnRow.appendChild(fusionBtn);
+    fileBtnRow.appendChild(shareFileBtn);
+    fileBlock.appendChild(fileBtnRow);
+    panel.appendChild(fileBlock);
+
+    var sep = document.createElement('div');
+    _applyStyles(sep, { height: '1px', background: 'rgba(255,255,255,0.08)', margin: '2px 0' });
+    panel.appendChild(sep);
+
+    panel.appendChild(_createPanelButton('⬇️ Créer un backup maintenant', '#3a3abf', function () { exportToFile(); togglePanel(false); }));
+
+    mainBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var isOpen = panel.style.display === 'flex';
+      togglePanel(!isOpen);
+    });
+    document.addEventListener('click', function (e) {
+      if (!indicator.contains(e.target)) togglePanel(false);
+    });
+    mainBtn.addEventListener('touchstart', function () { mainBtn.style.transform = 'scale(0.93)'; }, { passive: true });
+    mainBtn.addEventListener('touchend',   function () { mainBtn.style.transform = 'scale(1)'; },   { passive: true });
+
+    indicator.appendChild(panel);
+    indicator.appendChild(mainBtn);
+    document.body.appendChild(indicator);
+    refreshIndicatorState();
+
+    function togglePanel(open) {
+      panel.style.display = open ? 'flex' : 'none';
+      if (open) _updatePanelDates();
+    }
+  }
+
+  function _updatePanelDates() {
+    var idbDate  = document.getElementById('__sm_idb_date__');
+    var fileDate = document.getElementById('__sm_file_date__');
+    if (idbDate) {
+      var idbRaw = localStorage.getItem(CONFIG.BACKUP_IDB_KEY);
+      idbDate.textContent = idbRaw ? _timeAgo(new Date(idbRaw)) : 'Aucune sauvegarde';
+    }
+    if (fileDate) {
+      var fileRaw = localStorage.getItem(CONFIG.BACKUP_FILE_KEY);
+      fileDate.textContent = fileRaw ? _formatDate(new Date(fileRaw)) : 'Aucun backup fichier';
+    }
+  }
+
+  function refreshIndicatorState() {
+    var idbDot = document.getElementById('__sm_idb_dot__');
+    var idbRaw = localStorage.getItem(CONFIG.BACKUP_IDB_KEY);
+    if (idbDot) idbDot.style.background = idbRaw ? '#32a852' : '#ff8c00';
+    var fileDot = document.getElementById('__sm_file_dot__');
+    var fileRaw = localStorage.getItem(CONFIG.BACKUP_FILE_KEY);
+    if (fileDot) {
+      var size = _getLocalStorageSize();
+      var needsAlert = size > CONFIG.MIN_CHARS && !fileRaw;
+      fileDot.style.background = needsAlert ? '#ff8c00' : (fileRaw ? '#32a852' : '#888');
+    }
+    var dot = document.getElementById('__sm_dot__');
+    if (dot) {
+      var globalAlert = !idbRaw || (_getLocalStorageSize() > CONFIG.MIN_CHARS && !localStorage.getItem(CONFIG.BACKUP_FILE_KEY));
+      dot.style.background = globalAlert ? '#ff8c00' : '#32a852';
+    }
+  }
+
+  /* UTILITAIRES */
+  function _applyStyles(el, styles) {
+    Object.keys(styles).forEach(function (p) { el.style[p] = styles[p]; });
+  }
+
+  function _createPanelButton(label, bgColor, onClick) {
+    var btn = document.createElement('button');
+    btn.textContent = label;
+    _applyStyles(btn, {
+      display: 'block', width: '100%', padding: '11px 14px',
+      border: 'none', borderRadius: '12px', background: bgColor,
+      color: 'white', fontSize: '12px', fontWeight: '700',
+      cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit',
+      transition: 'opacity 0.15s ease',
+      WebkitTapHighlightColor: 'transparent', outline: 'none'
+    });
+    btn.addEventListener('click', onClick);
+    btn.addEventListener('touchstart', function () { btn.style.opacity = '0.75'; }, { passive: true });
+    btn.addEventListener('touchend',   function () { btn.style.opacity = '1'; },   { passive: true });
+    return btn;
+  }
+
+  function _timeAgo(date) {
+    var diffMs   = Date.now() - date.getTime();
+    var diffMins = Math.floor(diffMs / 60000);
+    var diffH    = Math.floor(diffMs / 3600000);
+    var diffD    = Math.floor(diffMs / 86400000);
+    if (diffMins < 1)  return 'à l\'instant';
+    if (diffMins < 60) return 'il y a ' + diffMins + ' min';
+    if (diffH < 24)    return 'il y a ' + diffH + 'h';
+    return 'il y a ' + diffD + ' jour' + (diffD > 1 ? 's' : '');
+  }
+
+  function _formatDate(date) {
+    try {
+      return date.toLocaleDateString('fr-FR', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+    } catch (e) { return date.toString(); }
+  }
+
+  /* 9. INIT + INTERCEPTION localStorage */
+  function init() {
+    initStoragePersistence();
+    createUIIndicator();
+
+    var _orig = {
+      setItem   : Storage.prototype.setItem,
+      removeItem: Storage.prototype.removeItem,
+      clear     : Storage.prototype.clear
+    };
+    Storage.prototype._setItem = _orig.setItem;
+
+    Storage.prototype.setItem = function (key, value) {
+      _orig.setItem.call(this, key, value);
+      if (this === localStorage) handleAutoSave(key);
+    };
+    Storage.prototype.removeItem = function (key) {
+      _orig.removeItem.call(this, key);
+      if (this === localStorage &&
+          key !== 'favs' &&
+          key !== CONFIG.BACKUP_FILE_KEY &&
+          key !== CONFIG.BACKUP_IDB_KEY) {
+        saveToIDB();
+      }
+    };
+    Storage.prototype.clear = function () { _orig.clear.call(this); };
+  }
+
+  global.StorageManager = {
+    init: init, exportToFile: exportToFile, importFromFile: importFromFile,
+    saveToIDB: saveToIDB, restoreFromIDB: restoreFromIDB, refreshState: refreshIndicatorState
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+})(window);
 </script>
 </body>
 </html>
