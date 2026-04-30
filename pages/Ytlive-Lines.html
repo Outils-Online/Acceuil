@@ -3,11 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <title>YouTube Live Direct</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
   <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      background: #0f172a;
-      color: white;
+      font-family: 'Inter', sans-serif;
+      background: #FFF1F1;
+      color: #1a1a2e;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -16,50 +24,118 @@
     }
 
     .container {
-      background: #1e293b;
-      padding: 30px;
+      background: #FFFFFF;
+      padding: 36px 32px 32px;
       border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08), 0 1px 3px rgba(226, 74, 74, 0.08);
       width: 380px;
       text-align: center;
+      position: relative;
+      border: 1px solid #FFB3B3;
+    }
+
+    .container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #E24A4A, #ff7b7b);
+      border-radius: 16px 16px 0 0;
     }
 
     h2 {
-      margin-bottom: 15px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      margin-bottom: 20px;
+      margin-top: 0;
+      color: #111827;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    h2 .icon-live {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      background: #E24A4A;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 11px;
     }
 
     input {
       width: 100%;
-      padding: 12px;
-      border-radius: 8px;
-      border: none;
+      padding: 11px 14px;
+      border-radius: 10px;
+      border: 1.5px solid #FFB3B3;
+      background: #FFF8F8;
       font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      color: #111827;
       margin-bottom: 10px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input::placeholder {
+      color: #bbb0b0;
+    }
+
+    input:focus {
+      border-color: #E24A4A;
+      box-shadow: 0 0 0 3px rgba(226, 74, 74, 0.1);
+      background: #fff;
     }
 
     button {
-      background: #ef4444;
+      background: #E24A4A;
       border: none;
       padding: 12px;
-      border-radius: 8px;
+      border-radius: 10px;
       color: white;
-      font-size: 15px;
+      font-size: 14px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600;
+      letter-spacing: 0.1px;
       cursor: pointer;
       width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+      box-shadow: 0 2px 8px rgba(226, 74, 74, 0.25);
     }
 
     button:hover {
-      background: #dc2626;
+      background: #cc3a3a;
+      box-shadow: 0 4px 14px rgba(226, 74, 74, 0.35);
+      transform: translateY(-1px);
+    }
+
+    button:active {
+      transform: translateY(0);
+      box-shadow: 0 1px 4px rgba(226, 74, 74, 0.2);
     }
 
     .info {
-      font-size: 12px;
-      opacity: 0.7;
-      margin-top: 10px;
+      font-size: 11.5px;
+      color: #b0a0a0;
+      margin-top: 14px;
+      font-family: 'Inter', sans-serif;
+      letter-spacing: 0.1px;
     }
 
     .history {
-      margin-top: 15px;
+      margin-top: 16px;
       display: flex;
       flex-wrap: wrap;
       gap: 6px;
@@ -68,23 +144,31 @@
 
     .history button {
       width: auto;
-      padding: 6px 10px;
+      padding: 5px 12px;
       font-size: 12px;
-      background: #334155;
+      font-weight: 500;
+      background: #FFF1F1;
       border-radius: 999px;
+      color: #c03030;
+      box-shadow: none;
+      border: 1px solid #FFB3B3;
+      gap: 5px;
     }
 
     .history button:hover {
-      background: #475569;
+      background: #FFB3B3;
+      color: #8b1c1c;
+      transform: none;
+      box-shadow: none;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>🔴 Ouvrir live YouTube</h2>
+    <h2><span class="icon-live"><i class="fa-solid fa-circle-dot"></i></span> Ouvrir live YouTube</h2>
 
     <input type="text" id="channel" placeholder="Ex: mrbeast ou @mrbeast">
-    <button onclick="openLive()">Ouvrir live en direct</button>
+    <button onclick="openLive()"><i class="fa-brands fa-youtube"></i> Ouvrir live en direct</button>
 
     <div class="history" id="history"></div>
 
@@ -119,7 +203,7 @@
 
       history.forEach(name => {
         const btn = document.createElement('button');
-        btn.textContent = name;
+        btn.innerHTML = `<i class="fa-solid fa-clock-rotate-left"></i> ${name}`;
         btn.onclick = () => {
           window.open(`https://www.youtube.com/@${name}/live`, '_blank');
         };
