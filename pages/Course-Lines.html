@@ -440,17 +440,18 @@ select option { background: var(--card2); }
 .bottom-nav {
   position: fixed; bottom: 0; left: 0; right: 0;
   height: var(--nav-h);
-  z-index: 200;
+  z-index: 1000; /* <-- increased from 200 to 1000 to prevent occlusion */
   background: rgba(10,11,15,0.96);
   backdrop-filter: blur(28px) saturate(1.5);
   -webkit-backdrop-filter: blur(28px) saturate(1.5);
   border-top: 1px solid var(--border);
   display: flex;
   padding-bottom: env(safe-area-inset-bottom, 0px);
+  pointer-events: auto; /* <-- ensure clicks are captured */
 }
 .nav-item {
   flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  color: var(--text-muted); cursor: pointer;
+  color: var(--text-muted); cursor: pointer; /* <-- added cursor pointer */
   font-size: 0.62rem; font-weight: 700; letter-spacing: 0.7px; gap: 5px;
   transition: color 0.2s var(--ease-smooth); position: relative; user-select: none;
 }
@@ -869,21 +870,33 @@ function toast(msg, type = 'success') {
 // === NAVIGATION — instant switch, no overlap ===
 const VIEW_ORDER = ['prod', 'list', 'labo'];
 
+// *** CORRECTED switchView function ***
 function switchView(v) {
   if (v === state.view) return;
 
-  // Immediately hide old — no delay, no ghost
-  document.getElementById('sec-' + state.view).classList.remove('active');
-
-  // Show new with subtle fade-in
+  const oldSec = document.getElementById('sec-' + state.view);
   const newSec = document.getElementById('sec-' + v);
-  newSec.classList.add('active');
-  newSec.style.opacity = '0';
-  void newSec.offsetHeight;
-  newSec.style.transition = 'opacity 0.2s ease';
-  newSec.style.opacity = '1';
-  setTimeout(() => { newSec.style.transition = ''; newSec.style.opacity = ''; }, 220);
 
+  // 1. Hide old section immediately
+  oldSec.classList.remove('active');
+  oldSec.style.opacity = '';
+  oldSec.style.transition = '';
+
+  // 2. Show new section (display:block)
+  newSec.classList.add('active');
+
+  // 3. Subtle fade-in (without ghosting)
+  newSec.style.opacity = '0';
+  newSec.style.transition = 'opacity 0.15s ease';
+  requestAnimationFrame(() => {
+    newSec.style.opacity = '1';
+    setTimeout(() => {
+      newSec.style.opacity = '';
+      newSec.style.transition = '';
+    }, 160);
+  });
+
+  // 4. Update UI state
   state.view = v;
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('nav-' + v).classList.add('active');
@@ -1337,7 +1350,6 @@ function importListJSON(input) {
   reader.onload = e => {
     try {
       const data = JSON.parse(e.target.result);
-      // Accept both ovni_liste format and raw session format
       const list = data.list || (Array.isArray(data) ? data : null);
       if (!list || !Array.isArray(list)) { toast('Format de liste invalide', 'error'); return; }
       showListImportModal(data, list);
