@@ -550,7 +550,7 @@ select option { background: var(--card); }
 .modal-actions { display: flex; gap: 10px; margin-top: 16px; }
 .modal-actions .btn { flex: 1; }
 
-/* ========== MOBILE ERGONOMY ENHANCEMENTS ========== */
+/* ========== MOBILE ERGONOMY ENHANCEMENTS - DEEPLY REFINED ========== */
 @media (max-width: 640px) {
   body { padding-bottom: 78px; }
   .section { padding: 12px; }
@@ -576,7 +576,7 @@ select option { background: var(--card); }
     padding: 8px 0;
   }
   .list-item {
-    grid-template-columns: minmax(0, 1fr) auto minmax(90px, auto);
+    grid-template-columns: minmax(0, 1fr) auto minmax(85px, auto);
     padding: 12px 12px;
     gap: 8px;
   }
@@ -618,8 +618,30 @@ select option { background: var(--card); }
     grid-template-columns: 1fr auto 70px;
     padding: 10px 10px;
   }
-  .qty-big { font-size: 1.2rem; }
+  .qty-big { font-size: 1.1rem; }
   .btn-icon { width: 40px; height: 40px; }
+  .recipe-card-grid { grid-template-columns: 1fr; gap: 8px; }
+  .recipe-card-grid .field-sub label { font-size: 0.7rem; }
+  .category-header { font-size: 0.7rem; padding: 10px 2px 4px; }
+  .item-name { font-size: 0.85rem; }
+  .recipe-dots { gap: 3px; }
+  .session-text .tag { font-size: 0.7rem; padding: 4px 8px; }
+  .session-cost { font-size: 0.7rem; }
+  .btn-reset { font-size: 0.65rem; }
+  .catalog-name { font-size: 0.85rem; }
+}
+@media (max-width: 360px) {
+  .list-item {
+    grid-template-columns: 1fr 50px 60px;
+    padding: 8px 8px;
+  }
+  .qty-big { font-size: 1rem; }
+  .qty-unit { font-size: 0.55rem; }
+  .btn-icon { width: 36px; height: 36px; font-size: 0.8rem; }
+  .item-actions { gap: 5px; }
+  .session-bar select { max-width: 130px; }
+  .header-actions .btn-ghost span { display: none; }
+  .header-actions .btn-ghost { padding: 6px 10px; }
 }
 @media (hover: none) and (pointer: coarse) {
   .btn, .btn-icon, .tab, .sortable-category, .nav-item, .card-title {
@@ -627,6 +649,15 @@ select option { background: var(--card); }
     -webkit-tap-highlight-color: transparent;
   }
   .btn:active { transform: scale(0.96); }
+}
+
+/* Additional fixes for number inputs to prevent overflow */
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+input[type="number"]::-webkit-inner-spin-button, 
+input[type="number"]::-webkit-outer-spin-button {
+  opacity: 0.5;
 }
 </style>
 </head>
