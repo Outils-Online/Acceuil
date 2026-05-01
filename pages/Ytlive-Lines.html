@@ -389,7 +389,7 @@
             refreshLogo();
 
             const logoContainer = document.getElementById('logoContainer');
-            logoContainer.addEventListener('mouseenter', refreshLogo);
+            logoContainer.addEventListener('click', refreshLogo);
             logoContainer.addEventListener('mouseleave', () => {
                 document.querySelectorAll('.letter').forEach(l => l.style.color = '');
             });

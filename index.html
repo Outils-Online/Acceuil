@@ -68,8 +68,7 @@
 
         /* ── NAV ── */
         .nav-shell {
-            display: grid;
-            grid-template-columns: auto 1fr auto;
+            display: flex;
             align-items: center;
             width: 100%; max-width: 900px;
             margin: 0 auto 28px;
@@ -78,7 +77,13 @@
             background: transparent;
             border: none;
             box-shadow: none;
-            border-image: none;
+        }
+        .nav-shell .config-bar {
+            flex: 1;
+        }
+        .nav-shell .spacer {
+            flex-shrink: 0;
+            width: 48px;
         }
 
         @keyframes gradientMove {
@@ -136,16 +141,14 @@
             margin-top: 3px;
         }
 
-        /* config-bar now gets the card surface look */
+        /* config-bar */
         .config-bar {
             display: flex; gap: 4px;
             background: var(--surface);
             padding: 4px; border-radius: 40px;
             border: 1.5px solid var(--border);
             box-shadow: var(--shadow);
-            flex: 1;
-            max-width: 400px;
-            margin: 0 auto;
+            min-width: 0;
         }
 
         .config-btn {
@@ -161,7 +164,7 @@
             box-shadow: 0 2px 8px rgba(10,36,114,0.12);
             font-weight: 800;
         }
-        .spacer { width: 48px; flex-shrink: 0; }
+        .spacer { flex-shrink: 0; width: 48px; }
 
         /* ── LINES BUTTONS — random palette ── */
         .btn-lines-random {
@@ -245,41 +248,20 @@
             display: flex; align-items: center; justify-content: center; font-size: 20px;
         }
 
-        /* ── Fracture badge pour boutons -Lines ── */
+        /* ── Badge couleur unie aléatoire pour boutons -Lines ── */
         .badge-lines {
-            position: relative;
             width: 44px; height: 44px; border-radius: 50%;
-            overflow: hidden;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            z-index: 1;
-            background: rgba(255,255,255,0.12) !important;
-        }
-        .badge-lines::before {
-            content: "";
-            position: absolute;
-            top: -50%; left: -50%;
-            width: 200%; height: 200%;
-            background: conic-gradient(
-                #0A2472  0deg,
-                #006466  90deg,
-                #F46060  180deg,
-                #FFD972  270deg,
-                #0A2472  360deg
-            );
-            animation: linesRingSpin 3.5s linear infinite;
-            z-index: -1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* couleur définie par JS via --badge-bg */
+            background: var(--color-primary);
+            transition: background 0.4s ease;
         }
         .badge-lines i {
-            position: relative; z-index: 1;
             color: white;
             font-size: 18px;
-            filter: drop-shadow(0 1px 3px rgba(0,0,0,0.35));
-        }
-        @keyframes linesRingSpin {
-            from { transform: rotate(0deg); }
-            to   { transform: rotate(360deg); }
+            filter: drop-shadow(0 1px 3px rgba(0,0,0,0.25));
         }
         .btn-star { position: absolute; top: 10px; right: 10px; font-size: 14px; color: rgba(255,255,255,0.25); cursor: pointer; transition: color 0.2s; }
         .btn-star.active { color: var(--yellow-soft); }
@@ -295,7 +277,7 @@
 
         /* Card colors — Quartz Ink & Coral */
         .btn-blue   { background: linear-gradient(150deg, #0A2472, #0d2d8e); }
-        .btn-google { background: linear-gradient(150deg, #1a3a9e, #0A2472); }
+        .btn-google { background: linear-gradient(150deg, #1565C0, #1976D2); }  /* Bleu Google distinct */
         .btn-green  { background: linear-gradient(150deg, #006466, #004e50); }
         .btn-orange { background: linear-gradient(150deg, #c0853a, #a06b25); }
         .btn-purple { background: linear-gradient(150deg, #5a3e9e, #432e80); }
@@ -309,7 +291,7 @@
         .btn-purple:hover { border-color: var(--blue-soft); }
         .btn-red:hover    { border-color: var(--red-soft); }
 
-        @keyframes linesRingSpin2 { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
 
         /* ── IFRAMES ── */
         .iframe-container { display: none; position: fixed; inset: 0; background: #000; z-index: 9999; }
@@ -410,43 +392,60 @@
             to   { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
 
-        /* ══ ALERTE HEBDOMADAIRE ══ */
-        #weeklyAlert {
+
+
+        /* ══ ALERTE BACKUP DRIFT ══ */
+        #driftAlert {
             display: none;
             position: fixed; inset: 0;
-            background: rgba(10,36,114,0.45);
+            background: rgba(10,36,114,0.55);
             z-index: 199999;
             justify-content: center; align-items: center; padding: 20px;
-            backdrop-filter: blur(12px);
+            backdrop-filter: blur(14px);
         }
-        #weeklyAlert.visible { display: flex; }
-        .weekly-alert-box {
+        #driftAlert.visible { display: flex; }
+        .drift-alert-box {
             background: var(--surface);
             border: 1.5px solid var(--border);
             border-top: 4px solid transparent;
             border-image: var(--mondrian-stripe) 1;
             border-radius: 0;
-            border-top-left-radius: 24px;
-            border-top-right-radius: 24px;
-            border-bottom-left-radius: 24px;
-            border-bottom-right-radius: 24px;
+            border-top-left-radius: 24px; border-top-right-radius: 24px;
+            border-bottom-left-radius: 24px; border-bottom-right-radius: 24px;
             padding: 32px 28px;
-            max-width: 440px; width: 100%;
-            box-shadow: 0 20px 60px rgba(10,36,114,0.15);
+            max-width: 420px; width: 100%;
+            box-shadow: 0 20px 60px rgba(10,36,114,0.18);
             text-align: center;
         }
-        .weekly-alert-icon { font-size: 40px; margin-bottom: 16px; display: block; animation: pulse 2s ease-in-out infinite; color: var(--color-highlight); }
-        @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
-        .weekly-alert-title { font-size: 15px; font-weight: 800; color: var(--color-primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; font-family: var(--font-display); }
-        .weekly-alert-msg { font-size: 13px; line-height: 1.75; color: var(--muted); margin-bottom: 24px; font-family: var(--font-body); }
-        .weekly-alert-close {
+        .drift-alert-icon {
+            font-size: 36px; margin-bottom: 16px; display: block;
+            color: var(--color-accent);
+            animation: driftPulse 1.8s ease-in-out infinite;
+        }
+        @keyframes driftPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        .drift-alert-title {
+            font-size: 15px; font-weight: 800; color: var(--color-primary);
+            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;
+            font-family: var(--font-display);
+        }
+        .drift-alert-msg {
+            font-size: 13px; line-height: 1.75; color: var(--muted);
+            margin-bottom: 22px; font-family: var(--font-body);
+        }
+        .drift-alert-msg strong { color: var(--color-primary); font-weight: 700; }
+        .drift-alert-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        .drift-btn-save {
             background: var(--color-accent); color: white; border: none;
-            padding: 12px 32px; border-radius: 50px; font-weight: 800; font-size: 13px;
+            padding: 12px 28px; border-radius: 50px; font-weight: 800; font-size: 13px;
             cursor: pointer; font-family: var(--font-display); transition: 0.2s; letter-spacing: 0.3px;
         }
-        .weekly-alert-close:hover { opacity: 0.85; transform: translateY(-1px); }
-
-        /* ══ MODAL FUSION ══ */
+        .drift-btn-save:hover { opacity: 0.85; transform: translateY(-1px); }
+        .drift-btn-later {
+            background: transparent; color: var(--muted); border: 1.5px solid var(--border);
+            padding: 12px 24px; border-radius: 50px; font-weight: 600; font-size: 13px;
+            cursor: pointer; font-family: var(--font-display); transition: 0.2s;
+        }
+        .drift-btn-later:hover { border-color: var(--color-primary); color: var(--color-primary); }
         #fusionModal .box-content { max-width: 560px; color: var(--text-main); }
         .fusion-textarea {
             background: var(--bg-main); border: 1.5px solid var(--border);
@@ -471,15 +470,14 @@
 
         @media (max-width: 768px) {
             .nav-shell {
-                grid-template-columns: auto 1fr;
                 gap: 12px;
                 margin-bottom: 16px;
             }
-            .spacer { display: none; }
-            .config-bar { max-width: 100%; width: 100%; }
-            .logo-word-outils { font-size: 22px; }
-            .logo-online { font-size: 9px; letter-spacing: 3px; }
-            .mosaic-core { width: 40px; height: 40px; }
+            .nav-shell .spacer { display: none; }
+            .config-bar { width: 100%; }
+            .logo-text-stack { display: none; }
+            .logo-box { gap: 0; }
+            .mosaic-core { width: 42px; height: 42px; border-radius: 10px; }
             .close-iframe { top: 10px; right: 10px; padding: 8px 16px; font-size: 11px; border-radius: 15px; display: flex; }
             #multiviewContainer { grid-template-columns: 1fr 1fr; gap: 10px; }
         }
@@ -494,17 +492,22 @@
 </head>
 <body>
 
-<!-- ══ NOUVEAU : ALERTE HEBDOMADAIRE ══ -->
-<div id="weeklyAlert">
-    <div class="weekly-alert-box">
-        <span class="weekly-alert-icon"><i class="fa-solid fa-floppy-disk" style="color:var(--gold)"></i></span>
-        <div class="weekly-alert-title">Rappel sauvegarde hebdomadaire</div>
-        <div class="weekly-alert-msg">Sauvegarde hebdomadaire recommandée : il est fortement conseillé de sauvegarder au moins une fois par semaine afin d'éviter toute perte de données et repartir de zéro.</div>
-        <button class="weekly-alert-close" onclick="closeWeeklyAlert()">Compris ✓</button>
+<div id="mvToast"></div>
+
+<!-- ══ ALERTE BACKUP DRIFT ══ -->
+<div id="driftAlert">
+    <div class="drift-alert-box">
+        <span class="drift-alert-icon"><i class="fa-solid fa-triangle-exclamation"></i></span>
+        <div class="drift-alert-title">Sauvegarde recommandée</div>
+        <div class="drift-alert-msg" id="driftAlertMsg">
+            Tu as effectué <strong id="driftCount">plusieurs</strong> modifications depuis ton dernier backup.<br>Pense à sauvegarder pour ne rien perdre.
+        </div>
+        <div class="drift-alert-actions">
+            <button class="drift-btn-save" onclick="driftSaveNow()"><i class="fa-solid fa-floppy-disk" style="margin-right:6px"></i>Sauvegarder</button>
+            <button class="drift-btn-later" onclick="driftLater()">Plus tard</button>
+        </div>
     </div>
 </div>
-
-<div id="mvToast"></div>
 
 <div id="iframe_ytlive_lines" class="iframe-container">
     <button class="close-iframe" onclick="closeIframe('iframe_ytlive_lines')">✕ Fermer</button>
@@ -583,7 +586,7 @@
     <button class="btn-3d btn-purple" data-id="pdf-jpg"        data-main="bureau"   data-tags="admin"     data-url="https://www.ilovepdf.com/pdf_to_jpg" onclick="handleTool(this)">
         <div class="btn-star">★</div><div class="favicon-badge"><i class="fa-solid fa-image"></i></div><div>PDF → JPG</div><div class="count-badge">0</div>
     </button>
-    <button class="btn-3d btn-google" data-id="gmail-admin"    data-main="bureau"   data-tags="admin"     data-url="https://drive.google.com/drive/u/0/" onclick="handleTool(this)">
+    <button class="btn-3d btn-purple" data-id="gmail-admin"    data-main="bureau"   data-tags="admin"     data-url="https://drive.google.com/drive/u/0/" onclick="handleTool(this)">
         <div class="btn-star">★</div><div class="favicon-badge"><i class="fa-brands fa-google-drive"></i></div><div>Gmail</div><div class="count-badge">0</div>
     </button>
     <button class="btn-3d btn-green" data-id="photo-recu" data-main="bureau" data-tags="compta" onclick="openIframe('iframe_photo_recu', this)">
@@ -760,20 +763,60 @@ const TAG_DISPLAY = {
 };
 
 /* ══════════════════════════════════════════════
-   ALERTE HEBDOMADAIRE — Mardi > 09h30, 1x/jour
+   ALERTE BACKUP DRIFT
+   Se déclenche quand les données ont beaucoup
+   changé depuis le dernier backup fichier.
+   Seuil : +800 caractères (≈ 3-4 textes OCR)
+   "Plus tard" : snooze 30 min
 ══════════════════════════════════════════════ */
-function checkWeeklyAlert() {
-    const now = new Date();
-    if (now.getDay() !== 2) return;
-    const h = now.getHours(), m = now.getMinutes();
-    if (h < 9 || (h === 9 && m < 30)) return;
-    const today = now.toISOString().slice(0, 10);
-    if (localStorage.getItem('__weekly_alert_shown__') === today) return;
-    setTimeout(() => { document.getElementById('weeklyAlert').classList.add('visible'); }, 800);
+const DRIFT_THRESHOLD = 800;   // caractères ajoutés depuis dernier backup
+const DRIFT_SNOOZE_MS = 30 * 60 * 1000; // 30 minutes
+
+function _getDataSize() {
+    let total = 0;
+    const skip = new Set(['__last_backup_file__', '__backup_size__', '__drift_snooze__']);
+    for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (!skip.has(k)) total += (localStorage.getItem(k) || '').length;
+    }
+    return total;
 }
-function closeWeeklyAlert() {
-    localStorage.setItem('__weekly_alert_shown__', new Date().toISOString().slice(0, 10));
-    document.getElementById('weeklyAlert').classList.remove('visible');
+
+function checkDriftAlert() {
+    // Snooze actif ?
+    const snooze = localStorage.getItem('__drift_snooze__');
+    if (snooze && Date.now() < parseInt(snooze)) return;
+
+    const sizeNow    = _getDataSize();
+    const sizeBackup = parseInt(localStorage.getItem('__backup_size__') || '0');
+    const drift      = sizeNow - sizeBackup;
+
+    if (drift < DRIFT_THRESHOLD) return;
+
+    // Estimation du nombre de "modifications significatives"
+    const approxChanges = Math.round(drift / 200);
+    document.getElementById('driftCount').textContent =
+        approxChanges + ' modification' + (approxChanges > 1 ? 's' : '');
+
+    setTimeout(() => {
+        document.getElementById('driftAlert').classList.add('visible');
+    }, 600);
+}
+
+function driftSaveNow() {
+    document.getElementById('driftAlert').classList.remove('visible');
+    // Déclenche le backup fichier du StorageManager
+    if (window.StorageManager && window.StorageManager.exportToFile) {
+        window.StorageManager.exportToFile();
+    }
+    // Mémorise la taille actuelle comme référence
+    localStorage.setItem('__backup_size__', String(_getDataSize()));
+    localStorage.removeItem('__drift_snooze__');
+}
+
+function driftLater() {
+    document.getElementById('driftAlert').classList.remove('visible');
+    localStorage.setItem('__drift_snooze__', String(Date.now() + DRIFT_SNOOZE_MS));
 }
 
 /* ══════════════════════════════════════════════
@@ -784,7 +827,7 @@ window.onload = () => {
     initUI();
     setMode(mode);
     document.getElementById('mainGrid').style.visibility = 'visible';
-    checkWeeklyAlert();
+    checkDriftAlert();
     // Drag & drop sur la zone fusion
     const dz = document.getElementById('fusionDropZone');
     if (dz) {
@@ -1262,7 +1305,7 @@ function onFusionFileSelected(input) {
         }
 
         // ── Base = localStorage actuel (clés applicatives uniquement) ──
-        const INTERNAL_KEYS = new Set(['__last_backup_file__', '__last_backup_idb__', '__weekly_alert_shown__']);
+        const INTERNAL_KEYS = new Set(['__last_backup_file__', '__backup_size__']);
         const baseData = {};
         for (let i = 0; i < localStorage.length; i++) {
             const k = localStorage.key(i);
@@ -1309,7 +1352,7 @@ function saveFusion() {
 
     // ── Écrire uniquement les clés applicatives dans localStorage ──
     // Les clés de sauvegarde (__last_backup_*) sont PRÉSERVÉES (on ne les touche pas)
-    const SKIP = new Set(['__last_backup_file__', '__last_backup_idb__', '__weekly_alert_shown__']);
+    const SKIP = new Set(['__last_backup_file__', '__backup_size__']);
     Object.keys(_pendingFusionResult).forEach(k => {
         if (SKIP.has(k)) return;
         try {
@@ -1319,11 +1362,6 @@ function saveFusion() {
                 : localStorage.setItem(k, _pendingFusionResult[k]);
         } catch(ex) {}
     });
-
-    // Déclencher une sauvegarde IDB unique après la fusion complète
-    if (window.StorageManager && window.StorageManager.saveToIDB) {
-        window.StorageManager.saveToIDB();
-    }
 
     closeFusionModal();
     _pendingFusionResult = null;
@@ -1361,7 +1399,7 @@ function closeFusionModal() {
 
 <!-- ══════════════════════════════════════════════
      STORAGE MANAGER v2 — Persistance & Sauvegarde
-     IndexedDB (auto) + Fichier (manuel)
+     Fichier (manuel)
      Compatible Android WebView · Mobile-First
 ══════════════════════════════════════════════ -->
 <script>
@@ -1370,21 +1408,14 @@ function closeFusionModal() {
 
   var CONFIG = {
     BACKUP_FILE_KEY  : '__last_backup_file__',
-    BACKUP_IDB_KEY   : '__last_backup_idb__',
-    IDB_NAME         : 'StorageManagerDB',
-    IDB_STORE        : 'backups',
-    IDB_RECORD_KEY   : 'latest',
     FILENAME         : 'backup-app.json',
     INDICATOR_ID     : '__sm_indicator__',
     FILE_INPUT_ID    : '__sm_file_input__',
     TOAST_ID         : '__sm_toast__',
     TOAST_DURATION   : 3000,
     Z_INDEX          : 99990,
-    CLIC_THRESHOLD   : 50,
     MIN_CHARS        : 30
   };
-
-  var _clicsSinceBackup = 0;
 
   /* 1. PERSISTANCE */
   function initStoragePersistence() {
@@ -1395,83 +1426,13 @@ function closeFusionModal() {
     }
   }
 
-  /* 2. INDEXEDDB */
-  function _openIDB(callback) {
-    try {
-      var req = indexedDB.open(CONFIG.IDB_NAME, 1);
-      req.onupgradeneeded = function (e) {
-        var db = e.target.result;
-        if (!db.objectStoreNames.contains(CONFIG.IDB_STORE))
-          db.createObjectStore(CONFIG.IDB_STORE);
-      };
-      req.onsuccess = function (e) { callback(null, e.target.result); };
-      req.onerror   = function (e) { callback(e.target.error, null); };
-    } catch (err) { callback(err, null); }
-  }
-
-  function saveToIDB(onDone) {
-    _openIDB(function (err, db) {
-      if (err || !db) { if (onDone) onDone(false); return; }
-      try {
-        var data = {};
-        for (var i = 0; i < localStorage.length; i++) {
-          var key = localStorage.key(i);
-          if (key !== CONFIG.BACKUP_FILE_KEY && key !== CONFIG.BACKUP_IDB_KEY)
-            data[key] = localStorage.getItem(key);
-        }
-        var tx = db.transaction(CONFIG.IDB_STORE, 'readwrite');
-        var store = tx.objectStore(CONFIG.IDB_STORE);
-        var putReq = store.put({ data: data, savedAt: new Date().toISOString() }, CONFIG.IDB_RECORD_KEY);
-        putReq.onsuccess = function () {
-          Storage.prototype._setItem
-            ? Storage.prototype._setItem.call(localStorage, CONFIG.BACKUP_IDB_KEY, new Date().toISOString())
-            : localStorage.setItem(CONFIG.BACKUP_IDB_KEY, new Date().toISOString());
-          refreshIndicatorState();
-          if (onDone) onDone(true);
-        };
-        putReq.onerror = function (e) {
-          console.warn('[StorageManager] Erreur écriture IDB :', e.target.error);
-          if (onDone) onDone(false);
-        };
-      } catch (txErr) { console.warn('[StorageManager] Transaction IDB :', txErr); if (onDone) onDone(false); }
-    });
-  }
-
-  function restoreFromIDB(onDone) {
-    _openIDB(function (err, db) {
-      if (err || !db) { if (onDone) onDone(false); return; }
-      try {
-        var tx = db.transaction(CONFIG.IDB_STORE, 'readonly');
-        var store = tx.objectStore(CONFIG.IDB_STORE);
-        var getReq = store.get(CONFIG.IDB_RECORD_KEY);
-        getReq.onsuccess = function (e) {
-          var record = e.target.result;
-          if (!record || !record.data) { if (onDone) onDone(false); return; }
-          var data = record.data;
-          var keys = Object.keys(data).length;
-          var ok = global.confirm(
-            'Restaurer ' + keys + ' entrée(s) depuis la sauvegarde temporaire ?\n(' +
-            _formatDate(new Date(record.savedAt)) + ')\n\nLes données actuelles seront remplacées.'
-          );
-          if (!ok) { if (onDone) onDone(false); return; }
-          localStorage.clear();
-          Object.keys(data).forEach(function (k) { try { localStorage.setItem(k, data[k]); } catch (e) {} });
-          showToast('✓ Données restaurées — rechargement…');
-          setTimeout(function () { global.location.reload(); }, 900);
-          if (onDone) onDone(true);
-        };
-        getReq.onerror = function () { if (onDone) onDone(false); };
-      } catch (e) { if (onDone) onDone(false); }
-    });
-  }
-
   /* 3. EXPORT FICHIER */
   function exportToFile() {
     try {
       var data = {};
       for (var i = 0; i < localStorage.length; i++) {
         var key = localStorage.key(i);
-        if (key !== CONFIG.BACKUP_FILE_KEY && key !== CONFIG.BACKUP_IDB_KEY)
+        if (key !== CONFIG.BACKUP_FILE_KEY)
           data[key] = localStorage.getItem(key);
       }
       var json = JSON.stringify(data, null, 2);
@@ -1482,6 +1443,17 @@ function closeFusionModal() {
       document.body.appendChild(a); a.click();
       setTimeout(function () { document.body.removeChild(a); URL.revokeObjectURL(url); }, 1500);
       localStorage.setItem(CONFIG.BACKUP_FILE_KEY, new Date().toISOString());
+      /* Mémorise la taille de référence pour le drift alert */
+      try {
+        var sz = 0;
+        var skipSz = new Set([CONFIG.BACKUP_FILE_KEY, '__backup_size__', '__drift_snooze__']);
+        for (var si = 0; si < localStorage.length; si++) {
+          var sk = localStorage.key(si);
+          if (!skipSz.has(sk)) sz += (localStorage.getItem(sk) || '').length;
+        }
+        localStorage.setItem('__backup_size__', String(sz));
+        localStorage.removeItem('__drift_snooze__');
+      } catch(e) {}
       refreshIndicatorState();
       showToast('✓ Backup téléchargé');
     } catch (err) {
@@ -1529,7 +1501,7 @@ function closeFusionModal() {
       var data = {};
       for (var i = 0; i < localStorage.length; i++) {
         var key = localStorage.key(i);
-        if (key !== CONFIG.BACKUP_FILE_KEY && key !== CONFIG.BACKUP_IDB_KEY)
+        if (key !== CONFIG.BACKUP_FILE_KEY)
           data[key] = localStorage.getItem(key);
       }
       var json = JSON.stringify(data, null, 2);
@@ -1557,16 +1529,7 @@ function closeFusionModal() {
 
   /* 5. SAUVEGARDE AUTO */
   function handleAutoSave(key) {
-    if (key === 'favs')                        return;
-    if (key === CONFIG.BACKUP_FILE_KEY)        return;
-    if (key === CONFIG.BACKUP_IDB_KEY)         return;
-    if (key === '__weekly_alert_shown__')      return;
-    if (key === 'clics') {
-      _clicsSinceBackup++;
-      if (_clicsSinceBackup >= CONFIG.CLIC_THRESHOLD) { _clicsSinceBackup = 0; saveToIDB(); }
-      return;
-    }
-    saveToIDB();
+    /* IDB supprimé — aucune auto-sauvegarde */
   }
 
   /* 6. TAILLE localStorage */
@@ -1574,7 +1537,7 @@ function closeFusionModal() {
     var total = 0;
     for (var i = 0; i < localStorage.length; i++) {
       var key = localStorage.key(i);
-      if (key !== CONFIG.BACKUP_FILE_KEY && key !== CONFIG.BACKUP_IDB_KEY)
+      if (key !== CONFIG.BACKUP_FILE_KEY)
         total += (localStorage.getItem(key) || '').length;
     }
     return total;
@@ -1685,30 +1648,6 @@ function closeFusionModal() {
     });
     panel.appendChild(panelTitle);
 
-    /* Bloc IDB */
-    var idbBlock = document.createElement('div');
-    idbBlock.id = '__sm_idb_block__';
-    _applyStyles(idbBlock, { padding: '10px 12px', borderRadius: '12px', background: '#FDFCF0', border: '1.5px solid rgba(10,36,114,0.10)' });
-    var idbRow = document.createElement('div');
-    _applyStyles(idbRow, { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px' });
-    var idbDot = document.createElement('span');
-    idbDot.id = '__sm_idb_dot__';
-    _applyStyles(idbDot, { width: '8px', height: '8px', borderRadius: '50%', background: '#32a852', flexShrink: '0', transition: 'background 0.3s ease' });
-    var idbTitle = document.createElement('span');
-    idbTitle.innerHTML = '<i class="fa-solid fa-bolt" style="margin-right:5px;font-size:9px"></i>Sauvegarde temporaire';
-    _applyStyles(idbTitle, { fontSize: '11px', fontWeight: '700', color: '#0A2472', fontFamily: 'inherit' });
-    idbRow.appendChild(idbDot); idbRow.appendChild(idbTitle);
-    var idbDate = document.createElement('div');
-    idbDate.id = '__sm_idb_date__';
-    _applyStyles(idbDate, { fontSize: '10px', color: 'rgba(10,36,114,0.50)', fontFamily: 'inherit', paddingLeft: '16px' });
-    idbBlock.appendChild(idbRow); idbBlock.appendChild(idbDate);
-    var restoreIdbBtn = _createPanelButton('Restaurer cette sauvegarde', 'rgba(10,36,114,0.07)', function () { restoreFromIDB(); togglePanel(false); });
-    restoreIdbBtn.style.fontSize = '11px'; restoreIdbBtn.style.padding = '8px 12px';
-    restoreIdbBtn.style.marginTop = '6px'; restoreIdbBtn.style.borderRadius = '10px';
-    restoreIdbBtn.style.color = '#0A2472';
-    idbBlock.appendChild(restoreIdbBtn);
-    panel.appendChild(idbBlock);
-
     /* Bloc Fichier */
     var fileBlock = document.createElement('div');
     fileBlock.id = '__sm_file_block__';
@@ -1801,12 +1740,7 @@ function closeFusionModal() {
   }
 
   function _updatePanelDates() {
-    var idbDate  = document.getElementById('__sm_idb_date__');
     var fileDate = document.getElementById('__sm_file_date__');
-    if (idbDate) {
-      var idbRaw = localStorage.getItem(CONFIG.BACKUP_IDB_KEY);
-      idbDate.textContent = idbRaw ? _timeAgo(new Date(idbRaw)) : 'Aucune sauvegarde';
-    }
     if (fileDate) {
       var fileRaw = localStorage.getItem(CONFIG.BACKUP_FILE_KEY);
       fileDate.textContent = fileRaw ? _formatDate(new Date(fileRaw)) : 'Aucun backup fichier';
@@ -1814,9 +1748,6 @@ function closeFusionModal() {
   }
 
   function refreshIndicatorState() {
-    var idbDot = document.getElementById('__sm_idb_dot__');
-    var idbRaw = localStorage.getItem(CONFIG.BACKUP_IDB_KEY);
-    if (idbDot) idbDot.style.background = idbRaw ? '#32a852' : '#ff8c00';
     var fileDot = document.getElementById('__sm_file_dot__');
     var fileRaw = localStorage.getItem(CONFIG.BACKUP_FILE_KEY);
     if (fileDot) {
@@ -1826,7 +1757,7 @@ function closeFusionModal() {
     }
     var dot = document.getElementById('__sm_dot__');
     if (dot) {
-      var globalAlert = !idbRaw || (_getLocalStorageSize() > CONFIG.MIN_CHARS && !localStorage.getItem(CONFIG.BACKUP_FILE_KEY));
+      var globalAlert = _getLocalStorageSize() > CONFIG.MIN_CHARS && !fileRaw;
       dot.style.background = globalAlert ? '#ff8c00' : '#32a852';
     }
   }
@@ -1887,23 +1818,20 @@ function closeFusionModal() {
 
     Storage.prototype.setItem = function (key, value) {
       _orig.setItem.call(this, key, value);
-      if (this === localStorage) handleAutoSave(key);
+      if (this === localStorage) {
+        handleAutoSave(key);
+        if (typeof checkDriftAlert === 'function') checkDriftAlert();
+      }
     };
     Storage.prototype.removeItem = function (key) {
       _orig.removeItem.call(this, key);
-      if (this === localStorage &&
-          key !== 'favs' &&
-          key !== CONFIG.BACKUP_FILE_KEY &&
-          key !== CONFIG.BACKUP_IDB_KEY) {
-        saveToIDB();
-      }
     };
     Storage.prototype.clear = function () { _orig.clear.call(this); };
   }
 
   global.StorageManager = {
     init: init, exportToFile: exportToFile, importFromFile: importFromFile,
-    saveToIDB: saveToIDB, restoreFromIDB: restoreFromIDB, refreshState: refreshIndicatorState
+    refreshState: refreshIndicatorState
   };
 
   if (document.readyState === 'loading') {
@@ -1996,21 +1924,40 @@ function closeFusionModal() {
         randomizeBadgeLines();
     };
 
-    /* ── Randomise la vitesse + direction du conic fracturé des badges -Lines ── */
+    /* ── Couleur badge contrastée selon la couleur du bouton parent ── */
     function randomizeBadgeLines() {
+        /*
+         * Charte Quartz Ink & Coral :
+         *   #0A2472 Bleu Encre   #006466 Émeraude
+         *   #F46060 Corail       #FFD972 Or Blanc
+         *
+         * Pour chaque couleur de bouton, on définit les couleurs
+         * de badge qui contrastent vraiment (pas de foncé sur foncé).
+         */
+        const contrast = {
+            'btn-blue'  : ['#F46060', '#FFD972'],           // foncé → corail ou or
+            'btn-purple': ['#F46060', '#FFD972'],           // foncé → corail ou or
+            'btn-google': ['#FFD972', '#F46060'],           // foncé → or ou corail
+            'btn-green' : ['#FFD972', '#F46060'],           // vert foncé → or ou corail
+            'btn-orange': ['#0A2472', '#006466'],           // chaud → bleu ou émeraude
+            'btn-red'   : ['#FFD972', '#0A2472'],           // corail → or ou bleu encre
+        };
+        const darkIcon = new Set(['#FFD972']); // jaune → icône sombre
+
         document.querySelectorAll('.badge-lines').forEach(badge => {
-            const duration = (2.5 + Math.random() * 3).toFixed(2) + 's';
-            const direction = Math.random() > 0.5 ? 'normal' : 'reverse';
-            /* On crée/réapplique une animation keyframe unique via style tag */
-            badge.style.setProperty('--ring-duration', duration);
-            badge.style.setProperty('--ring-dir', direction);
-            /* Applique directement sur le pseudo-élément via une class tournante */
-            badge.dataset.speed = duration;
-            badge.dataset.dir = direction;
-            /* Force reflow pour relancer l'anim */
-            badge.classList.remove('badge-lines-anim');
-            void badge.offsetWidth;
-            badge.classList.add('badge-lines-anim');
+            const btn = badge.closest('.btn-3d');
+            if (!btn) return;
+
+            /* Trouve la classe de couleur du bouton */
+            const cls = [...btn.classList].find(c => contrast[c]) || 'btn-blue';
+            const pool = contrast[cls];
+            const color = pool[Math.floor(Math.random() * pool.length)];
+
+            badge.style.background = color;
+            const icon = badge.querySelector('i');
+            if (icon) {
+                icon.style.color = darkIcon.has(color) ? '#0A2472' : 'white';
+            }
         });
     }
 
@@ -2021,7 +1968,6 @@ function closeFusionModal() {
             box.addEventListener('mouseleave', () => {
                 document.querySelectorAll('.logo-letter').forEach(l => l.style.color = '');
             });
-            box.addEventListener('mouseenter', window.refreshLogo);
         }
         /* Init */
         window.refreshLogo();
