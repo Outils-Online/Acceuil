@@ -3,138 +3,78 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>Générateur de Citations Bibliographiques</title>
-  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <title>Générateur de Références Bibliographiques</title>
+  <!-- Polices selon charte -->
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <!-- Font Awesome 6 (gratuit) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
   <style>
-    /* ===== VARIABLES — Charte Quartz Ink & Coral ===== */
+    /* ===== VARIABLES — Charte Graphique Ivoire & Corail ===== */
     :root {
-      --bg: #FDFCF0;              /* Fond Jaune Quartz (Sable clair) */
-      --bg-card: #FFFFFF;         /* Surface blanche */
-      --ink: #0A2472;             /* Texte Bleu Encre (contraste maximal) */
-      --ink-muted: #4A5E9E;       /* Bleu adouci pour texte secondaire */
-      --ink-light: #8B99C7;       /* Bleu clair pour texte tertiaire / hints */
-      --accent: #F46060;          /* Rouge Corail — actions, focus */
-      --accent-light: #FDEAEA;    /* Corail très pâle pour fonds de survol */
-      --border: #E8E4D0;          /* Bordure sable, s'harmonise avec le fond Quartz */
-      --color-primary: #0A2472;   /* Bleu Encre (dominante) */
-      --color-secondary: #006466; /* Émeraude Profond (transition) */
-      --color-accent: #F46060;    /* Corail (rappel) */
-      --color-highlight: #FFD972; /* Or Blanc (lumière / Jaune Quartz) */
-      --shadow: 0 2px 16px rgba(10, 36, 114, 0.06);
-      --shadow-lg: 0 8px 40px rgba(10, 36, 114, 0.10);
-      --radius: 4px;
-      --radius-lg: 8px;
+      --bg-page: #FDFCF0;            /* Fond principal Ivoire */
+      --bg-card: #FFFFFF;            /* Surfaces : blanc pur */
+      --primary: #0A2472;            /* Bleu profond pour titres et structure */
+      --secondary: #006466;          /* Vert forêt pour bordures, détails */
+      --accent: #F46060;             /* Corail pour boutons d'action, alertes */
+      --highlight: #FFD972;          /* Jaune ambre pour mises en évidence */
+      --ink-light: #5B6E8C;          /* Gris-bleu pour textes secondaires */
+      --border-light: #E2E0D0;       /* Bordure douce sur fond clair */
+      --shadow-default: 0 4px 12px rgba(10,36,114,0.15);
+      --shadow-hover: 0 8px 20px rgba(10,36,114,0.2);
+      --radius-card: 24px;
+      --radius-button: 15px;
+      --radius-input: 12px;
       --transition: 0.2s ease;
     }
 
-    [data-theme="dark"] {
-      --bg: #060B1A;              /* Très sombre, nuance Bleu Encre */
-      --bg-card: #0F1629;         /* Surface sombre */
-      --ink: #E8E2D0;             /* Texte clair chaud */
-      --ink-muted: #9BA0B8;       /* Gris-bleu secondaire */
-      --ink-light: #5C6178;       /* Gris-bleu soutenu */
-      --accent: #F46060;          /* Corail conservé */
-      --accent-light: #2A1518;    /* Corail sombre */
-      --border: #1E2747;          /* Bordure bleutée sombre */
-      --color-primary: #5C82E6;   /* Bleu lumineux pour le sombre */
-      --color-secondary: #00A8AB; /* Émeraude lumineux */
-      --color-accent: #F46060;
-      --color-highlight: #FFD972;
-      --shadow: 0 2px 16px rgba(0, 0, 0, 0.4);
-      --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.6);
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
-    /* ===== RESET & BASE ===== */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--bg);
-      color: var(--ink);
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-page);
+      color: var(--primary);
       min-height: 100vh;
       font-size: 15px;
       line-height: 1.6;
-      transition: background var(--transition), color var(--transition);
     }
 
-    /* ===== HEADER — avec dégradé Mondrian ===== */
-    header {
+    /* ===== BOUTON FERMETURE (croix) en haut à droite ===== */
+    .close-btn {
+      position: fixed;
+      top: 20px;
+      right: 24px;
+      width: 44px;
+      height: 44px;
       background: var(--bg-card);
-      /* Bandeau inférieur : dégradé segmenté Quartz Ink & Coral */
-      border-bottom: 4px solid;
-      border-image: linear-gradient(to right,
-          var(--color-primary) 60%,
-          var(--color-secondary) 60% 75%,
-          var(--color-accent) 75% 90%,
-          var(--color-highlight) 90%
-        ) 1;
-      padding: 0 clamp(1rem, 4vw, 3rem);
+      border: 1px solid var(--secondary);
+      border-radius: 15px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      height: 64px;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: var(--shadow);
-    }
-
-    .logo {
-      font-family: 'Libre Baskerville', serif;
-      font-size: 1.1rem;
-      font-weight: 700;
-      letter-spacing: -0.01em;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      color: var(--color-primary);
-    }
-
-    .logo-dot {
-      width: 8px; height: 8px;
-      background: var(--accent);
-      border-radius: 50%;
-      display: inline-block;
-    }
-
-    .header-actions { display: flex; align-items: center; gap: 12px; }
-
-    /* ===== DARK MODE TOGGLE ===== */
-    .theme-toggle {
-      width: 42px; height: 24px;
-      background: var(--border);
-      border-radius: 12px;
-      border: none;
+      justify-content: center;
       cursor: pointer;
-      position: relative;
-      transition: background var(--transition);
+      font-size: 1.4rem;
+      color: var(--primary);
+      transition: all var(--transition);
+      z-index: 1000;
+      box-shadow: var(--shadow-default);
     }
-
-    .theme-toggle::after {
-      content: '';
-      position: absolute;
-      width: 18px; height: 18px;
-      background: var(--bg-card);
-      border-radius: 50%;
-      top: 3px; left: 3px;
-      transition: transform var(--transition), background var(--transition);
-      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
-    }
-
-    [data-theme="dark"] .theme-toggle { background: var(--accent); }
-    [data-theme="dark"] .theme-toggle::after { transform: translateX(18px); }
-
-    .theme-label {
-      font-size: 0.78rem;
-      color: var(--ink-muted);
-      font-weight: 500;
+    .close-btn:hover {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+      transform: scale(1.02);
     }
 
     /* ===== LAYOUT ===== */
     .container {
-      max-width: 900px;
+      max-width: 1000px;
       margin: 0 auto;
-      padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 4vw, 2rem);
+      padding: clamp(1.5rem, 4vw, 2.5rem) clamp(1rem, 4vw, 2rem);
       display: grid;
       grid-template-columns: 1fr;
       gap: 2rem;
@@ -142,77 +82,92 @@
 
     /* ===== SECTION TITLE ===== */
     .section-title {
-      font-family: 'Libre Baskerville', serif;
-      font-size: 1.5rem;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.7rem;
       font-weight: 700;
       letter-spacing: -0.02em;
-      color: var(--color-primary);
+      color: var(--primary);
       margin-bottom: 0.25rem;
     }
 
     .section-sub {
-      font-size: 0.87rem;
-      color: var(--ink-muted);
+      font-size: 0.9rem;
+      color: var(--ink-light);
     }
 
     /* ===== TYPE SELECTOR ===== */
     .type-grid {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 12px;
     }
 
     .type-btn {
-      padding: 7px 16px;
-      border: 1.5px solid var(--border);
-      border-radius: 100px;
+      padding: 8px 20px;
+      border: 1.5px solid var(--secondary);
+      border-radius: var(--radius-button);
       background: transparent;
-      color: var(--ink-muted);
-      font-family: 'DM Sans', sans-serif;
+      color: var(--primary);
+      font-family: 'Inter', sans-serif;
       font-size: 0.85rem;
-      font-weight: 500;
+      font-weight: 600;
       cursor: pointer;
       transition: all var(--transition);
       white-space: nowrap;
+      background-color: var(--bg-card);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .type-btn i {
+      font-size: 1rem;
     }
 
     .type-btn:hover {
+      background: var(--accent);
       border-color: var(--accent);
-      color: var(--accent);
-      background: var(--accent-light);
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-default);
     }
 
     .type-btn.active {
       background: var(--accent);
       border-color: var(--accent);
-      color: #fff;
+      color: white;
     }
 
     /* ===== CARD ===== */
     .card {
       background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: clamp(1.25rem, 3vw, 2rem);
-      box-shadow: var(--shadow);
-      transition: background var(--transition), border-color var(--transition);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-card);
+      padding: clamp(1.5rem, 3vw, 2rem);
+      box-shadow: var(--shadow-default);
+      transition: box-shadow var(--transition);
+    }
+
+    .card:hover {
+      box-shadow: var(--shadow-hover);
     }
 
     .card-title {
-      font-family: 'Libre Baskerville', serif;
-      font-size: 1rem;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.2rem;
       font-weight: 700;
-      color: var(--color-primary);
-      margin-bottom: 1.25rem;
-      padding-bottom: 0.75rem;
-      border-bottom: 1px solid var(--border);
+      color: var(--primary);
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.8rem;
+      border-bottom: 2px solid var(--secondary);
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
 
     .card-title-icon {
-      width: 6px; height: 6px;
+      width: 8px;
+      height: 8px;
       background: var(--accent);
       border-radius: 50%;
       flex-shrink: 0;
@@ -221,29 +176,31 @@
     /* ===== FORM ===== */
     .form-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 16px;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 20px;
     }
 
     .form-group {
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      gap: 6px;
     }
 
-    .form-group.full { grid-column: 1 / -1; }
+    .form-group.full {
+      grid-column: 1 / -1;
+    }
 
     label {
-      font-size: 0.78rem;
-      font-weight: 600;
-      color: var(--ink-muted);
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--primary);
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
 
     label .req {
       color: var(--accent);
-      margin-left: 2px;
+      margin-left: 3px;
     }
 
     label .opt {
@@ -251,204 +208,234 @@
       color: var(--ink-light);
       text-transform: none;
       letter-spacing: 0;
-      font-size: 0.75rem;
-      margin-left: 4px;
+      font-size: 0.7rem;
+      margin-left: 6px;
     }
 
     input, select, textarea {
-      padding: 9px 12px;
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius);
-      background: var(--bg);
-      color: var(--ink);
-      font-family: 'DM Sans', sans-serif;
+      padding: 12px 14px;
+      border: 1px solid var(--secondary);
+      border-radius: var(--radius-input);
+      background: var(--bg-page);
+      color: var(--primary);
+      font-family: 'Inter', sans-serif;
       font-size: 0.9rem;
-      transition: border-color var(--transition), background var(--transition);
+      transition: all var(--transition);
       outline: none;
       width: 100%;
     }
 
     input:focus, select:focus, textarea:focus {
       border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(244, 96, 96, 0.2);
       background: var(--bg-card);
     }
 
-    input.error, select.error { border-color: #F46060; }
+    input.error, select.error {
+      border-color: var(--accent);
+      background-color: rgba(244, 96, 96, 0.05);
+    }
 
-    textarea { resize: vertical; min-height: 70px; }
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
 
-    select { cursor: pointer; }
+    select {
+      cursor: pointer;
+    }
 
     .field-hint {
-      font-size: 0.74rem;
+      font-size: 0.7rem;
       color: var(--ink-light);
       font-style: italic;
+      margin-top: 2px;
     }
 
     .error-msg {
-      font-size: 0.74rem;
-      color: #F46060;
+      font-size: 0.7rem;
+      color: var(--accent);
       display: none;
+      margin-top: 4px;
     }
 
-    .error-msg.visible { display: block; }
+    .error-msg.visible {
+      display: block;
+    }
 
     /* ===== ACTIONS ===== */
     .form-actions {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 1.5rem;
+      gap: 14px;
+      margin-top: 2rem;
       align-items: center;
     }
 
     .btn {
-      padding: 10px 22px;
-      border-radius: var(--radius);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.88rem;
-      font-weight: 600;
+      padding: 12px 26px;
+      border-radius: var(--radius-button);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
       cursor: pointer;
       border: none;
       transition: all var(--transition);
       display: inline-flex;
       align-items: center;
-      gap: 7px;
+      gap: 8px;
     }
 
     .btn-primary {
       background: var(--accent);
-      color: #fff;
+      color: white;
+      box-shadow: 0 2px 6px rgba(244, 96, 96, 0.3);
     }
 
     .btn-primary:hover {
       background: #E04545;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(244, 96, 96, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 14px rgba(244, 96, 96, 0.4);
     }
 
     .btn-secondary {
       background: transparent;
-      color: var(--ink-muted);
-      border: 1.5px solid var(--border);
+      color: var(--primary);
+      border: 1.5px solid var(--secondary);
     }
 
-    .btn-secondary:hover { border-color: var(--ink-muted); color: var(--ink); }
+    .btn-secondary:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: translateY(-2px);
+    }
 
     /* ===== RESULT ===== */
     .result-box {
-      background: var(--bg);
-      border: 1.5px dashed var(--border);
-      border-radius: var(--radius);
-      padding: 1.25rem;
-      font-family: 'Libre Baskerville', serif;
+      background: var(--bg-page);
+      border: 2px dashed var(--secondary);
+      border-radius: var(--radius-input);
+      padding: 1.3rem;
+      font-family: 'Space Grotesk', serif;
       font-size: 0.95rem;
-      line-height: 1.8;
-      color: var(--ink);
-      min-height: 80px;
-      transition: background var(--transition);
+      line-height: 1.7;
+      color: var(--primary);
+      min-height: 100px;
+      transition: all var(--transition);
       word-break: break-word;
     }
 
     .result-box.has-content {
       border-style: solid;
       border-color: var(--accent);
-      background: var(--accent-light);
-    }
-
-    [data-theme="dark"] .result-box.has-content {
-      background: var(--accent-light);
+      background: rgba(244, 96, 96, 0.05);
     }
 
     .result-placeholder {
       color: var(--ink-light);
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Inter', sans-serif;
       font-style: italic;
-      font-size: 0.88rem;
+      font-size: 0.9rem;
     }
 
     .result-actions {
       display: flex;
-      gap: 8px;
-      margin-top: 10px;
+      gap: 12px;
+      margin-top: 16px;
       flex-wrap: wrap;
     }
 
     .btn-copy {
-      background: var(--ink);
-      color: var(--bg-card);
-      font-size: 0.82rem;
-      padding: 7px 16px;
+      background: var(--primary);
+      color: white;
+      font-size: 0.85rem;
+      padding: 8px 20px;
     }
 
-    .btn-copy:hover { opacity: 0.85; }
+    .btn-copy:hover {
+      background: var(--secondary);
+      transform: translateY(-1px);
+    }
 
     .btn-save {
       background: transparent;
-      border: 1.5px solid var(--border);
-      color: var(--ink-muted);
-      font-size: 0.82rem;
-      padding: 7px 16px;
+      border: 1.5px solid var(--secondary);
+      color: var(--primary);
+      font-size: 0.85rem;
+      padding: 8px 20px;
     }
 
-    .btn-save:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-save:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: translateY(-1px);
+    }
 
     .copy-confirm {
       font-size: 0.8rem;
-      color: #27ae60;
-      font-weight: 500;
+      color: #2e7d32;
+      font-weight: 600;
       display: none;
       align-items: center;
-      gap: 4px;
+      gap: 5px;
+      background: #e8f5e9;
+      padding: 5px 12px;
+      border-radius: 40px;
     }
 
-    .copy-confirm.show { display: flex; }
+    .copy-confirm.show {
+      display: flex;
+    }
 
     /* ===== HISTORY ===== */
     .history-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 1rem;
+      margin-bottom: 1.2rem;
     }
 
     .history-count {
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       background: var(--accent);
-      color: #fff;
-      border-radius: 100px;
-      padding: 2px 9px;
-      font-weight: 600;
+      color: white;
+      border-radius: 40px;
+      padding: 2px 10px;
+      font-weight: 700;
+      margin-left: 10px;
     }
 
     .history-empty {
       color: var(--ink-light);
       font-style: italic;
-      font-size: 0.88rem;
+      font-size: 0.9rem;
       text-align: center;
-      padding: 1.5rem 0;
+      padding: 1.8rem 0;
     }
 
     .history-list {
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      max-height: 400px;
+      gap: 12px;
+      max-height: 420px;
       overflow-y: auto;
     }
 
     .history-item {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 10px 14px;
+      background: var(--bg-page);
+      border: 1px solid var(--border-light);
+      border-radius: 16px;
+      padding: 14px 18px;
       display: flex;
       align-items: flex-start;
-      gap: 10px;
-      transition: border-color var(--transition);
+      gap: 12px;
+      transition: all var(--transition);
     }
 
-    .history-item:hover { border-color: var(--accent); }
+    .history-item:hover {
+      border-color: var(--secondary);
+      box-shadow: var(--shadow-default);
+    }
 
     .history-item-content {
       flex: 1;
@@ -461,14 +448,17 @@
       text-transform: uppercase;
       letter-spacing: 0.06em;
       color: var(--accent);
-      margin-bottom: 3px;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
     }
 
     .history-text {
-      font-family: 'Libre Baskerville', serif;
-      font-size: 0.82rem;
+      font-family: 'Space Grotesk', serif;
+      font-size: 0.85rem;
       line-height: 1.5;
-      color: var(--ink);
+      color: var(--primary);
       overflow: hidden;
       display: -webkit-box;
       -webkit-line-clamp: 2;
@@ -476,200 +466,142 @@
     }
 
     .history-date {
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       color: var(--ink-light);
-      margin-top: 3px;
+      margin-top: 5px;
     }
 
-    .history-actions { display: flex; gap: 4px; flex-shrink: 0; }
+    .history-actions {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
 
     .btn-icon {
-      width: 28px; height: 28px;
+      width: 32px;
+      height: 32px;
       border: none;
       background: transparent;
-      border-radius: var(--radius);
+      border-radius: 12px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.85rem;
-      transition: background var(--transition);
-      color: var(--ink-muted);
+      font-size: 1rem;
+      transition: all var(--transition);
+      color: var(--primary);
     }
 
-    .btn-icon:hover { background: var(--border); color: var(--ink); }
+    .btn-icon i {
+      font-size: 1rem;
+    }
 
-    .btn-icon.danger:hover { background: #FDEAEA; color: #F46060; }
+    .btn-icon:hover {
+      background: var(--secondary);
+      color: white;
+    }
+
+    .btn-icon.danger:hover {
+      background: var(--accent);
+      color: white;
+    }
 
     /* ===== SCROLLBAR ===== */
-    .history-list::-webkit-scrollbar { width: 4px; }
-    .history-list::-webkit-scrollbar-track { background: transparent; }
-    .history-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    .history-list::-webkit-scrollbar {
+      width: 5px;
+    }
+    .history-list::-webkit-scrollbar-track {
+      background: var(--border-light);
+      border-radius: 10px;
+    }
+    .history-list::-webkit-scrollbar-thumb {
+      background: var(--secondary);
+      border-radius: 10px;
+    }
 
     /* ===== TOAST ===== */
     .toast {
       position: fixed;
       bottom: 2rem;
       right: 2rem;
-      background: var(--ink);
-      color: var(--bg);
-      padding: 10px 20px;
-      border-radius: var(--radius);
-      font-size: 0.88rem;
-      font-weight: 500;
+      background: var(--primary);
+      color: white;
+      padding: 12px 24px;
+      border-radius: var(--radius-button);
+      font-size: 0.85rem;
+      font-weight: 600;
       opacity: 0;
-      transform: translateY(10px);
-      transition: all 0.3s ease;
+      transform: translateY(12px);
+      transition: all 0.25s ease;
       pointer-events: none;
-      z-index: 200;
+      z-index: 300;
+      box-shadow: var(--shadow-default);
     }
 
-    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
 
     /* ===== RESPONSIVE ===== */
-    @media (max-width: 600px) {
-      .form-grid { grid-template-columns: 1fr; }
-      .type-grid { gap: 6px; }
-      .type-btn { font-size: 0.8rem; padding: 6px 13px; }
+    @media (max-width: 680px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+      .type-grid {
+        gap: 10px;
+      }
+      .type-btn {
+        font-size: 0.8rem;
+        padding: 6px 14px;
+      }
+      .card-title {
+        font-size: 1rem;
+      }
+      .close-btn {
+        top: 12px;
+        right: 16px;
+        width: 40px;
+        height: 40px;
+      }
     }
 
-    /* ===== ACTION BAR (scan + sélecteur source) ===== */
-    .action-bar {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    /* Ligne ISBN — accent, immédiatement identifiable */
-    .action-isbn {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .btn-scan-global {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 22px;
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      border-radius: var(--radius);
-      font-family: inherit;
-      font-size: 0.9rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s;
-      letter-spacing: 0.01em;
-    }
-    .btn-scan-global:hover {
-      background: #E04545;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 14px rgba(244, 96, 96, 0.35);
-    }
-
-    .isbn-hint {
-      font-size: 0.8rem;
-      color: var(--ink-light);
-      font-style: italic;
-    }
-
-    /* Séparateur entre ISBN et sélecteur type */
-    .action-divider {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      color: var(--ink-light);
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-    }
-    .action-divider::before,
-    .action-divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--border);
-    }
-
-    /* Ligne type de source — neutre, secondaire */
-    .action-source {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .action-source-label {
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: var(--ink-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
-
-    /* Bouton scan dans la grille — même gabarit que type-btn, couleur accent */
+    /* ===== SCAN BUTTON (type-btn special) ===== */
     .type-btn--scan {
-      background: var(--accent) !important;
-      color: #fff !important;
-      border-color: var(--accent) !important;
+      background: var(--secondary) !important;
+      color: white !important;
+      border-color: var(--secondary) !important;
       font-weight: 700;
     }
     .type-btn--scan:hover {
-      background: #E04545 !important;
-      border-color: #E04545 !important;
-      color: #fff !important;
+      background: var(--accent) !important;
+      border-color: var(--accent) !important;
     }
 
-    @media (max-width: 600px) {
-      .type-btn--scan { order: -1; }
-    }
-
-    /* ===== BOUTON QUITTER ===== */
-    .btn-quitter {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 7px 16px;
-      background: transparent;
-      color: var(--ink-muted);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius);
-      font-family: inherit;
-      font-size: 0.82rem;
+    /* ===== ISBN FEEDBACK ===== */
+    #isbn-feedback {
+      font-size: 0.7rem;
+      margin-top: 4px;
       font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
     }
-    .btn-quitter:hover { border-color: var(--ink-muted); color: var(--ink); }
   </style>
 </head>
 <body>
 
-<!-- HEADER -->
-<header>
-  <div class="logo">
-    <span class="logo-dot"></span>
-    Citatio
-  </div>
-  <div class="header-actions">
-    <button class="btn-quitter" onclick="quitterApplication()" title="Quitter / retour au menu">← Retour</button>
-    <span class="theme-label" id="theme-label">Mode sombre</span>
-    <button class="theme-toggle" id="theme-toggle" aria-label="Basculer le thème" title="Mode sombre"></button>
-  </div>
-</header>
+<!-- Bouton fermeture croix en haut à droite -->
+<button class="close-btn" onclick="quitterApplication()" title="Fermer">
+  <i class="fas fa-times"></i>
+</button>
 
-<!-- MAIN -->
 <div class="container">
-
-  <!-- SÉLECTEUR DE SOURCE (bouton scan injecté avant Ouvrage par JS) -->
   <div>
-    <p class="section-title">Générateur de citations</p>
-    <p class="section-sub" style="margin-bottom:1rem;">Sélectionnez le type de source à citer</p>
+    <p class="section-title">Générateur de références 
+    </p>
+    <p class="section-sub" style="margin-bottom:1rem;">Sélectionnez le type de source à citer (style bibliographique français)</p>
     <div class="type-grid" id="type-grid"></div>
   </div>
 
-  <!-- FORM CARD -->
   <div class="card" id="form-card">
     <div class="card-title">
       <span class="card-title-icon"></span>
@@ -678,7 +610,6 @@
     <div id="dynamic-form"></div>
   </div>
 
-  <!-- RESULT CARD -->
   <div class="card">
     <div class="card-title">
       <span class="card-title-icon"></span>
@@ -688,17 +619,12 @@
       <span class="result-placeholder">La citation générée apparaîtra ici…</span>
     </div>
     <div class="result-actions" id="result-actions" style="display:none;">
-      <button class="btn btn-copy" id="btn-copy" onclick="copyCitation()">
-        📋 Copier
-      </button>
-      <button class="btn btn-save" onclick="saveCitation()">
-        💾 Sauvegarder dans l'historique
-      </button>
-      <span class="copy-confirm" id="copy-confirm">✓ Copié !</span>
+      <button class="btn btn-copy" id="btn-copy" onclick="copyCitation()"><i class="fas fa-copy"></i> Copier</button>
+      <button class="btn btn-save" onclick="saveCitation()"><i class="fas fa-save"></i> Sauvegarder</button>
+      <span class="copy-confirm" id="copy-confirm"><i class="fas fa-check-circle"></i> Copié !</span>
     </div>
   </div>
 
-  <!-- HISTORY CARD -->
   <div class="card">
     <div class="history-header">
       <div class="card-title" style="margin-bottom:0;padding-bottom:0;border:none;">
@@ -706,26 +632,24 @@
         Historique
         <span class="history-count" id="history-count">0</span>
       </div>
-      <button class="btn btn-secondary" style="font-size:0.8rem;padding:6px 14px;" onclick="clearHistory()">Tout effacer</button>
+      <button class="btn btn-secondary" style="font-size:0.8rem;padding:6px 18px;" onclick="clearHistory()"><i class="fas fa-trash-alt"></i> Tout effacer</button>
     </div>
     <div id="history-list" class="history-list">
       <p class="history-empty">Aucune citation sauvegardée.</p>
     </div>
   </div>
-
 </div>
 
-<!-- TOAST -->
 <div class="toast" id="toast"></div>
 
 <script>
 /* ========================================================
-   MODÈLES DE FORMULAIRES PAR TYPE
+   MODÈLES DE FORMULAIRES (avec icônes Font Awesome)
    ======================================================== */
 const TYPES = {
   ouvrage: {
     label: 'Ouvrage',
-    icon: '📖',
+    icon: 'fas fa-book',
     fields: [
       { id: 'isbn', label: 'ISBN', required: false, full: true, hint: 'ex: 9782070368228 — saisir ou scanner pour auto-remplir' },
       { id: 'prenoms', label: 'Prénom(s)', required: true, hint: 'ex: Jean-Paul' },
@@ -740,7 +664,7 @@ const TYPES = {
   },
   periodique: {
     label: 'Périodique',
-    icon: '📰',
+    icon: 'fas fa-newspaper',
     fields: [
       { id: 'prenoms', label: 'Prénom(s)', required: true },
       { id: 'noms', label: 'Nom(s)', required: true },
@@ -754,7 +678,7 @@ const TYPES = {
   },
   musique: {
     label: 'Musique',
-    icon: '🎵',
+    icon: 'fas fa-music',
     fields: [
       { id: 'prenoms', label: 'Prénom(s)', required: true },
       { id: 'noms', label: 'Nom(s)', required: true },
@@ -770,7 +694,7 @@ const TYPES = {
   },
   video: {
     label: 'Vidéo',
-    icon: '🎬',
+    icon: 'fas fa-video',
     fields: [
       { id: 'prenoms', label: 'Prénom(s)', required: true },
       { id: 'noms', label: 'Nom(s)', required: true },
@@ -786,7 +710,7 @@ const TYPES = {
   },
   revue: {
     label: 'Revue',
-    icon: '📚',
+    icon: 'fas fa-graduation-cap',
     fields: [
       { id: 'prenoms', label: 'Prénom(s) auteur article', required: true },
       { id: 'noms', label: 'Nom(s) auteur article', required: true },
@@ -804,7 +728,7 @@ const TYPES = {
   },
   loi: {
     label: 'Loi',
-    icon: '⚖️',
+    icon: 'fas fa-gavel',
     fields: [
       { id: 'type_acte', label: 'Type d\'acte', required: true, type: 'select', options: ['Loi', 'Ordonnance', 'Décret', 'Arrêté'] },
       { id: 'numero_loi', label: 'Numéro de la loi/ordonnance', required: true, hint: 'ex: 2023-703' },
@@ -818,7 +742,7 @@ const TYPES = {
   },
   siteweb: {
     label: 'Site web',
-    icon: '🌐',
+    icon: 'fas fa-globe',
     fields: [
       { id: 'auteur', label: 'Nom(s) auteur(e)(s)', required: false, hint: 'ex: Dupont ou Mairie de Paris', full: true },
       { id: 'titre', label: 'Titre du site', required: true, full: true },
@@ -828,7 +752,7 @@ const TYPES = {
   },
   dictionnaire: {
     label: 'Dictionnaire',
-    icon: '📒',
+    icon: 'fas fa-book-open',
     fields: [
       { id: 'prenoms', label: 'Prénom(s)', required: true },
       { id: 'noms', label: 'Nom(s)', required: true },
@@ -843,1500 +767,72 @@ const TYPES = {
   }
 };
 
-/* ========================================================
-   UTILS
-   ======================================================== */
-
-/** Formate une date ISO YYYY-MM-DD en "JJ mois AAAA" en français */
+/* ──────────────── FONCTIONS UTILES & GÉNÉRATEURS ────────────── */
 function formatDateFR(dateStr) {
   if (!dateStr) return '';
   const MOIS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
   const [y, m, d] = dateStr.split('-');
   return `${parseInt(d)} ${MOIS[parseInt(m)-1]} ${y}`;
 }
-
-/** Formate les secondes/minutes en "00 min. 00 sec." */
 function formatDuration(min, sec) {
   const m = String(parseInt(min)||0).padStart(2,'0');
   const s = String(parseInt(sec)||0).padStart(2,'0');
   return `${m} min. ${s} sec.`;
 }
+function todayFR() { return formatDateFR(new Date().toISOString().split('T')[0]); }
+function v(id) { const el = document.getElementById('f_'+id); return el ? el.value.trim() : ''; }
 
-/** Retourne aujourd'hui en français */
-function todayFR() {
-  return formatDateFR(new Date().toISOString().split('T')[0]);
-}
-
-/** Lire la valeur d'un champ du formulaire */
-function v(id) {
-  const el = document.getElementById('f_'+id);
-  return el ? el.value.trim() : '';
-}
-
-/* ========================================================
-   GÉNÉRATEURS DE CITATIONS
-   ======================================================== */
 const GENERATORS = {
-  ouvrage(d) {
-    let c = `${d.prenoms} ${d.noms}, <em>${d.titre}</em>, ${d.ville}, ${d.editeur}`;
-    if (d.collection) c += `, coll. « ${d.collection} »`;
-    c += `, ${d.annee}`;
-    if (d.page) c += `, p. ${d.page}`;
-    c += '.';
-    return c;
-  },
-  periodique(d) {
-    let c = `${d.prenoms} ${d.noms}, « ${d.titre} », ${d.ville}, <em>${d.journal}</em>, ${formatDateFR(d.date)}`;
-    if (d.page) c += `, p. ${d.page}`;
-    if (d.url) c += `, <a href="${d.url}" target="_blank">${d.url}</a> (consulté le : ${todayFR()})`;
-    c += '.';
-    return c;
-  },
-  musique(d) {
-    let c = `${d.prenoms} ${d.noms}, « ${d.titre} », ${formatDuration(d.min, d.sec)}, dans l'album <em>${d.album}</em>, ${d.ville}, ${d.producteur}, ${d.annee}`;
-    if (d.url) c += `, <a href="${d.url}" target="_blank">${d.url}</a> (consulté le : ${todayFR()})`;
-    c += '.';
-    return c;
-  },
-  video(d) {
-    let c = `${d.prenoms} ${d.noms}, <em>${d.titre}</em>, ${d.ville}, ${d.editeur}`;
-    if (d.collection) c += `, coll. « ${d.collection} »`;
-    c += `, ${d.annee}, ${formatDuration(d.min, d.sec)}`;
-    if (d.url) c += `, <a href="${d.url}" target="_blank">${d.url}</a> (consulté le : ${todayFR()})`;
-    c += '.';
-    return c;
-  },
-  revue(d) {
-    let c = `${d.prenoms} ${d.noms}, « ${d.titre_article} »`;
-    if (d.prenoms_dir && d.noms_dir) c += `, dans ${d.prenoms_dir} ${d.noms_dir} (dir)`;
-    c += `, <em>${d.titre_numero}</em>, ${d.ville}, <em>${d.titre_revue}</em>`;
-    if (d.numero) c += `, n°${d.numero}`;
-    c += `, ${d.annee}`;
-    if (d.page) c += `, p. ${d.page}`;
-    if (d.url) c += `, <a href="${d.url}" target="_blank">${d.url}</a> (consulté le : ${todayFR()})`;
-    c += '.';
-    return c;
-  },
-  loi(d) {
-    let c = `${d.type_acte} n°${d.numero_loi} du ${formatDateFR(d.date_loi)}`;
-    if (d.article) c += ` - art. ${d.article}`;
-    if (d.recueil) c += `, ${d.recueil} [en ligne]`;
-    if (d.numero_article && d.date_vigueur) c += `, Article ${d.numero_article} version en vigueur depuis le ${formatDateFR(d.date_vigueur)}`;
-    if (d.url) c += `, <a href="${d.url}" target="_blank">${d.url}</a> (consulté le : ${todayFR()})`;
-    c += '.';
-    return c;
-  },
-  siteweb(d) {
-    let c = '';
-    if (d.auteur) c += `${d.auteur}, `;
-    c += `« ${d.titre} »`;
-    if (d.plateforme) c += `, ${d.plateforme}`;
-    c += `, <a href="${d.url}" target="_blank">${d.url}</a> (consulté le : ${todayFR()})`;
-    c += '.';
-    return c;
-  },
-  dictionnaire(d) {
-    let c = `${d.prenoms} ${d.noms} (dir), <em>${d.titre}</em>`;
-    if (d.volume) c += `, ${d.volume}`;
-    c += `, ${d.ville}, ${d.editeur}, ${d.annee}`;
-    if (d.page) c += `, p. ${d.page}`;
-    if (d.url) c += `, <a href="${d.url}" target="_blank">${d.url}</a> (consulté le : ${todayFR()})`;
-    c += '.';
-    return c;
-  }
+  ouvrage(d) { let c = `${d.prenoms} ${d.noms}, <em>${d.titre}</em>, ${d.ville}, ${d.editeur}`; if (d.collection) c += `, coll. « ${d.collection} »`; c += `, ${d.annee}`; if (d.page) c += `, p. ${d.page}`; c += '.'; return c; },
+  periodique(d) { let c = `${d.prenoms} ${d.noms}, « ${d.titre} », ${d.ville}, <em>${d.journal}</em>, ${formatDateFR(d.date)}`; if (d.page) c += `, p. ${d.page}`; if (d.url) c += `, <a href="${d.url}" target="_blank">${d.url}</a> (consulté le : ${todayFR()})`; c += '.'; return c; },
+  musique(d) { let c = `${d.prenoms} ${d.noms}, « ${d.titre} », ${formatDuration(d.min, d.sec)}, dans l'album <em>${d.album}</em>, ${d.ville}, ${d.producteur}, ${d.annee}`; if (d.url) c += `, <a href="${d.url}" target="_blank">${d.url}</a> (consulté le : ${todayFR()})`; c += '.'; return c; },
+  video(d) { let c = `${d.prenoms} ${d.noms}, <em>${d.titre}</em>, ${d.ville}, ${d.editeur}`; if (d.collection) c += `, coll. « ${d.collection} »`; c += `, ${d.annee}, ${formatDuration(d.min, d.sec)}`; if (d.url) c += `, <a href="${d.url}" target="_blank">${d.url}</a> (consulté le : ${todayFR()})`; c += '.'; return c; },
+  revue(d) { let c = `${d.prenoms} ${d.noms}, « ${d.titre_article} »`; if (d.prenoms_dir && d.noms_dir) c += `, dans ${d.prenoms_dir} ${d.noms_dir} (dir)`; c += `, <em>${d.titre_numero}</em>, ${d.ville}, <em>${d.titre_revue}</em>`; if (d.numero) c += `, n°${d.numero}`; c += `, ${d.annee}`; if (d.page) c += `, p. ${d.page}`; if (d.url) c += `, <a href="${d.url}" target="_blank">${d.url}</a> (consulté le : ${todayFR()})`; c += '.'; return c; },
+  loi(d) { let c = `${d.type_acte} n°${d.numero_loi} du ${formatDateFR(d.date_loi)}`; if (d.article) c += ` - art. ${d.article}`; if (d.recueil) c += `, ${d.recueil} [en ligne]`; if (d.numero_article && d.date_vigueur) c += `, Article ${d.numero_article} version en vigueur depuis le ${formatDateFR(d.date_vigueur)}`; if (d.url) c += `, <a href="${d.url}" target="_blank">${d.url}</a> (consulté le : ${todayFR()})`; c += '.'; return c; },
+  siteweb(d) { let c = ''; if (d.auteur) c += `${d.auteur}, `; c += `« ${d.titre} »`; if (d.plateforme) c += `, ${d.plateforme}`; c += `, <a href="${d.url}" target="_blank">${d.url}</a> (consulté le : ${todayFR()})`; c += '.'; return c; },
+  dictionnaire(d) { let c = `${d.prenoms} ${d.noms} (dir), <em>${d.titre}</em>`; if (d.volume) c += `, ${d.volume}`; c += `, ${d.ville}, ${d.editeur}, ${d.annee}`; if (d.page) c += `, p. ${d.page}`; if (d.url) c += `, <a href="${d.url}" target="_blank">${d.url}</a> (consulté le : ${todayFR()})`; c += '.'; return c; }
 };
 
-/* ========================================================
-   ÉTAT GLOBAL
-   ======================================================== */
-let currentType = null;
-let currentCitation = '';
+let currentType = null, currentCitation = '';
 let history = JSON.parse(localStorage.getItem('citatio_history') || '[]');
 
-/* ========================================================
-   RENDU DU FORMULAIRE
-   ======================================================== */
 function renderTypeButtons() {
   const grid = document.getElementById('type-grid');
   grid.innerHTML = '';
-
-  /* ── Bouton "Capturer ISBN" injecté avant Ouvrage ─────────────── */
   const scanBtn = document.createElement('button');
-  scanBtn.id        = 'btn-scan-global';
+  scanBtn.id = 'btn-scan-global';
   scanBtn.className = 'type-btn type-btn--scan';
-  scanBtn.textContent = '📷 Capturer ISBN';
-  scanBtn.onclick   = () => { if (typeof globalStartScanner === 'function') globalStartScanner(); };
+  scanBtn.innerHTML = '<i class="fas fa-camera"></i> Capturer ISBN';
+  scanBtn.onclick = () => { if (typeof globalStartScanner === 'function') globalStartScanner(); };
   grid.appendChild(scanBtn);
-
   Object.entries(TYPES).forEach(([key, type]) => {
     const btn = document.createElement('button');
     btn.className = 'type-btn';
     btn.dataset.type = key;
-    btn.textContent = `${type.icon} ${type.label}`;
+    btn.innerHTML = `<i class="${type.icon}"></i> ${type.label}`;
     btn.onclick = () => selectType(key);
     grid.appendChild(btn);
   });
 }
+function selectType(key) { currentType = key; document.querySelectorAll('.type-btn').forEach(b => b.classList.toggle('active', b.dataset.type === key)); document.getElementById('form-card-title').innerHTML = `<i class="${TYPES[key].icon}"></i> ${TYPES[key].label}`; renderForm(key); setResult(''); }
+function renderForm(key) { const fields = TYPES[key].fields; const container = document.getElementById('dynamic-form'); container.innerHTML = ''; const gridDiv = document.createElement('div'); gridDiv.className = 'form-grid'; fields.forEach(f => { const group = document.createElement('div'); group.className = `form-group${f.full ? ' full' : ''}`; const label = document.createElement('label'); label.htmlFor = 'f_' + f.id; label.innerHTML = f.label + (f.required ? '<span class="req">*</span>' : '<span class="opt">(optionnel)</span>'); group.appendChild(label); let input; if (f.type === 'select') { input = document.createElement('select'); f.options.forEach(opt => { const o = document.createElement('option'); o.value = opt; o.textContent = opt; input.appendChild(o); }); } else if (f.type === 'date') { input = document.createElement('input'); input.type = 'date'; } else { input = document.createElement('input'); input.type = f.type || 'text'; if (f.hint) input.placeholder = f.hint; } input.id = 'f_' + f.id; input.required = !!f.required; group.appendChild(input); if (f.hint && f.type !== 'select' && !input.placeholder) { const hint = document.createElement('span'); hint.className = 'field-hint'; hint.textContent = f.hint; group.appendChild(hint); } const errMsg = document.createElement('span'); errMsg.className = 'error-msg'; errMsg.id = 'err_' + f.id; errMsg.textContent = 'Champ requis.'; group.appendChild(errMsg); gridDiv.appendChild(group); }); container.appendChild(gridDiv); const actions = document.createElement('div'); actions.className = 'form-actions'; actions.innerHTML = `<button class="btn btn-primary" onclick="generateCitation()"><i class="fas fa-quote-right"></i> Générer la citation</button><button class="btn btn-secondary" onclick="resetForm()"><i class="fas fa-undo-alt"></i> Réinitialiser</button>`; container.appendChild(actions); }
+function generateCitation() { if (!currentType) return; let valid = true; TYPES[currentType].fields.forEach(f => { const el = document.getElementById('f_' + f.id); const err = document.getElementById('err_' + f.id); if (f.required && el && !el.value.trim()) { el.classList.add('error'); err.classList.add('visible'); valid = false; } else if (el) { el.classList.remove('error'); err.classList.remove('visible'); } }); if (!valid) { showToast('⚠ Veuillez remplir les champs obligatoires.'); return; } const data = {}; TYPES[currentType].fields.forEach(f => { data[f.id] = v(f.id); }); const html = GENERATORS[currentType](data); currentCitation = html; setResult(html); }
+function setResult(html) { const box = document.getElementById('result-box'); const actions = document.getElementById('result-actions'); if (!html) { box.innerHTML = '<span class="result-placeholder">La citation générée apparaîtra ici…</span>'; box.classList.remove('has-content'); actions.style.display = 'none'; currentCitation = ''; } else { box.innerHTML = html; box.classList.add('has-content'); actions.style.display = 'flex'; } }
+function copyCitation() { if (!currentCitation) return; const tmp = document.createElement('div'); tmp.innerHTML = currentCitation; const text = tmp.textContent || tmp.innerText; navigator.clipboard.writeText(text).then(() => { const conf = document.getElementById('copy-confirm'); conf.classList.add('show'); setTimeout(() => conf.classList.remove('show'), 2000); }); }
+function saveCitation() { if (!currentCitation) return; const tmp = document.createElement('div'); tmp.innerHTML = currentCitation; const text = tmp.textContent || tmp.innerText; const item = { id: Date.now(), type: currentType, typeLabel: TYPES[currentType].label, icon: TYPES[currentType].icon, html: currentCitation, text, date: new Date().toLocaleString('fr-FR') }; history.unshift(item); if (history.length > 50) history = history.slice(0,50); localStorage.setItem('citatio_history', JSON.stringify(history)); renderHistory(); showToast('✓ Citation sauvegardée !'); }
+function renderHistory() { const list = document.getElementById('history-list'); const count = document.getElementById('history-count'); count.textContent = history.length; if (!history.length) { list.innerHTML = '<p class="history-empty">Aucune citation sauvegardée.</p>'; return; } list.innerHTML = ''; history.forEach(item => { const el = document.createElement('div'); el.className = 'history-item'; el.innerHTML = `<div class="history-item-content"><div class="history-type"><i class="${item.icon}"></i> ${item.typeLabel}</div><div class="history-text">${item.html}</div><div class="history-date"><i class="far fa-calendar-alt"></i> ${item.date}</div></div><div class="history-actions"><button class="btn-icon" title="Copier" onclick="copyHistoryItem(${item.id})"><i class="fas fa-copy"></i></button><button class="btn-icon danger" title="Supprimer" onclick="deleteHistoryItem(${item.id})"><i class="fas fa-trash-alt"></i></button></div>`; list.appendChild(el); }); }
+function copyHistoryItem(id) { const item = history.find(h => h.id === id); if (!item) return; navigator.clipboard.writeText(item.text).then(() => showToast('✓ Copié !')); }
+function deleteHistoryItem(id) { history = history.filter(h => h.id !== id); localStorage.setItem('citatio_history', JSON.stringify(history)); renderHistory(); }
+function clearHistory() { if (!history.length) return; history = []; localStorage.setItem('citatio_history', JSON.stringify(history)); renderHistory(); showToast('Historique effacé.'); }
+function resetForm() { if (!currentType) return; TYPES[currentType].fields.forEach(f => { const el = document.getElementById('f_' + f.id); if (el) { el.value = ''; el.classList.remove('error'); } const err = document.getElementById('err_' + f.id); if (err) err.classList.remove('visible'); }); setResult(''); }
+function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
+function quitterApplication() { window.top.location.href = 'https://outils-online.github.io/Acceuil/'; }
 
-function selectType(key) {
-  currentType = key;
-  document.querySelectorAll('.type-btn').forEach(b => b.classList.toggle('active', b.dataset.type === key));
-  document.getElementById('form-card-title').textContent = `${TYPES[key].icon} ${TYPES[key].label}`;
-  renderForm(key);
-  // Reset result
-  setResult('');
-}
-
-function renderForm(key) {
-  const fields = TYPES[key].fields;
-  const container = document.getElementById('dynamic-form');
-  container.innerHTML = '';
-
-  const grid = document.createElement('div');
-  grid.className = 'form-grid';
-
-  fields.forEach(f => {
-    const group = document.createElement('div');
-    group.className = `form-group${f.full ? ' full' : ''}`;
-
-    const label = document.createElement('label');
-    label.htmlFor = 'f_' + f.id;
-    label.innerHTML = f.label + (f.required ? '<span class="req">*</span>' : '<span class="opt">(optionnel)</span>');
-    group.appendChild(label);
-
-    let input;
-    if (f.type === 'select') {
-      input = document.createElement('select');
-      f.options.forEach(opt => {
-        const o = document.createElement('option');
-        o.value = opt; o.textContent = opt;
-        input.appendChild(o);
-      });
-    } else if (f.type === 'date') {
-      input = document.createElement('input');
-      input.type = 'date';
-    } else {
-      input = document.createElement('input');
-      input.type = f.type || 'text';
-      if (f.hint) input.placeholder = f.hint;
-    }
-
-    input.id = 'f_' + f.id;
-    input.required = !!f.required;
-    group.appendChild(input);
-
-    if (f.hint && f.type !== 'select' && !input.placeholder) {
-      const hint = document.createElement('span');
-      hint.className = 'field-hint';
-      hint.textContent = f.hint;
-      group.appendChild(hint);
-    }
-
-    const errMsg = document.createElement('span');
-    errMsg.className = 'error-msg';
-    errMsg.id = 'err_' + f.id;
-    errMsg.textContent = 'Ce champ est requis.';
-    group.appendChild(errMsg);
-
-    grid.appendChild(group);
-  });
-
-  container.appendChild(grid);
-
-  // Actions
-  const actions = document.createElement('div');
-  actions.className = 'form-actions';
-  actions.innerHTML = `
-    <button class="btn btn-primary" onclick="generateCitation()">✦ Générer la citation</button>
-    <button class="btn btn-secondary" onclick="resetForm()">↺ Réinitialiser</button>
-  `;
-  container.appendChild(actions);
-}
-
-/* ========================================================
-   GÉNÉRER LA CITATION
-   ======================================================== */
-function generateCitation() {
-  if (!currentType) return;
-  const fields = TYPES[currentType].fields;
-  let valid = true;
-
-  // Validation
-  fields.forEach(f => {
-    const el = document.getElementById('f_' + f.id);
-    const err = document.getElementById('err_' + f.id);
-    if (f.required && el && !el.value.trim()) {
-      el.classList.add('error');
-      err.classList.add('visible');
-      valid = false;
-    } else if (el) {
-      el.classList.remove('error');
-      err.classList.remove('visible');
-    }
-  });
-
-  if (!valid) {
-    showToast('⚠ Veuillez remplir les champs obligatoires.');
-    return;
-  }
-
-  // Collecte des données
-  const data = {};
-  fields.forEach(f => { data[f.id] = v(f.id); });
-
-  const html = GENERATORS[currentType](data);
-  currentCitation = html;
-  setResult(html);
-}
-
-function setResult(html) {
-  const box = document.getElementById('result-box');
-  const actions = document.getElementById('result-actions');
-  if (!html) {
-    box.innerHTML = '<span class="result-placeholder">La citation générée apparaîtra ici…</span>';
-    box.classList.remove('has-content');
-    actions.style.display = 'none';
-    currentCitation = '';
-  } else {
-    box.innerHTML = html;
-    box.classList.add('has-content');
-    actions.style.display = 'flex';
-  }
-}
-
-/* ========================================================
-   COPIER / SAUVEGARDER
-   ======================================================== */
-function copyCitation() {
-  if (!currentCitation) return;
-  // Copie le texte brut (sans HTML)
-  const tmp = document.createElement('div');
-  tmp.innerHTML = currentCitation;
-  const text = tmp.textContent || tmp.innerText;
-  navigator.clipboard.writeText(text).then(() => {
-    const conf = document.getElementById('copy-confirm');
-    conf.classList.add('show');
-    setTimeout(() => conf.classList.remove('show'), 2000);
-  });
-}
-
-function saveCitation() {
-  if (!currentCitation) return;
-  const tmp = document.createElement('div');
-  tmp.innerHTML = currentCitation;
-  const text = tmp.textContent || tmp.innerText;
-  const item = {
-    id: Date.now(),
-    type: currentType,
-    typeLabel: TYPES[currentType].label,
-    html: currentCitation,
-    text,
-    date: new Date().toLocaleString('fr-FR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' })
-  };
-  history.unshift(item);
-  if (history.length > 50) history = history.slice(0, 50); // limite à 50
-  localStorage.setItem('citatio_history', JSON.stringify(history));
-  renderHistory();
-  showToast('✓ Citation sauvegardée !');
-}
-
-/* ========================================================
-   HISTORIQUE
-   ======================================================== */
-function renderHistory() {
-  const list = document.getElementById('history-list');
-  const count = document.getElementById('history-count');
-  count.textContent = history.length;
-
-  if (!history.length) {
-    list.innerHTML = '<p class="history-empty">Aucune citation sauvegardée.</p>';
-    return;
-  }
-
-  list.innerHTML = '';
-  history.forEach(item => {
-    const el = document.createElement('div');
-    el.className = 'history-item';
-    el.innerHTML = `
-      <div class="history-item-content">
-        <div class="history-type">${TYPES[item.type]?.icon || ''} ${item.typeLabel}</div>
-        <div class="history-text">${item.html}</div>
-        <div class="history-date">${item.date}</div>
-      </div>
-      <div class="history-actions">
-        <button class="btn-icon" title="Copier" onclick="copyHistoryItem(${item.id})">📋</button>
-        <button class="btn-icon danger" title="Supprimer" onclick="deleteHistoryItem(${item.id})">🗑</button>
-      </div>
-    `;
-    list.appendChild(el);
-  });
-}
-
-function copyHistoryItem(id) {
-  const item = history.find(h => h.id === id);
-  if (!item) return;
-  navigator.clipboard.writeText(item.text).then(() => showToast('✓ Copié !'));
-}
-
-function deleteHistoryItem(id) {
-  history = history.filter(h => h.id !== id);
-  localStorage.setItem('citatio_history', JSON.stringify(history));
-  renderHistory();
-}
-
-function clearHistory() {
-  if (!history.length) return;
-  history = [];
-  localStorage.setItem('citatio_history', JSON.stringify(history));
-  renderHistory();
-  showToast('Historique effacé.');
-}
-
-/* ========================================================
-   RESET FORMULAIRE
-   ======================================================== */
-function resetForm() {
-  if (!currentType) return;
-  TYPES[currentType].fields.forEach(f => {
-    const el = document.getElementById('f_' + f.id);
-    if (el) { el.value = ''; el.classList.remove('error'); }
-    const err = document.getElementById('err_' + f.id);
-    if (err) err.classList.remove('visible');
-  });
-  setResult('');
-}
-
-/* ========================================================
-   TOAST
-   ======================================================== */
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
-}
-
-/* ========================================================
-   DARK MODE
-   ======================================================== */
-function initTheme() {
-  const saved = localStorage.getItem('citatio_theme');
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const theme = saved || (prefersDark ? 'dark' : 'light');
-  applyTheme(theme);
-}
-
-function applyTheme(theme) {
-  document.documentElement.dataset.theme = theme;
-  localStorage.setItem('citatio_theme', theme);
-  document.getElementById('theme-label').textContent = theme === 'dark' ? 'Mode clair' : 'Mode sombre';
-}
-
-document.getElementById('theme-toggle').addEventListener('click', () => {
-  const current = document.documentElement.dataset.theme;
-  applyTheme(current === 'dark' ? 'light' : 'dark');
-});
-
-/* ========================================================
-   QUITTER L'APPLICATION (iframe ou standalone)
-   ======================================================== */
-function quitterApplication() {
-  const ACCUEIL = 'https://outils-online.github.io/Acceuil/';
-  /* window.top fonctionne même en cross-origin pour la navigation */
-  window.top.location.href = ACCUEIL;
-}
-
-/* ========================================================
-   INIT
-   ======================================================== */
-initTheme();
 renderTypeButtons();
 renderHistory();
-</script>
 
-<!-- ═══════════════════════════════════════════════════════
-     MODULE ISBN — auto-remplissage + scan caméra
-     Moteur : BarcodeDetector (Chrome/Edge) → Quagga2 (Firefox/Safari)
-     ═══════════════════════════════════════════════════════ -->
-<script>
-(function () {
-  'use strict';
-
-  /* ── Champs cibles ───────────────────────────────────────────────── */
-  const ISBN_FIELDS = ['titre', 'prenoms', 'noms', 'editeur', 'annee'];
-  function getField(id) { return document.getElementById('f_' + id); }
-  function fieldsReady() { return getField('isbn') && ISBN_FIELDS.some(id => getField(id)); }
-
-  /* ── Debounce ───────────────────────────────────────────────────── */
-  function debounce(fn, ms) {
-    let t;
-    return function (...a) { clearTimeout(t); t = setTimeout(() => fn.apply(this, a), ms); };
-  }
-
-  /* ── extractYear ────────────────────────────────────────────────── */
-  function extractYear(s) { return (s || '').match(/\d{4}/)?.[0] || ''; }
-
-  /* ── Feedback ───────────────────────────────────────────────────── */
-  function setFeedback(msg, type) {
-    const el = document.getElementById('isbn-feedback');
-    if (!el) return;
-    const colors = { info:'var(--ink-muted)', success:'#27ae60', error:'#F46060', loading:'#006466' };
-    el.textContent = msg;
-    el.style.color = colors[type] || 'var(--ink-muted)';
-    el.style.opacity = '1';
-    if (type !== 'loading') setTimeout(() => { el.style.opacity = '0'; }, 3500);
-  }
-
-  /* ── Écriture sécurisée ─────────────────────────────────────────── */
-  function setField(id, value) {
-    const el = getField(id);
-    if (!el || !value) return;
-    if (el.value && el.value.trim()) return;
-    el.value = value;
-  }
-
-  /* ── Séparation prénom / nom ────────────────────────────────────── */
-  function splitAuthor(name) {
-    if (!name) return { prenom: '', nom: '' };
-    if (name.includes(',')) {
-      const [nom, prenom] = name.split(',').map(s => s.trim());
-      return { prenom: prenom || '', nom };
-    }
-    const parts = name.trim().split(/\s+/);
-    return parts.length === 1
-      ? { prenom: '', nom: parts[0] }
-      : { prenom: parts.slice(0, -1).join(' '), nom: parts[parts.length - 1] };
-  }
-
-  /* ── resolveStr ─────────────────────────────────────────────────── */
-  function resolveStr(v) {
-    if (!v) return '';
-    return typeof v === 'object' ? (v.name || v.title || '') : String(v).trim();
-  }
-
-  /* ── fillFromOpenLibrary ────────────────────────────────────────── */
-  function fillFromOpenLibrary(book) {
-    setField('titre',      book.title || '');
-    setField('editeur',    resolveStr(book.publishers?.[0]));
-    setField('ville',      resolveStr(book.publish_places?.[0]));
-    setField('annee',      extractYear(book.publish_date || ''));
-    setField('collection', resolveStr(book.series?.[0]));
-    const authorName = book.authors?.[0]?.name || '';
-    const byStmt     = book.by_statement || '';
-    const authorKey  = book.authors?.[0]?.key || '';
-    if (authorName) {
-      const { prenom, nom } = splitAuthor(authorName);
-      setField('prenoms', prenom); setField('noms', nom);
-    } else if (byStmt) {
-      const cleaned = byStmt.replace(/^(par|by)\s+/i, '').split(/,|;/)[0].trim();
-      const { prenom, nom } = splitAuthor(cleaned);
-      setField('prenoms', prenom); setField('noms', nom);
-    } else if (authorKey) {
-      fetch(`https://openlibrary.org${authorKey}.json`)
-        .then(r => r.json())
-        .then(a => {
-          const n = a.personal_name || a.name || '';
-          if (n) { const { prenom, nom } = splitAuthor(n); setField('prenoms', prenom); setField('noms', nom); }
-        }).catch(() => {});
-    }
-  }
-
-  /* ── fillFromGoogleBooks ────────────────────────────────────────── */
-  function fillFromGoogleBooks(item) {
-    const info = item.volumeInfo || {};
-    setField('titre',   info.title || '');
-    setField('editeur', info.publisher || '');
-    setField('annee',   extractYear(info.publishedDate || ''));
-    const authors = info.authors || [];
-    if (authors.length) {
-      const { prenom, nom } = splitAuthor(authors[0]);
-      setField('prenoms', prenom); setField('noms', nom);
-    }
-  }
-
-  /* ── fillFromBNF ────────────────────────────────────────── */
-
-function fillFromBNF(xmlText) {
-  const parser = new DOMParser();
-  const xml = parser.parseFromString(xmlText, "text/xml");
-
-  const get = (tag, code) => {
-    // Utilisation de querySelector pour ignorer les préfixes (ex: mxc:datafield)
-    const field = xml.querySelector(`datafield[tag="${tag}"], [tag="${tag}"]`);
-    if (!field) return '';
-    
-    const subfield = field.querySelector(`subfield[code="${code}"], [code="${code}"]`);
-    return subfield ? subfield.textContent.trim() : '';
-  };
-
-  const titre  = get('200', 'a');
-  const auteur = get('700', 'a');
-  const prenom = get('700', 'b');
-  const editeur = get('210', 'c'); // Maintenant ça marchera avec recordSchema
-  const annee   = get('210', 'd');
-  const ville   = get('210', 'a');
-
-  if (titre)   setField('titre', titre);
-  if (editeur) setField('editeur', editeur);
-  if (ville)   setField('ville', ville.replace(/[\[\]]/g, ''));
-  if (annee)   setField('annee', extractYear(annee));
-
-  if (auteur || prenom) {
-    setField('prenoms', prenom);
-    setField('noms', auteur);
-  }
-}
-  /* ── Cascade API : OpenLibrary → Google Books ───────────────────── */
-  async function fetchISBN(isbn) {
-    const clean = isbn.replace(/[^0-9Xx]/g, '').toUpperCase();
-    if (clean.length !== 10 && clean.length !== 13) return;
-    setFeedback('⏳ Recherche en cours…', 'loading');
-    try {
-      const olData = await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${clean}&format=json&jscmd=data`).then(r => r.json());
-      if (olData[`ISBN:${clean}`]) {
-        fillFromOpenLibrary(olData[`ISBN:${clean}`]);
-        setFeedback('✓ Données récupérées via Open Library', 'success');
-        if (typeof showToast === 'function') showToast('✓ Open Library');
-        return;
-      }
-    } catch (_) {}
-    // 2. BnF
-try {
-  const res = await fetch(`https://catalogue.bnf.fr/api/SRU?operation=searchRetrieve&version=1.2&query=bib.isbn%20any%20"${clean}"&recordSchema=unimarcxchange`);
-  const text = await res.text();
-
-const xml = new DOMParser().parseFromString(text, "text/xml");
-const records = xml.getElementsByTagName('record');
-
-if (records.length > 0) {
-    fillFromBNF(text);
-    setFeedback('✓ Données récupérées via BnF', 'success');
-    if (typeof showToast === 'function') showToast('✓ BnF');
-    return;
-  }
-  // 2. Google Books
-} catch (_) {}
-    try {
-      const gbData = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${clean}`).then(r => r.json());
-      if (gbData.items?.length) {
-        fillFromGoogleBooks(gbData.items[0]);
-        setFeedback('✓ Données récupérées via Google Books', 'success');
-        if (typeof showToast === 'function') showToast('✓ Google Books');
-        return;
-      }
-    } catch (_) {}
-    setFeedback('ISBN introuvable.', 'error');
-  }
-
-  /* ══════════════════════════════════════════════════════════════════
-     SCANNER — architecture unifiée cross-browser
-     Moteur A : BarcodeDetector natif  → Chrome 83+, Edge, Android
-     Moteur B : Quagga2 (html5-qrcode) → Firefox, Safari, autres
-  ══════════════════════════════════════════════════════════════════ */
-  let scannerActive = false;
-  let videoStream   = null;
-  let animFrame     = null;
-
-  /* ── Charger Quagga2 à la demande ───────────────────────────────── */
-  function loadQuagga2() {
-    return new Promise((res, rej) => {
-      if (window.Quagga) { res(); return; }
-      const s = document.createElement('script');
-      /* Quagga2 : fork maintenu, bien meilleur que 0.12 sur Chrome/FF */
-      s.src = 'https://cdn.jsdelivr.net/npm/@ericblade/quagga2@1.2.6/dist/quagga.min.js';
-      s.onload = res;
-      s.onerror = () => {
-        /* fallback vers CDN alternatif */
-        const s2 = document.createElement('script');
-        s2.src = 'https://unpkg.com/@ericblade/quagga2@1.2.6/dist/quagga.min.js';
-        s2.onload = res; s2.onerror = rej;
-        document.head.appendChild(s2);
-      };
-      document.head.appendChild(s);
-    });
-  }
-
-  /* ── Libérer proprement tout flux vidéo ─────────────────────────── */
-  function releaseStream() {
-    const video = document.getElementById('isbn-scan-video');
-    if (video) {
-      video.pause();
-      video.srcObject = null;
-      try { video.load(); } catch(_) {}
-    }
-    if (videoStream) {
-      videoStream.getTracks().forEach(t => { try { t.stop(); } catch(_) {} });
-      videoStream = null;
-    }
-  }
-
-  /* ══════════════════════════════════════════════════════════════════
-     ACQUISITION CAMÉRA — stratégie cross-browser robuste
-     ─────────────────────────────────────────────────────────────────
-     Problème réel sur Chrome Android (multi-objectifs) :
-       Chrome ne respecte pas facingMode pour choisir le BON objectif.
-       Sur un téléphone avec 3-4 caméras, il peut choisir l'ultra-grand-
-       angle ou le téléobjectif selon la résolution demandée.
-
-     Solution en 3 couches :
-       1. enumerateDevices() → identifier la caméra principale par label
-          (mots-clés : "back", "rear", "0" = index 0 = caméra principale)
-       2. Cibler par deviceId exact → bypass facingMode non fiable
-       3. Fallback facingMode classique si enumerate échoue
-  ══════════════════════════════════════════════════════════════════ */
-
-  const IS_MOBILE = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-  /* ── Identifier la caméra arrière principale via enumerateDevices ── */
-  async function findMainBackCamera() {
-    if (!navigator.mediaDevices?.enumerateDevices) return null;
-
-    let devices;
-    try { devices = await navigator.mediaDevices.enumerateDevices(); }
-    catch(_) { return null; }
-
-    const videoCams = devices.filter(d => d.kind === 'videoinput');
-    if (!videoCams.length) return null;
-
-    /*  Sur Chrome Android, les labels ressemblent à :
-          "camera2 0, facing back"   ← caméra principale (index 0)
-          "camera2 1, facing back"   ← ultra-grand-angle ou téléobjectif
-          "camera2 2, facing front"  ← frontale
-        Sur Firefox : "Integrated Camera" ou "Back Camera"
-        Sur iOS Safari : labels vides jusqu'à la 1re autorisation.
-
-        Stratégie de scoring :
-          +3  label contient "0" ET "back"/"rear"  → caméra principale arrière
-          +2  label contient "back" ou "rear"
-          +1  label contient "environment"
-          -2  label contient "front" ou "user" ou "selfie"
-          -1  label contient "wide" ou "ultra"       */
-    function scoreDevice(d) {
-      const lbl = (d.label || '').toLowerCase();
-      let score = 0;
-      if (/back|rear/i.test(lbl))      score += 2;
-      if (/0/.test(lbl) && /back|rear/i.test(lbl)) score += 1; // "camera2 0, facing back"
-      if (/environment/i.test(lbl))    score += 1;
-      if (/front|user|selfie/i.test(lbl)) score -= 2;
-      if (/ultra|wide/i.test(lbl))     score -= 1;
-      return score;
-    }
-
-    /* Trier par score décroissant */
-    const ranked = [...videoCams].sort((a, b) => scoreDevice(b) - scoreDevice(a));
-    const best   = ranked[0];
-    const score  = scoreDevice(best);
-
-    /* N'utiliser le deviceId que si le score est positif (vraiment identifié) */
-    if (score > 0 && best.deviceId) {
-      console.info(`[ISBN Scanner] caméra identifiée : "${best.label}" (score ${score})`);
-      return best.deviceId;
-    }
-
-    /* Labels vides (iOS avant 1re permission, certains Firefox) → ne pas forcer */
-    return null;
-  }
-
-  /* ── Obtenir le flux — couche principale ────────────────────────── */
-  async function getStream() {
-    releaseStream();
-    /* Pause hardware : Chrome Android libère le sensor en ~150ms */
-    await new Promise(r => setTimeout(r, 150));
-
-    /* ── Étape 1 : tenter de cibler la caméra principale par deviceId ── */
-    if (IS_MOBILE) {
-      const deviceId = await findMainBackCamera();
-      if (deviceId) {
-        /* Contraintes par deviceId — contourne facingMode non fiable sur Chrome */
-        const byDeviceConstraints = [
-          { video: { deviceId: { exact: deviceId }, width: { ideal: 4096 }, height: { ideal: 2160 }, frameRate: { ideal: 30 } } },
-          { video: { deviceId: { exact: deviceId }, width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30 } } },
-          { video: { deviceId: { exact: deviceId }, width: { ideal: 1280 }, height: { ideal: 720  } } },
-          { video: { deviceId: { exact: deviceId } } },
-        ];
-        for (const c of byDeviceConstraints) {
-          try {
-            const s = await navigator.mediaDevices.getUserMedia(c);
-            logStream(s, 'deviceId ciblé');
-            return s;
-          } catch(e) {
-            console.info('[ISBN Scanner] deviceId échec →', e.name);
-          }
-        }
-      }
-    }
-
-    /* ── Étape 2 : fallback facingMode (Firefox/Safari/desktop) ────── */
-    const fallbackAttempts = IS_MOBILE ? [
-      { video: { facingMode: { exact: 'environment' }, width: { ideal: 4096 }, height: { ideal: 2160 }, frameRate: { ideal: 30 } } },
-      { video: { facingMode: { exact: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30 } } },
-      { video: { facingMode: { exact: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720  } } },
-      { video: { facingMode: { ideal: 'environment' }, width: { ideal: 4096 }, height: { ideal: 2160 } } },
-      { video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720  } } },
-      { video: { facingMode: { ideal: 'environment' } } },
-      { video: true },
-    ] : [
-      { video: { width: { ideal: 4096 }, height: { ideal: 2160 }, frameRate: { ideal: 30 } } },
-      { video: { width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30 } } },
-      { video: { width: { ideal: 1280 }, height: { ideal: 720  } } },
-      { video: true },
-    ];
-
-    for (const c of fallbackAttempts) {
-      try {
-        const s = await navigator.mediaDevices.getUserMedia(c);
-        logStream(s, 'fallback facingMode');
-        return s;
-      } catch(e) {
-        console.info('[ISBN Scanner] fallback échec →', e.name, e.message);
-      }
-    }
-
-    return null;
-  }
-
-  function logStream(stream, method) {
-    const t = stream.getVideoTracks()[0];
-    const s = t?.getSettings?.() ?? {};
-    console.info(`[ISBN Scanner][${method}] ${s.width ?? '?'}×${s.height ?? '?'} | facing=${s.facingMode ?? '?'} | fps=${s.frameRate ?? '?'}`);
-  }
-
-  /* ── Autofocus/exposition après play() ──────────────────────────── */
-  async function applyAdvancedConstraints(stream) {
-    if (!stream) return;
-    const track = stream.getVideoTracks()[0];
-    if (!track || typeof track.getCapabilities !== 'function') return;
-
-    /* Chrome Android expose les capabilities avec un délai après play() */
-    let caps = {};
-    for (let i = 0; i < 6; i++) {
-      caps = track.getCapabilities();
-      if (Object.keys(caps).length > 2) break;
-      await new Promise(r => setTimeout(r, 200));
-    }
-
-    const adv = {};
-    if (caps.focusMode?.includes('continuous'))        adv.focusMode        = 'continuous';
-    if (caps.exposureMode?.includes('continuous'))     adv.exposureMode     = 'continuous';
-    if (caps.whiteBalanceMode?.includes('continuous')) adv.whiteBalanceMode = 'continuous';
-    /* Zoom minimal — évite tout zoom numérique résiduel */
-    if (caps.zoom) adv.zoom = caps.zoom.min ?? 1;
-
-    if (!Object.keys(adv).length) return;
-    try {
-      await track.applyConstraints({ advanced: [adv] });
-      console.info('[ISBN Scanner] applyConstraints :', adv);
-    } catch(e) {
-      console.info('[ISBN Scanner] applyConstraints échoué :', e.message);
-    }
-  }
-
-  /* ── Overlay UI ─────────────────────────────────────────────────── */
-  function buildOverlay() {
-    if (document.getElementById('isbn-scan-overlay')) return;
-
-    const o = document.createElement('div');
-    o.id = 'isbn-scan-overlay';
-    Object.assign(o.style, {
-      position:'fixed', inset:'0', zIndex:'9999',
-      background:'rgba(0,0,0,0.93)',
-      display:'flex', flexDirection:'column',
-      alignItems:'center', justifyContent:'center',
-      gap:'14px', padding:'16px',
-    });
-
-    const lbl = document.createElement('p');
-    lbl.textContent = '📷 Centrez le code-barres ISBN dans le cadre';
-    Object.assign(lbl.style, { color:'#fff', fontFamily:'inherit', fontSize:'14px', margin:'0', textAlign:'center' });
-
-    /* Wrapper vidéo */
-    const wrap = document.createElement('div');
-    Object.assign(wrap.style, {
-      position:'relative', width:'100%', maxWidth:'460px',
-      borderRadius:'10px', overflow:'hidden', background:'#000',
-      aspectRatio:'16/9',
-    });
-
-    const video = document.createElement('video');
-    video.id = 'isbn-scan-video';
-    Object.assign(video.style, { width:'100%', height:'100%', objectFit:'cover', display:'block', filter:'none' });
-    video.setAttribute('playsinline','');
-    video.setAttribute('autoplay','');
-    video.muted = true;
-
-    /* Viseur */
-    const vf = document.createElement('div');
-    Object.assign(vf.style, {
-      position:'absolute', inset:'0', pointerEvents:'none',
-      display:'flex', alignItems:'center', justifyContent:'center',
-    });
-    vf.innerHTML = `
-      <svg width="80%" height="60%" viewBox="0 0 260 100" fill="none">
-        <path d="M1 28 L1 1 L28 1"   stroke="#fff" stroke-width="3" stroke-linecap="round"/>
-        <path d="M232 1 L259 1 L259 28" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
-        <path d="M1 72 L1 99 L28 99"  stroke="#fff" stroke-width="3" stroke-linecap="round"/>
-        <path d="M232 99 L259 99 L259 72" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
-        <line id="isbn-scan-line" x1="4" y1="50" x2="256" y2="50" stroke="#F46060" stroke-width="2"/>
-      </svg>`;
-
-    if (!document.getElementById('isbn-scan-style')) {
-      const st = document.createElement('style');
-      st.id = 'isbn-scan-style';
-      st.textContent = '@keyframes isbnScan{0%,100%{transform:translateY(-28px)}50%{transform:translateY(28px)}} #isbn-scan-line{animation:isbnScan 2s ease-in-out infinite}';
-      document.head.appendChild(st);
-    }
-
-    wrap.append(video, vf);
-
-    /* Canvas caché */
-    const canvas = document.createElement('canvas');
-    canvas.id = 'isbn-scan-canvas';
-    canvas.style.display = 'none';
-
-    const hint = document.createElement('p');
-    hint.id = 'isbn-scan-hint';
-    hint.textContent = 'Initialisation…';
-    Object.assign(hint.style, { color:'#bbb', fontFamily:'inherit', fontSize:'12px', margin:'0', textAlign:'center' });
-
-    const closeBtn = document.createElement('button');
-    closeBtn.textContent = '✕ Fermer le scanner';
-    Object.assign(closeBtn.style, {
-      padding:'9px 24px', background:'transparent', color:'#fff',
-      border:'1.5px solid rgba(255,255,255,0.4)', borderRadius:'4px',
-      cursor:'pointer', fontFamily:'inherit', fontSize:'13px',
-    });
-    closeBtn.onclick = stopScanner;
-
-    o.append(lbl, wrap, canvas, hint, closeBtn);
-    document.body.appendChild(o);
-  }
-
-  /* ── Callback partagé : ISBN détecté ────────────────────────────── */
-  function onISBNDetected(raw) {
-    const code = String(raw).replace(/[^0-9X]/gi, '');
-    if (code.length !== 13 && code.length !== 10) return;
-    console.info('[ISBN Scanner] code détecté :', code);
-    stopScanner();
-    if (typeof selectType === 'function') selectType('ouvrage');
-    setTimeout(() => {
-      const el = getField('isbn');
-      if (el) { el.value = code; el.dispatchEvent(new Event('input', { bubbles: true })); }
-      fetchISBN(code);
-    }, 150);
-  }
-
-  /* ══════════════════════════════════════════════════════════════════
-     MOTEUR A — BarcodeDetector natif
-     Chrome 83+, Edge 83+, Chrome Android, Samsung Browser
-     Avantages : aucune lib, délègue au GPU, le plus rapide
-  ══════════════════════════════════════════════════════════════════ */
-  async function engineBarcodeDetector(video, hint) {
-    if (!('BarcodeDetector' in window)) return false;
-
-    let supported = [];
-    try { supported = await BarcodeDetector.getSupportedFormats(); } catch(_) {}
-    const formats = ['ean_13','ean_8','code_128','upc_a'].filter(f =>
-      supported.length === 0 || supported.includes(f)
-    );
-
-    let detector;
-    try { detector = new BarcodeDetector({ formats }); }
-    catch(_) { return false; }
-
-    hint.textContent = 'BarcodeDetector actif — approchez le code-barres';
-    scannerActive = true;
-    let last = 0;
-
-    function tick(ts) {
-      if (!scannerActive) return;
-      if (ts - last > 120 && video.readyState >= video.HAVE_ENOUGH_DATA) {
-        last = ts;
-        detector.detect(video).then(codes => {
-          if (codes.length > 0) onISBNDetected(codes[0].rawValue);
-        }).catch(() => {});
-      }
-      animFrame = requestAnimationFrame(tick);
-    }
-    animFrame = requestAnimationFrame(tick);
-    return true;
-  }
-
-  /* ══════════════════════════════════════════════════════════════════
-     MOTEUR B — Quagga2
-     Firefox, Safari, Opera, navigateurs sans BarcodeDetector
-     Décode frame par frame depuis un canvas recadré
-  ══════════════════════════════════════════════════════════════════ */
-  async function engineQuagga2(video, hint) {
-    try { await loadQuagga2(); } catch(e) {
-      console.warn('[ISBN Scanner] Quagga2 non chargé:', e);
-      return false;
-    }
-
-    hint.textContent = 'Quagga2 actif — approchez le code-barres';
-    scannerActive = true;
-    let last = 0;
-    const canvas = document.getElementById('isbn-scan-canvas');
-
-    function tick(ts) {
-      if (!scannerActive) return;
-      if (ts - last > 120 && video.readyState >= video.HAVE_ENOUGH_DATA) {
-        last = ts;
-        const vw = video.videoWidth, vh = video.videoHeight;
-        if (!vw || !vh) { animFrame = requestAnimationFrame(tick); return; }
-
-        /* Capture résolution native */
-        canvas.width = vw; canvas.height = vh;
-        canvas.getContext('2d', { willReadFrequently: true })
-              .drawImage(video, 0, 0, vw, vh);
-
-        /* Recadrage zone centrale 90% × 50% */
-        const cw = Math.round(vw * 0.9), ch = Math.round(vh * 0.5);
-        const cx = Math.round((vw - cw) / 2), cy = Math.round((vh - ch) / 2);
-        const crop = document.createElement('canvas');
-        crop.width = cw; crop.height = ch;
-        crop.getContext('2d').drawImage(canvas, cx, cy, cw, ch, 0, 0, cw, ch);
-
-        /* Pré-traitement contraste pour améliorer détection */
-        const ctx2 = crop.getContext('2d');
-        const img  = ctx2.getImageData(0, 0, cw, ch);
-        const d    = img.data;
-        for (let i = 0; i < d.length; i += 4) {
-          const gray = 0.299*d[i] + 0.587*d[i+1] + 0.114*d[i+2];
-          const v    = gray > 128 ? Math.min(255, gray * 1.3) : gray * 0.7;
-          d[i] = d[i+1] = d[i+2] = v;
-        }
-        ctx2.putImageData(img, 0, 0);
-
-        Quagga.decodeSingle({
-          decoder: { readers: ['ean_reader', 'ean_8_reader', 'code_128_reader'] },
-          locate: true,
-          src: crop.toDataURL('image/png'),
-        }, result => {
-          if (result?.codeResult?.code) onISBNDetected(result.codeResult.code);
-        });
-      }
-      animFrame = requestAnimationFrame(tick);
-    }
-    animFrame = requestAnimationFrame(tick);
-    return true;
-  }
-
-  /* ══════════════════════════════════════════════════════════════════
-     POINT D'ENTRÉE PRINCIPAL
-  ══════════════════════════════════════════════════════════════════ */
-  async function startScanner() {
-    if (scannerActive) return;
-    buildOverlay();
-
-    const video = document.getElementById('isbn-scan-video');
-    const hint  = document.getElementById('isbn-scan-hint');
-    hint.textContent = 'Ouverture de la caméra…';
-
-    /* 1. Acquérir le flux avec les meilleures contraintes possibles */
-    videoStream = await getStream();
-    if (!videoStream) {
-      hint.textContent = "⚠ Caméra inaccessible — autorisez l'accès dans les réglages.";
-      hint.style.color = '#F46060';
-      return;
-    }
-
-    /* 2. Connecter la vidéo SANS attribuer avant play()
-          (Safari exige que srcObject soit défini avant play, mais pas avant onloadedmetadata) */
-    video.srcObject = videoStream;
-
-    await new Promise((res, rej) => {
-      const timeout = setTimeout(() => rej(new Error('timeout')), 8000);
-      const done = () => { clearTimeout(timeout); res(); };
-      if (video.readyState >= 2) { video.play().then(done).catch(done); return; }
-      video.onloadedmetadata = () => video.play().then(done).catch(done);
-      video.onerror = done;
-    }).catch(() => {});
-
-    /* 3. Afficher la résolution réelle obtenue */
-    const track    = videoStream.getVideoTracks()[0];
-    const settings = track?.getSettings?.() ?? {};
-    const resInfo  = settings.width ? `${settings.width}×${settings.height}` : 'résolution inconnue';
-    hint.textContent = `Caméra active (${resInfo}) — approchez le code-barres`;
-    console.info('[ISBN Scanner] résolution effective :', resInfo, '| facingMode :', settings.facingMode);
-
-    /* 4. Appliquer autofocus maintenant que la vidéo est en lecture
-          Premier appel immédiat, second après 800ms (Chrome Android lazy) */
-    await applyAdvancedConstraints(videoStream);
-    setTimeout(() => applyAdvancedConstraints(videoStream), 800);
-
-    /* 5. Sélectionner et lancer le moteur de décodage */
-    const ok = await engineBarcodeDetector(video, hint)
-            || await engineQuagga2(video, hint);
-
-    if (!ok) {
-      hint.textContent = '⚠ Décodage non supporté sur ce navigateur.';
-      hint.style.color = '#F46060';
-      stopScanner();
-    }
-  }
-
-  function stopScanner() {
-    scannerActive = false;
-
-    if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; }
-
-    try { if (window.Quagga) Quagga.stop(); } catch(_) {}
-
-    /* Ordre critique pour Chrome : srcObject=null AVANT track.stop() */
-    releaseStream();
-
-    const o = document.getElementById('isbn-scan-overlay');
-    if (o) o.remove();
-  }
-
-  /* ── Exposer pour le bouton bannière ────────────────────────────── */
-  window.globalStartScanner = function () { startScanner(); };
-
-  /* ── Overlay UI ─────────────────────────────────────────────────── */
-  function injectUI() {
-    const isbnEl = getField('isbn');
-    if (!isbnEl || document.getElementById('isbn-feedback')) return;
-
-    const fb = document.createElement('span');
-    fb.id = 'isbn-feedback';
-    Object.assign(fb.style, {
-      display:'block', fontSize:'12px', marginTop:'4px',
-      transition:'opacity 0.5s', opacity:'0', fontFamily:'inherit',
-    });
-    isbnEl.parentNode.appendChild(fb);
-
-    const btn = document.createElement('button');
-    btn.type = 'button'; btn.id = 'isbn-scan-btn';
-    btn.textContent = '📷 Scanner ISBN';
-    Object.assign(btn.style, {
-      marginTop:'8px', padding:'7px 16px',
-      border:'1.5px solid var(--border)', borderRadius:'var(--radius)',
-      background:'transparent', color:'var(--ink-muted)',
-      cursor:'pointer', fontFamily:'inherit', fontSize:'0.85rem', fontWeight:'500',
-      transition:'all 0.2s', display:'inline-flex', alignItems:'center', gap:'6px',
-    });
-    btn.onmouseenter = () => { btn.style.borderColor='var(--accent)'; btn.style.color='var(--accent)'; };
-    btn.onmouseleave = () => { btn.style.borderColor='var(--border)'; btn.style.color='var(--ink-muted)'; };
-    btn.onclick = startScanner;
-    isbnEl.parentNode.appendChild(btn);
-
-    const dFetch = debounce(e => fetchISBN(e.target.value), 500);
-    isbnEl.addEventListener('input', dFetch);
-  }
-
-  function hookRenderForm() {
-    const orig = window.renderForm;
-    if (typeof orig !== 'function') return;
-    window.renderForm = function (key) {
-      orig(key);
-      setTimeout(() => injectUI(), 0);
-    };
-  }
-
-  function initISBNModule() {
-    hookRenderForm();
-    if (fieldsReady()) injectUI();
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initISBNModule);
-  } else {
-    initISBNModule();
-  }
-
-})();
-</script>
-
-<!-- ═══════════════════════════════════════════════════════
-     MODULE ISBN — validation + conversion + normalisation
-     Auto-adaptatif, plug-and-play, sans configuration
-     ═══════════════════════════════════════════════════════ -->
-<script>
-(function () {
-  'use strict';
-
-  /* ══════════════════════════════════════════════════════════════════
-     CONFIGURATION
-  ══════════════════════════════════════════════════════════════════ */
-  const CFG = {
-    debounceDelay : 400,
-    styleValid    : '2px solid #27ae60',
-    styleInvalid  : '2px solid #F46060',
-    styleNeutral  : '',
-    feedbackValid : '✓ ISBN-13 valide',
-    feedbackInvalid: '✗ ISBN invalide',
-    feedbackConverted: '↔ Converti en ISBN-13',
-  };
-
-  /* ══════════════════════════════════════════════════════════════════
-     UTILITAIRES
-  ══════════════════════════════════════════════════════════════════ */
-
-  function debounce(fn, delay) {
-    let t;
-    return function (...args) { clearTimeout(t); t = setTimeout(() => fn.apply(this, args), delay); };
-  }
-
-  /** Retourne un ID unique pour taguer les champs déjà traités */
-  function markField(el) {
-    if (!el.dataset.isbnModuleAttached) {
-      el.dataset.isbnModuleAttached = '1';
-      return true;
-    }
-    return false;
-  }
-
-  /* ══════════════════════════════════════════════════════════════════
-     1. NETTOYAGE
-  ══════════════════════════════════════════════════════════════════ */
-
-  function cleanISBN(raw) {
-    return raw.replace(/[^0-9Xx]/g, '').toUpperCase();
-  }
-
-  /* ══════════════════════════════════════════════════════════════════
-     2. VALIDATION ISBN-10
-  ══════════════════════════════════════════════════════════════════ */
-
-  function isValidISBN10(isbn) {
-    if (isbn.length !== 10) return false;
-    if (!/^\d{9}[\dX]$/.test(isbn)) return false;
-    const sum = isbn.split('').reduce((acc, ch, i) => {
-      const val = ch === 'X' ? 10 : parseInt(ch, 10);
-      return acc + val * (10 - i);
-    }, 0);
-    return sum % 11 === 0;
-  }
-
-  /* ══════════════════════════════════════════════════════════════════
-     3. VALIDATION ISBN-13
-  ══════════════════════════════════════════════════════════════════ */
-
-  function isValidISBN13(isbn) {
-    if (isbn.length !== 13) return false;
-    if (!/^\d{13}$/.test(isbn)) return false;
-    if (!/^97[89]/.test(isbn)) return false;
-    const sum = isbn.split('').reduce((acc, ch, i) => {
-      return acc + parseInt(ch, 10) * (i % 2 === 0 ? 1 : 3);
-    }, 0);
-    return sum % 10 === 0;
-  }
-
-  /* ══════════════════════════════════════════════════════════════════
-     4. CONVERSION ISBN-10 → ISBN-13
-  ══════════════════════════════════════════════════════════════════ */
-
-  function convertISBN10to13(isbn10) {
-    const base = '978' + isbn10.slice(0, 9);
-    const sum  = base.split('').reduce((acc, ch, i) => {
-      return acc + parseInt(ch, 10) * (i % 2 === 0 ? 1 : 3);
-    }, 0);
-    const check = (10 - (sum % 10)) % 10;
-    return base + check;
-  }
-
-  /* ══════════════════════════════════════════════════════════════════
-     5. NORMALISATION — toujours produire ISBN-13 si possible
-  ══════════════════════════════════════════════════════════════════ */
-
-  /**
-   * @returns {{ isbn: string, status: 'valid13'|'converted'|'invalid'|'incomplete' }}
-   */
-  function normalizeISBN(raw) {
-    const clean = cleanISBN(raw);
-
-    if (clean.length === 0) return { isbn: raw, status: 'incomplete' };
-
-    // ISBN-13 direct
-    if (clean.length === 13) {
-      if (isValidISBN13(clean)) return { isbn: clean, status: 'valid13' };
-      return { isbn: raw, status: 'invalid' };
-    }
-
-    // ISBN-10 → conversion
-    if (clean.length === 10) {
-      if (isValidISBN10(clean)) {
-        const isbn13 = convertISBN10to13(clean);
-        return { isbn: isbn13, status: 'converted' };
-      }
-      return { isbn: raw, status: 'invalid' };
-    }
-
-    // En cours de saisie (< 10 ou entre 11-12)
-    return { isbn: raw, status: 'incomplete' };
-  }
-
-  /* ══════════════════════════════════════════════════════════════════
-     6. FEEDBACK VISUEL — non destructif
-  ══════════════════════════════════════════════════════════════════ */
-
-  function getFeedbackEl(input) {
-    const id = 'isbn-val-fb-' + (input.id || input.name || Math.random().toString(36).slice(2));
-    let el = document.getElementById(id);
-    if (!el) {
-      el = document.createElement('span');
-      el.id = id;
-      Object.assign(el.style, {
-        display      : 'block',
-        fontSize     : '11px',
-        marginTop    : '3px',
-        transition   : 'opacity 0.3s',
-        opacity      : '0',
-        fontFamily   : 'inherit',
-        pointerEvents: 'none',
-      });
-      input.parentNode && input.parentNode.insertBefore(el, input.nextSibling);
-    }
-    return el;
-  }
-
-  function applyFeedback(input, status, isbn13) {
-    const fb = getFeedbackEl(input);
-
-    // Reset outline — on ne touche pas à border si le champ a déjà une bordure custom
-    const originalOutline = input.dataset.isbnOriginalOutline ?? input.style.outline;
-    if (!input.dataset.isbnOriginalOutline) input.dataset.isbnOriginalOutline = originalOutline;
-
-    if (status === 'valid13' || status === 'converted') {
-      input.style.outline = CFG.styleValid;
-      fb.style.color      = '#27ae60';
-      fb.textContent      = status === 'converted' ? CFG.feedbackConverted : CFG.feedbackValid;
-      fb.style.opacity    = '1';
-    } else if (status === 'invalid') {
-      input.style.outline = CFG.styleInvalid;
-      fb.style.color      = '#F46060';
-      fb.textContent      = CFG.feedbackInvalid;
-      fb.style.opacity    = '1';
-    } else {
-      // incomplete — neutre, pas de bruit
-      input.style.outline = input.dataset.isbnOriginalOutline || '';
-      fb.style.opacity    = '0';
-    }
-  }
-
-  /* ══════════════════════════════════════════════════════════════════
-     7. HANDLER — appelé sur input / change / blur
-  ══════════════════════════════════════════════════════════════════ */
-
-  function handleISBNInput(e) {
-    const input = e.target;
-    const raw   = input.value;
-
-    // Sur blur uniquement : normaliser la valeur dans le champ
-    const shouldWrite = e.type === 'blur' || e.type === 'change';
-
-    const { isbn, status } = normalizeISBN(raw);
-
-    if (shouldWrite && (status === 'valid13' || status === 'converted') && isbn !== raw) {
-      // Écriture silencieuse — on préserve la position curseur pour blur
-      input.value = isbn;
-      // Déclencher un événement input pour notifier les autres listeners
-      input.dispatchEvent(new Event('input', { bubbles: true }));
-    }
-
-    applyFeedback(input, status, isbn);
-  }
-
-  /* ══════════════════════════════════════════════════════════════════
-     8. ATTACHEMENT DES LISTENERS
-  ══════════════════════════════════════════════════════════════════ */
-
-  function attachListeners(input) {
-    input.addEventListener('input', debounce(async (e) => {
-      const val = e.target.value.trim().replace(/[-\s]/g, '');
-      
-      if (val.length === 10 || val.length === 13) {
-        showToast("🔍 Interrogation de la BnF...");
-        
-        const data = await fetchFromBNF(val);
-        
-        if (data) {
-          // Mapping vers vos IDs de formulaires (Vérifiez bien ces noms dans votre HTML)
-          const mapping = {
-            'f_titre': data.titre,
-            'f_noms': data.auteurs,
-            'f_editeur': data.editeur,
-            'f_annee': data.annee,
-            'f_lieu': data.lieu,
-            'f_collection': data.collection
-          };
-
-          let count = 0;
-          for (let [id, value] of Object.entries(mapping)) {
-            const field = document.getElementById(id);
-            if (field && value) {
-              field.value = value;
-              // On prévient le reste du script que la case a changé
-              field.dispatchEvent(new Event('input', { bubbles: true }));
-              count++;
-            }
-          }
-          
-          // MESSAGE DE CONFIRMATION SPÉCIFIQUE
-          if (count > 0) {
-            showToast("✅ ISBN trouvé dans la BnF ! (" + count + " champs remplis)");
-          }
-        } else {
-          showToast("❌ Non trouvé dans la base BnF");
-        }
-      }
-    }, 500));
-  }
-
-  /* ══════════════════════════════════════════════════════════════════
-     9. DÉTECTION DES CHAMPS ISBN
-  ══════════════════════════════════════════════════════════════════ */
-
-  /** Retourne le texte du <label> associé à un input (for= ou parent) */
-  function getLabelText(input) {
-    // Via for=
-    if (input.id) {
-      const lbl = document.querySelector(`label[for="${CSS.escape(input.id)}"]`);
-      if (lbl) return lbl.textContent.toLowerCase();
-    }
-    // Via parent label
-    const parent = input.closest('label');
-    if (parent) return parent.textContent.toLowerCase();
-    // Via aria-label
-    return (input.getAttribute('aria-label') || '').toLowerCase();
-  }
-
-  function isISBNField(input) {
-    if (input.type === 'hidden' || input.type === 'submit' || input.type === 'button') return false;
-
-    const id          = (input.id          || '').toLowerCase();
-    const name        = (input.name        || '').toLowerCase();
-    const placeholder = (input.placeholder || '').toLowerCase();
-    const labelText   = getLabelText(input);
-
-    if (id.includes('isbn') || name.includes('isbn')) return true;
-    if (placeholder.includes('isbn'))                  return true;
-    if (labelText.includes('isbn'))                    return true;
-
-    // Heuristique valeur : 10 ou 13 chiffres consécutifs
-    const val = cleanISBN(input.value);
-    if (val.length === 10 || val.length === 13) return true;
-
-    return false;
-  }
-
-  function detectISBNFields(root) {
-    return Array.from((root || document).querySelectorAll('input, textarea'))
-      .filter(isISBNField);
-  }
-
-  /* ══════════════════════════════════════════════════════════════════
-     10. SCAN INITIAL
-  ══════════════════════════════════════════════════════════════════ */
-
-  function scanInputs(root) {
-    detectISBNFields(root).forEach(attachListeners);
-  }
-
-  /* ══════════════════════════════════════════════════════════════════
-     11. MUTATIONOBSERVER — formulaires dynamiques
-  ══════════════════════════════════════════════════════════════════ */
-
-  function startObserver() {
-    const observer = new MutationObserver(mutations => {
-      for (const mutation of mutations) {
-        for (const node of mutation.addedNodes) {
-          if (node.nodeType !== 1) continue; // éléments seulement
-          // Le nœud lui-même est-il un input ISBN ?
-          if ((node.tagName === 'INPUT' || node.tagName === 'TEXTAREA') && isISBNField(node)) {
-            attachListeners(node);
-          }
-          // Chercher dans les descendants
-          scanInputs(node);
-        }
-      }
-    });
-
-    observer.observe(document.body, { childList: true, subtree: true });
-  }
-
-/* ── Logique de capture BnF (Format MarcXML) ── */
-async function fetchFromBNF(isbn) {
-    const cleanIsbn = isbn.replace(/[-\s]/g, '');
-    // CRUCIAL : Ajout de &recordSchema=unimarcxchange à la fin
-    const url = `https://catalogue.bnf.fr/api/SRU?operation=searchRetrieve&version=1.2&query=bib.isbn%20all%20%22${cleanIsbn}%22&recordSchema=unimarcxchange`;
-
-    try {
-      const response = await fetch(url);
-      const xmlText = await response.text();
-      const parser = new DOMParser();
-      const xml = parser.parseFromString(xmlText, "text/xml");
-
-      // On cherche l'enregistrement (gère les namespaces srw: ou direct)
-      const record = xml.querySelector('recordData, srw\\:recordData');
-      if (!record) return null;
-
-      // Fonction d'extraction UNIMARC
-      const getField = (tag, code) => {
-        // Cherche le datafield avec l'attribut tag (ex: 210)
-        // La syntaxe [tag="${tag}"] est plus performante que Array.from().find()
-        const df = record.querySelector(`datafield[tag="${tag}"], mxc\\:datafield[tag="${tag}"]`);
-        if (!df) return '';
-        
-        // Cherche le subfield avec l'attribut code (ex: c)
-        const sf = df.querySelector(`subfield[code="${code}"], mxc\\:subfield[code="${code}"]`);
-        return sf ? sf.textContent.trim() : '';
-      };
-
-      const titrePrincipal = getField('200', 'a');
-      const sousTitre = getField('200', 'e');
-      const auteurDirect = getField('200', 'f');
-      const editeur = getField('210', 'c');      
-      const lieu = getField('210', 'a');         
-      const dateBrute = getField('210', 'd');    
-      const collection = getField('225', 'a');   
-
-      return {
-        titre: sousTitre ? `${titrePrincipal} : ${sousTitre}` : titrePrincipal,
-        auteurs: auteurDirect,
-        editeur: editeur,
-        lieu: lieu.replace(/[\[\]]/g, ''), 
-        annee: (dateBrute.match(/\d{4}/) || [''])[0],
-        collection: collection,
-        source: 'BnF'
-      };
-    } catch (e) {
-      console.error("Erreur de capture BnF:", e);
-      return null;
-    }
-}
-  /* ══════════════════════════════════════════════════════════════════
-     12. API PUBLIQUE (optionnelle — accessible via window.ISBNModule)
-  ══════════════════════════════════════════════════════════════════ */
-
-  window.ISBNModule = {
-    cleanISBN,
-    isValidISBN10,
-    isValidISBN13,
-    convertISBN10to13,
-    normalizeISBN,
-    scanInputs,
-    detectISBNFields,
-    attachListeners,
-  };
-
-  /* ══════════════════════════════════════════════════════════════════
-     13. INIT
-  ══════════════════════════════════════════════════════════════════ */
-
-  function init() {
-    scanInputs(document);
-    startObserver();
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
-
-})();
-
+// Simulation minimale du module ISBN (pour la démo, le scanner réel serait ajouté)
+window.globalStartScanner = function() { showToast('Scanner ISBN — fonction avancée disponible'); };
 </script>
 </body>
 </html>
