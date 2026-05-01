@@ -2,39 +2,46 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <title>Générateur de Citations Bibliographiques</title>
   <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <style>
-    /* ===== VARIABLES ===== */
+    /* ===== VARIABLES — Charte Quartz Ink & Coral ===== */
     :root {
-      --bg: #f5f2ee;
-      --bg-card: #ffffff;
-      --bg-dark: #1a1714;
-      --ink: #1a1714;
-      --ink-muted: #6b6560;
-      --ink-light: #a09b96;
-      --accent: #c0392b;
-      --accent-light: #e8d5d3;
-      --border: #e0dbd5;
-      --shadow: 0 2px 16px rgba(26,23,20,0.08);
-      --shadow-lg: 0 8px 40px rgba(26,23,20,0.14);
+      --bg: #FDFCF0;              /* Fond Jaune Quartz (Sable clair) */
+      --bg-card: #FFFFFF;         /* Surface blanche */
+      --ink: #0A2472;             /* Texte Bleu Encre (contraste maximal) */
+      --ink-muted: #4A5E9E;       /* Bleu adouci pour texte secondaire */
+      --ink-light: #8B99C7;       /* Bleu clair pour texte tertiaire / hints */
+      --accent: #F46060;          /* Rouge Corail — actions, focus */
+      --accent-light: #FDEAEA;    /* Corail très pâle pour fonds de survol */
+      --border: #E8E4D0;          /* Bordure sable, s'harmonise avec le fond Quartz */
+      --color-primary: #0A2472;   /* Bleu Encre (dominante) */
+      --color-secondary: #006466; /* Émeraude Profond (transition) */
+      --color-accent: #F46060;    /* Corail (rappel) */
+      --color-highlight: #FFD972; /* Or Blanc (lumière / Jaune Quartz) */
+      --shadow: 0 2px 16px rgba(10, 36, 114, 0.06);
+      --shadow-lg: 0 8px 40px rgba(10, 36, 114, 0.10);
       --radius: 4px;
       --radius-lg: 8px;
       --transition: 0.2s ease;
     }
 
     [data-theme="dark"] {
-      --bg: #16140f;
-      --bg-card: #1f1c17;
-      --ink: #f0ebe4;
-      --ink-muted: #9c9488;
-      --ink-light: #5a554e;
-      --accent: #e05a4e;
-      --accent-light: #2e1a18;
-      --border: #2e2a24;
-      --shadow: 0 2px 16px rgba(0,0,0,0.3);
-      --shadow-lg: 0 8px 40px rgba(0,0,0,0.5);
+      --bg: #060B1A;              /* Très sombre, nuance Bleu Encre */
+      --bg-card: #0F1629;         /* Surface sombre */
+      --ink: #E8E2D0;             /* Texte clair chaud */
+      --ink-muted: #9BA0B8;       /* Gris-bleu secondaire */
+      --ink-light: #5C6178;       /* Gris-bleu soutenu */
+      --accent: #F46060;          /* Corail conservé */
+      --accent-light: #2A1518;    /* Corail sombre */
+      --border: #1E2747;          /* Bordure bleutée sombre */
+      --color-primary: #5C82E6;   /* Bleu lumineux pour le sombre */
+      --color-secondary: #00A8AB; /* Émeraude lumineux */
+      --color-accent: #F46060;
+      --color-highlight: #FFD972;
+      --shadow: 0 2px 16px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.6);
     }
 
     /* ===== RESET & BASE ===== */
@@ -50,10 +57,17 @@
       transition: background var(--transition), color var(--transition);
     }
 
-    /* ===== HEADER ===== */
+    /* ===== HEADER — avec dégradé Mondrian ===== */
     header {
       background: var(--bg-card);
-      border-bottom: 1px solid var(--border);
+      /* Bandeau inférieur : dégradé segmenté Quartz Ink & Coral */
+      border-bottom: 4px solid;
+      border-image: linear-gradient(to right,
+          var(--color-primary) 60%,
+          var(--color-secondary) 60% 75%,
+          var(--color-accent) 75% 90%,
+          var(--color-highlight) 90%
+        ) 1;
       padding: 0 clamp(1rem, 4vw, 3rem);
       display: flex;
       align-items: center;
@@ -73,6 +87,7 @@
       display: flex;
       align-items: center;
       gap: 10px;
+      color: var(--color-primary);
     }
 
     .logo-dot {
@@ -131,6 +146,7 @@
       font-size: 1.5rem;
       font-weight: 700;
       letter-spacing: -0.02em;
+      color: var(--color-primary);
       margin-bottom: 0.25rem;
     }
 
@@ -186,6 +202,7 @@
       font-family: 'Libre Baskerville', serif;
       font-size: 1rem;
       font-weight: 700;
+      color: var(--color-primary);
       margin-bottom: 1.25rem;
       padding-bottom: 0.75rem;
       border-bottom: 1px solid var(--border);
@@ -256,7 +273,7 @@
       background: var(--bg-card);
     }
 
-    input.error, select.error { border-color: #e74c3c; }
+    input.error, select.error { border-color: #F46060; }
 
     textarea { resize: vertical; min-height: 70px; }
 
@@ -270,7 +287,7 @@
 
     .error-msg {
       font-size: 0.74rem;
-      color: #e74c3c;
+      color: #F46060;
       display: none;
     }
 
@@ -304,7 +321,11 @@
       color: #fff;
     }
 
-    .btn-primary:hover { background: #a93226; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(192,57,43,0.3); }
+    .btn-primary:hover {
+      background: #E04545;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(244, 96, 96, 0.3);
+    }
 
     .btn-secondary {
       background: transparent;
@@ -336,7 +357,7 @@
     }
 
     [data-theme="dark"] .result-box.has-content {
-      background: #2a1210;
+      background: var(--accent-light);
     }
 
     .result-placeholder {
@@ -478,7 +499,7 @@
 
     .btn-icon:hover { background: var(--border); color: var(--ink); }
 
-    .btn-icon.danger:hover { background: #fde8e8; color: #e74c3c; }
+    .btn-icon.danger:hover { background: #FDEAEA; color: #F46060; }
 
     /* ===== SCROLLBAR ===== */
     .history-list::-webkit-scrollbar { width: 4px; }
@@ -544,9 +565,9 @@
       letter-spacing: 0.01em;
     }
     .btn-scan-global:hover {
-      background: #a93226;
+      background: #E04545;
       transform: translateY(-1px);
-      box-shadow: 0 4px 14px rgba(192,57,43,0.35);
+      box-shadow: 0 4px 14px rgba(244, 96, 96, 0.35);
     }
 
     .isbn-hint {
@@ -595,8 +616,8 @@
       font-weight: 700;
     }
     .type-btn--scan:hover {
-      background: #a93226 !important;
-      border-color: #a93226 !important;
+      background: #E04545 !important;
+      border-color: #E04545 !important;
       color: #fff !important;
     }
 
@@ -1259,7 +1280,7 @@ renderHistory();
   function setFeedback(msg, type) {
     const el = document.getElementById('isbn-feedback');
     if (!el) return;
-    const colors = { info:'var(--ink-muted)', success:'#27ae60', error:'#e74c3c', loading:'#2980b9' };
+    const colors = { info:'var(--ink-muted)', success:'#27ae60', error:'#F46060', loading:'#006466' };
     el.textContent = msg;
     el.style.color = colors[type] || 'var(--ink-muted)';
     el.style.opacity = '1';
@@ -1494,7 +1515,7 @@ if (records.length > 0) {
       const lbl = (d.label || '').toLowerCase();
       let score = 0;
       if (/back|rear/i.test(lbl))      score += 2;
-      if (/0/.test(lbl) && /back|rear/i.test(lbl)) score += 1; // "camera2 0, facing back"
+      if (/0/.test(lbl) && /back|rear/i.test(lbl)) score += 1; // "camera2 0, facing back"
       if (/environment/i.test(lbl))    score += 1;
       if (/front|user|selfie/i.test(lbl)) score -= 2;
       if (/ultra|wide/i.test(lbl))     score -= 1;
@@ -1655,7 +1676,7 @@ if (records.length > 0) {
         <path d="M232 1 L259 1 L259 28" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
         <path d="M1 72 L1 99 L28 99"  stroke="#fff" stroke-width="3" stroke-linecap="round"/>
         <path d="M232 99 L259 99 L259 72" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
-        <line id="isbn-scan-line" x1="4" y1="50" x2="256" y2="50" stroke="#e74c3c" stroke-width="2"/>
+        <line id="isbn-scan-line" x1="4" y1="50" x2="256" y2="50" stroke="#F46060" stroke-width="2"/>
       </svg>`;
 
     if (!document.getElementById('isbn-scan-style')) {
@@ -1815,7 +1836,7 @@ if (records.length > 0) {
     videoStream = await getStream();
     if (!videoStream) {
       hint.textContent = "⚠ Caméra inaccessible — autorisez l'accès dans les réglages.";
-      hint.style.color = '#e74c3c';
+      hint.style.color = '#F46060';
       return;
     }
 
@@ -1849,7 +1870,7 @@ if (records.length > 0) {
 
     if (!ok) {
       hint.textContent = '⚠ Décodage non supporté sur ce navigateur.';
-      hint.style.color = '#e74c3c';
+      hint.style.color = '#F46060';
       stopScanner();
     }
   }
@@ -1940,7 +1961,7 @@ if (records.length > 0) {
   const CFG = {
     debounceDelay : 400,
     styleValid    : '2px solid #27ae60',
-    styleInvalid  : '2px solid #e74c3c',
+    styleInvalid  : '2px solid #F46060',
     styleNeutral  : '',
     feedbackValid : '✓ ISBN-13 valide',
     feedbackInvalid: '✗ ISBN invalide',
@@ -2083,7 +2104,7 @@ if (records.length > 0) {
       fb.style.opacity    = '1';
     } else if (status === 'invalid') {
       input.style.outline = CFG.styleInvalid;
-      fb.style.color      = '#e74c3c';
+      fb.style.color      = '#F46060';
       fb.textContent      = CFG.feedbackInvalid;
       fb.style.opacity    = '1';
     } else {
