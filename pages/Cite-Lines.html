@@ -493,7 +493,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-/* ---------- MODÈLES ---------- */
+/* ---------- MODÈLES DE FORMULAIRES ---------- */
 const TYPES = {
   ouvrage: { label:'Ouvrage', icon:'fas fa-book', fields:[
     { id:'isbn', label:'ISBN', required:false, full:true, hint:'ex: 9782070368228 — scanner auto' },
@@ -682,161 +682,203 @@ function resetForm(){ if(!currentType) return; TYPES[currentType].fields.forEach
 function showToast(msg){ let t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500);}
 function quitterApplication(){ window.top.location.href='https://outils-online.github.io/Acceuil/';}
 
-/* MODULE ISBN complet avec scanner */
-function setupISBNField(){
-  let field=document.getElementById('f_isbn');
+/* ========================================================
+   MODULE ISBN COMPLET — RÉPARÉ (inspiré de Cite-Lines.html)
+   ======================================================== */
+function setField(id, value) {
+  let el = document.getElementById('f_'+id);
+  if(el && value && !el.value.trim()) el.value = value;
+}
+function extractYear(s) { return (s||'').match(/\d{4}/)?.[0] || ''; }
+function splitAuthor(name) {
+  if(!name) return {prenom:'', nom:''};
+  if(name.includes(',')){ let [nom, prenom]=name.split(',').map(s=>s.trim()); return {prenom:prenom||'', nom}; }
+  let parts=name.trim().split(/\s+/);
+  if(parts.length===1) return {prenom:'', nom:parts[0]};
+  return {prenom:parts.slice(0,-1).join(' '), nom:parts[parts.length-1]};
+}
+
+async function fetchISBN(isbn) {
+  let clean = isbn.replace(/[^0-9Xx]/g,'').toUpperCase();
+  if(clean.length!==10 && clean.length!==13) return false;
+  let fb = document.getElementById('isbn-feedback');
+  if(fb) fb.textContent = '⏳ Recherche...';
+  try {
+    let ol = await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${clean}&format=json&jscmd=data`).then(r=>r.json());
+    if(ol[`ISBN:${clean}`]) {
+      let book = ol[`ISBN:${clean}`];
+      setField('titre', book.title || '');
+      setField('editeur', book.publishers?.[0]?.name || '');
+      setField('ville', book.publish_places?.[0]?.name || '');
+      setField('annee', extractYear(book.publish_date || ''));
+      setField('collection', book.series?.[0]?.name || '');
+      let authorName = book.authors?.[0]?.name || '';
+      if(authorName) { let {prenom,nom}=splitAuthor(authorName); setField('prenoms', prenom); setField('noms', nom); }
+      if(fb) fb.textContent = '✓ Open Library';
+      showToast('✓ ISBN trouvé (Open Library)');
+      return true;
+    }
+  } catch(e) {}
+  try {
+    let gb = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${clean}`).then(r=>r.json());
+    if(gb.items && gb.items[0]) {
+      let info = gb.items[0].volumeInfo;
+      setField('titre', info.title || '');
+      setField('editeur', info.publisher || '');
+      setField('annee', extractYear(info.publishedDate || ''));
+      let authors = info.authors || [];
+      if(authors.length) { let {prenom,nom}=splitAuthor(authors[0]); setField('prenoms', prenom); setField('noms', nom); }
+      if(fb) fb.textContent = '✓ Google Books';
+      showToast('✓ ISBN trouvé (Google Books)');
+      return true;
+    }
+  } catch(e) {}
+  if(fb) fb.textContent = '✗ Introuvable';
+  showToast('❌ ISBN non trouvé');
+  return false;
+}
+
+function setupISBNField() {
+  let field = document.getElementById('f_isbn');
   if(!field || field.dataset.isbnReady) return;
-  field.dataset.isbnReady='1';
-  let btn=document.createElement('button');
-  btn.type='button';
-  btn.innerHTML='<i class="fas fa-camera"></i> Scanner ISBN';
-  btn.style.marginTop='8px';
-  btn.style.padding='8px 16px';
-  btn.style.borderRadius='15px';
-  btn.style.border='1px solid var(--secondary)';
-  btn.style.background='transparent';
-  btn.style.cursor='pointer';
-  btn.style.fontWeight='600';
-  btn.onclick=()=>startScanner();
+  field.dataset.isbnReady = '1';
+  let btn = document.createElement('button');
+  btn.type = 'button';
+  btn.innerHTML = '<i class="fas fa-camera"></i> Scanner ISBN';
+  btn.style.marginTop = '8px';
+  btn.style.padding = '8px 16px';
+  btn.style.borderRadius = '15px';
+  btn.style.border = '1px solid var(--secondary)';
+  btn.style.background = 'transparent';
+  btn.style.cursor = 'pointer';
+  btn.style.fontWeight = '600';
+  btn.onclick = () => startScanner();
   field.parentNode.appendChild(btn);
-  let feedback=document.createElement('span');
-  feedback.id='isbn-feedback';
-  feedback.style.display='block';
-  feedback.style.fontSize='0.7rem';
-  feedback.style.marginTop='4px';
-  field.parentNode.appendChild(feedback);
-  field.addEventListener('input', debounce(e=>fetchISBN(e.target.value),500));
+  let fb = document.createElement('span');
+  fb.id = 'isbn-feedback';
+  fb.style.display = 'block';
+  fb.style.fontSize = '0.7rem';
+  fb.style.marginTop = '4px';
+  field.parentNode.appendChild(fb);
+  field.addEventListener('input', debounce(e => {
+    let val = e.target.value.replace(/[^0-9X]/gi,'');
+    if(val.length===10 || val.length===13) fetchISBN(val);
+  }, 500));
 }
 
-async function fetchISBN(isbn){
-  let clean=isbn.replace(/[^0-9Xx]/g,'').toUpperCase();
-  if(clean.length!==10 && clean.length!==13) return;
-  let fb=document.getElementById('isbn-feedback');
-  if(fb) fb.textContent='⏳ Recherche...';
-  try{
-    let ol=await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${clean}&format=json&jscmd=data`).then(r=>r.json());
-    if(ol[`ISBN:${clean}`]){ fillFromOpenLibrary(ol[`ISBN:${clean}`]); if(fb) fb.textContent='✓ Open Library'; showToast('✓ ISBN trouvé (Open Library)'); return;}
-  }catch(e){}
-  try{
-    let gb=await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${clean}`).then(r=>r.json());
-    if(gb.items && gb.items[0]){ fillFromGoogleBooks(gb.items[0]); if(fb) fb.textContent='✓ Google Books'; showToast('✓ ISBN trouvé (Google Books)'); return;}
-  }catch(e){}
-  if(fb) fb.textContent='✗ Introuvable';
-}
-function fillFromOpenLibrary(book){
-  let set=(id,val)=>{ let el=document.getElementById('f_'+id); if(el && !el.value.trim()) el.value=val; };
-  set('titre',book.title||'');
-  set('editeur',book.publishers?.[0]?.name||'');
-  set('ville',book.publish_places?.[0]?.name||'');
-  set('annee',(book.publish_date||'').match(/\d{4}/)?.[0]||'');
-  set('collection',book.series?.[0]?.name||'');
-  let author=book.authors?.[0]?.name||'';
-  if(author){
-    let parts=author.split(',').map(s=>s.trim());
-    if(parts.length>1){ set('noms',parts[0]); set('prenoms',parts[1]); }
-    else{ let names=author.split(/\s+/); if(names.length>1){ set('prenoms',names.slice(0,-1).join(' ')); set('noms',names[names.length-1]);} else set('noms',author);}
-  }
-}
-function fillFromGoogleBooks(item){
-  let info=item.volumeInfo||{};
-  let set=(id,val)=>{ let el=document.getElementById('f_'+id); if(el && !el.value.trim()) el.value=val; };
-  set('titre',info.title||'');
-  set('editeur',info.publisher||'');
-  set('annee',(info.publishedDate||'').match(/\d{4}/)?.[0]||'');
-  let authors=info.authors||[];
-  if(authors.length){
-    let full=authors[0];
-    let parts=full.split(',').map(s=>s.trim());
-    if(parts.length>1){ set('noms',parts[0]); set('prenoms',parts[1]); }
-    else{ let names=full.split(/\s+/); if(names.length>1){ set('prenoms',names.slice(0,-1).join(' ')); set('noms',names[names.length-1]);} else set('noms',full);}
-  }
-}
-function debounce(fn,ms){ let t; return function(...a){ clearTimeout(t); t=setTimeout(()=>fn.apply(this,a),ms);}; }
+function debounce(fn, ms) { let t; return function(...a){ clearTimeout(t); t=setTimeout(()=>fn.apply(this,a), ms); }; }
 
-/* SCANNER avec BarcodeDetector et Quagga2 */
-let scannerActive=false, videoStream=null, animFrame=null;
-async function startScanner(){
+/* ------------- SCANNER CAMERA (BarcodeDetector + Quagga2) ------------- */
+let scannerActive = false, videoStream = null, animFrame = null;
+
+function buildOverlay() {
+  if(document.getElementById('isbn-scan-overlay')) return;
+  let div = document.createElement('div'); div.id = 'isbn-scan-overlay';
+  div.innerHTML = `<video id="isbn-scan-video" autoplay playsinline muted style="width:100%;max-width:460px;border-radius:24px;"></video>
+                   <p id="isbn-scan-hint" style="color:#fff;">Initialisation...</p>
+                   <button class="scan-close" onclick="stopScanner()">✕ Fermer</button>`;
+  document.body.appendChild(div);
+}
+
+async function startScanner() {
   if(scannerActive) return;
   buildOverlay();
-  let video=document.getElementById('isbn-scan-video');
-  let hint=document.getElementById('isbn-scan-hint');
-  hint.textContent='Ouverture caméra...';
-  try{
-    let stream=await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' } });
-    videoStream=stream;
-    video.srcObject=stream;
+  let video = document.getElementById('isbn-scan-video');
+  let hint = document.getElementById('isbn-scan-hint');
+  hint.textContent = 'Ouverture caméra...';
+  try {
+    let stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+    videoStream = stream;
+    video.srcObject = stream;
     await video.play();
-    hint.textContent='Approchez le code-barres';
-    scannerActive=true;
-    if('BarcodeDetector' in window){
-      let detector=new BarcodeDetector({ formats:['ean_13','ean_8','upc_a','code_128'] });
-      function tick(){
+    hint.textContent = 'Centrez le code-barres ISBN';
+    scannerActive = true;
+
+    if('BarcodeDetector' in window) {
+      let detector = new BarcodeDetector({ formats: ['ean_13','ean_8','upc_a','code_128'] });
+      function tick() {
         if(!scannerActive) return;
-        if(video.readyState>=2){
-          detector.detect(video).then(codes=>{ if(codes.length) onISBNDetected(codes[0].rawValue); }).catch(()=>{});
+        if(video.readyState >= 2) {
+          detector.detect(video).then(codes => {
+            if(codes.length > 0) onISBNDetected(codes[0].rawValue);
+          }).catch(()=>{});
         }
-        animFrame=requestAnimationFrame(tick);
+        animFrame = requestAnimationFrame(tick);
       }
       tick();
-    }else{
-      // fallback Quagga2
-      let script=document.createElement('script');
-      script.src='https://cdn.jsdelivr.net/npm/@ericblade/quagga2@1.2.6/dist/quagga.min.js';
-      script.onload=()=>{
-        let canvas=document.createElement('canvas');
-        canvas.id='quagga-canvas'; canvas.style.display='none';
+    } else {
+      // Fallback Quagga2
+      let script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/@ericblade/quagga2@1.2.6/dist/quagga.min.js';
+      script.onload = () => {
+        let canvas = document.createElement('canvas');
+        canvas.id = 'quagga-canvas'; canvas.style.display = 'none';
         document.body.appendChild(canvas);
-        function quaggaTick(){
+        function quaggaTick() {
           if(!scannerActive) return;
-          if(video.readyState>=2){
-            let vw=video.videoWidth, vh=video.videoHeight;
-            if(vw&&vh){
-              canvas.width=vw; canvas.height=vh;
-              let ctx=canvas.getContext('2d');
-              ctx.drawImage(video,0,0,vw,vh);
-              let cropW=Math.round(vw*0.9), cropH=Math.round(vh*0.5);
-              let cropX=Math.round((vw-cropW)/2), cropY=Math.round((vh-cropH)/2);
-              let cropCanvas=document.createElement('canvas');
-              cropCanvas.width=cropW; cropCanvas.height=cropH;
-              cropCanvas.getContext('2d').drawImage(canvas,cropX,cropY,cropW,cropH,0,0,cropW,cropH);
-              Quagga.decodeSingle({ decoder:{ readers:['ean_reader','ean_8_reader','code_128_reader'] }, src:cropCanvas.toDataURL() }, res=>{ if(res?.codeResult?.code) onISBNDetected(res.codeResult.code); });
+          if(video.readyState >= 2) {
+            let vw = video.videoWidth, vh = video.videoHeight;
+            if(vw && vh) {
+              canvas.width = vw; canvas.height = vh;
+              let ctx = canvas.getContext('2d');
+              ctx.drawImage(video, 0, 0, vw, vh);
+              let cropW = Math.round(vw * 0.9), cropH = Math.round(vh * 0.5);
+              let cropX = Math.round((vw - cropW)/2), cropY = Math.round((vh - cropH)/2);
+              let cropCanvas = document.createElement('canvas');
+              cropCanvas.width = cropW; cropCanvas.height = cropH;
+              cropCanvas.getContext('2d').drawImage(canvas, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
+              Quagga.decodeSingle({
+                decoder: { readers: ['ean_reader','ean_8_reader','code_128_reader'] },
+                src: cropCanvas.toDataURL()
+              }, result => {
+                if(result && result.codeResult && result.codeResult.code) onISBNDetected(result.codeResult.code);
+              });
             }
           }
-          animFrame=requestAnimationFrame(quaggaTick);
+          animFrame = requestAnimationFrame(quaggaTick);
         }
         quaggaTick();
       };
       document.head.appendChild(script);
     }
-  }catch(e){ hint.textContent='Erreur caméra : autorisez l\'accès'; console.error(e);}
-}
-function buildOverlay(){
-  if(document.getElementById('isbn-scan-overlay')) return;
-  let div=document.createElement('div'); div.id='isbn-scan-overlay';
-  div.innerHTML=`<video id="isbn-scan-video" autoplay playsinline muted style="width:100%;max-width:460px;border-radius:24px;"></video><p id="isbn-scan-hint" style="color:#fff;">Initialisation...</p><button class="scan-close" onclick="stopScanner()">✕ Fermer</button>`;
-  document.body.appendChild(div);
-}
-function stopScanner(){
-  scannerActive=false;
-  if(animFrame) cancelAnimationFrame(animFrame);
-  if(videoStream) videoStream.getTracks().forEach(t=>t.stop());
-  let ov=document.getElementById('isbn-scan-overlay'); if(ov) ov.remove();
-}
-function onISBNDetected(code){
-  let clean=code.replace(/[^0-9X]/gi,'');
-  if(clean.length===13||clean.length===10){
-    stopScanner();
-    selectType('ouvrage');
-    setTimeout(()=>{
-      let field=document.getElementById('f_isbn');
-      if(field){ field.value=clean; field.dispatchEvent(new Event('input')); fetchISBN(clean); }
-    },200);
+  } catch(err) {
+    hint.textContent = 'Erreur caméra : autorisez l\'accès';
+    console.error(err);
   }
 }
-window.startScanner=startScanner;
-window.stopScanner=stopScanner;
+
+function stopScanner() {
+  scannerActive = false;
+  if(animFrame) cancelAnimationFrame(animFrame);
+  if(videoStream) videoStream.getTracks().forEach(t => t.stop());
+  let ov = document.getElementById('isbn-scan-overlay');
+  if(ov) ov.remove();
+}
+
+function onISBNDetected(code) {
+  let clean = String(code).replace(/[^0-9X]/gi, '');
+  if(clean.length === 13 || clean.length === 10) {
+    stopScanner();
+    // Sélectionner le type "Ouvrage"
+    selectType('ouvrage');
+    setTimeout(() => {
+      let field = document.getElementById('f_isbn');
+      if(field) {
+        field.value = clean;
+        field.dispatchEvent(new Event('input', { bubbles: true }));
+        fetchISBN(clean);
+      }
+    }, 200);
+  }
+}
+
+window.startScanner = startScanner;
+window.stopScanner = stopScanner;
+
+// Initialisation
 renderTypeButtons();
 renderHistory();
+setupISBNField(); // pour le cas où le champ ISBN existe déjà
 </script>
 </body>
 </html>
