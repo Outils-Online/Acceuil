@@ -4,8 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <title>Pro Camera - Reçus & Scan</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='80'>🧰</text></svg>">
+    <!-- Typographie : Space Grotesk pour les titres, Inter pour le corps -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Icône (favicon) remplacée par un SVG d’appareil photo -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><path d='M149.1 64.8L138.7 96H64C28.7 96 0 124.7 0 160V416c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V160c0-35.3-28.7-64-64-64H373.3L362.9 64.8C356.4 45.2 338.1 32 317.4 32H194.6c-20.7 0-39 13.2-45.5 32.8zM256 384a96 96 0 1 0 0-192 96 96 0 1 0 0 192z' fill='%230A2472'/></svg>">
     <meta name="theme-color" content="#0A2472">
     <style>
         :root {
@@ -13,17 +17,16 @@
             --bg-main: #FDFCF0;
             --surface: #FFFFFF;
             --text-main: #0A2472;
-
-            --color-primary: #0A2472;    /* Bleu Encre (Dominante) */
-            --color-secondary: #006466;  /* Émeraude Profond (Transition) */
-            --color-accent: #F46060;     /* Rouge Corail (Action/Focus) */
-            --color-highlight: #FFD972;  /* Or Blanc (Lumière/Jaune Quartz) */
+            --color-primary: #0A2472;
+            --color-secondary: #006466;
+            --color-accent: #F46060;
+            --color-highlight: #FFD972;
         }
 
         body, html {
             margin: 0; padding: 0; height: 100dvh;
             background: var(--bg-main);
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Inter', sans-serif;   /* corps du texte */
             overflow: hidden;
             color: var(--text-main);
         }
@@ -34,29 +37,68 @@
             height: 100dvh;
         }
 
-        /* Logo avec dégradé Mondrian */
+        /* --- NOUVEAU LOGO (remplace l'ancien header-logo) --- */
         .header-logo {
-            position: absolute; top: 15px; left: 50%; transform: translateX(-50%); z-index: 20;
-            display: flex; align-items: center; gap: 10px;
-            padding: 5px 15px; border-radius: 40px;
-            background: linear-gradient(to right,
-                var(--color-primary) 60%,
-                var(--color-secondary) 60% 75%,
-                var(--color-accent) 75% 90%,
-                var(--color-highlight) 90%);
-            background-size: 300% 300%;
-            animation: gradientMove 8s ease infinite;
-            border: 1px solid rgba(255,255,255,0.4);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-            white-space: nowrap; text-decoration: none; color: white; cursor: pointer;
+            position: absolute;
+            top: 15px; left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 5px 15px;
+            border-radius: 40px;
+            background: transparent;          /* plus de dégradé */
+            border: none;
+            box-shadow: none;
+            white-space: nowrap;
+            cursor: pointer;
+            /* Le texte du logo reste en Space Grotesk */
+            font-family: 'Space Grotesk', sans-serif;
         }
-        @keyframes gradientMove {
-            0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%}
+
+        /* Bloc mosaïque (plus petit que la page standalone) */
+        .mosaic-core {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            overflow: hidden;
+            background: var(--color-primary);
+            transition: transform 0.2s ease;
+            box-shadow: 0 4px 12px rgba(10,36,114,0.15);
         }
-        .logo-icon { font-size: 20px; }
-        .logo-text-stack { display: flex; flex-direction: column; line-height: 1; }
-        .logo-text-stack span:first-child { font-size: 11px; font-weight: 900; text-transform: uppercase; }
-        .logo-text-stack span:last-child { font-size: 9px; font-weight: 700; text-transform: uppercase; opacity: 0.9; }
+        .header-logo:active .mosaic-core {
+            transform: scale(0.92);
+        }
+        #mosaic-svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .text-wrap {
+            display: flex;
+            flex-direction: column;
+            line-height: 1;
+        }
+        .outils {
+            font-size: 14px;                 /* taille adaptée au header */
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: -0.5px;
+            color: var(--color-primary);
+        }
+        .online {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: #8E9AAF;                  /* gris bleuté pour le second mot */
+        }
+        .letter {
+            color: var(--color-primary);
+            transition: color 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
 
         .top-bar {
             position: absolute; top: 12px; left: 12px; right: 12px; z-index: 20;
@@ -125,6 +167,7 @@
             width: 100%; padding: 18px; border-radius: 15px;
             border: none; font-weight: 700; font-size: 16px;
             cursor: pointer; transition: 0.2s;
+            font-family: 'Inter', sans-serif;   /* boutons = corps de texte */
         }
         .btn-main {
             background: var(--color-accent);
@@ -141,6 +184,7 @@
             color: var(--text-main);
             border-radius: 10px; font-size: 11px; font-weight: 700;
             text-align: center; cursor: pointer; transition: 0.2s;
+            font-family: 'Inter', sans-serif;   /* même si c'est un petit titre, on garde Inter pour l'UI */
         }
         .date-chip.active {
             background: var(--color-accent);
@@ -154,6 +198,7 @@
             border: 1px solid var(--color-secondary);
             color: var(--text-main);
             border-radius: 12px; box-sizing: border-box; font-size: 15px;
+            font-family: 'Inter', sans-serif;
         }
         .input-pro::placeholder { color: rgba(10,36,114,0.4); }
 
@@ -164,6 +209,7 @@
             border: 1px solid var(--color-secondary);
             color: var(--text-main);
             border-radius: 12px; box-sizing: border-box; font-size: 15px;
+            font-family: 'Inter', sans-serif;
         }
         #capture-shop::placeholder { color: rgba(10,36,114,0.4); }
 
@@ -199,6 +245,7 @@
         .date-display-label {
             font-size: 11px; color: var(--text-main); font-weight: 600;
             text-transform: uppercase; opacity: 0.8;
+            font-family: 'Space Grotesk', sans-serif;   /* titre */
         }
         .date-display-value {
             font-size: 15px; font-weight: 700;
@@ -242,6 +289,7 @@
             font-size: 9px; font-weight: 700;
             color: rgba(255,255,255,0.9);
             text-transform: uppercase; letter-spacing: 0.5px;
+            font-family: 'Space Grotesk', sans-serif;   /* titre */
         }
         .file-counter-widget.ok .file-counter-num,
         .file-counter-widget.ok .file-counter-label {
@@ -258,13 +306,20 @@
             border: 1px solid var(--color-accent);
             max-width: 320px; width: 100%;
         }
-        .alert-box h3 { margin: 0 0 10px; font-size: 22px; color: var(--color-primary); }
+        .alert-box h3 {
+            margin: 0 0 10px; font-size: 22px; color: var(--color-primary);
+            font-family: 'Space Grotesk', sans-serif; font-weight: 700;
+        }
         .alert-box p { color: var(--text-main); font-size: 14px; margin: 0 0 20px; opacity: 0.8; }
         .alert-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
         .history-panel {
             position: fixed; inset: 0; background: var(--bg-main);
             z-index: 200; display: none; flex-direction: column; padding: 20px;
+        }
+        .history-panel h2 {
+            margin: 0; color: var(--color-primary);
+            font-family: 'Space Grotesk', sans-serif; font-weight: 700;
         }
         .history-list { flex: 1; overflow-y: auto; margin: 15px 0; }
         .item {
@@ -297,6 +352,7 @@
             background: var(--color-accent); color: white;
             padding: 10px 20px; border-radius: 20px; z-index: 400;
             display: none; white-space: nowrap; font-weight: 600;
+            font-family: 'Inter', sans-serif;
         }
 
         /* ── EXPORT MODAL REDESIGN ─────────────────────────── */
@@ -321,6 +377,7 @@
         .export-header h3 {
             margin: 8px 0 4px; font-size: 17px; font-weight: 800;
             color: var(--color-primary);
+            font-family: 'Space Grotesk', sans-serif;
         }
         .export-header p {
             margin: 0 0 14px; font-size: 12px;
@@ -336,6 +393,7 @@
             font-size: 10px; font-weight: 800; letter-spacing: 0.6px;
             text-transform: uppercase; color: var(--text-main);
             padding: 0 16px; margin-bottom: 8px; opacity: 0.6;
+            font-family: 'Space Grotesk', sans-serif;
         }
         .pdf-opt { position: relative; cursor: pointer; }
         .pdf-opt input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
@@ -352,7 +410,10 @@
             background: rgba(244,96,96,0.08);
         }
         .pdf-opt-icon { font-size: 18px; }
-        .pdf-opt-title { font-size: 12px; font-weight: 800; color: var(--color-primary); }
+        .pdf-opt-title {
+            font-size: 12px; font-weight: 800; color: var(--color-primary);
+            font-family: 'Space Grotesk', sans-serif;
+        }
         .pdf-opt-sub { font-size: 10px; color: var(--text-main); opacity: 0.6; }
 
         /* Divider */
@@ -371,6 +432,7 @@
             cursor: pointer; transition: background 0.15s;
             text-align: left; width: 100%;
             color: var(--text-main); gap: 14px;
+            font-family: 'Inter', sans-serif;
         }
         .send-btn:active { background: rgba(244,96,96,0.1); }
         .send-btn-icon {
@@ -381,7 +443,10 @@
             flex-shrink: 0;
         }
         .send-btn-text { flex: 1; }
-        .send-btn-title { font-size: 15px; font-weight: 800; display: block; color: var(--color-primary); }
+        .send-btn-title {
+            font-size: 15px; font-weight: 800; display: block; color: var(--color-primary);
+            font-family: 'Space Grotesk', sans-serif;
+        }
         .send-btn-sub { font-size: 11px; color: var(--text-main); opacity: 0.6; margin-top: 2px; display: block; }
         .send-btn-arrow { font-size: 14px; color: var(--color-secondary); }
 
@@ -391,7 +456,7 @@
             border-top: 1px solid var(--color-highlight);
             color: var(--text-main); opacity: 0.7;
             font-size: 14px; font-weight: 700;
-            cursor: pointer; font-family: 'Poppins', sans-serif;
+            cursor: pointer; font-family: 'Inter', sans-serif;
         }
     </style>
 </head>
@@ -402,12 +467,12 @@
 <!-- MODAL ALERTE 10 REÇUS -->
 <div id="alert-modal" class="alert-modal">
     <div class="alert-box">
-        <div style="font-size:40px; margin-bottom:10px;">🔔</div>
+        <div style="font-size:40px; margin-bottom:10px;"><i class="fas fa-bell"></i></div>
         <h3><span id="alert-count">10</span> reçus dans vos archives !</h3>
         <p>Pensez à envoyer vos fichiers pour ne pas les perdre.</p>
         <div class="alert-actions">
             <button class="btn" style="background:var(--surface);color:var(--text-main);border:1px solid var(--color-secondary);padding:12px;" onclick="dismissAlert()">Plus tard</button>
-            <button class="btn btn-main" style="padding:12px;" onclick="goToHistory()">📤 Envoyer</button>
+            <button class="btn btn-main" style="padding:12px;" onclick="goToHistory()"><i class="fas fa-paper-plane"></i> Envoyer</button>
         </div>
     </div>
 </div>
@@ -415,17 +480,23 @@
 <div class="app-container">
     <div class="viewport" onclick="applyFocus()">
 
-        <a href="https://es-d-0544653420260421-019d9d77-1ff4-7528-927f-7dea15c4d92a.codepen.dev/" class="header-logo">
-            <span class="logo-icon">🧰</span>
-            <div class="logo-text-stack"><span>Outils</span><span>Online</span></div>
-        </a>
+        <!-- NOUVEAU LOGO (remplace l'ancien lien avec emoji) -->
+        <div class="header-logo" onclick="refreshLogo()">
+            <div class="mosaic-core">
+                <svg id="mosaic-svg" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+            </div>
+            <div class="text-wrap">
+                <div class="outils" id="word-outils"></div>
+                <div class="online">ONLINE</div>
+            </div>
+        </div>
 
         <div class="top-bar">
-            <button class="icon-btn" onclick="window.parent.closeIframe('iframe_photo_recu')">✕</button>
+            <button class="icon-btn" onclick="window.parent.closeIframe('iframe_photo_recu')"><i class="fas fa-times"></i></button>
             <div class="top-bar-right">
-                <button class="icon-btn" id="torch-btn" onclick="toggleTorch(event)">🔦</button>
+                <button class="icon-btn" id="torch-btn" onclick="toggleTorch(event)"><i class="fas fa-lightbulb"></i></button>
                 <div class="icon-btn-wrap">
-                    <button class="icon-btn" onclick="openHistory(event)">📜</button>
+                    <button class="icon-btn" onclick="openHistory(event)"><i class="fas fa-scroll"></i></button>
                     <div id="alert-dot" class="alert-badge" style="display:none">!</div>
                 </div>
             </div>
@@ -436,7 +507,7 @@
         </div>
 
         <div id="file-counter-widget" class="file-counter-widget" onclick="openHistory(event)">
-            <span class="file-counter-icon">📁</span>
+            <span class="file-counter-icon"><i class="fas fa-folder"></i></span>
             <div class="file-counter-text">
                 <span class="file-counter-num" id="file-counter-num">0</span>
                 <span class="file-counter-label" id="file-counter-label">fichiers</span>
@@ -450,15 +521,15 @@
     <div class="controls">
         <div id="form-ui" class="form-group">
             <div class="date-row">
-                <div class="date-chip active" id="chip-today" onclick="selectDateChip('today')">📅 Aujourd'hui</div>
-                <div class="date-chip" id="chip-prev" onclick="selectDateChip('prev')">⏮ Précédent</div>
-                <div class="date-chip" id="chip-manual" onclick="selectDateChip('manual')">✏️ Manuelle</div>
+                <div class="date-chip active" id="chip-today" onclick="selectDateChip('today')"><i class="fas fa-calendar-day"></i> Aujourd'hui</div>
+                <div class="date-chip" id="chip-prev" onclick="selectDateChip('prev')"><i class="fas fa-backward"></i> Précédent</div>
+                <div class="date-chip" id="chip-manual" onclick="selectDateChip('manual')"><i class="fas fa-pen"></i> Manuelle</div>
             </div>
             <div id="manual-date-wrap" style="position:absolute; width:0; height:0; overflow:hidden;">
                 <input type="date" id="capture-date" style="opacity:0; width:1px; height:1px;" oninput="refreshDateDisplay()" onchange="refreshDateDisplay()">
             </div>
             <div class="date-display">
-                <span>📅</span>
+                <span><i class="fas fa-calendar"></i></span>
                 <span class="date-display-label">Date du reçu</span>
                 <span class="date-display-value" id="date-display-value">—</span>
             </div>
@@ -471,10 +542,10 @@
                     oninput="onShopInput()" onkeydown="onShopKey(event)" onfocus="onShopInput()">
             </div>
         </div>
-        <button id="snap-btn" class="btn btn-main" onclick="processCapture()">📸 CAPTURER LE REÇU</button>
+        <button id="snap-btn" class="btn btn-main" onclick="processCapture()"><i class="fas fa-camera"></i> CAPTURER LE REÇU</button>
         <div id="post-snap-ui" style="display:none; gap:10px;">
             <button class="btn" style="background:var(--surface);color:var(--text-main);border:1px solid var(--color-secondary);flex:1;" onclick="resetUI()">ANNULER</button>
-            <button id="save-btn" class="btn" style="background:var(--color-accent);color:white;flex:2;opacity:0.4;pointer-events:none;" onclick="confirmSave()">💾 SAUVEGARDER</button>
+            <button id="save-btn" class="btn" style="background:var(--color-accent);color:white;flex:2;opacity:0.4;pointer-events:none;" onclick="confirmSave()"><i class="fas fa-save"></i> SAUVEGARDER</button>
         </div>
     </div>
 </div>
@@ -482,35 +553,32 @@
 <!-- HISTORIQUE -->
 <div id="history-panel" class="history-panel">
     <div style="display:flex;justify-content:space-between;align-items:center;">
-        <h2 style="margin:0;color:var(--color-primary);">Mes Archives</h2>
-        <button onclick="closeHistory()" style="background:none;border:none;color:var(--text-main);font-size:28px;cursor:pointer;">✕</button>
+        <h2>Mes Archives</h2>
+        <button onclick="closeHistory()" style="background:none;border:none;color:var(--text-main);font-size:28px;cursor:pointer;"><i class="fas fa-times"></i></button>
     </div>
-    <button id="select-all-btn" class="btn" style="background:var(--surface);color:var(--text-main);margin:15px 0 5px;border:1px solid var(--color-secondary);padding:10px;" onclick="toggleSelectAll()">✅ TOUT SÉLECTIONNER</button>
+    <button id="select-all-btn" class="btn" style="background:var(--surface);color:var(--text-main);margin:15px 0 5px;border:1px solid var(--color-secondary);padding:10px;" onclick="toggleSelectAll()"><i class="fas fa-check-double"></i> TOUT SÉLECTIONNER</button>
     <div id="history-list" class="history-list"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px;">
-        <button class="btn btn-main" onclick="shareSelected()">📤 ENVOYER</button>
-        <button class="btn" style="background:var(--surface);color:var(--text-main);border:1px solid var(--color-secondary);" onclick="deleteSelected()">🗑️ TOUT SUP.</button>
+        <button class="btn btn-main" onclick="shareSelected()"><i class="fas fa-paper-plane"></i> ENVOYER</button>
+        <button class="btn" style="background:var(--surface);color:var(--text-main);border:1px solid var(--color-secondary);" onclick="deleteSelected()"><i class="fas fa-trash"></i> TOUT SUP.</button>
     </div>
 </div>
 
 <!-- ── EXPORT MODAL REDESIGNÉ ────────────────────────────────────────────── -->
 <div id="export-modal" class="export-overlay" onclick="handleOverlayClick(event)">
     <div class="export-sheet" id="export-sheet">
-
         <div class="export-handle"></div>
-
         <div class="export-header">
             <h3>Exporter les reçus</h3>
             <p>Choisissez le format et le mode d'envoi</p>
         </div>
 
-        <!-- Format PDF -->
         <div class="pdf-format-label">Format PDF</div>
         <div class="pdf-format-row">
             <label class="pdf-opt">
                 <input type="radio" name="pdf-format" value="separate">
                 <div class="pdf-opt-card">
-                    <span class="pdf-opt-icon">📄</span>
+                    <span class="pdf-opt-icon"><i class="fas fa-file-pdf"></i></span>
                     <span class="pdf-opt-title">Séparés</span>
                     <span class="pdf-opt-sub">Un PDF par reçu<br>nommé correctement</span>
                 </div>
@@ -518,7 +586,7 @@
             <label class="pdf-opt">
                 <input type="radio" name="pdf-format" value="compiled" checked>
                 <div class="pdf-opt-card">
-                    <span class="pdf-opt-icon">📦</span>
+                    <span class="pdf-opt-icon"><i class="fas fa-box"></i></span>
                     <span class="pdf-opt-title">Compilé</span>
                     <span class="pdf-opt-sub">Tous en un seul PDF<br>avec horodatage</span>
                 </div>
@@ -527,11 +595,9 @@
 
         <div class="export-divider"></div>
 
-        <!-- Boutons d'envoi -->
         <div class="send-methods">
-
             <button class="send-btn" onclick="actionSendMail()">
-                <div class="send-btn-icon">✉️</div>
+                <div class="send-btn-icon"><i class="fas fa-envelope"></i></div>
                 <div class="send-btn-text">
                     <span class="send-btn-title">Mail</span>
                     <span class="send-btn-sub">PDF + récapitulatif CSV</span>
@@ -540,7 +606,7 @@
             </button>
 
             <button class="send-btn" onclick="actionSendMessage()">
-                <div class="send-btn-icon">💬</div>
+                <div class="send-btn-icon"><i class="fas fa-comment"></i></div>
                 <div class="send-btn-text">
                     <span class="send-btn-title">Message</span>
                     <span class="send-btn-sub">PDF(s) uniquement</span>
@@ -549,14 +615,13 @@
             </button>
 
             <button class="send-btn" onclick="actionDownloadZip()">
-                <div class="send-btn-icon">📥</div>
+                <div class="send-btn-icon"><i class="fas fa-download"></i></div>
                 <div class="send-btn-text">
                     <span class="send-btn-title">Télécharger ZIP</span>
                     <span class="send-btn-sub">PDF compilé + CSV dans une archive</span>
                 </div>
                 <span class="send-btn-arrow">›</span>
             </button>
-
         </div>
 
         <button class="export-cancel" onclick="closeExportModal()">Annuler</button>
@@ -798,7 +863,7 @@ function parseFileName(fileName) {
 function renderHistory() {
     const list = document.getElementById('history-list');
     list.innerHTML = ''; selectedIds.clear();
-    document.getElementById('select-all-btn').innerText = 'TOUT SELECTIONNER';
+    document.getElementById('select-all-btn').innerHTML = '<i class="fas fa-check-double"></i> TOUT SELECTIONNER';
     updateDeleteBtn();
     db.transaction("receipts").objectStore("receipts").getAll().onsuccess = e => {
         const results = e.target.result;
@@ -809,7 +874,9 @@ function renderHistory() {
             div.onclick = () => {
                 div.classList.toggle('selected');
                 selectedIds.has(item.id) ? selectedIds.delete(item.id) : selectedIds.add(item.id);
-                document.getElementById('select-all-btn').innerText = selectedIds.size === results.length ? 'TOUT DESELECTIONNER' : 'TOUT SELECTIONNER';
+                document.getElementById('select-all-btn').innerHTML = selectedIds.size === results.length
+                    ? '<i class="fas fa-check-double"></i> TOUT DESELECTIONNER'
+                    : '<i class="fas fa-check-double"></i> TOUT SELECTIONNER';
                 updateDeleteBtn();
             };
             div.innerHTML = `<div class="check"></div><div style="font-size:12px;">${item.name}</div>`;
@@ -820,7 +887,9 @@ function renderHistory() {
 
 function updateDeleteBtn() {
     const btn = document.querySelector('button[onclick="deleteSelected()"]');
-    if (btn) btn.innerText = selectedIds.size > 0 ? '🗑️ SUPPRIMER' : '🗑️ TOUT SUP.';
+    if (btn) btn.innerHTML = selectedIds.size > 0
+        ? '<i class="fas fa-trash"></i> SUPPRIMER'
+        : '<i class="fas fa-trash"></i> TOUT SUP.';
 }
 
 function toggleSelectAll() {
@@ -829,9 +898,11 @@ function toggleSelectAll() {
     db.transaction("receipts").objectStore("receipts").getAll().onsuccess = e => {
         const all = e.target.result;
         if (selectedIds.size === all.length && all.length > 0) {
-            selectedIds.clear(); items.forEach(div => div.classList.remove('selected')); btn.innerText = 'TOUT SELECTIONNER';
+            selectedIds.clear(); items.forEach(div => div.classList.remove('selected'));
+            btn.innerHTML = '<i class="fas fa-check-double"></i> TOUT SELECTIONNER';
         } else {
-            selectedIds.clear(); all.forEach(item => selectedIds.add(item.id)); items.forEach(div => div.classList.add('selected')); btn.innerText = 'TOUT DESELECTIONNER';
+            selectedIds.clear(); all.forEach(item => selectedIds.add(item.id)); items.forEach(div => div.classList.add('selected'));
+            btn.innerHTML = '<i class="fas fa-check-double"></i> TOUT DESELECTIONNER';
         }
         updateDeleteBtn();
     };
@@ -1015,6 +1086,84 @@ function showToast(m) {
     clearTimeout(t._to);
     t._to = setTimeout(() => t.style.display = 'none', 2500);
 }
+</script>
+
+<!-- Script du logo mosaïque -->
+<script>
+    // Palette vibrante pour l'infusion
+    const vibrantColors = ['#006466', '#F46060', '#FFD972'];
+    const darkBlue = '#0A2472';
+    
+    const wordContainer = document.getElementById('word-outils');
+    const word = "OUTILS";
+
+    word.split('').forEach(char => {
+        const span = document.createElement('span');
+        span.textContent = char;
+        span.className = 'letter';
+        wordContainer.appendChild(span);
+    });
+
+    function refreshLogo() {
+        const svg = document.getElementById('mosaic-svg');
+        const letters = document.querySelectorAll('.letter');
+        svg.innerHTML = ''; 
+        
+        const gridSize = 4; 
+        const step = 100 / (gridSize - 1);
+        let points = [];
+        let columnVibrantColors = [[], [], []]; 
+
+        for (let y = 0; y < gridSize; y++) {
+            for (let x = 0; x < gridSize; x++) {
+                let px = x * step;
+                let py = y * step;
+                if (x > 0 && x < gridSize - 1 && y > 0 && y < gridSize - 1) {
+                    px += (Math.random() - 0.5) * step * 0.8;
+                    py += (Math.random() - 0.5) * step * 0.8;
+                }
+                points.push({x: px, y: py});
+            }
+        }
+
+        for (let y = 0; y < gridSize - 1; y++) {
+            for (let x = 0; x < gridSize - 1; x++) {
+                const p1 = points[y * gridSize + x];
+                const p2 = points[y * gridSize + (x + 1)];
+                const p3 = points[(y + 1) * gridSize + (x + 1)];
+                const p4 = points[(y + 1) * gridSize + x];
+                
+                const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+                
+                // PROBABILITÉ : On limite l'apparition du bleu foncé à 12.5% (1/8)
+                const isDark = Math.random() < 0.125;
+                const color = isDark ? darkBlue : vibrantColors[Math.floor(Math.random() * vibrantColors.length)];
+                
+                if (!isDark) {
+                    columnVibrantColors[x].push(color);
+                }
+
+                poly.setAttribute("points", `${p1.x},${p1.y} ${p2.x},${p2.y} ${p3.x},${p3.y} ${p4.x},${p4.y}`);
+                poly.setAttribute("fill", color);
+                poly.setAttribute("stroke", color);
+                poly.setAttribute("stroke-width", "0.5");
+                svg.appendChild(poly);
+            }
+        }
+
+        letters.forEach((letter, index) => {
+            let columnIndex = index < 2 ? 0 : (index < 4 ? 1 : 2);
+            const possibleColors = columnVibrantColors[columnIndex];
+            
+            const finalColor = (possibleColors.length > 0) 
+                ? possibleColors[Math.floor(Math.random() * possibleColors.length)]
+                : vibrantColors[Math.floor(Math.random() * vibrantColors.length)];
+            
+            letter.style.color = finalColor;
+        });
+    }
+
+    refreshLogo();
 </script>
 </body>
 </html>
