@@ -1,840 +1,2840 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>Générateur de Citations Bibliographiques</title>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
-  <style>
-    /* ===== VARIABLES — Charte Graphique Ivoire & Corail ===== */
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <title>Boîte à outils Online</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%234A78E2'/><text y='72' x='50' text-anchor='middle' font-size='58'>⚙</text></svg>">
+    <meta name="theme-color" content="#4A78E2">
+   <style>
     :root {
-      --bg-page: #FDFCF0;
-      --bg-card: #FFFFFF;
-      --primary: #0A2472;
-      --secondary: #006466;
-      --accent: #F46060;
-      --highlight: #FFD972;
-      --ink-light: #5B6E8C;
-      --border-light: #E2E0D0;
-      --shadow-default: 0 4px 12px rgba(10,36,114,0.15);
-      --shadow-hover: 0 8px 20px rgba(10,36,114,0.2);
-      --radius-card: 24px;
-      --radius-button: 15px;
-      --radius-input: 12px;
-      --transition: 0.2s ease;
+        /* ── Quartz Ink & Coral ── */
+        --bg-main:           #FDFCF0;
+        --bg:                #FDFCF0;
+        --surface:           #FFFFFF;
+        --text-main:         #0A2472;
+        --text:              #0A2472;
+        --muted:             rgba(10,36,114,0.50);
+        --border:            rgba(10,36,114,0.13);
+ 
+        --color-primary:     #0A2472;
+        --color-secondary:   #006466;
+        --color-accent:      #F46060;
+        --color-highlight:   #FFD972;
+ 
+        --primary:           var(--color-primary);
+        --gold:              var(--color-highlight);
+        --yellow:            var(--color-highlight);
+        --yellow-soft:       #FFF0A8;
+        --yellow-bg:         #FDFCF0;
+        --red:               var(--color-accent);
+        --red-soft:          #FBBCBC;
+        --red-bg:            #FFF4F4;
+        --blue:              var(--color-primary);
+        --blue-soft:         #C5D0F5;
+        --blue-bg:           #EEF1FB;
+        --success:           var(--color-secondary);
+        --danger:            var(--color-accent);
+ 
+        --mondrian-stripe: linear-gradient(
+            to right,
+            var(--color-primary)    0% 60%,
+            var(--color-secondary)  60% 75%,
+            var(--color-accent)     75% 90%,
+            var(--color-highlight)  90% 100%
+        );
+ 
+        --radius-md:         16px;
+        --shadow:            0 4px 20px rgba(10,36,114,0.08), 0 1px 3px rgba(10,36,114,0.06);
+        --shadow-hover:      0 12px 36px rgba(10,36,114,0.15);
+        --font-display: 'Space Grotesk', sans-serif;
+        --font-body:    'Inter', sans-serif;
     }
+ 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+ 
     body {
-      font-family: 'Inter', sans-serif;
-      background: var(--bg-page);
-      color: var(--primary);
-      min-height: 100vh;
-      font-size: 15px;
-      line-height: 1.6;
+        padding: 20px;
+        font-family: var(--font-body);
+        background: var(--bg-main);
+        color: var(--text-main);
+        min-height: 100vh; overflow-x: hidden;
     }
-    .close-btn {
-      position: fixed;
-      top: 20px;
-      right: 24px;
-      width: 44px;
-      height: 44px;
-      background: var(--bg-card);
-      border: 1px solid var(--secondary);
-      border-radius: 15px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: 1.4rem;
-      color: var(--primary);
-      transition: all var(--transition);
-      z-index: 1000;
-      box-shadow: var(--shadow-default);
+ 
+    /* ── NAV ── */
+    .nav-shell {
+        display: flex;
+        align-items: center;
+        width: 100%; max-width: 900px;
+        margin: 0 auto 28px;
+        padding: 0;
+        gap: 16px;
+        background: transparent;
+        border: none;
+        box-shadow: none;
     }
-    .close-btn:hover {
-      background: var(--accent);
-      color: white;
-      border-color: var(--accent);
-      transform: scale(1.02);
+    .nav-shell .config-bar { flex: 1; }
+    .nav-shell .spacer { flex-shrink: 0; width: 48px; }
+ 
+    @keyframes gradientMove {
+        0%   { background-position: 0% 50%; }
+        50%  { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
     }
-    .container {
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: clamp(1.5rem, 4vw, 2.5rem) clamp(1rem, 4vw, 2rem);
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 2rem;
+ 
+    /* ── LOGO MOSAÏQUE ── */
+    .logo-box {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        cursor: pointer;
+        user-select: none;
+        flex-shrink: 0;
     }
-    .section-title {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 1.7rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      color: var(--primary);
-      margin-bottom: 0.25rem;
+    .mosaic-core {
+        width: 48px; height: 48px;
+        border-radius: 10px;
+        overflow: hidden;
+        background: var(--color-primary);
+        transition: transform 0.2s ease;
+        box-shadow: 0 4px 14px rgba(10,36,114,0.18);
+        flex-shrink: 0;
     }
-    .section-sub {
-      font-size: 0.9rem;
-      color: var(--ink-light);
+    .logo-box:active .mosaic-core { transform: scale(0.92); }
+    #mosaic-svg { width: 100%; height: 100%; display: block; }
+ 
+    .logo-text-stack {
+        display: flex;
+        flex-direction: column;
+        line-height: 1;
     }
-    .type-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
+    .logo-word-outils {
+        display: flex;
+        font-family: var(--font-display);
+        font-size: 28px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: -1px;
+        line-height: 0.9;
     }
-    .type-btn {
-      padding: 8px 20px;
-      border: 1.5px solid var(--secondary);
-      border-radius: var(--radius-button);
-      background: var(--bg-card);
-      color: var(--primary);
-      font-family: 'Inter', sans-serif;
-      font-size: 0.85rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all var(--transition);
-      white-space: nowrap;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
+    .logo-letter {
+        color: var(--color-primary);
+        transition: color 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
     }
-    .type-btn i { font-size: 1rem; }
-    .type-btn:hover {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: white;
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-default);
+    .logo-online {
+        font-family: var(--font-display);
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 5px;
+        color: rgba(10,36,114,0.40);
+        margin-top: 3px;
     }
-    .type-btn.active {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: white;
+ 
+    /* config-bar */
+    .config-bar {
+        display: flex; gap: 4px;
+        background: var(--surface);
+        padding: 4px; border-radius: 40px;
+        border: 1.5px solid var(--border);
+        box-shadow: var(--shadow);
+        min-width: 0;
     }
-    .type-btn--scan {
-      background: var(--secondary) !important;
-      color: white !important;
-      border-color: var(--secondary) !important;
+    .config-btn {
+        flex: 1; display: flex; align-items: center; justify-content: center;
+        padding: 8px 5px; border: none; border-radius: 30px;
+        background: transparent; color: var(--muted);
+        font-weight: 700; font-size: 13px; cursor: pointer;
+        transition: 0.2s; white-space: nowrap;
+        font-family: var(--font-display); letter-spacing: 0.2px;
     }
-    .type-btn--scan:hover {
-      background: var(--accent) !important;
-      border-color: var(--accent) !important;
+    .config-btn.active {
+        background: var(--blue-soft); color: var(--color-primary);
+        box-shadow: 0 2px 8px rgba(10,36,114,0.12);
+        font-weight: 800;
     }
-    .card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-light);
-      border-radius: var(--radius-card);
-      padding: clamp(1.5rem, 3vw, 2rem);
-      box-shadow: var(--shadow-default);
-      transition: box-shadow var(--transition);
+    .spacer { flex-shrink: 0; width: 48px; }
+ 
+    /* ── FILTERS ── */
+    .filters-container {
+        display: flex; justify-content: space-between; align-items: flex-start;
+        max-width: 1000px; margin: 0 auto 22px; gap: 10px;
     }
-    .card:hover { box-shadow: var(--shadow-hover); }
-    .card-title {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 1.2rem;
-      font-weight: 700;
-      color: var(--primary);
-      margin-bottom: 1.5rem;
-      padding-bottom: 0.8rem;
-      border-bottom: 2px solid var(--secondary);
-      display: flex;
-      align-items: center;
-      gap: 10px;
+    .filters-group {
+        flex: 1;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
     }
-    .card-title-icon {
-      width: 8px;
-      height: 8px;
-      background: var(--accent);
-      border-radius: 50%;
+    .tag-btn {
+        background: var(--surface);
+        padding: 8px 6px; border-radius: 12px;
+        font-size: 10px; font-weight: 700;
+        cursor: pointer; border: 1.5px solid var(--border);
+        color: var(--muted); transition: 0.18s;
+        font-family: var(--font-display); letter-spacing: 0.3px;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        text-align: center; box-shadow: var(--shadow);
     }
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 20px;
+    .tag-btn:hover { border-color: var(--color-accent); color: var(--color-accent); background: var(--red-bg); }
+    .tag-btn.tag-active      { background: var(--blue-soft); border-color: var(--blue-soft); color: var(--color-primary); }
+    .tag-btn.tag-mv-selected { background: var(--blue-soft); border-color: var(--blue-soft); color: var(--color-primary); }
+ 
+    .icon-btn {
+        width: 40px; height: 40px; border-radius: 12px;
+        background: var(--surface); border: 1.5px solid var(--border); color: var(--muted);
+        cursor: pointer; font-size: 16px; flex-shrink: 0;
+        display: flex; align-items: center; justify-content: center;
+        padding: 0; transition: 0.18s; box-shadow: var(--shadow);
     }
-    .form-group { display: flex; flex-direction: column; gap: 6px; }
-    .form-group.full { grid-column: 1 / -1; }
-    label {
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: var(--primary);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+    .icon-btn:hover { border-color: var(--color-highlight); color: var(--color-primary); background: #FFFBEE; }
+    .icon-btn.active { color: var(--color-primary); border-color: var(--color-highlight); background: #FFFBEE; }
+ 
+    #btnMultiview {
+        width: 40px; height: 40px; border-radius: 12px;
+        background: var(--surface); border: 1.5px solid var(--border); color: var(--muted);
+        cursor: pointer; transition: 0.18s; flex-shrink: 0;
+        display: flex; align-items: center; justify-content: center;
+        padding: 0; box-shadow: var(--shadow);
     }
-    label .req { color: var(--accent); margin-left: 3px; }
-    label .opt {
-      font-weight: 400;
-      color: var(--ink-light);
-      text-transform: none;
-      font-size: 0.7rem;
-      margin-left: 6px;
+    #btnMultiview:hover { border-color: var(--color-primary); color: var(--color-primary); }
+    #btnMultiview.active { background: var(--color-primary); border-color: var(--color-primary); color: white; box-shadow: 0 0 14px rgba(10,36,114,0.25); }
+ 
+    /* ── CARD GRID ── */
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 14px; max-width: 1000px; margin: 0 auto;
+        visibility: hidden;
     }
-    input, select, textarea {
-      padding: 12px 14px;
-      border: 1px solid var(--secondary);
-      border-radius: var(--radius-input);
-      background: var(--bg-page);
-      color: var(--primary);
-      font-family: 'Inter', sans-serif;
-      font-size: 0.9rem;
-      transition: all var(--transition);
-      outline: none;
-      width: 100%;
+ 
+    /* ── TOOL CARDS ── */
+    .btn-3d {
+        min-height: 130px; border-radius: 18px; cursor: pointer;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center; gap: 8px;
+        position: relative; transition: transform 0.22s, box-shadow 0.22s;
+        font-family: var(--font-body); font-size: 12px; font-weight: 600;
+        border: 1.5px solid transparent;
+        color: white;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.14);
     }
-    input:focus, select:focus, textarea:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(244,96,96,0.2);
-      background: var(--bg-card);
+    .btn-3d:hover { transform: translateY(-5px); box-shadow: var(--shadow-hover); }
+    .btn-3d:active { transform: translateY(-1px); }
+    .btn-3d.hidden { display: none !important; }
+ 
+    .favicon-badge {
+        width: 44px; height: 44px; border-radius: 50%;
+        background-color: rgba(255,255,255,0.18);
+        display: flex; align-items: center; justify-content: center; font-size: 20px;
     }
-    input.error, select.error {
-      border-color: var(--accent);
-      background-color: rgba(244,96,96,0.05);
+ 
+    .badge-lines {
+        width: 44px; height: 44px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        background: var(--color-primary);
+        transition: background 0.4s ease;
     }
-    .field-hint { font-size: 0.7rem; color: var(--ink-light); font-style: italic; margin-top: 2px; }
-    .error-msg { font-size: 0.7rem; color: var(--accent); display: none; margin-top: 4px; }
-    .error-msg.visible { display: block; }
-    .form-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 14px;
-      margin-top: 2rem;
+    .badge-lines i { color: white; font-size: 18px; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.25)); }
+    .btn-star { position: absolute; top: 10px; right: 10px; font-size: 14px; color: rgba(255,255,255,0.25); cursor: pointer; transition: color 0.2s; }
+    .btn-star.active { color: var(--yellow-soft); }
+    .btn-del { position: absolute; top: 10px; left: 10px; font-size: 13px; opacity: 0.45; display: none; }
+    .btn-3d:hover .btn-del { display: block; }
+ 
+    .count-badge {
+        position: absolute; bottom: 10px; right: 12px;
+        font-size: 9px; font-weight: 700;
+        background: rgba(0,0,0,0.22); padding: 2px 7px; border-radius: 10px;
+        font-family: var(--font-display); letter-spacing: 0.3px; color: rgba(255,255,255,0.9);
     }
-    .btn {
-      padding: 12px 26px;
-      border-radius: var(--radius-button);
-      font-family: 'Inter', sans-serif;
-      font-size: 0.9rem;
-      font-weight: 700;
-      cursor: pointer;
-      border: none;
-      transition: all var(--transition);
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
+ 
+    .btn-blue   { background: linear-gradient(150deg, #0A2472, #0d2d8e); }
+    .btn-google { background: linear-gradient(150deg, #1565C0, #1976D2); }
+    .btn-green  { background: linear-gradient(150deg, #006466, #004e50); }
+    .btn-orange { background: linear-gradient(150deg, #c0853a, #a06b25); }
+    .btn-purple { background: linear-gradient(150deg, #5a3e9e, #432e80); }
+    .btn-red    { background: linear-gradient(150deg, #F46060, #d84040); }
+ 
+    .btn-blue:hover   { border-color: var(--color-highlight); }
+    .btn-google:hover { border-color: var(--color-highlight); }
+    .btn-green:hover  { border-color: #7ecece; }
+    .btn-orange:hover { border-color: var(--color-highlight); }
+    .btn-purple:hover { border-color: var(--blue-soft); }
+    .btn-red:hover    { border-color: var(--red-soft); }
+ 
+    /* ── IFRAMES ── */
+    .iframe-container { display: none; position: fixed; inset: 0; background: #000; z-index: 9999; }
+    .iframe-container iframe { width: 100%; height: 100%; border: none; }
+    .close-iframe {
+        position: fixed; top: 16px; right: 16px;
+        background: var(--color-accent); color: white; border: none;
+        padding: 10px 20px; border-radius: 50px; font-weight: 700;
+        font-size: 12px; cursor: pointer; z-index: 10001;
+        display: flex; align-items: center; gap: 6px;
+        box-shadow: 0 4px 20px rgba(244,96,96,0.45);
+        font-family: var(--font-display); letter-spacing: 0.2px;
+        -webkit-tap-highlight-color: transparent;
     }
-    .btn-primary {
-      background: var(--accent);
-      color: white;
-      box-shadow: 0 2px 6px rgba(244,96,96,0.3);
+    .close-iframe:active { opacity: 0.85; transform: scale(0.96); }
+ 
+    /* ── MODALS ── */
+    .modal {
+        display: none; position: fixed; inset: 0;
+        background: rgba(10,36,114,0.50); z-index: 5000;
+        justify-content: center; align-items: center; padding: 15px;
+        backdrop-filter: blur(14px);
     }
-    .btn-primary:hover {
-      background: #E04545;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 14px rgba(244,96,96,0.4);
+    .box-content {
+        background: var(--surface);
+        border-radius: 24px;
+        width: 100%; max-width: 400px; padding: 28px;
+        border: 1.5px solid var(--border);
+        box-shadow: 0 24px 64px rgba(10,36,114,0.16);
+        color: var(--text-main);
     }
-    .btn-secondary {
-      background: transparent;
-      color: var(--primary);
-      border: 1.5px solid var(--secondary);
+    .box-content h3 {
+        font-family: var(--font-display);
+        font-weight: 700; font-size: 16px; letter-spacing: -0.3px;
+        color: var(--color-primary);
     }
-    .btn-secondary:hover {
-      border-color: var(--accent);
-      color: var(--accent);
-      transform: translateY(-2px);
+    .cam-input {
+        background: var(--bg-main); border: 1.5px solid var(--border);
+        padding: 12px; border-radius: 12px; color: var(--text-main);
+        width: 100%; margin-bottom: 10px; font-size: 14px;
+        font-family: var(--font-body);
+        outline: none; transition: border-color 0.18s;
     }
-    .result-box {
-      background: var(--bg-page);
-      border: 2px dashed var(--secondary);
-      border-radius: var(--radius-input);
-      padding: 1.3rem;
-      font-family: 'Space Grotesk', serif;
-      font-size: 0.95rem;
-      line-height: 1.7;
-      color: var(--primary);
-      min-height: 100px;
-      transition: all var(--transition);
+    .cam-input:focus { border-color: var(--color-accent); }
+    select.cam-input { appearance: none; cursor: pointer; }
+ 
+    #multiviewContainer {
+        max-width: 1000px; margin: 0 auto;
+        display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
     }
-    .result-box.has-content {
-      border-style: solid;
-      border-color: var(--accent);
-      background: rgba(244,96,96,0.05);
+    #multiviewContainer.mv-desktop { display: flex; flex-direction: column; gap: 20px; }
+    #multiviewContainer.mv-desktop .mv-col { width: 100%; }
+    #multiviewContainer.mv-desktop .mv-col-inner {
+        display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px;
     }
-    .result-placeholder {
-      color: var(--ink-light);
-      font-family: 'Inter', sans-serif;
-      font-style: italic;
+    #multiviewContainer.mv-desktop .mv-col .btn-3d { width: 100%; }
+    .mv-col { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+    .mv-col-header {
+        font-size: 10px; font-weight: 800;
+        text-transform: uppercase; letter-spacing: 1.2px;
+        padding: 7px 14px; border-radius: 10px;
+        background: var(--surface); border: 1.5px solid var(--border);
+        color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        box-shadow: var(--shadow); font-family: var(--font-display);
     }
-    .result-actions {
-      display: flex;
-      gap: 12px;
-      margin-top: 16px;
-      flex-wrap: wrap;
+    .mv-col .btn-3d { width: 100%; }
+ 
+    #mvToast {
+        display: none;
+        position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+        background: var(--color-accent); color: white;
+        padding: 12px 20px; border-radius: 16px;
+        font-size: 12px; font-weight: 700; text-align: center;
+        max-width: 320px; width: 90%;
+        box-shadow: 0 8px 24px rgba(244,96,96,0.35);
+        z-index: 99999; animation: fadeInUp 0.25s ease;
+        font-family: var(--font-display);
     }
-    .btn-copy {
-      background: var(--primary);
-      color: white;
-      font-size: 0.85rem;
-      padding: 8px 20px;
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+        to   { opacity: 1; transform: translateX(-50%) translateY(0); }
     }
-    .btn-copy:hover { background: var(--secondary); transform: translateY(-1px); }
-    .btn-save {
-      background: transparent;
-      border: 1.5px solid var(--secondary);
-      color: var(--primary);
-      font-size: 0.85rem;
-      padding: 8px 20px;
+ 
+    /* ══ ALERTE BACKUP DRIFT — Quartz Ink Glassmorphism ══ */
+    #driftAlert {
+        display: none;
+        position: fixed; inset: 0;
+        z-index: 199999;
+        justify-content: center; align-items: center; padding: 20px;
+        /* Fond glassmorphism sombre */
+        background: rgba(10, 36, 114, 0.35);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
     }
-    .btn-save:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
-    .copy-confirm {
-      font-size: 0.8rem;
-      color: #2e7d32;
-      font-weight: 600;
-      display: none;
-      align-items: center;
-      gap: 5px;
-      background: #e8f5e9;
-      padding: 5px 12px;
-      border-radius: 40px;
+    #driftAlert.visible { display: flex; }
+ 
+    .drift-alert-box {
+        /* Glassmorphism principal */
+        background: rgba(253, 252, 240, 0.72);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border: 1.5px solid rgba(255, 255, 255, 0.55);
+        border-radius: 28px;
+        padding: 36px 28px 28px;
+        max-width: 400px; width: 100%;
+        box-shadow:
+            0 8px 40px rgba(10, 36, 114, 0.20),
+            0 1px 0 rgba(255,255,255,0.8) inset;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
     }
-    .copy-confirm.show { display: flex; }
-    .history-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 1.2rem;
+    /* Bande Mondrian en haut de la boîte */
+    .drift-alert-box::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 4px;
+        background: var(--mondrian-stripe);
+        border-radius: 28px 28px 0 0;
     }
-    .history-count {
-      font-size: 0.75rem;
-      background: var(--accent);
-      color: white;
-      border-radius: 40px;
-      padding: 2px 10px;
-      font-weight: 700;
-      margin-left: 10px;
+ 
+    .drift-alert-icon {
+        font-size: 40px; margin-bottom: 18px; display: block;
+        color: var(--color-primary);
+        filter: drop-shadow(0 2px 8px rgba(10,36,114,0.25));
+        animation: driftPulse 2s ease-in-out infinite;
     }
-    .history-empty {
-      color: var(--ink-light);
-      font-style: italic;
-      text-align: center;
-      padding: 1.8rem 0;
+    @keyframes driftPulse {
+        0%,100% { transform: scale(1) rotate(0deg); }
+        50%      { transform: scale(1.08) rotate(-3deg); }
     }
-    .history-list {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      max-height: 420px;
-      overflow-y: auto;
+    .drift-alert-title {
+        font-size: 14px; font-weight: 800; color: var(--color-primary);
+        text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px;
+        font-family: var(--font-display);
     }
-    .history-item {
-      background: var(--bg-page);
-      border: 1px solid var(--border-light);
-      border-radius: 16px;
-      padding: 14px 18px;
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      transition: all var(--transition);
+    .drift-alert-msg {
+        font-size: 13px; line-height: 1.8; color: var(--muted);
+        margin-bottom: 24px; font-family: var(--font-body);
     }
-    .history-item:hover { border-color: var(--secondary); box-shadow: var(--shadow-default); }
-    .history-item-content { flex: 1; min-width: 0; }
-    .history-type {
-      font-size: 0.7rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--accent);
-      margin-bottom: 4px;
-      display: flex;
-      align-items: center;
-      gap: 5px;
+    .drift-alert-msg strong { color: var(--color-primary); font-weight: 700; }
+ 
+    /* Badge "mode PC actif" affiché dans l'alerte quand dossier lié */
+    .drift-mode-badge {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: rgba(10,36,114,0.08);
+        border: 1px solid rgba(10,36,114,0.15);
+        border-radius: 20px; padding: 5px 12px;
+        font-size: 10px; font-weight: 700; color: var(--color-primary);
+        font-family: var(--font-display); letter-spacing: 0.5px;
+        margin-bottom: 20px;
     }
-    .history-text {
-      font-family: 'Space Grotesk', serif;
-      font-size: 0.85rem;
-      line-height: 1.5;
-      overflow: hidden;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
+    .drift-mode-badge i { font-size: 10px; color: var(--color-secondary); }
+ 
+    .drift-alert-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .drift-btn-save {
+        background: var(--color-primary); color: white; border: none;
+        padding: 13px 28px; border-radius: 50px; font-weight: 800; font-size: 13px;
+        cursor: pointer; font-family: var(--font-display); transition: 0.2s; letter-spacing: 0.3px;
+        box-shadow: 0 4px 18px rgba(10,36,114,0.30);
+        display: flex; align-items: center; gap: 7px;
     }
-    .history-date { font-size: 0.7rem; color: var(--ink-light); margin-top: 5px; }
-    .history-actions { display: flex; gap: 6px; flex-shrink: 0; }
-    .btn-icon {
-      width: 32px; height: 32px;
-      border: none;
-      background: transparent;
-      border-radius: 12px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1rem;
-      transition: all var(--transition);
-      color: var(--primary);
+    .drift-btn-save:hover { opacity: 0.88; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(10,36,114,0.35); }
+    .drift-btn-later {
+        background: rgba(253,252,240,0.5); color: var(--muted);
+        border: 1.5px solid rgba(10,36,114,0.18);
+        padding: 13px 24px; border-radius: 50px; font-weight: 600; font-size: 13px;
+        cursor: pointer; font-family: var(--font-display); transition: 0.2s;
+        backdrop-filter: blur(4px);
     }
-    .btn-icon:hover { background: var(--secondary); color: white; }
-    .btn-icon.danger:hover { background: var(--accent); color: white; }
-    .toast {
-      position: fixed;
-      bottom: 2rem;
-      right: 2rem;
-      background: var(--primary);
-      color: white;
-      padding: 12px 24px;
-      border-radius: var(--radius-button);
-      font-size: 0.85rem;
-      font-weight: 600;
-      opacity: 0;
-      transform: translateY(12px);
-      transition: all 0.25s ease;
-      pointer-events: none;
-      z-index: 300;
-      box-shadow: var(--shadow-default);
+    .drift-btn-later:hover { border-color: var(--color-primary); color: var(--color-primary); }
+ 
+    /* ── Badge PC connecté dans le panneau StorageManager ── */
+    .sm-pc-badge {
+        display: inline-flex; align-items: center; gap: 5px;
+        background: rgba(0,100,102,0.12);
+        border: 1px solid rgba(0,100,102,0.25);
+        border-radius: 10px; padding: 3px 8px;
+        font-size: 9px; font-weight: 700; color: var(--color-secondary);
+        font-family: var(--font-display); letter-spacing: 0.4px;
+        margin-top: 4px; width: fit-content;
     }
-    .toast.show { opacity: 1; transform: translateY(0); }
-    #isbn-scan-overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 9999;
-      background: rgba(0,0,0,0.93);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 14px;
-      padding: 16px;
+ 
+    /* ── FUSION MODAL ── */
+    #fusionModal .box-content { max-width: 560px; color: var(--text-main); }
+    .fusion-textarea {
+        background: var(--bg-main); border: 1.5px solid var(--border);
+        padding: 12px; border-radius: 12px; color: var(--color-secondary); width: 100%;
+        margin-bottom: 10px; font-size: 12px; font-family: monospace;
+        resize: vertical; min-height: 120px; outline: none; transition: border-color 0.18s;
     }
-    #isbn-scan-video {
-      width: 100%;
-      max-width: 460px;
-      border-radius: 24px;
-      box-shadow: 0 12px 28px black;
+    .fusion-textarea:focus { border-color: var(--color-accent); }
+    .fusion-result-box {
+        background: var(--bg-main); border: 1.5px solid var(--color-highlight);
+        border-radius: 12px; padding: 12px; max-height: 200px;
+        overflow-y: auto; margin-bottom: 12px; display: none;
     }
-    #isbn-scan-hint {
-      color: #bbb;
-      font-size: 12px;
-      text-align: center;
+    .fusion-result-box pre { font-size: 11px; color: var(--color-primary); font-family: monospace; white-space: pre-wrap; word-break: break-all; }
+    .fusion-btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .fusion-btn-row .btn-3d { min-height: 44px; flex: 1; min-width: 100px; }
+ 
+    #fusionDropZone:hover { border-color: var(--color-accent); background: var(--red-bg); }
+    #fusionDropZone.drag-over { border-color: var(--color-accent); background: var(--red-bg); }
+ 
+    @media (max-width: 768px) {
+        .nav-shell { gap: 12px; margin-bottom: 16px; }
+        .nav-shell .spacer { display: none; }
+        .config-bar { width: 100%; }
+        .logo-text-stack { display: none; }
+        .logo-box { gap: 0; }
+        .mosaic-core { width: 42px; height: 42px; border-radius: 10px; }
+        .close-iframe { top: 10px; right: 10px; padding: 8px 16px; font-size: 11px; border-radius: 15px; display: flex; }
+        #multiviewContainer { grid-template-columns: 1fr 1fr; gap: 10px; }
     }
-    .scan-close {
-      background: transparent;
-      border: 1.5px solid rgba(255,255,255,0.4);
-      color: white;
-      padding: 8px 20px;
-      border-radius: 15px;
-      cursor: pointer;
+    @media (max-width: 480px) {
+        body { padding: 12px; }
+        .nav-shell { gap: 10px; margin-bottom: 14px; }
+        .grid { grid-template-columns: repeat(2, 1fr); }
+        .filters-group { grid-template-columns: repeat(3, 1fr); }
+        .fusion-btn-row .btn-3d { min-width: 80px; font-size: 11px; }
     }
-    @media (max-width: 680px) {
-      .form-grid { grid-template-columns: 1fr; gap: 16px; }
-      .type-btn { font-size: 0.8rem; padding: 6px 14px; }
-      .close-btn { top: 12px; right: 16px; width: 40px; height: 40px; }
-    }
-  </style>
+</style>
 </head>
 <body>
-<button class="close-btn" onclick="quitterApplication()"><i class="fas fa-times"></i></button>
-<div class="container">
-  <div>
-    <p class="section-title">Générateur de citations</p>
-    <p class="section-sub" style="margin-bottom:1rem;">Sélectionnez le type de source à citer</p>
-    <div class="type-grid" id="type-grid"></div>
-  </div>
-  <div class="card" id="form-card">
-    <div class="card-title"><span class="card-title-icon"></span><span id="form-card-title">Choisissez un type de source</span></div>
-    <div id="dynamic-form"></div>
-  </div>
-  <div class="card">
-    <div class="card-title"><span class="card-title-icon"></span>Résultat</div>
-    <div class="result-box" id="result-box"><span class="result-placeholder">La citation générée apparaîtra ici…</span></div>
-    <div class="result-actions" id="result-actions" style="display:none;">
-      <button class="btn btn-copy" onclick="copyCitation()"><i class="fas fa-copy"></i> Copier</button>
-      <button class="btn btn-save" onclick="saveCitation()"><i class="fas fa-save"></i> Sauvegarder</button>
-      <span class="copy-confirm" id="copy-confirm"><i class="fas fa-check-circle"></i> Copié !</span>
+
+<div id="mvToast"></div>
+
+<!-- ══ ALERTE BACKUP DRIFT ══ -->
+<div id="driftAlert">
+    <div class="drift-alert-box">
+        <span class="drift-alert-icon"><i class="fa-solid fa-triangle-exclamation"></i></span>
+        <div class="drift-alert-title">Sauvegarde recommandée</div>
+        <div class="drift-alert-msg" id="driftAlertMsg">
+            Tu as effectué <strong id="driftCount">plusieurs</strong> modifications depuis ton dernier backup.<br>Pense à sauvegarder pour ne rien perdre.
+        </div>
+        <div class="drift-alert-actions">
+            <button class="drift-btn-save" onclick="driftSaveNow()"><i class="fa-solid fa-floppy-disk" style="margin-right:6px"></i>Sauvegarder</button>
+            <button class="drift-btn-later" onclick="driftLater()">Plus tard</button>
+        </div>
     </div>
-  </div>
-  <div class="card">
-    <div class="history-header">
-      <div class="card-title" style="margin-bottom:0;padding-bottom:0;border:none;">
-        <span class="card-title-icon"></span>Historique
-        <span class="history-count" id="history-count">0</span>
-      </div>
-      <button class="btn btn-secondary" style="font-size:0.8rem;padding:6px 18px;" onclick="clearHistory()"><i class="fas fa-trash-alt"></i> Tout effacer</button>
-    </div>
-    <div id="history-list" class="history-list"><p class="history-empty">Aucune citation sauvegardée.</p></div>
-  </div>
 </div>
-<div class="toast" id="toast"></div>
+
+<div id="iframe_ytlive_lines" class="iframe-container">
+    <button class="close-iframe" onclick="closeIframe('iframe_ytlive_lines')">✕ Fermer</button>
+    <iframe data-src="pages/Ytlive-Lines.html" allow="camera; microphone"></iframe>
+</div>
+<div id="iframe_calculette" class="iframe-container">
+    <button class="close-iframe" onclick="closeIframe('iframe_calculette')">✕ Fermer</button>
+    <iframe src="https://es-d-0544653420260421-019da75d-1b6e-7819-b877-2b48cfb03541.codepen.dev/"></iframe>
+</div>
+<div id="iframe_minuteur" class="iframe-container">
+    <button class="close-iframe" onclick="closeIframe('iframe_minuteur')">✕ Fermer</button>
+    <iframe src="https://es-d-0544653420260421-019da784-8528-73d9-b9de-3f2eb3988b3e.codepen.dev/"></iframe>
+</div>
+<div id="iframe_sign_pdf" class="iframe-container">
+    <button class="close-iframe" onclick="closeIframe('iframe_sign_pdf')">✕ Fermer</button>
+    <iframe src="pages/sign-pdf.html" allow="camera; microphone"></iframe>
+</div>
+<div id="iframe_photo_recu" class="iframe-container">
+    <iframe data-src="pages/photo-recu.html" allow="camera; microphone"></iframe>
+</div>
+<div id="iframe_cite_lines" class="iframe-container">
+    <button class="close-iframe" onclick="closeIframe('iframe_cite_lines')">✕ Fermer</button>
+    <iframe data-src="pages/Cite-Lines.html"></iframe>
+</div>
+<div id="iframe_ocr_lines" class="iframe-container">
+    <button class="close-iframe" onclick="closeIframe('iframe_ocr_lines')">✕ Fermer</button>
+    <iframe data-src="pages/OCR-lines.html" allow="camera; microphone"></iframe>
+</div>
+<div id="iframe_course_lines" class="iframe-container">
+    <button class="close-iframe" onclick="closeIframe('iframe_course_lines')">✕ Fermer</button>
+    <iframe src="pages/Course-Lines.html" allow="camera; microphone"></iframe>
+</div>
+<div id="iframe_local_lines" class="iframe-container">
+    <button class="close-iframe" onclick="closeIframe('iframe_local_lines')">FERMER X</button>
+    <iframe data-src="pages/Local-Lines.html" allow="camera; microphone"></iframe>
+</div>
+
+<div class="nav-shell">
+    <div class="logo-box" onclick="refreshLogo()" title="Rafraîchir le logo">
+        <div class="mosaic-core">
+            <svg id="mosaic-svg" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+        </div>
+        <div class="logo-text-stack">
+            <div class="logo-word-outils" id="word-outils"></div>
+            <div class="logo-online">ONLINE</div>
+        </div>
+    </div>
+    <div class="config-bar">
+        <button id="btnBureau"   class="config-btn active" onclick="setMode('bureau')">Bureau</button>
+        <button id="btnCreative" class="config-btn"        onclick="setMode('creative')">Créative</button>
+        <button id="btnPerso"    class="config-btn"        onclick="setMode('perso')"><i class="fa-solid fa-star" style="font-size:11px;margin-right:5px"></i>Perso</button>
+    </div>
+    <div class="spacer"></div>
+</div>
+
+<div class="filters-container">
+    <button id="favFilterMain" class="icon-btn" onclick="toggleFavFilter()"><i class="fa-regular fa-star"></i></button>
+    <div class="filters-group" id="filtersGroup"></div>
+    <button id="btnMultiview" onclick="toggleMultiview()" title="Multiview" aria-label="Multiview">
+    <svg viewBox="0 0 18 18" width="20" height="20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="display:block;flex-shrink:0">
+        <rect x="1" y="1" width="7" height="7" rx="1.5"/>
+        <rect x="10" y="1" width="7" height="7" rx="1.5"/>
+        <rect x="1" y="10" width="7" height="7" rx="1.5"/>
+        <rect x="10" y="10" width="7" height="7" rx="1.5"/>
+    </svg>
+</button>
+</div>
+
+<div class="grid" id="mainGrid">
+    <button class="btn-3d btn-purple" data-id="sign-pdf"       data-main="bureau"   data-tags="admin"     onclick="openIframe('iframe_sign_pdf', this)">
+        <div class="btn-star">★</div><div class="badge-lines"><i class="fa-solid fa-file-signature"></i></div><div>Sign-Lines</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-purple" data-id="organise-pdf"   data-main="bureau"   data-tags="admin"     data-url="https://www.ilovepdf.com/fr/organiser-pdf" onclick="handleTool(this)">
+        <div class="btn-star">★</div><div class="favicon-badge"><i class="fa-solid fa-layer-group"></i></div><div>Organiser PDF</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-purple" data-id="pdf-jpg"        data-main="bureau"   data-tags="admin"     data-url="https://www.ilovepdf.com/pdf_to_jpg" onclick="handleTool(this)">
+        <div class="btn-star">★</div><div class="favicon-badge"><i class="fa-solid fa-image"></i></div><div>PDF → JPG</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-purple" data-id="gmail-admin"    data-main="bureau"   data-tags="admin"     data-url="https://drive.google.com/drive/u/0/" onclick="handleTool(this)">
+        <div class="btn-star">★</div><div class="favicon-badge"><i class="fa-brands fa-google-drive"></i></div><div>Gmail</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-green" data-id="photo-recu" data-main="bureau" data-tags="compta" onclick="openIframe('iframe_photo_recu', this)">
+        <div class="btn-star">★</div>
+        <div class="badge-lines"><i class="fa-solid fa-camera-retro"></i></div>
+        <div>Reçu-Lines</div>
+        <div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-purple" data-id="course-lines" data-main="bureau" data-tags="admin" onclick="openIframe('iframe_course_lines', this)">
+        <div class="btn-star">★</div>
+        <div class="badge-lines"><i class="fa-solid fa-cart-shopping"></i></div>
+        <div>Course-Lines</div>
+        <div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-blue" data-id="cite-lines" data-main="bureau" data-tags="recherche" onclick="openIframe('iframe_cite_lines', this)">
+        <div class="btn-star">★</div>
+        <div class="badge-lines"><i class="fa-solid fa-book-open"></i></div>
+        <div>Cite-Lines</div>
+        <div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-red" data-id="ytlive-lines" data-main="creative" data-tags="radio" onclick="openIframe('iframe_ytlive_lines', this)">
+        <div class="btn-star">★</div>
+        <div class="badge-lines"><i class="fa-brands fa-youtube"></i></div>
+        <div>Ytlive-Lines</div>
+        <div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-blue" data-id="local-lines" data-main="perso" data-tags="local" onclick="openIframe('iframe_local_lines', this)">
+        <div class="btn-star">★</div>
+        <div class="badge-lines"><i class="fa-solid fa-house-signal"></i></div>
+        <div>Local-Lines</div>
+        <div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-green"  data-id="calculette"     data-main="bureau"   data-tags="compta"    onclick="openIframe('iframe_calculette', this)">
+        <div class="btn-star">★</div><div class="badge-lines"><i class="fa-solid fa-calculator"></i></div><div>Calculette</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-green"  data-id="drive-compta"   data-main="bureau"   data-tags="compta"    data-url="https://drive.google.com/drive/u/0/" onclick="handleTool(this)">
+        <div class="btn-star">★</div><div class="favicon-badge"><i class="fa-solid fa-folder-open"></i></div><div>Drive</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-blue"   data-id="archive-url"    data-main="bureau"   data-tags="recherche" data-url="https://web.archive.org/" onclick="handleTool(this)">
+        <div class="btn-star">★</div><div class="favicon-badge"><i class="fa-solid fa-landmark"></i></div><div>Archive URL</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-blue"   data-id="ign"            data-main="bureau"   data-tags="recherche" data-url="https://remonterletemps.ign.fr/telecharger/" onclick="handleTool(this)">
+        <div class="btn-star">★</div><div class="favicon-badge"><i class="fa-solid fa-map"></i></div><div>IGN</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-blue"   data-id="google-street"  data-main="bureau"   data-tags="recherche" data-url="https://www.google.com/maps" onclick="handleTool(this)">
+        <div class="btn-star">★</div><div class="favicon-badge"><i class="fa-solid fa-location-dot"></i></div><div>Google Street</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-blue"   data-id="recherche-actu" data-main="bureau"   data-tags="recherche" data-url="https://news.google.com/" onclick="handleTool(this)">
+        <div class="btn-star">★</div><div class="favicon-badge"><i class="fa-solid fa-newspaper"></i></div><div>Recherche actu</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-blue"   data-id="minuteur"       data-main="bureau"   data-tags="recherche" onclick="openIframe('iframe_minuteur', this)">
+        <div class="btn-star">★</div><div class="badge-lines"><i class="fa-solid fa-stopwatch"></i></div><div>Minuteur</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-blue"   data-id="ocr-lines"      data-main="bureau"   data-tags="recherche" onclick="openIframe('iframe_ocr_lines', this)">
+        <div class="btn-star">★</div><div class="badge-lines"><i class="fa-solid fa-magnifying-glass-plus"></i></div><div>OCR-Lines</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-orange" data-id="yt-mp4"         data-main="creative" data-tags="video"     data-url="https://fr.ssyoutube.com/" onclick="handleTool(this)">
+        <div class="btn-star">★</div><div class="favicon-badge"><i class="fa-solid fa-circle-down"></i></div><div>Youtube MP4</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-orange" data-id="transfer"       data-main="creative" data-tags="video"     data-url="https://www.transfernow.net/fr" onclick="handleTool(this)">
+        <div class="btn-star">★</div><div class="favicon-badge"><i class="fa-solid fa-paper-plane"></i></div><div>Transfer Fichier</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-orange" data-id="transcribe-v"   data-main="creative" data-tags="video"     data-url="https://turboscribe.ai/dashboard" onclick="handleTool(this)">
+        <div class="btn-star">★</div><div class="favicon-badge"><i class="fa-solid fa-microphone-lines"></i></div><div>Transcription vidéo</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-orange" data-id="transcribe-t"   data-main="creative" data-tags="texte"     data-url="https://turboscribe.ai/dashboard" onclick="handleTool(this)">
+        <div class="btn-star">★</div><div class="favicon-badge"><i class="fa-solid fa-file-lines"></i></div><div>Transcription texte</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-red"    data-id="yt-radio"       data-main="creative" data-tags="radio"     data-url="https://www.youtube.com/" onclick="handleTool(this)">
+        <div class="btn-star">★</div><div class="favicon-badge"><i class="fa-brands fa-youtube"></i></div><div>Youtube</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-red"    data-id="gmail-radio"    data-main="creative" data-tags="radio"     data-url="https://mail.google.com/" onclick="handleTool(this)">
+        <div class="btn-star">★</div><div class="favicon-badge"><i class="fa-solid fa-envelope"></i></div><div>Gmail</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-red"    data-id="yt-mp4-radio"   data-main="creative" data-tags="radio"     data-url="https://fr.ssyoutube.com/" onclick="handleTool(this)">
+        <div class="btn-star">★</div><div class="favicon-badge"><i class="fa-solid fa-music"></i></div><div>Youtube MP4</div><div class="count-badge">0</div>
+    </button>
+    <button id="btnAddPerso" class="btn-3d hidden" style="border:2px dashed rgba(10,36,114,0.15);background:none" onclick="openTool('addModal')">
+        <div style="font-size:30px;color:var(--muted)"><i class="fa-solid fa-plus"></i></div><div style="color:var(--muted)">Ajouter</div>
+    </button>
+</div>
+
+<!-- MODAL AJOUT PERSO -->
+<div id="addModal" class="modal">
+    <div class="box-content">
+        <h3 style="margin-bottom:15px">Nouveau Lien Perso</h3>
+        <input type="text" id="newTitle" placeholder="Nom"                  class="cam-input">
+        <input type="text" id="newUrl"   placeholder="URL (ex: google.com)" class="cam-input">
+        <input type="text" id="newIcon"  placeholder="Icône (emoji)"        class="cam-input" value="🔗">
+        <select id="newColor" class="cam-input">
+            <option value="btn-purple">Violet</option>
+            <option value="btn-blue">Bleu</option>
+            <option value="btn-green">Vert</option>
+            <option value="btn-orange">Orange</option>
+            <option value="btn-red">Rouge</option>
+            <option value="btn-google">Google</option>
+        </select>
+        <button class="btn-3d btn-blue" style="min-height:50px;width:100%" onclick="addNewTool()">Enregistrer</button>
+        <button onclick="closeTool('addModal')" style="margin-top:15px;background:none;border:none;color:#777;width:100%;cursor:pointer">Annuler</button>
+    </div>
+</div>
+
+<!-- ══ NOUVEAU : MODAL FUSION ══ -->
+<!-- input file en dehors du modal pour éviter les conflits de z-index/pointer -->
+<input type="file" id="fusionFileInput" accept=".json" style="display:none;" onchange="onFusionFileSelected(this)">
+
+<div id="fusionModal" class="modal">
+    <div class="box-content" style="max-width:480px;">
+        <h3 style="margin-bottom:8px"><i class="fa-solid fa-code-merge" style="margin-right:8px;color:var(--primary)"></i>Fusionner un backup JSON</h3>
+        <p style="font-size:11px;opacity:0.55;margin-bottom:18px;line-height:1.6;">
+            Chargez un fichier <code>backup-app.json</code>.<br>
+            Ses données seront <strong>fusionnées</strong> avec votre localStorage actuel<br>
+            (nombres additionnés · tableaux combinés · autres valeurs remplacées).
+        </p>
+
+        <!-- Bouton de sélection de fichier — onclick direct sur l'input -->
+        <div id="fusionDropZone"
+             onclick="document.getElementById('fusionFileInput').click()"
+             style="display:flex;flex-direction:column;align-items:center;justify-content:center;
+                    gap:10px;padding:28px 16px;border:2px dashed rgba(10,36,114,0.20);
+                    border-radius:16px;cursor:pointer;transition:0.2s;margin-bottom:14px;
+                    background:rgba(10,36,114,0.02);">
+            <span style="font-size:32px;pointer-events:none"><i class="fa-solid fa-folder-open" style="color:var(--gold)"></i></span>
+            <span id="fusionFileName"
+                  style="font-size:12px;font-weight:700;color:var(--muted);pointer-events:none;text-align:center;">
+                Appuyez ici pour choisir un fichier JSON
+            </span>
+            <span style="font-size:10px;color:var(--color-secondary);opacity:0.7;pointer-events:none">(ou glissez-déposez)</span>
+        </div>
+
+        <!-- Résultat preview -->
+        <div id="fusionResultBox" class="fusion-result-box">
+            <pre id="fusionResultPre"></pre>
+        </div>
+        <div class="fusion-btn-row">
+            <button class="btn-3d btn-red" id="btnSaveFusion" style="display:none;" onclick="saveFusion()">
+                <i class="fa-solid fa-floppy-disk"></i> Appliquer la fusion
+            </button>
+        </div>
+        <button onclick="closeFusionModal()"
+                style="margin-top:14px;background:none;border:none;color:#777;width:100%;cursor:pointer;font-family:inherit;">
+            Annuler
+        </button>
+    </div>
+</div>
 
 <script>
-// ========== MODÈLES DE FORMULAIRES (inchangés) ==========
-const TYPES = {
-  ouvrage: { label:'Ouvrage', icon:'fas fa-book', fields:[
-    { id:'isbn', label:'ISBN', required:false, full:true, hint:'ex: 9782070368228 — scanner auto' },
-    { id:'prenoms', label:'Prénom(s)', required:true },
-    { id:'noms', label:'Nom(s)', required:true },
-    { id:'titre', label:'Titre', required:true, full:true },
-    { id:'ville', label:'Ville d\'édition', required:true },
-    { id:'editeur', label:'Éditeur', required:true },
-    { id:'collection', label:'Collection', required:false },
-    { id:'annee', label:'Année', required:true, type:'number' },
-    { id:'page', label:'Page(s)', required:false }
-  ] },
-  periodique:{ label:'Périodique', icon:'fas fa-newspaper', fields:[
-    { id:'prenoms', label:'Prénom(s)', required:true }, { id:'noms', label:'Nom(s)', required:true },
-    { id:'titre', label:'Titre de l\'article', required:true, full:true }, { id:'ville', label:'Ville d\'édition', required:true },
-    { id:'journal', label:'Journal', required:true }, { id:'date', label:'Date', required:true, type:'date' },
-    { id:'page', label:'Page(s)', required:false }, { id:'url', label:'URL', required:false, full:true, type:'url' }
-  ] },
-  musique:{ label:'Musique', icon:'fas fa-music', fields:[
-    { id:'prenoms', label:'Prénom(s)', required:true }, { id:'noms', label:'Nom(s)', required:true },
-    { id:'titre', label:'Titre', required:true }, { id:'min', label:'Durée (min)', required:true, type:'number' },
-    { id:'sec', label:'Durée (sec)', required:true, type:'number' }, { id:'album', label:'Album', required:true },
-    { id:'ville', label:'Ville', required:true }, { id:'producteur', label:'Producteur', required:true },
-    { id:'annee', label:'Année', required:true, type:'number' }, { id:'url', label:'URL', required:false, full:true }
-  ] },
-  video:{ label:'Vidéo', icon:'fas fa-video', fields:[
-    { id:'prenoms', label:'Prénom(s)', required:true }, { id:'noms', label:'Nom(s)', required:true },
-    { id:'titre', label:'Titre', required:true, full:true }, { id:'ville', label:'Ville', required:true },
-    { id:'editeur', label:'Éditeur', required:true }, { id:'collection', label:'Collection', required:false },
-    { id:'annee', label:'Année', required:true, type:'number' }, { id:'min', label:'Durée (min)', required:true, type:'number' },
-    { id:'sec', label:'Durée (sec)', required:true, type:'number' }, { id:'url', label:'URL', required:false }
-  ] },
-  revue:{ label:'Revue', icon:'fas fa-graduation-cap', fields:[
-    { id:'prenoms', label:'Prénom(s) auteur', required:true }, { id:'noms', label:'Nom(s) auteur', required:true },
-    { id:'titre_article', label:'Titre article', required:true, full:true }, { id:'prenoms_dir', label:'Prénom(s) dir.', required:false },
-    { id:'noms_dir', label:'Nom(s) dir.', required:false }, { id:'titre_numero', label:'Titre du numéro', required:true, full:true },
-    { id:'ville', label:'Ville', required:true }, { id:'titre_revue', label:'Titre revue', required:true },
-    { id:'numero', label:'Numéro', required:false }, { id:'annee', label:'Année', required:true, type:'number' },
-    { id:'page', label:'Page(s)', required:false }, { id:'url', label:'URL', required:false }
-  ] },
-  loi:{ label:'Loi', icon:'fas fa-gavel', fields:[
-    { id:'type_acte', label:'Type d\'acte', required:true, type:'select', options:['Loi','Ordonnance','Décret','Arrêté'] },
-    { id:'numero_loi', label:'Numéro', required:true }, { id:'date_loi', label:'Date', required:true, type:'date' },
-    { id:'article', label:'Article', required:false }, { id:'recueil', label:'Recueil', required:false },
-    { id:'numero_article', label:'Numéro article', required:false }, { id:'date_vigueur', label:'Date vigueur', required:false, type:'date' },
-    { id:'url', label:'URL', required:false }
-  ] },
-  siteweb:{ label:'Site web', icon:'fas fa-globe', fields:[
-    { id:'auteur', label:'Auteur(s)', required:false, full:true }, { id:'titre', label:'Titre du site', required:true, full:true },
-    { id:'plateforme', label:'Plateforme', required:false }, { id:'url', label:'URL', required:true, full:true }
-  ] },
-  dictionnaire:{ label:'Dictionnaire', icon:'fas fa-book-open', fields:[
-    { id:'prenoms', label:'Prénom(s)', required:true }, { id:'noms', label:'Nom(s)', required:true },
-    { id:'titre', label:'Titre', required:true, full:true }, { id:'volume', label:'Volume', required:false },
-    { id:'ville', label:'Ville', required:true }, { id:'editeur', label:'Éditeur', required:true },
-    { id:'annee', label:'Année', required:true, type:'number' }, { id:'page', label:'Page(s)', required:false },
-    { id:'url', label:'URL', required:false }
-  ] }
+/* ══════════════════════════════════════════════
+   ÉTAT GLOBAL
+══════════════════════════════════════════════ */
+let mode        = localStorage.getItem('mode') || 'bureau';
+let favs        = JSON.parse(localStorage.getItem('favs')        || '[]');
+let clics       = JSON.parse(localStorage.getItem('clics')       || '{}');
+let customTools = JSON.parse(localStorage.getItem('customTools') || '[]');
+let favOnly     = localStorage.getItem('favOnly') === 'true';
+ 
+let activeTag             = null;
+let multiviewActive       = false;
+let multiviewSelectedTags = [];
+ 
+const ALL_TAGS = ['admin','compta','recherche','video','texte','radio'];
+const MODE_TAGS = {
+    bureau:   ['admin','compta','recherche'],
+    creative: ['video','texte','radio'],
+    perso:    []
 };
-
-function v(id){ let el=document.getElementById('f_'+id); return el?el.value.trim():''; }
-function formatDateFR(d){ if(!d) return ''; const m=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre']; let [y,mn,dd]=d.split('-'); return `${parseInt(dd)} ${m[parseInt(mn)-1]} ${y}`; }
-function todayFR(){ return formatDateFR(new Date().toISOString().split('T')[0]); }
-function formatDuration(min,sec){ return `${String(parseInt(min)||0).padStart(2,'0')} min. ${String(parseInt(sec)||0).padStart(2,'0')} sec.`; }
-
-const GENERATORS = {
-  ouvrage:d=>`${d.prenoms} ${d.noms}, <em>${d.titre}</em>, ${d.ville}, ${d.editeur}${d.collection?`, coll. « ${d.collection} `:''}, ${d.annee}${d.page?`, p. ${d.page}`:''}.`,
-  periodique:d=>`${d.prenoms} ${d.noms}, « ${d.titre} », ${d.ville}, <em>${d.journal}</em>, ${formatDateFR(d.date)}${d.page?`, p. ${d.page}`:''}${d.url?`, <a href="${d.url}" target="_blank">${d.url}</a> (consulté le : ${todayFR()})`:''}.`,
-  musique:d=>`${d.prenoms} ${d.noms}, « ${d.titre} », ${formatDuration(d.min,d.sec)}, dans l'album <em>${d.album}</em>, ${d.ville}, ${d.producteur}, ${d.annee}${d.url?`, <a href="${d.url}" target="_blank">${d.url}</a> (consulté le : ${todayFR()})`:''}.`,
-  video:d=>`${d.prenoms} ${d.noms}, <em>${d.titre}</em>, ${d.ville}, ${d.editeur}${d.collection?`, coll. « ${d.collection} `:''}, ${d.annee}, ${formatDuration(d.min,d.sec)}${d.url?`, <a href="${d.url}" target="_blank">${d.url}</a> (consulté le : ${todayFR()})`:''}.`,
-  revue:d=>`${d.prenoms} ${d.noms}, « ${d.titre_article} »${(d.prenoms_dir&&d.noms_dir)?`, dans ${d.prenoms_dir} ${d.noms_dir} (dir)` : ''}, <em>${d.titre_numero}</em>, ${d.ville}, <em>${d.titre_revue}</em>${d.numero?`, n°${d.numero}`:''}, ${d.annee}${d.page?`, p. ${d.page}`:''}${d.url?`, <a href="${d.url}" target="_blank">${d.url}</a> (consulté le : ${todayFR()})`:''}.`,
-  loi:d=>`${d.type_acte} n°${d.numero_loi} du ${formatDateFR(d.date_loi)}${d.article?` - art. ${d.article}`:''}${d.recueil?`, ${d.recueil} [en ligne]`:''}${d.numero_article&&d.date_vigueur?`, Article ${d.numero_article} version en vigueur depuis le ${formatDateFR(d.date_vigueur)}`:''}${d.url?`, <a href="${d.url}" target="_blank">${d.url}</a> (consulté le : ${todayFR()})`:''}.`,
-  siteweb:d=>`${d.auteur?d.auteur+', ':''}« ${d.titre} »${d.plateforme?`, ${d.plateforme}`:''}, <a href="${d.url}" target="_blank">${d.url}</a> (consulté le : ${todayFR()}).`,
-  dictionnaire:d=>`${d.prenoms} ${d.noms} (dir), <em>${d.titre}</em>${d.volume?`, ${d.volume}`:''}, ${d.ville}, ${d.editeur}, ${d.annee}${d.page?`, p. ${d.page}`:''}${d.url?`, <a href="${d.url}" target="_blank">${d.url}</a> (consulté le : ${todayFR()})`:''}.`
+const TAG_LABELS = {
+    admin:'Admin', compta:'Compta', recherche:'Recherche',
+    video:'Vidéo', texte:'Texte', radio:'Radio'
 };
-
-let currentType=null, currentCitation='';
-let history=JSON.parse(localStorage.getItem('citatio_history')||'[]');
-
-function renderTypeButtons(){
-  const grid=document.getElementById('type-grid'); grid.innerHTML='';
-  const scanBtn=document.createElement('button');
-  scanBtn.className='type-btn type-btn--scan';
-  scanBtn.innerHTML='<i class="fas fa-camera"></i> Capturer ISBN';
-  scanBtn.onclick=()=>{ if(typeof startScanner==='function') startScanner(); };
-  grid.appendChild(scanBtn);
-  Object.entries(TYPES).forEach(([key,type])=>{
-    const btn=document.createElement('button');
-    btn.className='type-btn';
-    btn.dataset.type=key;
-    btn.innerHTML=`<i class="${type.icon}"></i> ${type.label}`;
-    btn.onclick=()=>selectType(key);
-    grid.appendChild(btn);
-  });
-}
-function selectType(key){
-  currentType=key;
-  document.querySelectorAll('.type-btn').forEach(b=>b.classList.toggle('active',b.dataset.type===key));
-  document.getElementById('form-card-title').innerHTML=`<i class="${TYPES[key].icon}"></i> ${TYPES[key].label}`;
-  renderForm(key);
-  setResult('');
-}
-function renderForm(key){
-  const fields=TYPES[key].fields;
-  const container=document.getElementById('dynamic-form');
-  container.innerHTML='';
-  const gridDiv=document.createElement('div'); gridDiv.className='form-grid';
-  fields.forEach(f=>{
-    const group=document.createElement('div'); group.className=`form-group${f.full?' full':''}`;
-    const label=document.createElement('label'); label.htmlFor='f_'+f.id;
-    label.innerHTML=f.label+(f.required?'<span class="req">*</span>':'<span class="opt">(optionnel)</span>');
-    group.appendChild(label);
-    let input;
-    if(f.type==='select'){ input=document.createElement('select'); f.options.forEach(opt=>{let o=document.createElement('option'); o.value=opt; o.textContent=opt; input.appendChild(o);});}
-    else if(f.type==='date'){ input=document.createElement('input'); input.type='date';}
-    else{ input=document.createElement('input'); input.type=f.type||'text'; if(f.hint) input.placeholder=f.hint;}
-    input.id='f_'+f.id; input.required=!!f.required;
-    group.appendChild(input);
-    if(f.hint && f.type!=='select' && !input.placeholder){
-      let hintSpan=document.createElement('span'); hintSpan.className='field-hint'; hintSpan.textContent=f.hint; group.appendChild(hintSpan);
-    }
-    let errSpan=document.createElement('span'); errSpan.className='error-msg'; errSpan.id='err_'+f.id; errSpan.textContent='Champ requis.'; group.appendChild(errSpan);
-    gridDiv.appendChild(group);
-  });
-  container.appendChild(gridDiv);
-  let actions=document.createElement('div'); actions.className='form-actions';
-  actions.innerHTML=`<button class="btn btn-primary" onclick="generateCitation()"><i class="fas fa-quote-right"></i> Générer</button><button class="btn btn-secondary" onclick="resetForm()"><i class="fas fa-undo-alt"></i> Réinitialiser</button>`;
-  container.appendChild(actions);
-  setTimeout(()=>setupISBNField(), 0);
-}
-function generateCitation(){
-  if(!currentType) return;
-  let valid=true;
-  TYPES[currentType].fields.forEach(f=>{
-    let el=document.getElementById('f_'+f.id), err=document.getElementById('err_'+f.id);
-    if(f.required && el && !el.value.trim()){ el.classList.add('error'); err.classList.add('visible'); valid=false;}
-    else if(el){ el.classList.remove('error'); err.classList.remove('visible');}
-  });
-  if(!valid){ showToast('⚠ Remplissez les champs obligatoires.'); return; }
-  let data={}; TYPES[currentType].fields.forEach(f=>{ data[f.id]=v(f.id); });
-  let html=GENERATORS[currentType](data);
-  currentCitation=html; setResult(html);
-}
-function setResult(html){
-  let box=document.getElementById('result-box'), actions=document.getElementById('result-actions');
-  if(!html){ box.innerHTML='<span class="result-placeholder">La citation générée apparaîtra ici…</span>'; box.classList.remove('has-content'); actions.style.display='none'; currentCitation='';}
-  else{ box.innerHTML=html; box.classList.add('has-content'); actions.style.display='flex';}
-}
-function copyCitation(){ if(!currentCitation) return; let d=document.createElement('div'); d.innerHTML=currentCitation; navigator.clipboard.writeText(d.textContent||d.innerText).then(()=>{ let c=document.getElementById('copy-confirm'); c.classList.add('show'); setTimeout(()=>c.classList.remove('show'),2000);});}
-function saveCitation(){ if(!currentCitation) return; let d=document.createElement('div'); d.innerHTML=currentCitation; let item={ id:Date.now(), type:currentType, typeLabel:TYPES[currentType].label, icon:TYPES[currentType].icon, html:currentCitation, text:d.textContent||d.innerText, date:new Date().toLocaleString('fr-FR') }; history.unshift(item); if(history.length>50) history=history.slice(0,50); localStorage.setItem('citatio_history',JSON.stringify(history)); renderHistory(); showToast('✓ Sauvegardée');}
-function renderHistory(){ let list=document.getElementById('history-list'), cnt=document.getElementById('history-count'); cnt.textContent=history.length; if(!history.length){ list.innerHTML='<p class="history-empty">Aucune citation sauvegardée.</p>'; return;} list.innerHTML=''; history.forEach(item=>{ let div=document.createElement('div'); div.className='history-item'; div.innerHTML=`<div class="history-item-content"><div class="history-type"><i class="${item.icon}"></i> ${item.typeLabel}</div><div class="history-text">${item.html}</div><div class="history-date"><i class="far fa-calendar-alt"></i> ${item.date}</div></div><div class="history-actions"><button class="btn-icon" onclick="copyHistoryItem(${item.id})"><i class="fas fa-copy"></i></button><button class="btn-icon danger" onclick="deleteHistoryItem(${item.id})"><i class="fas fa-trash-alt"></i></button></div>`; list.appendChild(div);});}
-function copyHistoryItem(id){ let item=history.find(h=>h.id===id); if(item) navigator.clipboard.writeText(item.text).then(()=>showToast('✓ Copié !'));}
-function deleteHistoryItem(id){ history=history.filter(h=>h.id!==id); localStorage.setItem('citatio_history',JSON.stringify(history)); renderHistory();}
-function clearHistory(){ if(history.length){ history=[]; localStorage.setItem('citatio_history','[]'); renderHistory(); showToast('Historique effacé.');}}
-function resetForm(){ if(!currentType) return; TYPES[currentType].fields.forEach(f=>{ let el=document.getElementById('f_'+f.id); if(el) el.value=''; let err=document.getElementById('err_'+f.id); if(err) err.classList.remove('visible'); }); setResult('');}
-function showToast(msg){ let t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500);}
-function quitterApplication(){ window.top.location.href='https://outils-online.github.io/Acceuil/';}
-
-// ================= MODULE ISBN COMPLET (réparé) =================
-function setField(id, value) {
-  let el = document.getElementById('f_'+id);
-  if(el && value && !el.value.trim()) el.value = value;
-}
-function extractYear(s) { return (s||'').match(/\d{4}/)?.[0] || ''; }
-function splitAuthor(name) {
-  if(!name) return {prenom:'', nom:''};
-  if(name.includes(',')){ let [nom, prenom]=name.split(',').map(s=>s.trim()); return {prenom:prenom||'', nom}; }
-  let parts=name.trim().split(/\s+/);
-  if(parts.length===1) return {prenom:'', nom:parts[0]};
-  return {prenom:parts.slice(0,-1).join(' '), nom:parts[parts.length-1]};
-}
-
-// Récupération BnF via SRU (identique à Cite-Lines.html)
-async function fillFromBNF(xmlText) {
-  const parser = new DOMParser();
-  const xml = parser.parseFromString(xmlText, "text/xml");
-  const get = (tag, code) => {
-    const field = xml.querySelector(`datafield[tag="${tag}"], [tag="${tag}"]`);
-    if (!field) return '';
-    const subfield = field.querySelector(`subfield[code="${code}"], [code="${code}"]`);
-    return subfield ? subfield.textContent.trim() : '';
-  };
-  const titre = get('200', 'a');
-  const auteur = get('700', 'a');
-  const prenom = get('700', 'b');
-  const editeur = get('210', 'c');
-  const annee = get('210', 'd');
-  const ville = get('210', 'a');
-  if (titre) setField('titre', titre);
-  if (editeur) setField('editeur', editeur);
-  if (ville) setField('ville', ville.replace(/[\[\]]/g, ''));
-  if (annee) setField('annee', extractYear(annee));
-  if (auteur || prenom) { setField('prenoms', prenom); setField('noms', auteur); }
-  return !!(titre || auteur || editeur);
-}
-
-// Cascade : BnF → OpenLibrary → Google Books
-async function fetchISBN(isbn) {
-  let clean = isbn.replace(/[^0-9Xx]/g, '').toUpperCase();
-  if (clean.length !== 10 && clean.length !== 13) return false;
-  let fb = document.getElementById('isbn-feedback');
-  if (fb) fb.textContent = '⏳ Recherche BnF...';
-  try {
-    const bnfUrl = `https://catalogue.bnf.fr/api/SRU?operation=searchRetrieve&version=1.2&query=bib.isbn%20any%20"${clean}"&recordSchema=unimarcxchange`;
-    const bnfRes = await fetch(bnfUrl);
-    const bnfText = await bnfRes.text();
-    const bnfOk = await fillFromBNF(bnfText);
-    if (bnfOk) {
-      if (fb) fb.textContent = '✓ Données BnF';
-      showToast('✓ ISBN trouvé (BnF)');
-      return true;
-    }
-  } catch(e) { console.warn('BnF error', e); }
-  if (fb) fb.textContent = '⏳ Recherche OpenLibrary...';
-  try {
-    let ol = await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${clean}&format=json&jscmd=data`).then(r=>r.json());
-    if (ol[`ISBN:${clean}`]) {
-      let book = ol[`ISBN:${clean}`];
-      setField('titre', book.title || '');
-      setField('editeur', book.publishers?.[0]?.name || '');
-      setField('ville', book.publish_places?.[0]?.name || '');
-      setField('annee', extractYear(book.publish_date || ''));
-      setField('collection', book.series?.[0]?.name || '');
-      let authorName = book.authors?.[0]?.name || '';
-      if (authorName) { let {prenom,nom}=splitAuthor(authorName); setField('prenoms', prenom); setField('noms', nom); }
-      if (fb) fb.textContent = '✓ OpenLibrary';
-      showToast('✓ ISBN trouvé (OpenLibrary)');
-      return true;
-    }
-  } catch(e) {}
-  if (fb) fb.textContent = '⏳ Recherche Google Books...';
-  try {
-    let gb = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${clean}`).then(r=>r.json());
-    if (gb.items && gb.items[0]) {
-      let info = gb.items[0].volumeInfo;
-      setField('titre', info.title || '');
-      setField('editeur', info.publisher || '');
-      setField('annee', extractYear(info.publishedDate || ''));
-      let authors = info.authors || [];
-      if (authors.length) { let {prenom,nom}=splitAuthor(authors[0]); setField('prenoms', prenom); setField('noms', nom); }
-      if (fb) fb.textContent = '✓ Google Books';
-      showToast('✓ ISBN trouvé (Google Books)');
-      return true;
-    }
-  } catch(e) {}
-  if (fb) fb.textContent = '✗ Introuvable';
-  showToast('❌ ISBN non trouvé');
-  return false;
-}
-
-function setupISBNField() {
-  let field = document.getElementById('f_isbn');
-  if (!field || field.dataset.isbnReady) return;
-  field.dataset.isbnReady = '1';
-  let btn = document.createElement('button');
-  btn.type = 'button';
-  btn.innerHTML = '<i class="fas fa-camera"></i> Scanner ISBN';
-  btn.style.marginTop = '8px';
-  btn.style.padding = '8px 16px';
-  btn.style.borderRadius = '15px';
-  btn.style.border = '1px solid var(--secondary)';
-  btn.style.background = 'transparent';
-  btn.style.cursor = 'pointer';
-  btn.style.fontWeight = '600';
-  btn.onclick = () => startScanner();
-  field.parentNode.appendChild(btn);
-  let fb = document.createElement('span');
-  fb.id = 'isbn-feedback';
-  fb.style.display = 'block';
-  fb.style.fontSize = '0.7rem';
-  fb.style.marginTop = '4px';
-  field.parentNode.appendChild(fb);
-  field.addEventListener('input', debounce(e => {
-    let val = e.target.value.replace(/[^0-9X]/gi, '');
-    if (val.length === 10 || val.length === 13) fetchISBN(val);
-  }, 500));
-}
-function debounce(fn, ms) { let t; return function(...a){ clearTimeout(t); t=setTimeout(()=>fn.apply(this,a), ms); }; }
-
-// ================= SCANNER CAMÉRA (BarcodeDetector + Quagga2) =================
-let scannerActive = false, videoStream = null, animFrame = null;
-function buildOverlay() {
-  if (document.getElementById('isbn-scan-overlay')) return;
-  let div = document.createElement('div'); div.id = 'isbn-scan-overlay';
-  div.innerHTML = `<video id="isbn-scan-video" autoplay playsinline muted style="width:100%;max-width:460px;border-radius:24px;"></video>
-                   <p id="isbn-scan-hint" style="color:#fff;">Initialisation...</p>
-                   <button class="scan-close" onclick="stopScanner()">✕ Fermer</button>`;
-  document.body.appendChild(div);
-}
-async function startScanner() {
-  if (scannerActive) return;
-  buildOverlay();
-  let video = document.getElementById('isbn-scan-video');
-  let hint = document.getElementById('isbn-scan-hint');
-  hint.textContent = 'Ouverture caméra...';
-  try {
-    let stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-    videoStream = stream;
-    video.srcObject = stream;
-    await video.play();
-    hint.textContent = 'Centrez le code-barres ISBN';
-    scannerActive = true;
-    if ('BarcodeDetector' in window) {
-      let detector = new BarcodeDetector({ formats: ['ean_13','ean_8','upc_a','code_128'] });
-      function tick() {
-        if (!scannerActive) return;
-        if (video.readyState >= 2) {
-          detector.detect(video).then(codes => { if (codes.length > 0) onISBNDetected(codes[0].rawValue); }).catch(()=>{});
+const TAG_DISPLAY = {
+    admin:'ADMIN', compta:'COMPTA', recherche:'RECH.',
+    video:'VIDÉO', texte:'TEXTE', radio:'RADIO'
+};
+ 
+/* ══════════════════════════════════════════════
+   NOMMAGE DU FICHIER DE SAUVEGARDE
+   Format : Sauv-Oo-JJmoisAAAA-[X_elements].json
+══════════════════════════════════════════════ */
+const MOIS_FR = [
+    'janvier','février','mars','avril','mai','juin',
+    'juillet','août','septembre','octobre','novembre','décembre'
+];
+ 
+function _buildSaveFilename() {
+    const now   = new Date();
+    const jour  = String(now.getDate()).padStart(2, '0');
+    const mois  = MOIS_FR[now.getMonth()];
+    const annee = now.getFullYear();
+ 
+    // ── Comptage sémantique des éléments ──
+    // • ovni_v9        → nombre de sessions dans ovni_v9.sessions
+    // • ocr_history_v1 → longueur du tableau parsé
+    // • toute autre clé applicative → +1
+    const SKIP = new Set(['__last_backup_file__','__backup_size__','__drift_snooze__','__dir_handle_name__']);
+    let totalElements = 0;
+ 
+    for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (SKIP.has(k) || k.startsWith('__sm_') || k.startsWith('__')) continue;
+ 
+        if (k === 'ovni_v9') {
+            try {
+                const parsed = JSON.parse(localStorage.getItem(k) || '{}');
+                const sessions = parsed.sessions;
+                totalElements += (Array.isArray(sessions) ? sessions.length : 0);
+            } catch(e) { totalElements += 1; }
+ 
+        } else if (k === 'ocr_history_v1') {
+            try {
+                const parsed = JSON.parse(localStorage.getItem(k) || '[]');
+                totalElements += (Array.isArray(parsed) ? parsed.length : 1);
+            } catch(e) { totalElements += 1; }
+ 
+        } else {
+            totalElements += 1;
         }
-        animFrame = requestAnimationFrame(tick);
-      }
-      tick();
-    } else {
-      // Fallback Quagga2
-      let script = document.createElement('script');
-      script.src = 'https://cdn.jsdelivr.net/npm/@ericblade/quagga2@1.2.6/dist/quagga.min.js';
-      script.onload = () => {
-        let canvas = document.createElement('canvas');
-        canvas.id = 'quagga-canvas'; canvas.style.display = 'none';
-        document.body.appendChild(canvas);
-        function quaggaTick() {
-          if (!scannerActive) return;
-          if (video.readyState >= 2) {
-            let vw = video.videoWidth, vh = video.videoHeight;
-            if (vw && vh) {
-              canvas.width = vw; canvas.height = vh;
-              let ctx = canvas.getContext('2d');
-              ctx.drawImage(video, 0, 0, vw, vh);
-              let cropW = Math.round(vw * 0.9), cropH = Math.round(vh * 0.5);
-              let cropX = Math.round((vw - cropW)/2), cropY = Math.round((vh - cropH)/2);
-              let cropCanvas = document.createElement('canvas');
-              cropCanvas.width = cropW; cropCanvas.height = cropH;
-              cropCanvas.getContext('2d').drawImage(canvas, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
-              Quagga.decodeSingle({
-                decoder: { readers: ['ean_reader','ean_8_reader','code_128_reader'] },
-                src: cropCanvas.toDataURL()
-              }, result => { if (result && result.codeResult && result.codeResult.code) onISBNDetected(result.codeResult.code); });
-            }
-          }
-          animFrame = requestAnimationFrame(quaggaTick);
-        }
-        quaggaTick();
-      };
-      document.head.appendChild(script);
     }
-  } catch(err) {
-    hint.textContent = 'Erreur caméra : autorisez l\'accès';
-    console.error(err);
-  }
+ 
+    return `Sauv-Oo-${jour}${mois}${annee}-[${totalElements}_elements].json`;
 }
-function stopScanner() {
-  scannerActive = false;
-  if (animFrame) cancelAnimationFrame(animFrame);
-  if (videoStream) videoStream.getTracks().forEach(t => t.stop());
-  let ov = document.getElementById('isbn-scan-overlay');
-  if (ov) ov.remove();
+ 
+/* ══════════════════════════════════════════════
+   ALERTE BACKUP DRIFT
+══════════════════════════════════════════════ */
+const DRIFT_THRESHOLD = 800;
+const DRIFT_SNOOZE_MS = 30 * 60 * 1000;
+ 
+function _getDataSize() {
+    let total = 0;
+    const skip = new Set(['__last_backup_file__','__backup_size__','__drift_snooze__']);
+    for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (!skip.has(k)) total += (localStorage.getItem(k) || '').length;
+    }
+    return total;
 }
-function onISBNDetected(code) {
-  let clean = String(code).replace(/[^0-9X]/gi, '');
-  if (clean.length === 13 || clean.length === 10) {
-    stopScanner();
-    selectType('ouvrage');
+ 
+function checkDriftAlert() {
+    const snooze = localStorage.getItem('__drift_snooze__');
+    if (snooze && Date.now() < parseInt(snooze)) return;
+ 
+    const sizeNow    = _getDataSize();
+    const sizeBackup = parseInt(localStorage.getItem('__backup_size__') || '0');
+    const drift      = sizeNow - sizeBackup;
+    if (drift < DRIFT_THRESHOLD) return;
+ 
+    const approxChanges = Math.round(drift / 200);
+    const el = document.getElementById('driftCount');
+    if (el) el.textContent = approxChanges + ' modification' + (approxChanges > 1 ? 's' : '');
+ 
+    // Affiche le badge "mode PC" dans l'alerte si dossier lié
+    const badge = document.getElementById('driftModeBadge');
+    const isDirLinked = !!localStorage.getItem('__dir_handle_name__');
+    if (badge) badge.style.display = isDirLinked ? 'inline-flex' : 'none';
+ 
     setTimeout(() => {
-      let field = document.getElementById('f_isbn');
-      if (field) {
-        field.value = clean;
-        field.dispatchEvent(new Event('input', { bubbles: true }));
-        fetchISBN(clean);
-      }
-    }, 200);
-  }
+        document.getElementById('driftAlert').classList.add('visible');
+    }, 600);
 }
-window.startScanner = startScanner;
-window.stopScanner = stopScanner;
+ 
+function driftSaveNow() {
+    document.getElementById('driftAlert').classList.remove('visible');
+    if (window.StorageManager && window.StorageManager.exportToFile) {
+        window.StorageManager.exportToFile();
+    }
+    localStorage.setItem('__backup_size__', String(_getDataSize()));
+    localStorage.removeItem('__drift_snooze__');
+}
+ 
+function driftLater() {
+    document.getElementById('driftAlert').classList.remove('visible');
+    localStorage.setItem('__drift_snooze__', String(Date.now() + DRIFT_SNOOZE_MS));
+}
+ 
+/* ══════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════ */
+window.onload = () => {
+    renderCustomTools();
+    initUI();
+    setMode(mode);
+    document.getElementById('mainGrid').style.visibility = 'visible';
+    checkDriftAlert();
+ 
+    // Drag & drop fusion
+    const dz = document.getElementById('fusionDropZone');
+    if (dz) {
+        dz.addEventListener('dragover', e => {
+            e.preventDefault(); e.stopPropagation();
+            dz.style.borderColor = 'var(--primary)';
+            dz.style.background  = 'rgba(75,75,230,0.1)';
+        });
+        dz.addEventListener('dragleave', () => {
+            dz.style.borderColor = 'rgba(10,36,114,0.20)';
+            dz.style.background  = 'rgba(10,36,114,0.02)';
+        });
+        dz.addEventListener('drop', e => {
+            e.preventDefault(); e.stopPropagation();
+            dz.style.borderColor = 'rgba(10,36,114,0.20)';
+            dz.style.background  = 'rgba(10,36,114,0.02)';
+            const dropped = e.dataTransfer.files;
+            if (dropped && dropped.length) {
+                const fi = document.getElementById('fusionFileInput');
+                if (fi) {
+                    try {
+                        const dt = new DataTransfer();
+                        dt.items.add(dropped[0]);
+                        fi.files = dt.files;
+                    } catch(err) {}
+                }
+                onFusionFileDirect(dropped[0]);
+            }
+        });
+    }
+};
+ 
+function initUI() {
+    document.querySelectorAll('.btn-3d[data-id]').forEach(btn => {
+        const id = btn.dataset.id;
+        btn.querySelector('.count-badge').innerText = clics[id] || 0;
+        btn.querySelector('.btn-star').classList.toggle('active', favs.includes(id));
+    });
+}
+ 
+function getTop6Tags() {
+    const tagScore = {};
+    ALL_TAGS.forEach(t => { tagScore[t] = 0; });
+    document.querySelectorAll('.btn-3d[data-id]').forEach(btn => {
+        const bTags = btn.dataset.tags || '';
+        const id    = btn.dataset.id;
+        ALL_TAGS.forEach(t => {
+            if (bTags.includes(t)) tagScore[t] += (clics[id] || 0);
+        });
+    });
+    return ALL_TAGS.slice().sort((a, b) => tagScore[b] - tagScore[a]).slice(0, 6);
+}
+ 
+/* ══════════════════════════════════════════════
+   MODE
+══════════════════════════════════════════════ */
+function setMode(m) {
+    mode = m;
+    localStorage.setItem('mode', m);
+    document.querySelectorAll('.config-btn').forEach(b => b.classList.remove('active'));
+    const btnId = 'btn' + m.charAt(0).toUpperCase() + m.slice(1);
+    if (document.getElementById(btnId)) document.getElementById(btnId).classList.add('active');
+    if (multiviewActive) {
+        multiviewActive = false;
+        multiviewSelectedTags = [];
+        document.getElementById('btnMultiview').classList.remove('active');
+        const mv = document.getElementById('multiviewContainer');
+        if (mv) mv.remove();
+        document.getElementById('mainGrid').style.display = '';
+    }
+    const tags = MODE_TAGS[m] || [];
+    activeTag = tags.length > 0 ? tags[0] : null;
+    renderTagFilters();
+    document.getElementById('btnAddPerso').classList.toggle('hidden', m !== 'perso');
+    applyFilters();
+}
+ 
+/* ══════════════════════════════════════════════
+   FILTRES
+══════════════════════════════════════════════ */
+function renderTagFilters() {
+    const fg = document.getElementById('filtersGroup');
+    fg.innerHTML = '';
+    if (multiviewActive) {
+        getTop6Tags().forEach(tag => {
+            const btn = document.createElement('button');
+            btn.className = 'tag-btn';
+            btn.textContent = TAG_DISPLAY[tag] || tag.toUpperCase();
+            btn.dataset.tag = tag;
+            if (multiviewSelectedTags.includes(tag)) btn.classList.add('tag-mv-selected');
+            btn.addEventListener('click', () => onTagClick(tag));
+            fg.appendChild(btn);
+        });
+    } else {
+        const tags = MODE_TAGS[mode] || [];
+        if (tags.length === 0) {
+            fg.innerHTML = '<span style="font-size:10px;opacity:0.5">Tes liens personnalisés</span>';
+            return;
+        }
+        tags.forEach(tag => {
+            const btn = document.createElement('button');
+            btn.className = 'tag-btn';
+            btn.textContent = TAG_DISPLAY[tag] || tag.toUpperCase();
+            btn.dataset.tag = tag;
+            if (activeTag === tag) btn.classList.add('tag-active');
+            btn.addEventListener('click', () => onTagClick(tag));
+            fg.appendChild(btn);
+        });
+    }
+}
+ 
+function isMobile() {
+    return window.matchMedia('(max-width: 768px)').matches ||
+           /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
+}
+ 
+let toastTimer = null;
+function showToast(msg) {
+    const toast = document.getElementById('mvToast');
+    toast.textContent = msg;
+    toast.style.display = 'block';
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { toast.style.display = 'none'; }, 4000);
+}
+ 
+function onTagClick(tag) {
+    if (multiviewActive) {
+        const idx = multiviewSelectedTags.indexOf(tag);
+        if (idx === -1) {
+            if (isMobile() && multiviewSelectedTags.length >= 3) {
+                showToast('Vous ne pouvez sélectionner que 3 tags maximum sur mobile.');
+                return;
+            }
+            multiviewSelectedTags.push(tag);
+        } else {
+            multiviewSelectedTags.splice(idx, 1);
+        }
+        renderTagFilters();
+        renderMultiviewGrid();
+    } else {
+        activeTag = tag;
+        renderTagFilters();
+        applyFilters();
+    }
+}
+ 
+function applyFilters() {
+    document.querySelectorAll('.btn-3d[data-id]').forEach(btn => {
+        const bMain = btn.dataset.main || 'custom';
+        const bTags = btn.dataset.tags || '';
+        let show = (mode === bMain || (mode === 'perso' && bMain === 'custom'));
+        if (activeTag && !bTags.includes(activeTag)) show = false;
+        if (favOnly && !favs.includes(btn.dataset.id)) show = false;
+        btn.classList.toggle('hidden', !show);
+    });
+}
+ 
+function toggleFavFilter() {
+    favOnly = !favOnly;
+    localStorage.setItem('favOnly', favOnly);
+    document.getElementById('favFilterMain').innerText = favOnly ? '★' : '☆';
+    applyFilters();
+}
+ 
+/* ══════════════════════════════════════════════
+   OUTILS
+══════════════════════════════════════════════ */
+function handleTool(btn) {
+    const id = btn.dataset.id;
+    if (event.target.closest('.btn-star')) {
+        if (favs.includes(id)) favs = favs.filter(f => f !== id);
+        else favs.push(id);
+        localStorage.setItem('favs', JSON.stringify(favs));
+        btn.querySelector('.btn-star').classList.toggle('active');
+        applyFilters();
+        return;
+    }
+    clics[id] = (clics[id] || 0) + 1;
+    localStorage.setItem('clics', JSON.stringify(clics));
+    btn.querySelector('.count-badge').innerText = clics[id];
+    if (btn.dataset.url) window.open(btn.dataset.url, id);
+}
+ 
+function openIframe(id, btn) {
+    if (event.target.closest('.btn-star')) { handleTool(btn); return; }
+    const container = document.getElementById(id);
+    const iframe = container.querySelector('iframe');
+    if (iframe && iframe.dataset.src && !iframe.src) {
+        iframe.src = iframe.dataset.src;
+    }
+    container.style.display = 'block';
+    clics[btn.dataset.id] = (clics[btn.dataset.id] || 0) + 1;
+    localStorage.setItem('clics', JSON.stringify(clics));
+    btn.querySelector('.count-badge').innerText = clics[btn.dataset.id];
+}
+ 
+function closeIframe(id) { document.getElementById(id).style.display = 'none'; }
+function openTool(id)    { document.getElementById(id).style.display = 'flex'; }
+function closeTool(id)   { document.getElementById(id).style.display = 'none'; }
+ 
+/* ══════════════════════════════════════════════
+   OUTILS PERSO
+══════════════════════════════════════════════ */
+function addNewTool() {
+    let t = document.getElementById('newTitle').value;
+    let u = document.getElementById('newUrl').value;
+    let i = document.getElementById('newIcon').value  || '🔗';
+    let c = document.getElementById('newColor').value || 'btn-purple';
+    if (!t || !u) return;
+    u = u.startsWith('http') ? u : 'https://' + u;
+    customTools.push({ id: 'c-' + Date.now(), title: t, url: u, tags: 'custom', icon: i, color: c });
+    localStorage.setItem('customTools', JSON.stringify(customTools));
+    location.reload();
+}
+ 
+function renderCustomTools() {
+    customTools.forEach(t => {
+        const b = document.createElement('button');
+        b.className = 'btn-3d ' + (t.color || 'btn-purple');
+        b.dataset.id = t.id; b.dataset.tags = t.tags;
+        b.dataset.url = t.url; b.dataset.main = 'perso';
+        b.onclick = () => handleTool(b);
+        b.innerHTML = `
+            <div class="btn-del" onclick="deleteTool('${t.id}')">🗑️</div>
+            <div class="btn-star">★</div>
+            <div class="favicon-badge">${t.icon || '🔗'}</div>
+            <div>${t.title}</div>
+            <div class="count-badge">0</div>`;
+        document.getElementById('mainGrid').insertBefore(b, document.getElementById('btnAddPerso'));
+    });
+}
+ 
+function deleteTool(id) {
+    if (confirm('Supprimer ?')) {
+        customTools = customTools.filter(t => t.id !== id);
+        localStorage.setItem('customTools', JSON.stringify(customTools));
+        location.reload();
+    }
+}
+ 
+function resetFilters() {
+    if (confirm('Tout réinitialiser ?')) { localStorage.clear(); location.reload(); }
+}
+ 
+/* ══════════════════════════════════════════════
+   MULTIVIEW
+══════════════════════════════════════════════ */
+function toggleMultiview() {
+    multiviewActive = !multiviewActive;
+    document.getElementById('btnMultiview').classList.toggle('active', multiviewActive);
+    if (!multiviewActive) {
+        if (multiviewSelectedTags.length > 0) activeTag = multiviewSelectedTags[0];
+        if (!activeTag) {
+            const tags = MODE_TAGS[mode] || [];
+            activeTag = tags.length > 0 ? tags[0] : null;
+        }
+        multiviewSelectedTags = [];
+        const mv = document.getElementById('multiviewContainer');
+        if (mv) mv.remove();
+        document.getElementById('mainGrid').style.display = '';
+        renderTagFilters();
+        applyFilters();
+    } else {
+        multiviewSelectedTags = activeTag ? [activeTag] : [];
+        renderTagFilters();
+        renderMultiviewGrid();
+    }
+}
+ 
+function getButtonsSortedByClics(tag) {
+    const allBtns = Array.from(document.querySelectorAll('#mainGrid .btn-3d[data-id]'));
+    return allBtns
+        .filter(btn => (btn.dataset.tags || '').includes(tag))
+        .sort((a, b) => (clics[b.dataset.id] || 0) - (clics[a.dataset.id] || 0));
+}
+ 
+function renderMultiviewGrid() {
+    const existing = document.getElementById('multiviewContainer');
+    if (existing) existing.remove();
+    document.getElementById('mainGrid').style.display = 'none';
+ 
+    if (multiviewSelectedTags.length === 0) {
+        document.getElementById('mainGrid').style.display = '';
+        document.querySelectorAll('#mainGrid .btn-3d[data-id]').forEach(b => b.classList.add('hidden'));
+        return;
+    }
+ 
+    const container = document.createElement('div');
+    container.id = 'multiviewContainer';
+    const mobile = isMobile();
+    if (!mobile) container.classList.add('mv-desktop');
+    const n = multiviewSelectedTags.length;
+ 
+    if (!mobile) {
+        multiviewSelectedTags.forEach(tag => {
+            const btns = getButtonsSortedByClics(tag);
+            const col = document.createElement('div');
+            col.className = 'mv-col';
+            const header = document.createElement('div');
+            header.className = 'mv-col-header';
+            header.textContent = TAG_LABELS[tag] || tag.toUpperCase();
+            col.appendChild(header);
+            if (btns.length === 0) {
+                const empty = document.createElement('div');
+                empty.style.cssText = 'font-size:11px;opacity:0.4;padding:20px 0;';
+                empty.textContent = 'Aucun outil';
+                col.appendChild(empty);
+            } else {
+                const inner = document.createElement('div');
+                inner.className = 'mv-col-inner';
+                btns.forEach(orig => {
+                    const clone = orig.cloneNode(true);
+                    clone.classList.remove('hidden');
+                    const star = clone.querySelector('.btn-star');
+                    if (star) star.classList.toggle('active', favs.includes(orig.dataset.id));
+                    const cnt = clone.querySelector('.count-badge');
+                    if (cnt) cnt.innerText = clics[orig.dataset.id] || 0;
+                    clone.onclick = (e) => {
+                        const oc = orig.getAttribute('onclick');
+                        if (oc) { window.event = e; eval(oc.replace('this', 'orig')); }
+                    };
+                    inner.appendChild(clone);
+                });
+                col.appendChild(inner);
+            }
+            container.appendChild(col);
+        });
+    } else {
+        let col0 = [], col1 = [];
+        if (n === 1) {
+            const allBtns = getButtonsSortedByClics(multiviewSelectedTags[0]).slice(0, 6);
+            const half = Math.ceil(allBtns.length / 2);
+            col0 = allBtns.slice(0, half);
+            col1 = allBtns.slice(half);
+        } else if (n === 2) {
+            col0 = getButtonsSortedByClics(multiviewSelectedTags[0]).slice(0, 3);
+            col1 = getButtonsSortedByClics(multiviewSelectedTags[1]).slice(0, 3);
+        } else {
+            const tagBtns = multiviewSelectedTags.slice(0, 3).map(tag => getButtonsSortedByClics(tag));
+            col0 = tagBtns.map(tb => tb[0] || null).filter(Boolean);
+            col1 = tagBtns.map(tb => tb[1] || null).filter(Boolean);
+        }
+        [col0, col1].forEach((colBtns, colIdx) => {
+            const col = document.createElement('div');
+            col.className = 'mv-col';
+            const header = document.createElement('div');
+            header.className = 'mv-col-header';
+            if (n === 1) {
+                header.textContent = TAG_LABELS[multiviewSelectedTags[0]] || multiviewSelectedTags[0];
+            } else if (n === 2) {
+                header.textContent = TAG_LABELS[multiviewSelectedTags[colIdx]] || multiviewSelectedTags[colIdx];
+            } else {
+                header.textContent = multiviewSelectedTags.slice(0, 3).map(t => TAG_DISPLAY[t] || t).join(' · ');
+            }
+            col.appendChild(header);
+            if (colBtns.length === 0) {
+                const empty = document.createElement('div');
+                empty.style.cssText = 'font-size:11px;opacity:0.4;padding:20px 0;text-align:center;';
+                empty.textContent = 'Aucun outil';
+                col.appendChild(empty);
+            } else {
+                colBtns.forEach(orig => {
+                    const clone = orig.cloneNode(true);
+                    clone.classList.remove('hidden');
+                    const star = clone.querySelector('.btn-star');
+                    if (star) star.classList.toggle('active', favs.includes(orig.dataset.id));
+                    const cnt = clone.querySelector('.count-badge');
+                    if (cnt) cnt.innerText = clics[orig.dataset.id] || 0;
+                    clone.onclick = (e) => {
+                        const oc = orig.getAttribute('onclick');
+                        if (oc) { window.event = e; eval(oc.replace('this', 'orig')); }
+                    };
+                    col.appendChild(clone);
+                });
+            }
+            container.appendChild(col);
+        });
+    }
+ 
+    document.getElementById('mainGrid').parentNode.insertBefore(
+        container, document.getElementById('mainGrid').nextSibling
+    );
+}
+ 
+/* ══════════════════════════════════════════════
+   FUSION JSON — Deep Merge
+   Compatible avec TOUS les noms de fichiers JSON
+   (backup-app.json, backup-app (X).json,
+    Sauv-Oo-JJmoisAAAA-[X_elements].json, etc.)
+══════════════════════════════════════════════ */
+ 
+/**
+ * mergeValues(baseStr, patchStr)
+ * Règles :
+ *  - Objets  → fusion récursive des clés
+ *  - Nombres → addition
+ *  - Tableaux → concat + déduplication (par .id, .text, ou JSON complet)
+ *  - Strings simples / autres → patch écrase base
+ */
+function mergeValues(baseStr, patchStr) {
+    function tryParse(v) {
+        if (typeof v !== 'string') return { val: v, parsed: true };
+        try { return { val: JSON.parse(v), parsed: true }; }
+        catch(e) { return { val: v, parsed: false }; }
+    }
+    const b = tryParse(baseStr);
+    const p = tryParse(patchStr);
+    if (!b.parsed || !p.parsed) return patchStr;
+ 
+    function merge(bv, pv) {
+        if (bv === undefined || bv === null) return pv;
+        if (pv === undefined || pv === null) return bv;
+        if (typeof bv === 'object' && !Array.isArray(bv) &&
+            typeof pv === 'object' && !Array.isArray(pv)) {
+            const r = Object.assign({}, bv);
+            Object.keys(pv).forEach(k => { r[k] = merge(bv[k], pv[k]); });
+            return r;
+        }
+        if (typeof bv === 'number' && typeof pv === 'number') return bv + pv;
+        if (Array.isArray(bv) && Array.isArray(pv)) {
+            const seen = new Map();
+            return bv.concat(pv).filter(item => {
+                let key;
+                if (item && typeof item === 'object') {
+                    key = item.id   !== undefined ? 'id:'   + String(item.id)
+                        : item.text !== undefined ? 'text:' + String(item.text)
+                        : 'json:' + JSON.stringify(item);
+                } else {
+                    key = 'prim:' + String(item);
+                }
+                if (seen.has(key)) return false;
+                seen.set(key, true);
+                return true;
+            });
+        }
+        return pv;
+    }
+    return JSON.stringify(merge(b.val, p.val));
+}
+ 
+let _pendingFusionResult = null;
+ 
+/**
+ * onFusionFileSelected — accepte TOUT fichier .json
+ * quel que soit son nom (ancien ou nouveau format)
+ */
+function onFusionFileSelected(input) {
+    const file = input.files && input.files[0];
+    if (!file) return;
+    const label = document.getElementById('fusionFileName');
+    if (label) label.textContent = file.name;
+ 
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        let patchData;
+        try {
+            const raw = e.target.result.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
+            patchData = JSON.parse(raw);
+            if (typeof patchData !== 'object' || patchData === null) throw new Error('Format invalide');
+        } catch(err) {
+            alert('Fichier JSON invalide : ' + err.message);
+            return;
+        }
+ 
+        const INTERNAL_KEYS = new Set(['__last_backup_file__','__backup_size__','__drift_snooze__','__dir_handle_name__']);
+        const baseData = {};
+        for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            if (!INTERNAL_KEYS.has(k) && !k.startsWith('__')) {
+                baseData[k] = localStorage.getItem(k);
+            }
+        }
+ 
+        const merged = Object.assign({}, baseData);
+        Object.keys(patchData).forEach(k => {
+            if (INTERNAL_KEYS.has(k) || k.startsWith('__')) return;
+            const patchStr = typeof patchData[k] === 'string'
+                ? patchData[k]
+                : JSON.stringify(patchData[k]);
+            if (merged[k] !== undefined) {
+                merged[k] = mergeValues(merged[k], patchStr);
+            } else {
+                merged[k] = patchStr;
+            }
+        });
+ 
+        _pendingFusionResult = merged;
+ 
+        const preview = {};
+        Object.keys(merged).forEach(k => {
+            try { preview[k] = JSON.parse(merged[k]); } catch(e) { preview[k] = merged[k]; }
+        });
+        document.getElementById('fusionResultPre').textContent = JSON.stringify(preview, null, 2);
+        document.getElementById('fusionResultBox').style.display = 'block';
+        document.getElementById('btnSaveFusion').style.display = '';
+    };
+    reader.onerror = function() { alert('Impossible de lire le fichier.'); };
+    reader.readAsText(file);
+}
+ 
+function saveFusion() {
+    if (!_pendingFusionResult) return;
+    const SKIP = new Set(['__last_backup_file__','__backup_size__','__drift_snooze__','__dir_handle_name__']);
+    Object.keys(_pendingFusionResult).forEach(k => {
+        if (SKIP.has(k)) return;
+        try {
+            Storage.prototype._setItem
+                ? Storage.prototype._setItem.call(localStorage, k, _pendingFusionResult[k])
+                : localStorage.setItem(k, _pendingFusionResult[k]);
+        } catch(ex) {}
+    });
+    closeFusionModal();
+    _pendingFusionResult = null;
+    const t = document.getElementById('__sm_toast__') || document.getElementById('mvToast');
+    if (t) {
+        t.textContent = '✓ Fusion appliquée — rechargement…';
+        t.style.background = '#32a852';
+        t.style.display = 'block';
+        t.style.opacity = '1';
+    }
+    setTimeout(() => { location.reload(); }, 900);
+}
+ 
+function onFusionFileDirect(file) {
+    if (!file) return;
+    const label = document.getElementById('fusionFileName');
+    if (label) label.textContent = file.name;
+    const fakeInput = { files: [file] };
+    onFusionFileSelected(fakeInput);
+}
+ 
+function closeFusionModal() {
+    closeTool('fusionModal');
+    _pendingFusionResult = null;
+    const fi = document.getElementById('fusionFileInput');
+    if (fi) fi.value = '';
+    const lbl = document.getElementById('fusionFileName');
+    if (lbl) lbl.textContent = 'Appuyez ici pour choisir un fichier JSON';
+    document.getElementById('fusionResultBox').style.display = 'none';
+    document.getElementById('btnSaveFusion').style.display = 'none';
+}
+</script>
+ 
+ 
+<!-- ═══════════════════════════════════════════════════════════════════
+     BLOC <script> #2 — STORAGE MANAGER v3 HYBRIDE
+     Mode PC  : showDirectoryPicker + auto-save toutes 20 modifications
+     Mode Mobile/Fallback : téléchargement via #driftAlert
+     Nommage  : Sauv-Oo-JJmoisAAAA-[X_elements].json
+     Remplace le bloc Storage Manager v2 existant
+═══════════════════════════════════════════════════════════════════ -->
+<script>
+(function (global) {
+  'use strict';
+ 
+  var CONFIG = {
+    BACKUP_FILE_KEY  : '__last_backup_file__',
+    DIR_HANDLE_KEY   : '__dir_handle_name__',
+    INDICATOR_ID     : '__sm_indicator__',
+    FILE_INPUT_ID    : '__sm_file_input__',
+    TOAST_ID         : '__sm_toast__',
+    TOAST_DURATION   : 3000,
+    Z_INDEX          : 99990,
+    MIN_CHARS        : 30,
+    AUTO_SAVE_EVERY  : 20   // modifications avant auto-save PC
+  };
+ 
+  /* ── Compteur de modifications depuis dernier backup ── */
+  var _modCount = 0;
+ 
+  /* ── Référence au FileSystemDirectoryHandle (Mode PC) ── */
+  var _dirHandle = null;
+ 
+  /* ── Indique si showDirectoryPicker est disponible ── */
+  var _canUseDir = (typeof window.showDirectoryPicker === 'function');
+ 
+  /* ════════════════════════════════════════
+     1. PERSISTANCE
+  ════════════════════════════════════════ */
+  function initStoragePersistence() {
+    if (navigator.storage && navigator.storage.persist) {
+      navigator.storage.persist().then(function (granted) {
+        console.log('[StorageManager] Persistance : ' + (granted ? 'activée ✓' : 'refusée'));
+      }).catch(function (err) { console.warn('[StorageManager] persist() :', err); });
+    }
+  }
+ 
+  /* ════════════════════════════════════════
+     2. NOMMAGE — construit le nom du fichier
+  ════════════════════════════════════════ */
+  function _buildFilename() {
+    if (typeof _buildSaveFilename === 'function') return _buildSaveFilename();
+    // Fallback autonome — même logique sémantique que _buildSaveFilename
+    var now   = new Date();
+    var MOIS  = ['janvier','février','mars','avril','mai','juin',
+                 'juillet','août','septembre','octobre','novembre','décembre'];
+    var jour  = String(now.getDate()).padStart(2,'0');
+    var mois  = MOIS[now.getMonth()];
+    var annee = now.getFullYear();
+ 
+    var SKIP = new Set(['__last_backup_file__','__backup_size__','__drift_snooze__','__dir_handle_name__']);
+    var totalElements = 0;
+ 
+    for (var i = 0; i < localStorage.length; i++) {
+      var k = localStorage.key(i);
+      if (SKIP.has(k) || k.indexOf('__sm_') === 0 || k.indexOf('__') === 0) continue;
+ 
+      if (k === 'ovni_v9') {
+        try {
+          var parsed = JSON.parse(localStorage.getItem(k) || '{}');
+          var sessions = parsed.sessions;
+          totalElements += (Array.isArray(sessions) ? sessions.length : 0);
+        } catch(e) { totalElements += 1; }
+ 
+      } else if (k === 'ocr_history_v1') {
+        try {
+          var arr = JSON.parse(localStorage.getItem(k) || '[]');
+          totalElements += (Array.isArray(arr) ? arr.length : 1);
+        } catch(e) { totalElements += 1; }
+ 
+      } else {
+        totalElements += 1;
+      }
+    }
+ 
+    return 'Sauv-Oo-' + jour + mois + annee + '-[' + totalElements + '_elements].json';
+  }
+ 
+  /* ════════════════════════════════════════
+     3. COLLECTE DES DONNÉES
+  ════════════════════════════════════════ */
+  function _collectData() {
+    var data = {};
+    var SKIP = new Set([CONFIG.BACKUP_FILE_KEY, CONFIG.DIR_HANDLE_KEY]);
+    for (var i = 0; i < localStorage.length; i++) {
+      var key = localStorage.key(i);
+      if (!SKIP.has(key)) data[key] = localStorage.getItem(key);
+    }
+    return data;
+  }
+ 
+  /* ════════════════════════════════════════
+     4a. EXPORT — Mode PC (showDirectoryPicker)
+  ════════════════════════════════════════ */
+  function _exportToDirectory(silent) {
+    if (!_dirHandle) return false;
+    var filename = _buildFilename();
+    var json     = JSON.stringify(_collectData(), null, 2);
+    var blob     = new Blob([json], { type: 'application/json' });
+ 
+    _dirHandle.getFileHandle(filename, { create: true })
+      .then(function (fileHandle) { return fileHandle.createWritable(); })
+      .then(function (writable) {
+        return writable.write(blob).then(function () { return writable.close(); });
+      })
+      .then(function () {
+        localStorage.setItem(CONFIG.BACKUP_FILE_KEY, new Date().toISOString());
+        _updateBackupSize();
+        _modCount = 0;
+        refreshIndicatorState();
+        if (!silent) showToast('✓ Sauvegardé dans le dossier lié');
+      })
+      .catch(function (err) {
+        console.error('[StorageManager] Erreur écriture dossier :', err);
+        if (!silent) showToast('Erreur lors de la sauvegarde dossier', true);
+      });
+    return true;
+  }
+ 
+  /* ════════════════════════════════════════
+     4b. EXPORT — Mode Mobile / Fallback (téléchargement)
+  ════════════════════════════════════════ */
+  function _exportToDownload() {
+    try {
+      var filename = _buildFilename();
+      var json     = JSON.stringify(_collectData(), null, 2);
+      var blob     = new Blob([json], { type: 'application/json' });
+      var url      = URL.createObjectURL(blob);
+      var a        = document.createElement('a');
+      a.href = url; a.download = filename; a.style.display = 'none';
+      document.body.appendChild(a); a.click();
+      setTimeout(function () { document.body.removeChild(a); URL.revokeObjectURL(url); }, 1500);
+      localStorage.setItem(CONFIG.BACKUP_FILE_KEY, new Date().toISOString());
+      _updateBackupSize();
+      _modCount = 0;
+      refreshIndicatorState();
+      showToast('✓ Backup téléchargé');
+    } catch (err) {
+      console.error('[StorageManager] Erreur export :', err);
+      showToast('Erreur lors de l\'export', true);
+    }
+  }
+ 
+  /* ════════════════════════════════════════
+     4c. EXPORT — Point d'entrée unifié
+  ════════════════════════════════════════ */
+  function exportToFile() {
+    if (_dirHandle) {
+      _exportToDirectory(false);
+    } else {
+      _exportToDownload();
+    }
+  }
+ 
+  /* ════════════════════════════════════════
+     4d. UPDATE taille référence
+  ════════════════════════════════════════ */
+  function _updateBackupSize() {
+    try {
+      var sz = 0;
+      var skipSz = new Set([CONFIG.BACKUP_FILE_KEY, '__backup_size__', '__drift_snooze__', CONFIG.DIR_HANDLE_KEY]);
+      for (var si = 0; si < localStorage.length; si++) {
+        var sk = localStorage.key(si);
+        if (!skipSz.has(sk)) sz += (localStorage.getItem(sk) || '').length;
+      }
+      localStorage.setItem('__backup_size__', String(sz));
+      localStorage.removeItem('__drift_snooze__');
+    } catch(e) {}
+  }
+ 
+  /* ════════════════════════════════════════
+     5. LIER UN DOSSIER (Mode PC uniquement)
+  ════════════════════════════════════════ */
+  function linkDirectory() {
+    if (!_canUseDir) {
+      showToast('showDirectoryPicker non supporté sur cet appareil', true);
+      return;
+    }
+    window.showDirectoryPicker({ mode: 'readwrite' })
+      .then(function (handle) {
+        _dirHandle = handle;
+        localStorage.setItem(CONFIG.DIR_HANDLE_KEY, handle.name);
+        refreshIndicatorState();
+        _updateDirBadge();
+        showToast('✓ Dossier lié : ' + handle.name);
+        // Sauvegarde immédiate après liaison
+        _exportToDirectory(false);
+      })
+      .catch(function (err) {
+        if (err.name !== 'AbortError') {
+          console.error('[StorageManager] Erreur liaison dossier :', err);
+          showToast('Impossible de lier le dossier', true);
+        }
+      });
+  }
+ 
+  function unlinkDirectory() {
+    _dirHandle = null;
+    localStorage.removeItem(CONFIG.DIR_HANDLE_KEY);
+    refreshIndicatorState();
+    _updateDirBadge();
+    showToast('Dossier dissocié');
+  }
+ 
+  /* ════════════════════════════════════════
+     6. IMPORT FICHIER (Restauration)
+  ════════════════════════════════════════ */
+  function importFromFile() {
+    var fi = document.getElementById(CONFIG.FILE_INPUT_ID);
+    if (fi) fi.click();
+  }
+ 
+  function _handleFileImport(event) {
+    var file = event.target.files && event.target.files[0];
+    if (!file) return;
+    event.target.value = '';
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      try {
+        var raw     = e.target.result;
+        var cleaned = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+        var data    = JSON.parse(cleaned);
+        if (typeof data !== 'object' || data === null) throw new Error('Format invalide');
+        var keys = Object.keys(data).length;
+        var ok   = global.confirm('Restaurer ' + keys + ' entrée(s) depuis le backup ?\n\nLes données actuelles seront remplacées.');
+        if (!ok) return;
+        localStorage.clear();
+        Object.keys(data).forEach(function (k) { try { localStorage.setItem(k, data[k]); } catch (e) {} });
+        showToast('✓ Données restaurées — rechargement…');
+        setTimeout(function () { global.location.reload(); }, 900);
+      } catch (err) {
+        console.error('[StorageManager] Erreur import :', err);
+        showToast('Fichier invalide ou corrompu', true);
+      }
+    };
+    reader.onerror = function () { showToast('Impossible de lire le fichier', true); };
+    reader.readAsText(file);
+  }
+ 
+  /* ════════════════════════════════════════
+     7. PARTAGE
+  ════════════════════════════════════════ */
+  function shareBackup() {
+    try {
+      var filename = _buildFilename();
+      var json     = JSON.stringify(_collectData(), null, 2);
+      var blob     = new Blob([json], { type: 'application/json' });
+      var file     = new File([blob], filename, { type: 'application/json' });
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({ title: 'Backup application', text: 'Sauvegarde des données — ' + _formatDate(new Date()), files: [file] })
+          .then(function () { showToast('✓ Backup partagé'); })
+          .catch(function (err) { if (err.name !== 'AbortError') showToast('Erreur lors du partage', true); });
+      } else if (navigator.share) {
+        navigator.share({ title: 'Backup application', text: json })
+          .catch(function (err) { if (err.name !== 'AbortError') showToast('Erreur lors du partage', true); });
+      } else if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(json)
+          .then(function () { showToast('✓ Backup copié dans le presse-papier'); })
+          .catch(function () { showToast('Partage non supporté sur cet appareil', true); });
+      } else {
+        showToast('Partage non supporté sur cet appareil', true);
+      }
+    } catch (err) {
+      console.error('[StorageManager] Erreur partage :', err);
+      showToast('Erreur lors du partage', true);
+    }
+  }
+ 
+  /* ════════════════════════════════════════
+     8. AUTO-SAVE — toutes 20 modifications (Mode PC)
+  ════════════════════════════════════════ */
+  function handleAutoSave(key) {
+    // Ignorer les clés internes
+    var SKIP = new Set([CONFIG.BACKUP_FILE_KEY, CONFIG.DIR_HANDLE_KEY,
+                        '__backup_size__', '__drift_snooze__']);
+    if (SKIP.has(key) || (key && key.startsWith('__sm_'))) return;
+ 
+    if (_dirHandle) {
+      _modCount++;
+      if (_modCount >= CONFIG.AUTO_SAVE_EVERY) {
+        console.log('[StorageManager] Auto-save PC déclenché (' + _modCount + ' modifications)');
+        _exportToDirectory(true); // silent = true
+      }
+    }
+  }
+ 
+  /* ════════════════════════════════════════
+     9. TAILLE localStorage
+  ════════════════════════════════════════ */
+  function _getLocalStorageSize() {
+    var total = 0;
+    for (var i = 0; i < localStorage.length; i++) {
+      var key = localStorage.key(i);
+      if (key !== CONFIG.BACKUP_FILE_KEY)
+        total += (localStorage.getItem(key) || '').length;
+    }
+    return total;
+  }
+ 
+  /* ════════════════════════════════════════
+     10. TOAST
+  ════════════════════════════════════════ */
+  function showToast(message, isError) {
+    var toast = document.getElementById(CONFIG.TOAST_ID);
+    if (!toast) return;
+    toast.textContent      = message;
+    toast.style.background = isError ? '#ff4b4b' : '#32a852';
+    toast.style.display    = 'block';
+    toast.style.opacity    = '1';
+    clearTimeout(toast.__smTimer);
+    toast.__smTimer = setTimeout(function () {
+      toast.style.opacity = '0';
+      setTimeout(function () { toast.style.display = 'none'; }, 300);
+    }, CONFIG.TOAST_DURATION);
+  }
+ 
+  /* ════════════════════════════════════════
+     11. UI — Indicateur flottant
+  ════════════════════════════════════════ */
+  function createUIIndicator() {
+    if (document.getElementById(CONFIG.INDICATOR_ID)) return;
+ 
+    /* Toast — réutilise #mvToast existant */
+    var existingToast = document.getElementById('mvToast');
+    if (!existingToast) {
+      var toast = document.createElement('div');
+      toast.id = CONFIG.TOAST_ID;
+      _applyStyles(toast, {
+        display: 'none', position: 'fixed', bottom: '30px',
+        left: '50%', transform: 'translateX(-50%)', color: 'white',
+        padding: '12px 20px', borderRadius: '16px', fontSize: '12px',
+        fontWeight: '700', textAlign: 'center', maxWidth: '320px',
+        width: '90%', boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+        zIndex: String(CONFIG.Z_INDEX + 1), opacity: '1',
+        transition: 'opacity 0.3s ease', fontFamily: 'inherit',
+        pointerEvents: 'none'
+      });
+      document.body.appendChild(toast);
+    } else {
+      existingToast.id = CONFIG.TOAST_ID;
+    }
+ 
+    /* Input file caché */
+    var fileInput = document.createElement('input');
+    fileInput.type = 'file'; fileInput.accept = '.json';
+    fileInput.id = CONFIG.FILE_INPUT_ID; fileInput.style.display = 'none';
+    fileInput.addEventListener('change', _handleFileImport);
+    document.body.appendChild(fileInput);
+ 
+    /* Conteneur indicateur */
+    var indicator = document.createElement('div');
+    indicator.id = CONFIG.INDICATOR_ID;
+    _applyStyles(indicator, {
+      position: 'fixed', bottom: '20px', right: '16px',
+      zIndex: String(CONFIG.Z_INDEX), display: 'flex',
+      flexDirection: 'column', alignItems: 'flex-end', gap: '8px',
+      userSelect: 'none', WebkitUserSelect: 'none'
+    });
+ 
+    /* Bouton principal */
+    var mainBtn = document.createElement('button');
+    mainBtn.id = '__sm_main_btn__';
+    mainBtn.setAttribute('aria-label', 'Gestionnaire de sauvegarde');
+    _applyStyles(mainBtn, {
+      width: '44px', height: '44px', borderRadius: '14px',
+      border: '1.5px solid rgba(10,36,114,0.15)',
+      background: '#FFFFFF', color: '#0A2472',
+      fontSize: '20px', cursor: 'pointer',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      boxShadow: '0 4px 16px rgba(10,36,114,0.14)',
+      backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+      transition: 'transform 0.15s ease',
+      outline: 'none', padding: '0', position: 'relative'
+    });
+    mainBtn.innerHTML = '<i class="fa-solid fa-floppy-disk" style="font-size:16px"></i>';
+ 
+    var dot = document.createElement('span');
+    dot.id = '__sm_dot__';
+    _applyStyles(dot, {
+      position: 'absolute', top: '-3px', right: '-3px',
+      width: '11px', height: '11px', borderRadius: '50%',
+      border: '2px solid rgba(255,255,255,0.9)', background: '#32a852',
+      transition: 'background 0.4s ease'
+    });
+    mainBtn.appendChild(dot);
+ 
+    /* Panel */
+    var panel = document.createElement('div');
+    panel.id = '__sm_panel__';
+    _applyStyles(panel, {
+      display: 'none', flexDirection: 'column', gap: '10px',
+      background: '#FFFFFF',
+      border: '1.5px solid rgba(10,36,114,0.12)',
+      borderRadius: '20px', padding: '16px',
+      boxShadow: '0 8px 32px rgba(10,36,114,0.13)',
+      backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+      minWidth: '270px'
+    });
+ 
+    var panelTitle = document.createElement('div');
+    panelTitle.innerHTML = '<i class="fa-solid fa-database" style="margin-right:6px;font-size:10px"></i>Sauvegardes';
+    _applyStyles(panelTitle, {
+      fontSize: '12px', fontWeight: '800', textTransform: 'uppercase',
+      letterSpacing: '0.8px', color: 'rgba(10,36,114,0.45)',
+      fontFamily: 'inherit', marginBottom: '2px'
+    });
+    panel.appendChild(panelTitle);
+ 
+    /* ── Bloc Mode PC (showDirectoryPicker) ── */
+    if (_canUseDir) {
+      var pcBlock = document.createElement('div');
+      pcBlock.id = '__sm_pc_block__';
+      _applyStyles(pcBlock, {
+        padding: '10px 12px', borderRadius: '12px',
+        background: 'rgba(0,100,102,0.06)',
+        border: '1.5px solid rgba(0,100,102,0.18)'
+      });
+ 
+      var pcRow = document.createElement('div');
+      _applyStyles(pcRow, { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' });
+      var pcDot = document.createElement('span');
+      pcDot.id = '__sm_pc_dot__';
+      _applyStyles(pcDot, {
+        width: '8px', height: '8px', borderRadius: '50%',
+        background: '#888', flexShrink: '0', transition: 'background 0.3s ease'
+      });
+      var pcTitle = document.createElement('span');
+      pcTitle.innerHTML = '<i class="fa-solid fa-folder-open" style="margin-right:5px;font-size:9px"></i>Mode Ordinateur';
+      _applyStyles(pcTitle, { fontSize: '11px', fontWeight: '700', color: '#006466', fontFamily: 'inherit' });
+      pcRow.appendChild(pcDot); pcRow.appendChild(pcTitle);
+ 
+      var pcName = document.createElement('div');
+      pcName.id = '__sm_pc_name__';
+      _applyStyles(pcName, {
+        fontSize: '10px', color: 'rgba(10,36,114,0.50)',
+        fontFamily: 'inherit', paddingLeft: '16px', marginBottom: '6px'
+      });
+      pcName.textContent = localStorage.getItem(CONFIG.DIR_HANDLE_KEY)
+        ? '📁 ' + localStorage.getItem(CONFIG.DIR_HANDLE_KEY)
+        : 'Aucun dossier lié';
+ 
+      var pcBtnRow = document.createElement('div');
+      _applyStyles(pcBtnRow, { display: 'flex', gap: '5px' });
+ 
+      var linkBtn = document.createElement('button');
+      linkBtn.id = '__sm_link_btn__';
+      linkBtn.innerHTML = '<i class="fa-solid fa-link" style="margin-right:4px"></i>Lier dossier';
+      _applyStyles(linkBtn, _btnStyle('#006466'));
+      linkBtn.addEventListener('click', function () { togglePanel(false); linkDirectory(); });
+      _tapFeedback(linkBtn);
+ 
+      var unlinkBtn = document.createElement('button');
+      unlinkBtn.id = '__sm_unlink_btn__';
+      unlinkBtn.innerHTML = '<i class="fa-solid fa-link-slash" style="margin-right:4px"></i>Dissocier';
+      _applyStyles(unlinkBtn, _btnStyle('#888'));
+      unlinkBtn.style.display = _dirHandle || localStorage.getItem(CONFIG.DIR_HANDLE_KEY) ? '' : 'none';
+      unlinkBtn.addEventListener('click', function () { togglePanel(false); unlinkDirectory(); });
+      _tapFeedback(unlinkBtn);
+ 
+      pcBtnRow.appendChild(linkBtn);
+      pcBtnRow.appendChild(unlinkBtn);
+      pcBlock.appendChild(pcRow);
+      pcBlock.appendChild(pcName);
+      pcBlock.appendChild(pcBtnRow);
+      panel.appendChild(pcBlock);
+    }
+ 
+    /* ── Bloc Fichier (Mode Mobile / Manuel) ── */
+    var fileBlock = document.createElement('div');
+    fileBlock.id = '__sm_file_block__';
+    _applyStyles(fileBlock, { padding: '10px 12px', borderRadius: '12px', background: '#FDFCF0', border: '1.5px solid rgba(10,36,114,0.10)' });
+    var fileRow = document.createElement('div');
+    _applyStyles(fileRow, { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px' });
+    var fileDot = document.createElement('span');
+    fileDot.id = '__sm_file_dot__';
+    _applyStyles(fileDot, { width: '8px', height: '8px', borderRadius: '50%', background: '#ff8c00', flexShrink: '0', transition: 'background 0.3s ease' });
+    var fileTitle = document.createElement('span');
+    fileTitle.innerHTML = '<i class="fa-solid fa-file-arrow-down" style="margin-right:5px;font-size:9px"></i>Backup fichier';
+    _applyStyles(fileTitle, { fontSize: '11px', fontWeight: '700', color: '#0A2472', fontFamily: 'inherit' });
+    fileRow.appendChild(fileDot); fileRow.appendChild(fileTitle);
+    var fileDate = document.createElement('div');
+    fileDate.id = '__sm_file_date__';
+    _applyStyles(fileDate, { fontSize: '10px', color: 'rgba(10,36,114,0.50)', fontFamily: 'inherit', paddingLeft: '16px' });
+    fileBlock.appendChild(fileRow); fileBlock.appendChild(fileDate);
+ 
+    /* Ligne 3 boutons : Restaurer | Fusionner | Envoyer */
+    var fileBtnRow = document.createElement('div');
+    _applyStyles(fileBtnRow, { display: 'flex', gap: '5px', marginTop: '8px', flexWrap: 'wrap' });
+ 
+    var restoreFileBtn = document.createElement('button');
+    restoreFileBtn.innerHTML = '<i class="fa-solid fa-rotate-left" style="margin-right:4px"></i>Restaurer';
+    _applyStyles(restoreFileBtn, _btnStyle('#0A2472'));
+    restoreFileBtn.addEventListener('click', function () { importFromFile(); togglePanel(false); });
+    _tapFeedback(restoreFileBtn);
+ 
+    var fusionBtn = document.createElement('button');
+    fusionBtn.innerHTML = '<i class="fa-solid fa-code-merge" style="margin-right:4px"></i>Fusionner';
+    _applyStyles(fusionBtn, _btnStyle('#006466'));
+    fusionBtn.addEventListener('click', function () {
+      togglePanel(false);
+      _pendingFusionResult = null;
+      var fi2 = document.getElementById('fusionFileInput');
+      if (fi2) fi2.value = '';
+      var lbl2 = document.getElementById('fusionFileName');
+      if (lbl2) lbl2.textContent = 'Appuyez ici pour choisir un fichier JSON';
+      var rb = document.getElementById('fusionResultBox');
+      if (rb) rb.style.display = 'none';
+      var sb = document.getElementById('btnSaveFusion');
+      if (sb) sb.style.display = 'none';
+      openTool('fusionModal');
+    });
+    _tapFeedback(fusionBtn);
+ 
+    var shareFileBtn = document.createElement('button');
+    shareFileBtn.innerHTML = '<i class="fa-solid fa-share-from-square" style="margin-right:4px"></i>Envoyer';
+    _applyStyles(shareFileBtn, _btnStyle('#F46060'));
+    shareFileBtn.addEventListener('click', function () { shareBackup(); togglePanel(false); });
+    _tapFeedback(shareFileBtn);
+ 
+    fileBtnRow.appendChild(restoreFileBtn);
+    fileBtnRow.appendChild(fusionBtn);
+    fileBtnRow.appendChild(shareFileBtn);
+    fileBlock.appendChild(fileBtnRow);
+    panel.appendChild(fileBlock);
+ 
+    var sep = document.createElement('div');
+    _applyStyles(sep, { height: '1px', background: 'rgba(10,36,114,0.10)', margin: '2px 0' });
+    panel.appendChild(sep);
+ 
+    panel.appendChild(_createPanelButton('Créer un backup maintenant', '#F46060', function () { exportToFile(); togglePanel(false); }));
+ 
+    mainBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var isOpen = panel.style.display === 'flex';
+      togglePanel(!isOpen);
+    });
+    document.addEventListener('click', function (e) {
+      if (!indicator.contains(e.target)) togglePanel(false);
+    });
+    mainBtn.addEventListener('touchstart', function () { mainBtn.style.transform = 'scale(0.93)'; }, { passive: true });
+    mainBtn.addEventListener('touchend',   function () { mainBtn.style.transform = 'scale(1)'; },   { passive: true });
+ 
+    indicator.appendChild(panel);
+    indicator.appendChild(mainBtn);
+    document.body.appendChild(indicator);
+    refreshIndicatorState();
+ 
+    function togglePanel(open) {
+      panel.style.display = open ? 'flex' : 'none';
+      if (open) _updatePanelDates();
+    }
+  }
+ 
+  function _updateDirBadge() {
+    var pcName = document.getElementById('__sm_pc_name__');
+    var unlinkBtn = document.getElementById('__sm_unlink_btn__');
+    var pcDot = document.getElementById('__sm_pc_dot__');
+    var dirName = localStorage.getItem(CONFIG.DIR_HANDLE_KEY);
+    if (pcName) pcName.textContent = dirName ? '📁 ' + dirName : 'Aucun dossier lié';
+    if (unlinkBtn) unlinkBtn.style.display = dirName ? '' : 'none';
+    if (pcDot) pcDot.style.background = dirName ? '#32a852' : '#888';
+  }
+ 
+  function _updatePanelDates() {
+    var fileDate = document.getElementById('__sm_file_date__');
+    if (fileDate) {
+      var fileRaw = localStorage.getItem(CONFIG.BACKUP_FILE_KEY);
+      fileDate.textContent = fileRaw ? _formatDate(new Date(fileRaw)) : 'Aucun backup fichier';
+    }
+    _updateDirBadge();
+  }
+ 
+  function refreshIndicatorState() {
+    var fileDot = document.getElementById('__sm_file_dot__');
+    var fileRaw = localStorage.getItem(CONFIG.BACKUP_FILE_KEY);
+    if (fileDot) {
+      var size = _getLocalStorageSize();
+      var needsAlert = size > CONFIG.MIN_CHARS && !fileRaw;
+      fileDot.style.background = needsAlert ? '#ff8c00' : (fileRaw ? '#32a852' : '#888');
+    }
+    var dot = document.getElementById('__sm_dot__');
+    if (dot) {
+      var globalAlert = _getLocalStorageSize() > CONFIG.MIN_CHARS && !localStorage.getItem(CONFIG.BACKUP_FILE_KEY);
+      dot.style.background = globalAlert ? '#ff8c00' : '#32a852';
+    }
+    _updateDirBadge();
+  }
+ 
+  /* ════════════════════════════════════════
+     UTILITAIRES
+  ════════════════════════════════════════ */
+  function _applyStyles(el, styles) {
+    Object.keys(styles).forEach(function (p) { el.style[p] = styles[p]; });
+  }
+ 
+  function _btnStyle(bg) {
+    return {
+      flex: '1', minWidth: '72px', padding: '9px 6px',
+      border: 'none', borderRadius: '10px',
+      background: bg, color: 'white',
+      fontSize: '11px', fontWeight: '700', cursor: 'pointer',
+      fontFamily: 'inherit', WebkitTapHighlightColor: 'transparent',
+      outline: 'none', transition: 'opacity 0.15s ease'
+    };
+  }
+ 
+  function _tapFeedback(btn) {
+    btn.addEventListener('touchstart', function () { btn.style.opacity = '0.7'; }, { passive: true });
+    btn.addEventListener('touchend',   function () { btn.style.opacity = '1'; },   { passive: true });
+  }
+ 
+  function _createPanelButton(label, bgColor, onClick) {
+    var btn = document.createElement('button');
+    btn.textContent = label;
+    _applyStyles(btn, {
+      display: 'block', width: '100%', padding: '11px 14px',
+      border: 'none', borderRadius: '12px', background: bgColor,
+      color: 'white', fontSize: '12px', fontWeight: '700',
+      cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit',
+      transition: 'opacity 0.15s ease',
+      WebkitTapHighlightColor: 'transparent', outline: 'none'
+    });
+    btn.addEventListener('click', onClick);
+    _tapFeedback(btn);
+    return btn;
+  }
+ 
+  function _timeAgo(date) {
+    var diffMs   = Date.now() - date.getTime();
+    var diffMins = Math.floor(diffMs / 60000);
+    var diffH    = Math.floor(diffMs / 3600000);
+    var diffD    = Math.floor(diffMs / 86400000);
+    if (diffMins < 1)  return 'à l\'instant';
+    if (diffMins < 60) return 'il y a ' + diffMins + ' min';
+    if (diffH < 24)    return 'il y a ' + diffH + 'h';
+    return 'il y a ' + diffD + ' jour' + (diffD > 1 ? 's' : '');
+  }
+ 
+  function _formatDate(date) {
+    try {
+      return date.toLocaleDateString('fr-FR', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+    } catch (e) { return date.toString(); }
+  }
+ 
+  /* ════════════════════════════════════════
+     12. INIT + INTERCEPTION localStorage
+  ════════════════════════════════════════ */
+  function init() {
+    initStoragePersistence();
+    createUIIndicator();
+ 
+    var _orig = {
+      setItem   : Storage.prototype.setItem,
+      removeItem: Storage.prototype.removeItem,
+      clear     : Storage.prototype.clear
+    };
+    Storage.prototype._setItem = _orig.setItem;
+ 
+    Storage.prototype.setItem = function (key, value) {
+      _orig.setItem.call(this, key, value);
+      if (this === localStorage) {
+        handleAutoSave(key);
+        if (typeof checkDriftAlert === 'function') checkDriftAlert();
+      }
+    };
+    Storage.prototype.removeItem = function (key) { _orig.removeItem.call(this, key); };
+    Storage.prototype.clear = function () { _orig.clear.call(this); };
+  }
+ 
+  global.StorageManager = {
+    init              : init,
+    exportToFile      : exportToFile,
+    importFromFile    : importFromFile,
+    linkDirectory     : linkDirectory,
+    unlinkDirectory   : unlinkDirectory,
+    refreshState      : refreshIndicatorState
+  };
+ 
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+ 
+})(window);
+</script>
+ 
+ 
+<!-- ═══════════════════════════════════════════════════════════════════
+     NOTE HTML — Modification du #driftAlert dans le body
+     Remplace l'ancien bloc <div id="driftAlert"> par celui-ci :
+═══════════════════════════════════════════════════════════════════ -->
+ 
+<!--
+IMPORTANT : Dans votre <body>, remplacez le bloc <div id="driftAlert">...</div>
+par le code ci-dessous (nouveau design Quartz Ink Glassmorphism + fa-shield-halved) :
+ 
+<div id="driftAlert">
+    <div class="drift-alert-box">
+        <span class="drift-alert-icon">
+            <i class="fa-solid fa-shield-halved"></i>
+        </span>
+        <div class="drift-alert-title">Sauvegarde recommandée</div>
+        <div id="driftModeBadge" class="drift-mode-badge" style="display:none;margin:0 auto 16px;">
+            <i class="fa-solid fa-folder-open"></i> Mode Ordinateur actif
+        </div>
+        <div class="drift-alert-msg" id="driftAlertMsg">
+            Tu as effectué <strong id="driftCount">plusieurs</strong> modifications
+            depuis ton dernier backup.<br>Pense à sauvegarder pour ne rien perdre.
+        </div>
+        <div class="drift-alert-actions">
+            <button class="drift-btn-save" onclick="driftSaveNow()">
+                <i class="fa-solid fa-shield-halved"></i>Sauvegarder
+            </button>
+            <button class="drift-btn-later" onclick="driftLater()">Plus tard</button>
+        </div>
+    </div>
+</div>
+-->
+ 
+ 
+<!-- ═══════════════════════════════════════════════════════════════════
+     BLOC <script> #3 — LOGO MOSAÏQUE + LINES COLORIMÉTRIE
+     Inchangé — à conserver tel quel en fin de <body>
+═══════════════════════════════════════════════════════════════════ -->
+<script>
+(function() {
+    /* ── Palette Quartz Ink & Coral ── */
+    const VIBRANT = ['#006466', '#F46060', '#FFD972'];
+    const DARK    = '#0A2472';
+ 
+    /* ── Génère la mosaïque SVG ── */
+    function buildMosaic() {
+        const svg = document.getElementById('mosaic-svg');
+        if (!svg) return;
+        svg.innerHTML = '';
+ 
+        const G = 4; // grille 4×4
+        const step = 100 / (G - 1);
+        let pts = [];
+        let colColors = [[], [], []];
+ 
+        for (let y = 0; y < G; y++) {
+            for (let x = 0; x < G; x++) {
+                let px = x * step, py = y * step;
+                if (x > 0 && x < G - 1 && y > 0 && y < G - 1) {
+                    px += (Math.random() - 0.5) * step * 0.8;
+                    py += (Math.random() - 0.5) * step * 0.8;
+                }
+                pts.push({ x: px, y: py });
+            }
+        }
+ 
+        for (let y = 0; y < G - 1; y++) {
+            for (let x = 0; x < G - 1; x++) {
+                const p1 = pts[y * G + x], p2 = pts[y * G + (x + 1)];
+                const p3 = pts[(y + 1) * G + (x + 1)], p4 = pts[(y + 1) * G + x];
+                const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                const isDark = Math.random() < 0.125;
+                const color = isDark ? DARK : VIBRANT[Math.floor(Math.random() * VIBRANT.length)];
+                if (!isDark && x < 3) colColors[x].push(color);
+                poly.setAttribute('points', `${p1.x},${p1.y} ${p2.x},${p2.y} ${p3.x},${p3.y} ${p4.x},${p4.y}`);
+                poly.setAttribute('fill', color);
+                poly.setAttribute('stroke', color);
+                poly.setAttribute('stroke-width', '0.5');
+                svg.appendChild(poly);
+            }
+        }
+        return colColors;
+    }
+ 
+    /* ── Anime les lettres du mot OUTILS ── */
+    function buildLetters(colColors) {
+        const container = document.getElementById('word-outils');
+        if (!container) return;
+        if (!container.dataset.built) {
+            'OUTILS'.split('').forEach(ch => {
+                const s = document.createElement('span');
+                s.textContent = ch;
+                s.className = 'logo-letter';
+                container.appendChild(s);
+            });
+            container.dataset.built = '1';
+        }
+        container.querySelectorAll('.logo-letter').forEach((l, i) => {
+            const col = i < 2 ? 0 : (i < 4 ? 1 : 2);
+            const pool = colColors && colColors[col].length ? colColors[col] : VIBRANT;
+            l.style.color = pool[Math.floor(Math.random() * pool.length)];
+        });
+    }
+ 
+    /* ── Point d'entrée public (appelé par onclick du logo) ── */
+    window.refreshLogo = function() {
+        const colColors = buildMosaic();
+        buildLetters(colColors);
+        randomizeBadgeLines();
+    };
+ 
+    /* ── Couleur badge contrastée selon la couleur du bouton parent ── */
+    function randomizeBadgeLines() {
+        const contrast = {
+            'btn-blue'  : ['#F46060', '#FFD972'],
+            'btn-purple': ['#F46060', '#FFD972'],
+            'btn-google': ['#FFD972', '#F46060'],
+            'btn-green' : ['#FFD972', '#F46060'],
+            'btn-orange': ['#0A2472', '#006466'],
+            'btn-red'   : ['#FFD972', '#0A2472'],
+        };
+        const darkIcon = new Set(['#FFD972']);
+ 
+        document.querySelectorAll('.badge-lines').forEach(badge => {
+            const btn = badge.closest('.btn-3d');
+            if (!btn) return;
+            const cls = [...btn.classList].find(c => contrast[c]) || 'btn-blue';
+            const pool = contrast[cls];
+            const color = pool[Math.floor(Math.random() * pool.length)];
+            badge.style.background = color;
+            const icon = badge.querySelector('i');
+            if (icon) {
+                icon.style.color = darkIcon.has(color) ? '#0A2472' : 'white';
+            }
+        });
+    }
+ 
+    /* ── Hover reset des lettres ── */
+    document.addEventListener('DOMContentLoaded', () => {
+        const box = document.querySelector('.logo-box');
+        if (box) {
+            box.addEventListener('mouseleave', () => {
+                document.querySelectorAll('.logo-letter').forEach(l => l.style.color = '');
+            });
+        }
+        window.refreshLogo();
+    });
+})();
+</script>
 
-renderTypeButtons();
-renderHistory();
-setupISBNField();
+<!-- ══════════════════════════════════════════════
+     STORAGE MANAGER v2 — Persistance & Sauvegarde
+     Fichier (manuel)
+     Compatible Android WebView · Mobile-First
+══════════════════════════════════════════════ -->
+<script>
+(function (global) {
+  'use strict';
+
+  var CONFIG = {
+    BACKUP_FILE_KEY  : '__last_backup_file__',
+    FILENAME         : 'backup-app.json',
+    INDICATOR_ID     : '__sm_indicator__',
+    FILE_INPUT_ID    : '__sm_file_input__',
+    TOAST_ID         : '__sm_toast__',
+    TOAST_DURATION   : 3000,
+    Z_INDEX          : 99990,
+    MIN_CHARS        : 30
+  };
+
+  /* 1. PERSISTANCE */
+  function initStoragePersistence() {
+    if (navigator.storage && navigator.storage.persist) {
+      navigator.storage.persist().then(function (granted) {
+        console.log('[StorageManager] Persistance : ' + (granted ? 'activée ✓' : 'refusée'));
+      }).catch(function (err) { console.warn('[StorageManager] persist() :', err); });
+    }
+  }
+
+  /* 3. EXPORT FICHIER */
+  function exportToFile() {
+    try {
+      var data = {};
+      for (var i = 0; i < localStorage.length; i++) {
+        var key = localStorage.key(i);
+        if (key !== CONFIG.BACKUP_FILE_KEY)
+          data[key] = localStorage.getItem(key);
+      }
+      var json = JSON.stringify(data, null, 2);
+      var blob = new Blob([json], { type: 'application/json' });
+      var url  = URL.createObjectURL(blob);
+      var a    = document.createElement('a');
+      a.href = url; a.download = CONFIG.FILENAME; a.style.display = 'none';
+      document.body.appendChild(a); a.click();
+      setTimeout(function () { document.body.removeChild(a); URL.revokeObjectURL(url); }, 1500);
+      localStorage.setItem(CONFIG.BACKUP_FILE_KEY, new Date().toISOString());
+      /* Mémorise la taille de référence pour le drift alert */
+      try {
+        var sz = 0;
+        var skipSz = new Set([CONFIG.BACKUP_FILE_KEY, '__backup_size__', '__drift_snooze__']);
+        for (var si = 0; si < localStorage.length; si++) {
+          var sk = localStorage.key(si);
+          if (!skipSz.has(sk)) sz += (localStorage.getItem(sk) || '').length;
+        }
+        localStorage.setItem('__backup_size__', String(sz));
+        localStorage.removeItem('__drift_snooze__');
+      } catch(e) {}
+      refreshIndicatorState();
+      showToast('✓ Backup téléchargé');
+    } catch (err) {
+      console.error('[StorageManager] Erreur export fichier :', err);
+      showToast('Erreur lors de l\'export', true);
+    }
+  }
+
+  /* 4. IMPORT FICHIER */
+  function importFromFile() {
+    var fi = document.getElementById(CONFIG.FILE_INPUT_ID);
+    if (fi) fi.click();
+  }
+
+  function _handleFileImport(event) {
+    var file = event.target.files && event.target.files[0];
+    if (!file) return;
+    event.target.value = '';
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      try {
+        var raw     = e.target.result;
+        var cleaned = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+        var data    = JSON.parse(cleaned);
+        if (typeof data !== 'object' || data === null) throw new Error('Format invalide');
+        var keys = Object.keys(data).length;
+        var ok   = global.confirm('Restaurer ' + keys + ' entrée(s) depuis le backup ?\n\nLes données actuelles seront remplacées.');
+        if (!ok) return;
+        localStorage.clear();
+        Object.keys(data).forEach(function (k) { try { localStorage.setItem(k, data[k]); } catch (e) {} });
+        showToast('✓ Données restaurées — rechargement…');
+        setTimeout(function () { global.location.reload(); }, 900);
+      } catch (err) {
+        console.error('[StorageManager] Erreur import :', err);
+        showToast('Fichier invalide ou corrompu', true);
+      }
+    };
+    reader.onerror = function () { showToast('Impossible de lire le fichier', true); };
+    reader.readAsText(file);
+  }
+
+  /* 4b. PARTAGE */
+  function shareBackup() {
+    try {
+      var data = {};
+      for (var i = 0; i < localStorage.length; i++) {
+        var key = localStorage.key(i);
+        if (key !== CONFIG.BACKUP_FILE_KEY)
+          data[key] = localStorage.getItem(key);
+      }
+      var json = JSON.stringify(data, null, 2);
+      var blob = new Blob([json], { type: 'application/json' });
+      var file = new File([blob], CONFIG.FILENAME, { type: 'application/json' });
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({ title: 'Backup application', text: 'Sauvegarde des données — ' + _formatDate(new Date()), files: [file] })
+          .then(function () { showToast('✓ Backup partagé'); })
+          .catch(function (err) { if (err.name !== 'AbortError') showToast('Erreur lors du partage', true); });
+      } else if (navigator.share) {
+        navigator.share({ title: 'Backup application', text: json })
+          .catch(function (err) { if (err.name !== 'AbortError') showToast('Erreur lors du partage', true); });
+      } else if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(json)
+          .then(function () { showToast('✓ Backup copié dans le presse-papier'); })
+          .catch(function () { showToast('Partage non supporté sur cet appareil', true); });
+      } else {
+        showToast('Partage non supporté sur cet appareil', true);
+      }
+    } catch (err) {
+      console.error('[StorageManager] Erreur partage :', err);
+      showToast('Erreur lors du partage', true);
+    }
+  }
+
+  /* 5. SAUVEGARDE AUTO */
+  function handleAutoSave(key) {
+    /* IDB supprimé — aucune auto-sauvegarde */
+  }
+
+  /* 6. TAILLE localStorage */
+  function _getLocalStorageSize() {
+    var total = 0;
+    for (var i = 0; i < localStorage.length; i++) {
+      var key = localStorage.key(i);
+      if (key !== CONFIG.BACKUP_FILE_KEY)
+        total += (localStorage.getItem(key) || '').length;
+    }
+    return total;
+  }
+
+  /* 7. TOAST */
+  function showToast(message, isError) {
+    var toast = document.getElementById(CONFIG.TOAST_ID);
+    if (!toast) return;
+    toast.textContent      = message;
+    toast.style.background = isError ? '#ff4b4b' : '#32a852';
+    toast.style.display    = 'block';
+    toast.style.opacity    = '1';
+    clearTimeout(toast.__smTimer);
+    toast.__smTimer = setTimeout(function () {
+      toast.style.opacity = '0';
+      setTimeout(function () { toast.style.display = 'none'; }, 300);
+    }, CONFIG.TOAST_DURATION);
+  }
+
+  /* 8. UI — Indicateur flottant */
+  function createUIIndicator() {
+    if (document.getElementById(CONFIG.INDICATOR_ID)) return;
+
+    /* Toast — réutilise #mvToast existant */
+    var existingToast = document.getElementById('mvToast');
+    if (!existingToast) {
+      var toast = document.createElement('div');
+      toast.id = CONFIG.TOAST_ID;
+      _applyStyles(toast, {
+        display: 'none', position: 'fixed', bottom: '30px',
+        left: '50%', transform: 'translateX(-50%)', color: 'white',
+        padding: '12px 20px', borderRadius: '16px', fontSize: '12px',
+        fontWeight: '700', textAlign: 'center', maxWidth: '320px',
+        width: '90%', boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+        zIndex: String(CONFIG.Z_INDEX + 1), opacity: '1',
+        transition: 'opacity 0.3s ease', fontFamily: 'inherit',
+        pointerEvents: 'none'
+      });
+      document.body.appendChild(toast);
+    } else {
+      existingToast.id = CONFIG.TOAST_ID;
+    }
+
+    /* Input file caché */
+    var fileInput = document.createElement('input');
+    fileInput.type = 'file'; fileInput.accept = '.json';
+    fileInput.id = CONFIG.FILE_INPUT_ID; fileInput.style.display = 'none';
+    fileInput.addEventListener('change', _handleFileImport);
+    document.body.appendChild(fileInput);
+
+    /* Conteneur indicateur */
+    var indicator = document.createElement('div');
+    indicator.id = CONFIG.INDICATOR_ID;
+    _applyStyles(indicator, {
+      position: 'fixed', bottom: '20px', right: '16px',
+      zIndex: String(CONFIG.Z_INDEX), display: 'flex',
+      flexDirection: 'column', alignItems: 'flex-end', gap: '8px',
+      userSelect: 'none', WebkitUserSelect: 'none'
+    });
+
+    /* Bouton ☁️ */
+    var mainBtn = document.createElement('button');
+    mainBtn.id = '__sm_main_btn__';
+    mainBtn.setAttribute('aria-label', 'Gestionnaire de sauvegarde');
+    _applyStyles(mainBtn, {
+      width: '44px', height: '44px', borderRadius: '14px',
+      border: '1.5px solid rgba(10,36,114,0.15)',
+      background: '#FFFFFF', color: '#0A2472',
+      fontSize: '20px', cursor: 'pointer',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      boxShadow: '0 4px 16px rgba(10,36,114,0.14)',
+      backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+      transition: 'transform 0.15s ease',
+      outline: 'none', padding: '0', position: 'relative'
+    });
+    mainBtn.innerHTML = '<i class="fa-solid fa-floppy-disk" style="font-size:16px"></i>';
+
+    var dot = document.createElement('span');
+    dot.id = '__sm_dot__';
+    _applyStyles(dot, {
+      position: 'absolute', top: '-3px', right: '-3px',
+      width: '11px', height: '11px', borderRadius: '50%',
+      border: '2px solid rgba(23,23,35,0.9)', background: '#32a852',
+      transition: 'background 0.4s ease'
+    });
+    mainBtn.appendChild(dot);
+
+    /* Panel */
+    var panel = document.createElement('div');
+    panel.id = '__sm_panel__';
+    _applyStyles(panel, {
+      display: 'none', flexDirection: 'column', gap: '10px',
+      background: '#FFFFFF',
+      border: '1.5px solid rgba(10,36,114,0.12)',
+      borderRadius: '20px', padding: '16px',
+      boxShadow: '0 8px 32px rgba(10,36,114,0.13)',
+      backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+      minWidth: '270px'
+    });
+
+    var panelTitle = document.createElement('div');
+    panelTitle.innerHTML = '<i class="fa-solid fa-database" style="margin-right:6px;font-size:10px"></i>Sauvegardes';
+    _applyStyles(panelTitle, {
+      fontSize: '12px', fontWeight: '800', textTransform: 'uppercase',
+      letterSpacing: '0.8px', color: 'rgba(10,36,114,0.45)',
+      fontFamily: 'inherit', marginBottom: '2px'
+    });
+    panel.appendChild(panelTitle);
+
+    /* Bloc Fichier */
+    var fileBlock = document.createElement('div');
+    fileBlock.id = '__sm_file_block__';
+    _applyStyles(fileBlock, { padding: '10px 12px', borderRadius: '12px', background: '#FDFCF0', border: '1.5px solid rgba(10,36,114,0.10)' });
+    var fileRow = document.createElement('div');
+    _applyStyles(fileRow, { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px' });
+    var fileDot = document.createElement('span');
+    fileDot.id = '__sm_file_dot__';
+    _applyStyles(fileDot, { width: '8px', height: '8px', borderRadius: '50%', background: '#ff8c00', flexShrink: '0', transition: 'background 0.3s ease' });
+    var fileTitle = document.createElement('span');
+    fileTitle.innerHTML = '<i class="fa-solid fa-file-arrow-down" style="margin-right:5px;font-size:9px"></i>Backup fichier';
+    _applyStyles(fileTitle, { fontSize: '11px', fontWeight: '700', color: '#0A2472', fontFamily: 'inherit' });
+    fileRow.appendChild(fileDot); fileRow.appendChild(fileTitle);
+    var fileDate = document.createElement('div');
+    fileDate.id = '__sm_file_date__';
+    _applyStyles(fileDate, { fontSize: '10px', color: 'rgba(10,36,114,0.50)', fontFamily: 'inherit', paddingLeft: '16px' });
+    fileBlock.appendChild(fileRow); fileBlock.appendChild(fileDate);
+
+    /* ── Ligne 3 boutons : Restaurer | Fusionner | Envoyer ── */
+    var fileBtnRow = document.createElement('div');
+    _applyStyles(fileBtnRow, { display: 'flex', gap: '5px', marginTop: '8px', flexWrap: 'wrap' });
+
+    var restoreFileBtn = document.createElement('button');
+    restoreFileBtn.innerHTML = '<i class="fa-solid fa-rotate-left" style="margin-right:4px"></i>Restaurer';
+    _applyStyles(restoreFileBtn, { flex: '1', minWidth: '72px', padding: '9px 6px', border: 'none', borderRadius: '10px', background: '#0A2472', color: 'white', fontSize: '11px', fontWeight: '700', cursor: 'pointer', fontFamily: 'inherit', WebkitTapHighlightColor: 'transparent', outline: 'none', transition: 'opacity 0.15s ease' });
+    restoreFileBtn.addEventListener('click', function () { importFromFile(); togglePanel(false); });
+    restoreFileBtn.addEventListener('touchstart', function () { restoreFileBtn.style.opacity = '0.7'; }, { passive: true });
+    restoreFileBtn.addEventListener('touchend',   function () { restoreFileBtn.style.opacity = '1'; },   { passive: true });
+
+    /* ══ BOUTON FUSIONNER (NOUVEAU) ══ */
+    var fusionBtn = document.createElement('button');
+    fusionBtn.innerHTML = '<i class="fa-solid fa-code-merge" style="margin-right:4px"></i>Fusionner';
+    _applyStyles(fusionBtn, { flex: '1', minWidth: '72px', padding: '9px 6px', border: 'none', borderRadius: '10px', background: '#006466', color: 'white', fontSize: '11px', fontWeight: '700', cursor: 'pointer', fontFamily: 'inherit', WebkitTapHighlightColor: 'transparent', outline: 'none', transition: 'opacity 0.15s ease' });
+    fusionBtn.addEventListener('click', function () {
+      togglePanel(false);
+      // Réinitialiser l'état de la modale avant ouverture
+      _pendingFusionResult = null;
+      var fi2 = document.getElementById('fusionFileInput');
+      if (fi2) fi2.value = '';
+      var lbl2 = document.getElementById('fusionFileName');
+      if (lbl2) lbl2.textContent = 'Appuyez ici pour choisir un fichier JSON';
+      var rb = document.getElementById('fusionResultBox');
+      if (rb) rb.style.display = 'none';
+      var sb = document.getElementById('btnSaveFusion');
+      if (sb) sb.style.display = 'none';
+      openTool('fusionModal');
+    });
+    fusionBtn.addEventListener('touchstart', function () { fusionBtn.style.opacity = '0.7'; }, { passive: true });
+    fusionBtn.addEventListener('touchend',   function () { fusionBtn.style.opacity = '1'; },   { passive: true });
+
+    var shareFileBtn = document.createElement('button');
+    shareFileBtn.innerHTML = '<i class="fa-solid fa-share-from-square" style="margin-right:4px"></i>Envoyer';
+    _applyStyles(shareFileBtn, { flex: '1', minWidth: '72px', padding: '9px 6px', border: 'none', borderRadius: '10px', background: '#F46060', color: 'white', fontSize: '11px', fontWeight: '700', cursor: 'pointer', fontFamily: 'inherit', WebkitTapHighlightColor: 'transparent', outline: 'none', transition: 'opacity 0.15s ease' });
+    shareFileBtn.addEventListener('click', function () { shareBackup(); togglePanel(false); });
+    shareFileBtn.addEventListener('touchstart', function () { shareFileBtn.style.opacity = '0.7'; }, { passive: true });
+    shareFileBtn.addEventListener('touchend',   function () { shareFileBtn.style.opacity = '1'; },   { passive: true });
+
+    fileBtnRow.appendChild(restoreFileBtn);
+    fileBtnRow.appendChild(fusionBtn);
+    fileBtnRow.appendChild(shareFileBtn);
+    fileBlock.appendChild(fileBtnRow);
+    panel.appendChild(fileBlock);
+
+    var sep = document.createElement('div');
+    _applyStyles(sep, { height: '1px', background: 'rgba(10,36,114,0.10)', margin: '2px 0' });
+    panel.appendChild(sep);
+
+    panel.appendChild(_createPanelButton('Créer un backup maintenant', '#F46060', function () { exportToFile(); togglePanel(false); }));
+
+    mainBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var isOpen = panel.style.display === 'flex';
+      togglePanel(!isOpen);
+    });
+    document.addEventListener('click', function (e) {
+      if (!indicator.contains(e.target)) togglePanel(false);
+    });
+    mainBtn.addEventListener('touchstart', function () { mainBtn.style.transform = 'scale(0.93)'; }, { passive: true });
+    mainBtn.addEventListener('touchend',   function () { mainBtn.style.transform = 'scale(1)'; },   { passive: true });
+
+    indicator.appendChild(panel);
+    indicator.appendChild(mainBtn);
+    document.body.appendChild(indicator);
+    refreshIndicatorState();
+
+    function togglePanel(open) {
+      panel.style.display = open ? 'flex' : 'none';
+      if (open) _updatePanelDates();
+    }
+  }
+
+  function _updatePanelDates() {
+    var fileDate = document.getElementById('__sm_file_date__');
+    if (fileDate) {
+      var fileRaw = localStorage.getItem(CONFIG.BACKUP_FILE_KEY);
+      fileDate.textContent = fileRaw ? _formatDate(new Date(fileRaw)) : 'Aucun backup fichier';
+    }
+  }
+
+  function refreshIndicatorState() {
+    var fileDot = document.getElementById('__sm_file_dot__');
+    var fileRaw = localStorage.getItem(CONFIG.BACKUP_FILE_KEY);
+    if (fileDot) {
+      var size = _getLocalStorageSize();
+      var needsAlert = size > CONFIG.MIN_CHARS && !fileRaw;
+      fileDot.style.background = needsAlert ? '#ff8c00' : (fileRaw ? '#32a852' : '#888');
+    }
+    var dot = document.getElementById('__sm_dot__');
+    if (dot) {
+      var globalAlert = _getLocalStorageSize() > CONFIG.MIN_CHARS && !fileRaw;
+      dot.style.background = globalAlert ? '#ff8c00' : '#32a852';
+    }
+  }
+
+  /* UTILITAIRES */
+  function _applyStyles(el, styles) {
+    Object.keys(styles).forEach(function (p) { el.style[p] = styles[p]; });
+  }
+
+  function _createPanelButton(label, bgColor, onClick) {
+    var btn = document.createElement('button');
+    btn.textContent = label;
+    _applyStyles(btn, {
+      display: 'block', width: '100%', padding: '11px 14px',
+      border: 'none', borderRadius: '12px', background: bgColor,
+      color: 'white', fontSize: '12px', fontWeight: '700',
+      cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit',
+      transition: 'opacity 0.15s ease',
+      WebkitTapHighlightColor: 'transparent', outline: 'none'
+    });
+    btn.addEventListener('click', onClick);
+    btn.addEventListener('touchstart', function () { btn.style.opacity = '0.75'; }, { passive: true });
+    btn.addEventListener('touchend',   function () { btn.style.opacity = '1'; },   { passive: true });
+    return btn;
+  }
+
+  function _timeAgo(date) {
+    var diffMs   = Date.now() - date.getTime();
+    var diffMins = Math.floor(diffMs / 60000);
+    var diffH    = Math.floor(diffMs / 3600000);
+    var diffD    = Math.floor(diffMs / 86400000);
+    if (diffMins < 1)  return 'à l\'instant';
+    if (diffMins < 60) return 'il y a ' + diffMins + ' min';
+    if (diffH < 24)    return 'il y a ' + diffH + 'h';
+    return 'il y a ' + diffD + ' jour' + (diffD > 1 ? 's' : '');
+  }
+
+  function _formatDate(date) {
+    try {
+      return date.toLocaleDateString('fr-FR', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+    } catch (e) { return date.toString(); }
+  }
+
+  /* 9. INIT + INTERCEPTION localStorage */
+  function init() {
+    initStoragePersistence();
+    createUIIndicator();
+
+    var _orig = {
+      setItem   : Storage.prototype.setItem,
+      removeItem: Storage.prototype.removeItem,
+      clear     : Storage.prototype.clear
+    };
+    Storage.prototype._setItem = _orig.setItem;
+
+    Storage.prototype.setItem = function (key, value) {
+      _orig.setItem.call(this, key, value);
+      if (this === localStorage) {
+        handleAutoSave(key);
+        if (typeof checkDriftAlert === 'function') checkDriftAlert();
+      }
+    };
+    Storage.prototype.removeItem = function (key) {
+      _orig.removeItem.call(this, key);
+    };
+    Storage.prototype.clear = function () { _orig.clear.call(this); };
+  }
+
+  global.StorageManager = {
+    init: init, exportToFile: exportToFile, importFromFile: importFromFile,
+    refreshState: refreshIndicatorState
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+})(window);
+</script>
+
+<!-- ══ LOGO MOSAÏQUE + LINES COLORIMÉTRIE ══ -->
+<script>
+(function() {
+    /* ── Palette Quartz Ink & Coral ── */
+    const VIBRANT = ['#006466', '#F46060', '#FFD972'];
+    const DARK    = '#0A2472';
+
+    /* Identifie les boutons -Lines */
+    const LINES_IDS = [
+        'sign-pdf', 'photo-recu', 'ytlive-lines', 'ocr-lines',
+        'cite-lines', 'course-lines', 'local-lines', 'calculette', 'minuteur'
+    ];
+
+    /* ── Génère la mosaïque SVG ── */
+    function buildMosaic() {
+        const svg = document.getElementById('mosaic-svg');
+        if (!svg) return;
+        svg.innerHTML = '';
+
+        const G = 4; // grille 4×4
+        const step = 100 / (G - 1);
+        let pts = [];
+        let colColors = [[], [], []];
+
+        for (let y = 0; y < G; y++) {
+            for (let x = 0; x < G; x++) {
+                let px = x * step, py = y * step;
+                if (x > 0 && x < G - 1 && y > 0 && y < G - 1) {
+                    px += (Math.random() - 0.5) * step * 0.8;
+                    py += (Math.random() - 0.5) * step * 0.8;
+                }
+                pts.push({ x: px, y: py });
+            }
+        }
+
+        for (let y = 0; y < G - 1; y++) {
+            for (let x = 0; x < G - 1; x++) {
+                const p1 = pts[y * G + x], p2 = pts[y * G + (x + 1)];
+                const p3 = pts[(y + 1) * G + (x + 1)], p4 = pts[(y + 1) * G + x];
+                const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                const isDark = Math.random() < 0.125;
+                const color = isDark ? DARK : VIBRANT[Math.floor(Math.random() * VIBRANT.length)];
+                if (!isDark && x < 3) colColors[x].push(color);
+                poly.setAttribute('points', `${p1.x},${p1.y} ${p2.x},${p2.y} ${p3.x},${p3.y} ${p4.x},${p4.y}`);
+                poly.setAttribute('fill', color);
+                poly.setAttribute('stroke', color);
+                poly.setAttribute('stroke-width', '0.5');
+                svg.appendChild(poly);
+            }
+        }
+        return colColors;
+    }
+
+    /* ── Anime les lettres du mot OUTILS ── */
+    function buildLetters(colColors) {
+        const container = document.getElementById('word-outils');
+        if (!container) return;
+        /* première fois : créer les spans */
+        if (!container.dataset.built) {
+            'OUTILS'.split('').forEach(ch => {
+                const s = document.createElement('span');
+                s.textContent = ch;
+                s.className = 'logo-letter';
+                container.appendChild(s);
+            });
+            container.dataset.built = '1';
+        }
+        container.querySelectorAll('.logo-letter').forEach((l, i) => {
+            const col = i < 2 ? 0 : (i < 4 ? 1 : 2);
+            const pool = colColors && colColors[col].length ? colColors[col] : VIBRANT;
+            l.style.color = pool[Math.floor(Math.random() * pool.length)];
+        });
+    }
+
+    /* ── Point d'entrée public (appelé par onclick du logo) ── */
+    window.refreshLogo = function() {
+        const colColors = buildMosaic();
+        buildLetters(colColors);
+        randomizeBadgeLines();
+    };
+
+    /* ── Couleur badge contrastée selon la couleur du bouton parent ── */
+    function randomizeBadgeLines() {
+        /*
+         * Charte Quartz Ink & Coral :
+         *   #0A2472 Bleu Encre   #006466 Émeraude
+         *   #F46060 Corail       #FFD972 Or Blanc
+         *
+         * Pour chaque couleur de bouton, on définit les couleurs
+         * de badge qui contrastent vraiment (pas de foncé sur foncé).
+         */
+        const contrast = {
+            'btn-blue'  : ['#F46060', '#FFD972'],           // foncé → corail ou or
+            'btn-purple': ['#F46060', '#FFD972'],           // foncé → corail ou or
+            'btn-google': ['#FFD972', '#F46060'],           // foncé → or ou corail
+            'btn-green' : ['#FFD972', '#F46060'],           // vert foncé → or ou corail
+            'btn-orange': ['#0A2472', '#006466'],           // chaud → bleu ou émeraude
+            'btn-red'   : ['#FFD972', '#0A2472'],           // corail → or ou bleu encre
+        };
+        const darkIcon = new Set(['#FFD972']); // jaune → icône sombre
+
+        document.querySelectorAll('.badge-lines').forEach(badge => {
+            const btn = badge.closest('.btn-3d');
+            if (!btn) return;
+
+            /* Trouve la classe de couleur du bouton */
+            const cls = [...btn.classList].find(c => contrast[c]) || 'btn-blue';
+            const pool = contrast[cls];
+            const color = pool[Math.floor(Math.random() * pool.length)];
+
+            badge.style.background = color;
+            const icon = badge.querySelector('i');
+            if (icon) {
+                icon.style.color = darkIcon.has(color) ? '#0A2472' : 'white';
+            }
+        });
+    }
+
+    /* ── Hover reset des lettres ── */
+    document.addEventListener('DOMContentLoaded', () => {
+        const box = document.querySelector('.logo-box');
+        if (box) {
+            box.addEventListener('mouseleave', () => {
+                document.querySelectorAll('.logo-letter').forEach(l => l.style.color = '');
+            });
+        }
+        /* Init */
+        window.refreshLogo();
+    });
+})();
 </script>
 </body>
 </html>
