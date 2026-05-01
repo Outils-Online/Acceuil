@@ -3,22 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>Générateur de Références Bibliographiques</title>
+  <title>Générateur de Citations Bibliographiques</title>
   <!-- Polices selon charte -->
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
-  <!-- Font Awesome 6 (gratuit) -->
+  <!-- Font Awesome 6 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
   <style>
     /* ===== VARIABLES — Charte Graphique Ivoire & Corail ===== */
     :root {
-      --bg-page: #FDFCF0;            /* Fond principal Ivoire */
-      --bg-card: #FFFFFF;            /* Surfaces : blanc pur */
-      --primary: #0A2472;            /* Bleu profond pour titres et structure */
-      --secondary: #006466;          /* Vert forêt pour bordures, détails */
-      --accent: #F46060;             /* Corail pour boutons d'action, alertes */
-      --highlight: #FFD972;          /* Jaune ambre pour mises en évidence */
-      --ink-light: #5B6E8C;          /* Gris-bleu pour textes secondaires */
-      --border-light: #E2E0D0;       /* Bordure douce sur fond clair */
+      --bg-page: #FDFCF0;
+      --bg-card: #FFFFFF;
+      --primary: #0A2472;
+      --secondary: #006466;
+      --accent: #F46060;
+      --highlight: #FFD972;
+      --ink-light: #5B6E8C;
+      --border-light: #E2E0D0;
       --shadow-default: 0 4px 12px rgba(10,36,114,0.15);
       --shadow-hover: 0 8px 20px rgba(10,36,114,0.2);
       --radius-card: 24px;
@@ -27,8 +27,7 @@
       --transition: 0.2s ease;
     }
 
-    /* ===== RESET & BASE ===== */
-    *, *::before, *::after {
+    * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
@@ -43,7 +42,7 @@
       line-height: 1.6;
     }
 
-    /* ===== BOUTON FERMETURE (croix) en haut à droite ===== */
+    /* Croix fermeture */
     .close-btn {
       position: fixed;
       top: 20px;
@@ -70,7 +69,6 @@
       transform: scale(1.02);
     }
 
-    /* ===== LAYOUT ===== */
     .container {
       max-width: 1000px;
       margin: 0 auto;
@@ -80,7 +78,6 @@
       gap: 2rem;
     }
 
-    /* ===== SECTION TITLE ===== */
     .section-title {
       font-family: 'Space Grotesk', sans-serif;
       font-size: 1.7rem;
@@ -95,7 +92,7 @@
       color: var(--ink-light);
     }
 
-    /* ===== TYPE SELECTOR ===== */
+    /* Type selector */
     .type-grid {
       display: flex;
       flex-wrap: wrap;
@@ -106,7 +103,7 @@
       padding: 8px 20px;
       border: 1.5px solid var(--secondary);
       border-radius: var(--radius-button);
-      background: transparent;
+      background: var(--bg-card);
       color: var(--primary);
       font-family: 'Inter', sans-serif;
       font-size: 0.85rem;
@@ -114,16 +111,11 @@
       cursor: pointer;
       transition: all var(--transition);
       white-space: nowrap;
-      background-color: var(--bg-card);
       display: inline-flex;
       align-items: center;
       gap: 8px;
     }
-
-    .type-btn i {
-      font-size: 1rem;
-    }
-
+    .type-btn i { font-size: 1rem; }
     .type-btn:hover {
       background: var(--accent);
       border-color: var(--accent);
@@ -131,14 +123,22 @@
       transform: translateY(-2px);
       box-shadow: var(--shadow-default);
     }
-
     .type-btn.active {
       background: var(--accent);
       border-color: var(--accent);
       color: white;
     }
+    .type-btn--scan {
+      background: var(--secondary) !important;
+      color: white !important;
+      border-color: var(--secondary) !important;
+    }
+    .type-btn--scan:hover {
+      background: var(--accent) !important;
+      border-color: var(--accent) !important;
+    }
 
-    /* ===== CARD ===== */
+    /* Cards */
     .card {
       background: var(--bg-card);
       border: 1px solid var(--border-light);
@@ -147,10 +147,7 @@
       box-shadow: var(--shadow-default);
       transition: box-shadow var(--transition);
     }
-
-    .card:hover {
-      box-shadow: var(--shadow-hover);
-    }
+    .card:hover { box-shadow: var(--shadow-hover); }
 
     .card-title {
       font-family: 'Space Grotesk', sans-serif;
@@ -164,32 +161,21 @@
       align-items: center;
       gap: 10px;
     }
-
     .card-title-icon {
       width: 8px;
       height: 8px;
       background: var(--accent);
       border-radius: 50%;
-      flex-shrink: 0;
     }
 
-    /* ===== FORM ===== */
+    /* Form */
     .form-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
       gap: 20px;
     }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .form-group.full {
-      grid-column: 1 / -1;
-    }
-
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group.full { grid-column: 1 / -1; }
     label {
       font-size: 0.75rem;
       font-weight: 700;
@@ -197,21 +183,14 @@
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
-
-    label .req {
-      color: var(--accent);
-      margin-left: 3px;
-    }
-
+    label .req { color: var(--accent); margin-left: 3px; }
     label .opt {
       font-weight: 400;
       color: var(--ink-light);
       text-transform: none;
-      letter-spacing: 0;
       font-size: 0.7rem;
       margin-left: 6px;
     }
-
     input, select, textarea {
       padding: 12px 14px;
       border: 1px solid var(--secondary);
@@ -224,54 +203,26 @@
       outline: none;
       width: 100%;
     }
-
     input:focus, select:focus, textarea:focus {
       border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(244, 96, 96, 0.2);
+      box-shadow: 0 0 0 3px rgba(244,96,96,0.2);
       background: var(--bg-card);
     }
-
     input.error, select.error {
       border-color: var(--accent);
-      background-color: rgba(244, 96, 96, 0.05);
+      background-color: rgba(244,96,96,0.05);
     }
+    .field-hint { font-size: 0.7rem; color: var(--ink-light); font-style: italic; margin-top: 2px; }
+    .error-msg { font-size: 0.7rem; color: var(--accent); display: none; margin-top: 4px; }
+    .error-msg.visible { display: block; }
 
-    textarea {
-      resize: vertical;
-      min-height: 80px;
-    }
-
-    select {
-      cursor: pointer;
-    }
-
-    .field-hint {
-      font-size: 0.7rem;
-      color: var(--ink-light);
-      font-style: italic;
-      margin-top: 2px;
-    }
-
-    .error-msg {
-      font-size: 0.7rem;
-      color: var(--accent);
-      display: none;
-      margin-top: 4px;
-    }
-
-    .error-msg.visible {
-      display: block;
-    }
-
-    /* ===== ACTIONS ===== */
+    /* Buttons */
     .form-actions {
       display: flex;
       flex-wrap: wrap;
       gap: 14px;
       margin-top: 2rem;
-      align-items: center;
     }
-
     .btn {
       padding: 12px 26px;
       border-radius: var(--radius-button);
@@ -285,32 +236,28 @@
       align-items: center;
       gap: 8px;
     }
-
     .btn-primary {
       background: var(--accent);
       color: white;
-      box-shadow: 0 2px 6px rgba(244, 96, 96, 0.3);
+      box-shadow: 0 2px 6px rgba(244,96,96,0.3);
     }
-
     .btn-primary:hover {
       background: #E04545;
       transform: translateY(-2px);
-      box-shadow: 0 6px 14px rgba(244, 96, 96, 0.4);
+      box-shadow: 0 6px 14px rgba(244,96,96,0.4);
     }
-
     .btn-secondary {
       background: transparent;
       color: var(--primary);
       border: 1.5px solid var(--secondary);
     }
-
     .btn-secondary:hover {
       border-color: var(--accent);
       color: var(--accent);
       transform: translateY(-2px);
     }
 
-    /* ===== RESULT ===== */
+    /* Result */
     .result-box {
       background: var(--bg-page);
       border: 2px dashed var(--secondary);
@@ -322,41 +269,30 @@
       color: var(--primary);
       min-height: 100px;
       transition: all var(--transition);
-      word-break: break-word;
     }
-
     .result-box.has-content {
       border-style: solid;
       border-color: var(--accent);
-      background: rgba(244, 96, 96, 0.05);
+      background: rgba(244,96,96,0.05);
     }
-
     .result-placeholder {
       color: var(--ink-light);
       font-family: 'Inter', sans-serif;
       font-style: italic;
-      font-size: 0.9rem;
     }
-
     .result-actions {
       display: flex;
       gap: 12px;
       margin-top: 16px;
       flex-wrap: wrap;
     }
-
     .btn-copy {
       background: var(--primary);
       color: white;
       font-size: 0.85rem;
       padding: 8px 20px;
     }
-
-    .btn-copy:hover {
-      background: var(--secondary);
-      transform: translateY(-1px);
-    }
-
+    .btn-copy:hover { background: var(--secondary); transform: translateY(-1px); }
     .btn-save {
       background: transparent;
       border: 1.5px solid var(--secondary);
@@ -364,13 +300,7 @@
       font-size: 0.85rem;
       padding: 8px 20px;
     }
-
-    .btn-save:hover {
-      border-color: var(--accent);
-      color: var(--accent);
-      transform: translateY(-1px);
-    }
-
+    .btn-save:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
     .copy-confirm {
       font-size: 0.8rem;
       color: #2e7d32;
@@ -382,19 +312,15 @@
       padding: 5px 12px;
       border-radius: 40px;
     }
+    .copy-confirm.show { display: flex; }
 
-    .copy-confirm.show {
-      display: flex;
-    }
-
-    /* ===== HISTORY ===== */
+    /* History */
     .history-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
       margin-bottom: 1.2rem;
     }
-
     .history-count {
       font-size: 0.75rem;
       background: var(--accent);
@@ -404,15 +330,12 @@
       font-weight: 700;
       margin-left: 10px;
     }
-
     .history-empty {
       color: var(--ink-light);
       font-style: italic;
-      font-size: 0.9rem;
       text-align: center;
       padding: 1.8rem 0;
     }
-
     .history-list {
       display: flex;
       flex-direction: column;
@@ -420,7 +343,6 @@
       max-height: 420px;
       overflow-y: auto;
     }
-
     .history-item {
       background: var(--bg-page);
       border: 1px solid var(--border-light);
@@ -431,17 +353,8 @@
       gap: 12px;
       transition: all var(--transition);
     }
-
-    .history-item:hover {
-      border-color: var(--secondary);
-      box-shadow: var(--shadow-default);
-    }
-
-    .history-item-content {
-      flex: 1;
-      min-width: 0;
-    }
-
+    .history-item:hover { border-color: var(--secondary); box-shadow: var(--shadow-default); }
+    .history-item-content { flex: 1; min-width: 0; }
     .history-type {
       font-size: 0.7rem;
       font-weight: 700;
@@ -453,33 +366,19 @@
       align-items: center;
       gap: 5px;
     }
-
     .history-text {
       font-family: 'Space Grotesk', serif;
       font-size: 0.85rem;
       line-height: 1.5;
-      color: var(--primary);
       overflow: hidden;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
     }
-
-    .history-date {
-      font-size: 0.7rem;
-      color: var(--ink-light);
-      margin-top: 5px;
-    }
-
-    .history-actions {
-      display: flex;
-      gap: 6px;
-      flex-shrink: 0;
-    }
-
+    .history-date { font-size: 0.7rem; color: var(--ink-light); margin-top: 5px; }
+    .history-actions { display: flex; gap: 6px; flex-shrink: 0; }
     .btn-icon {
-      width: 32px;
-      height: 32px;
+      width: 32px; height: 32px;
       border: none;
       background: transparent;
       border-radius: 12px;
@@ -491,35 +390,10 @@
       transition: all var(--transition);
       color: var(--primary);
     }
+    .btn-icon:hover { background: var(--secondary); color: white; }
+    .btn-icon.danger:hover { background: var(--accent); color: white; }
 
-    .btn-icon i {
-      font-size: 1rem;
-    }
-
-    .btn-icon:hover {
-      background: var(--secondary);
-      color: white;
-    }
-
-    .btn-icon.danger:hover {
-      background: var(--accent);
-      color: white;
-    }
-
-    /* ===== SCROLLBAR ===== */
-    .history-list::-webkit-scrollbar {
-      width: 5px;
-    }
-    .history-list::-webkit-scrollbar-track {
-      background: var(--border-light);
-      border-radius: 10px;
-    }
-    .history-list::-webkit-scrollbar-thumb {
-      background: var(--secondary);
-      border-radius: 10px;
-    }
-
-    /* ===== TOAST ===== */
+    /* Toast */
     .toast {
       position: fixed;
       bottom: 2rem;
@@ -537,89 +411,69 @@
       z-index: 300;
       box-shadow: var(--shadow-default);
     }
+    .toast.show { opacity: 1; transform: translateY(0); }
 
-    .toast.show {
-      opacity: 1;
-      transform: translateY(0);
+    /* Scanner overlay */
+    #isbn-scan-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(0,0,0,0.93);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      padding: 16px;
+    }
+    #isbn-scan-video {
+      width: 100%;
+      max-width: 460px;
+      border-radius: 24px;
+      box-shadow: 0 12px 28px black;
+    }
+    #isbn-scan-hint {
+      color: #bbb;
+      font-size: 12px;
+      text-align: center;
+    }
+    .scan-close {
+      background: transparent;
+      border: 1.5px solid rgba(255,255,255,0.4);
+      color: white;
+      padding: 8px 20px;
+      border-radius: 15px;
+      cursor: pointer;
     }
 
-    /* ===== RESPONSIVE ===== */
     @media (max-width: 680px) {
-      .form-grid {
-        grid-template-columns: 1fr;
-        gap: 16px;
-      }
-      .type-grid {
-        gap: 10px;
-      }
-      .type-btn {
-        font-size: 0.8rem;
-        padding: 6px 14px;
-      }
-      .card-title {
-        font-size: 1rem;
-      }
-      .close-btn {
-        top: 12px;
-        right: 16px;
-        width: 40px;
-        height: 40px;
-      }
-    }
-
-    /* ===== SCAN BUTTON (type-btn special) ===== */
-    .type-btn--scan {
-      background: var(--secondary) !important;
-      color: white !important;
-      border-color: var(--secondary) !important;
-      font-weight: 700;
-    }
-    .type-btn--scan:hover {
-      background: var(--accent) !important;
-      border-color: var(--accent) !important;
-    }
-
-    /* ===== ISBN FEEDBACK ===== */
-    #isbn-feedback {
-      font-size: 0.7rem;
-      margin-top: 4px;
-      font-weight: 500;
+      .form-grid { grid-template-columns: 1fr; gap: 16px; }
+      .type-btn { font-size: 0.8rem; padding: 6px 14px; }
+      .close-btn { top: 12px; right: 16px; width: 40px; height: 40px; }
     }
   </style>
 </head>
 <body>
 
-<!-- Bouton fermeture croix en haut à droite -->
-<button class="close-btn" onclick="quitterApplication()" title="Fermer">
-  <i class="fas fa-times"></i>
-</button>
+<button class="close-btn" onclick="quitterApplication()"><i class="fas fa-times"></i></button>
 
 <div class="container">
   <div>
-    <p class="section-title">Générateur de références 
-    </p>
-    <p class="section-sub" style="margin-bottom:1rem;">Sélectionnez le type de source à citer (style bibliographique français)</p>
+    <p class="section-title">Générateur de citations</p>
+    <p class="section-sub" style="margin-bottom:1rem;">Sélectionnez le type de source à citer</p>
     <div class="type-grid" id="type-grid"></div>
   </div>
 
   <div class="card" id="form-card">
-    <div class="card-title">
-      <span class="card-title-icon"></span>
-      <span id="form-card-title">Choisissez un type de source</span>
-    </div>
+    <div class="card-title"><span class="card-title-icon"></span><span id="form-card-title">Choisissez un type de source</span></div>
     <div id="dynamic-form"></div>
   </div>
 
   <div class="card">
-    <div class="card-title">
-      <span class="card-title-icon"></span>
-      Résultat
-    </div>
-    <div class="result-box" id="result-box">
-      <span class="result-placeholder">La citation générée apparaîtra ici…</span>
-    </div>
+    <div class="card-title"><span class="card-title-icon"></span>Résultat</div>
+    <div class="result-box" id="result-box"><span class="result-placeholder">La citation générée apparaîtra ici…</span></div>
     <div class="result-actions" id="result-actions" style="display:none;">
-      <button class="btn btn-copy" id="btn-copy" onclick="copyCitation()"><i class="fas fa-copy"></i> Copier</button>
+      <button class="btn btn-copy" onclick="copyCitation()"><i class="fas fa-copy"></i> Copier</button>
       <button class="btn btn-save" onclick="saveCitation()"><i class="fas fa-save"></i> Sauvegarder</button>
       <span class="copy-confirm" id="copy-confirm"><i class="fas fa-check-circle"></i> Copié !</span>
     </div>
@@ -628,211 +482,361 @@
   <div class="card">
     <div class="history-header">
       <div class="card-title" style="margin-bottom:0;padding-bottom:0;border:none;">
-        <span class="card-title-icon"></span>
-        Historique
+        <span class="card-title-icon"></span>Historique
         <span class="history-count" id="history-count">0</span>
       </div>
       <button class="btn btn-secondary" style="font-size:0.8rem;padding:6px 18px;" onclick="clearHistory()"><i class="fas fa-trash-alt"></i> Tout effacer</button>
     </div>
-    <div id="history-list" class="history-list">
-      <p class="history-empty">Aucune citation sauvegardée.</p>
-    </div>
+    <div id="history-list" class="history-list"><p class="history-empty">Aucune citation sauvegardée.</p></div>
   </div>
 </div>
-
 <div class="toast" id="toast"></div>
 
 <script>
-/* ========================================================
-   MODÈLES DE FORMULAIRES (avec icônes Font Awesome)
-   ======================================================== */
+/* ---------- MODÈLES ---------- */
 const TYPES = {
-  ouvrage: {
-    label: 'Ouvrage',
-    icon: 'fas fa-book',
-    fields: [
-      { id: 'isbn', label: 'ISBN', required: false, full: true, hint: 'ex: 9782070368228 — saisir ou scanner pour auto-remplir' },
-      { id: 'prenoms', label: 'Prénom(s)', required: true, hint: 'ex: Jean-Paul' },
-      { id: 'noms', label: 'Nom(s)', required: true, hint: 'ex: Sartre' },
-      { id: 'titre', label: 'Titre', required: true, full: true },
-      { id: 'ville', label: 'Ville d\'édition', required: true },
-      { id: 'editeur', label: 'Éditeur', required: true },
-      { id: 'collection', label: 'Collection', required: false },
-      { id: 'annee', label: 'Année', required: true, hint: 'ex: 2023', type: 'number' },
-      { id: 'page', label: 'Page(s)', required: false, hint: 'ex: 45 ou 45-48' },
-    ]
-  },
-  periodique: {
-    label: 'Périodique',
-    icon: 'fas fa-newspaper',
-    fields: [
-      { id: 'prenoms', label: 'Prénom(s)', required: true },
-      { id: 'noms', label: 'Nom(s)', required: true },
-      { id: 'titre', label: 'Titre de l\'article', required: true, full: true },
-      { id: 'ville', label: 'Ville d\'édition', required: true },
-      { id: 'journal', label: 'Journal', required: true },
-      { id: 'date', label: 'Date de publication', required: true, type: 'date' },
-      { id: 'page', label: 'Page(s)', required: false },
-      { id: 'url', label: 'URL', required: false, full: true, type: 'url' },
-    ]
-  },
-  musique: {
-    label: 'Musique',
-    icon: 'fas fa-music',
-    fields: [
-      { id: 'prenoms', label: 'Prénom(s)', required: true },
-      { id: 'noms', label: 'Nom(s)', required: true },
-      { id: 'titre', label: 'Titre de la musique', required: true },
-      { id: 'min', label: 'Durée (min)', required: true, type: 'number', hint: 'ex: 3' },
-      { id: 'sec', label: 'Durée (sec)', required: true, type: 'number', hint: 'ex: 45' },
-      { id: 'album', label: 'Titre de l\'album', required: true },
-      { id: 'ville', label: 'Ville du producteur', required: true },
-      { id: 'producteur', label: 'Producteur', required: true },
-      { id: 'annee', label: 'Année de sortie', required: true, type: 'number' },
-      { id: 'url', label: 'URL', required: false, full: true, type: 'url' },
-    ]
-  },
-  video: {
-    label: 'Vidéo',
-    icon: 'fas fa-video',
-    fields: [
-      { id: 'prenoms', label: 'Prénom(s)', required: true },
-      { id: 'noms', label: 'Nom(s)', required: true },
-      { id: 'titre', label: 'Titre', required: true, full: true },
-      { id: 'ville', label: 'Ville d\'édition', required: true },
-      { id: 'editeur', label: 'Éditeur', required: true },
-      { id: 'collection', label: 'Titre de collection', required: false },
-      { id: 'annee', label: 'Année de publication', required: true, type: 'number' },
-      { id: 'min', label: 'Durée (min)', required: true, type: 'number', hint: 'ex: 90' },
-      { id: 'sec', label: 'Durée (sec)', required: true, type: 'number', hint: 'ex: 00' },
-      { id: 'url', label: 'URL', required: false, full: true, type: 'url' },
-    ]
-  },
-  revue: {
-    label: 'Revue',
-    icon: 'fas fa-graduation-cap',
-    fields: [
-      { id: 'prenoms', label: 'Prénom(s) auteur article', required: true },
-      { id: 'noms', label: 'Nom(s) auteur article', required: true },
-      { id: 'titre_article', label: 'Titre de l\'article', required: true, full: true },
-      { id: 'prenoms_dir', label: 'Prénom(s) directeur', required: false },
-      { id: 'noms_dir', label: 'Nom(s) directeur', required: false },
-      { id: 'titre_numero', label: 'Titre du numéro de la revue', required: true, full: true },
-      { id: 'ville', label: 'Ville d\'édition', required: true },
-      { id: 'titre_revue', label: 'Titre de la revue', required: true },
-      { id: 'numero', label: 'Numéro', required: false, hint: 'ex: 12' },
-      { id: 'annee', label: 'Année', required: true, type: 'number' },
-      { id: 'page', label: 'Page(s)', required: false },
-      { id: 'url', label: 'URL', required: false, full: true, type: 'url' },
-    ]
-  },
-  loi: {
-    label: 'Loi',
-    icon: 'fas fa-gavel',
-    fields: [
-      { id: 'type_acte', label: 'Type d\'acte', required: true, type: 'select', options: ['Loi', 'Ordonnance', 'Décret', 'Arrêté'] },
-      { id: 'numero_loi', label: 'Numéro de la loi/ordonnance', required: true, hint: 'ex: 2023-703' },
-      { id: 'date_loi', label: 'Date de la loi', required: true, type: 'date' },
-      { id: 'article', label: 'Numéro d\'article', required: false, hint: 'ex: 12' },
-      { id: 'recueil', label: 'Recueil de lois', required: false, hint: 'ex: Journal Officiel' },
-      { id: 'numero_article', label: 'Numéro d\'article (version)', required: false },
-      { id: 'date_vigueur', label: 'Date de mise en vigueur', required: false, type: 'date' },
-      { id: 'url', label: 'URL', required: false, full: true, type: 'url' },
-    ]
-  },
-  siteweb: {
-    label: 'Site web',
-    icon: 'fas fa-globe',
-    fields: [
-      { id: 'auteur', label: 'Nom(s) auteur(e)(s)', required: false, hint: 'ex: Dupont ou Mairie de Paris', full: true },
-      { id: 'titre', label: 'Titre du site', required: true, full: true },
-      { id: 'plateforme', label: 'Plateforme / Site original', required: false, hint: 'ex: Wikipedia, Ministère de…' },
-      { id: 'url', label: 'URL', required: true, full: true, type: 'url' },
-    ]
-  },
-  dictionnaire: {
-    label: 'Dictionnaire',
-    icon: 'fas fa-book-open',
-    fields: [
-      { id: 'prenoms', label: 'Prénom(s)', required: true },
-      { id: 'noms', label: 'Nom(s)', required: true },
-      { id: 'titre', label: 'Titre du dictionnaire', required: true, full: true },
-      { id: 'volume', label: 'Volume', required: false, hint: 'ex: tome II' },
-      { id: 'ville', label: 'Ville d\'édition', required: true },
-      { id: 'editeur', label: 'Éditeur', required: true },
-      { id: 'annee', label: 'Année', required: true, type: 'number' },
-      { id: 'page', label: 'Page(s)', required: false },
-      { id: 'url', label: 'URL', required: false, full: true, type: 'url' },
-    ]
-  }
+  ouvrage: { label:'Ouvrage', icon:'fas fa-book', fields:[
+    { id:'isbn', label:'ISBN', required:false, full:true, hint:'ex: 9782070368228 — scanner auto' },
+    { id:'prenoms', label:'Prénom(s)', required:true },
+    { id:'noms', label:'Nom(s)', required:true },
+    { id:'titre', label:'Titre', required:true, full:true },
+    { id:'ville', label:'Ville d\'édition', required:true },
+    { id:'editeur', label:'Éditeur', required:true },
+    { id:'collection', label:'Collection', required:false },
+    { id:'annee', label:'Année', required:true, type:'number' },
+    { id:'page', label:'Page(s)', required:false }
+  ] },
+  periodique:{ label:'Périodique', icon:'fas fa-newspaper', fields:[
+    { id:'prenoms', label:'Prénom(s)', required:true },
+    { id:'noms', label:'Nom(s)', required:true },
+    { id:'titre', label:'Titre de l\'article', required:true, full:true },
+    { id:'ville', label:'Ville d\'édition', required:true },
+    { id:'journal', label:'Journal', required:true },
+    { id:'date', label:'Date', required:true, type:'date' },
+    { id:'page', label:'Page(s)', required:false },
+    { id:'url', label:'URL', required:false, full:true, type:'url' }
+  ] },
+  musique:{ label:'Musique', icon:'fas fa-music', fields:[
+    { id:'prenoms', label:'Prénom(s)', required:true },
+    { id:'noms', label:'Nom(s)', required:true },
+    { id:'titre', label:'Titre', required:true },
+    { id:'min', label:'Durée (min)', required:true, type:'number' },
+    { id:'sec', label:'Durée (sec)', required:true, type:'number' },
+    { id:'album', label:'Album', required:true },
+    { id:'ville', label:'Ville', required:true },
+    { id:'producteur', label:'Producteur', required:true },
+    { id:'annee', label:'Année', required:true, type:'number' },
+    { id:'url', label:'URL', required:false, full:true }
+  ] },
+  video:{ label:'Vidéo', icon:'fas fa-video', fields:[
+    { id:'prenoms', label:'Prénom(s)', required:true },
+    { id:'noms', label:'Nom(s)', required:true },
+    { id:'titre', label:'Titre', required:true, full:true },
+    { id:'ville', label:'Ville', required:true },
+    { id:'editeur', label:'Éditeur', required:true },
+    { id:'collection', label:'Collection', required:false },
+    { id:'annee', label:'Année', required:true, type:'number' },
+    { id:'min', label:'Durée (min)', required:true, type:'number' },
+    { id:'sec', label:'Durée (sec)', required:true, type:'number' },
+    { id:'url', label:'URL', required:false }
+  ] },
+  revue:{ label:'Revue', icon:'fas fa-graduation-cap', fields:[
+    { id:'prenoms', label:'Prénom(s) auteur', required:true },
+    { id:'noms', label:'Nom(s) auteur', required:true },
+    { id:'titre_article', label:'Titre article', required:true, full:true },
+    { id:'prenoms_dir', label:'Prénom(s) dir.', required:false },
+    { id:'noms_dir', label:'Nom(s) dir.', required:false },
+    { id:'titre_numero', label:'Titre du numéro', required:true, full:true },
+    { id:'ville', label:'Ville', required:true },
+    { id:'titre_revue', label:'Titre revue', required:true },
+    { id:'numero', label:'Numéro', required:false },
+    { id:'annee', label:'Année', required:true, type:'number' },
+    { id:'page', label:'Page(s)', required:false },
+    { id:'url', label:'URL', required:false }
+  ] },
+  loi:{ label:'Loi', icon:'fas fa-gavel', fields:[
+    { id:'type_acte', label:'Type d\'acte', required:true, type:'select', options:['Loi','Ordonnance','Décret','Arrêté'] },
+    { id:'numero_loi', label:'Numéro', required:true },
+    { id:'date_loi', label:'Date', required:true, type:'date' },
+    { id:'article', label:'Article', required:false },
+    { id:'recueil', label:'Recueil', required:false },
+    { id:'numero_article', label:'Numéro article', required:false },
+    { id:'date_vigueur', label:'Date vigueur', required:false, type:'date' },
+    { id:'url', label:'URL', required:false }
+  ] },
+  siteweb:{ label:'Site web', icon:'fas fa-globe', fields:[
+    { id:'auteur', label:'Auteur(s)', required:false, full:true },
+    { id:'titre', label:'Titre du site', required:true, full:true },
+    { id:'plateforme', label:'Plateforme', required:false },
+    { id:'url', label:'URL', required:true, full:true }
+  ] },
+  dictionnaire:{ label:'Dictionnaire', icon:'fas fa-book-open', fields:[
+    { id:'prenoms', label:'Prénom(s)', required:true },
+    { id:'noms', label:'Nom(s)', required:true },
+    { id:'titre', label:'Titre', required:true, full:true },
+    { id:'volume', label:'Volume', required:false },
+    { id:'ville', label:'Ville', required:true },
+    { id:'editeur', label:'Éditeur', required:true },
+    { id:'annee', label:'Année', required:true, type:'number' },
+    { id:'page', label:'Page(s)', required:false },
+    { id:'url', label:'URL', required:false }
+  ] }
 };
 
-/* ──────────────── FONCTIONS UTILES & GÉNÉRATEURS ────────────── */
-function formatDateFR(dateStr) {
-  if (!dateStr) return '';
-  const MOIS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
-  const [y, m, d] = dateStr.split('-');
-  return `${parseInt(d)} ${MOIS[parseInt(m)-1]} ${y}`;
-}
-function formatDuration(min, sec) {
-  const m = String(parseInt(min)||0).padStart(2,'0');
-  const s = String(parseInt(sec)||0).padStart(2,'0');
-  return `${m} min. ${s} sec.`;
-}
-function todayFR() { return formatDateFR(new Date().toISOString().split('T')[0]); }
-function v(id) { const el = document.getElementById('f_'+id); return el ? el.value.trim() : ''; }
+function v(id){ let el=document.getElementById('f_'+id); return el?el.value.trim():''; }
+function formatDateFR(d){ if(!d) return ''; const m=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre']; let [y,mn,dd]=d.split('-'); return `${parseInt(dd)} ${m[parseInt(mn)-1]} ${y}`; }
+function todayFR(){ return formatDateFR(new Date().toISOString().split('T')[0]); }
+function formatDuration(min,sec){ return `${String(parseInt(min)||0).padStart(2,'0')} min. ${String(parseInt(sec)||0).padStart(2,'0')} sec.`; }
 
 const GENERATORS = {
-  ouvrage(d) { let c = `${d.prenoms} ${d.noms}, <em>${d.titre}</em>, ${d.ville}, ${d.editeur}`; if (d.collection) c += `, coll. « ${d.collection} »`; c += `, ${d.annee}`; if (d.page) c += `, p. ${d.page}`; c += '.'; return c; },
-  periodique(d) { let c = `${d.prenoms} ${d.noms}, « ${d.titre} », ${d.ville}, <em>${d.journal}</em>, ${formatDateFR(d.date)}`; if (d.page) c += `, p. ${d.page}`; if (d.url) c += `, <a href="${d.url}" target="_blank">${d.url}</a> (consulté le : ${todayFR()})`; c += '.'; return c; },
-  musique(d) { let c = `${d.prenoms} ${d.noms}, « ${d.titre} », ${formatDuration(d.min, d.sec)}, dans l'album <em>${d.album}</em>, ${d.ville}, ${d.producteur}, ${d.annee}`; if (d.url) c += `, <a href="${d.url}" target="_blank">${d.url}</a> (consulté le : ${todayFR()})`; c += '.'; return c; },
-  video(d) { let c = `${d.prenoms} ${d.noms}, <em>${d.titre}</em>, ${d.ville}, ${d.editeur}`; if (d.collection) c += `, coll. « ${d.collection} »`; c += `, ${d.annee}, ${formatDuration(d.min, d.sec)}`; if (d.url) c += `, <a href="${d.url}" target="_blank">${d.url}</a> (consulté le : ${todayFR()})`; c += '.'; return c; },
-  revue(d) { let c = `${d.prenoms} ${d.noms}, « ${d.titre_article} »`; if (d.prenoms_dir && d.noms_dir) c += `, dans ${d.prenoms_dir} ${d.noms_dir} (dir)`; c += `, <em>${d.titre_numero}</em>, ${d.ville}, <em>${d.titre_revue}</em>`; if (d.numero) c += `, n°${d.numero}`; c += `, ${d.annee}`; if (d.page) c += `, p. ${d.page}`; if (d.url) c += `, <a href="${d.url}" target="_blank">${d.url}</a> (consulté le : ${todayFR()})`; c += '.'; return c; },
-  loi(d) { let c = `${d.type_acte} n°${d.numero_loi} du ${formatDateFR(d.date_loi)}`; if (d.article) c += ` - art. ${d.article}`; if (d.recueil) c += `, ${d.recueil} [en ligne]`; if (d.numero_article && d.date_vigueur) c += `, Article ${d.numero_article} version en vigueur depuis le ${formatDateFR(d.date_vigueur)}`; if (d.url) c += `, <a href="${d.url}" target="_blank">${d.url}</a> (consulté le : ${todayFR()})`; c += '.'; return c; },
-  siteweb(d) { let c = ''; if (d.auteur) c += `${d.auteur}, `; c += `« ${d.titre} »`; if (d.plateforme) c += `, ${d.plateforme}`; c += `, <a href="${d.url}" target="_blank">${d.url}</a> (consulté le : ${todayFR()})`; c += '.'; return c; },
-  dictionnaire(d) { let c = `${d.prenoms} ${d.noms} (dir), <em>${d.titre}</em>`; if (d.volume) c += `, ${d.volume}`; c += `, ${d.ville}, ${d.editeur}, ${d.annee}`; if (d.page) c += `, p. ${d.page}`; if (d.url) c += `, <a href="${d.url}" target="_blank">${d.url}</a> (consulté le : ${todayFR()})`; c += '.'; return c; }
+  ouvrage:d=>`${d.prenoms} ${d.noms}, <em>${d.titre}</em>, ${d.ville}, ${d.editeur}${d.collection?`, coll. « ${d.collection} `:''}, ${d.annee}${d.page?`, p. ${d.page}`:''}.`,
+  periodique:d=>`${d.prenoms} ${d.noms}, « ${d.titre} », ${d.ville}, <em>${d.journal}</em>, ${formatDateFR(d.date)}${d.page?`, p. ${d.page}`:''}${d.url?`, <a href="${d.url}" target="_blank">${d.url}</a> (consulté le : ${todayFR()})`:''}.`,
+  musique:d=>`${d.prenoms} ${d.noms}, « ${d.titre} », ${formatDuration(d.min,d.sec)}, dans l'album <em>${d.album}</em>, ${d.ville}, ${d.producteur}, ${d.annee}${d.url?`, <a href="${d.url}" target="_blank">${d.url}</a> (consulté le : ${todayFR()})`:''}.`,
+  video:d=>`${d.prenoms} ${d.noms}, <em>${d.titre}</em>, ${d.ville}, ${d.editeur}${d.collection?`, coll. « ${d.collection} `:''}, ${d.annee}, ${formatDuration(d.min,d.sec)}${d.url?`, <a href="${d.url}" target="_blank">${d.url}</a> (consulté le : ${todayFR()})`:''}.`,
+  revue:d=>`${d.prenoms} ${d.noms}, « ${d.titre_article} »${(d.prenoms_dir&&d.noms_dir)?`, dans ${d.prenoms_dir} ${d.noms_dir} (dir)` : ''}, <em>${d.titre_numero}</em>, ${d.ville}, <em>${d.titre_revue}</em>${d.numero?`, n°${d.numero}`:''}, ${d.annee}${d.page?`, p. ${d.page}`:''}${d.url?`, <a href="${d.url}" target="_blank">${d.url}</a> (consulté le : ${todayFR()})`:''}.`,
+  loi:d=>`${d.type_acte} n°${d.numero_loi} du ${formatDateFR(d.date_loi)}${d.article?` - art. ${d.article}`:''}${d.recueil?`, ${d.recueil} [en ligne]`:''}${d.numero_article&&d.date_vigueur?`, Article ${d.numero_article} version en vigueur depuis le ${formatDateFR(d.date_vigueur)}`:''}${d.url?`, <a href="${d.url}" target="_blank">${d.url}</a> (consulté le : ${todayFR()})`:''}.`,
+  siteweb:d=>`${d.auteur?d.auteur+', ':''}« ${d.titre} »${d.plateforme?`, ${d.plateforme}`:''}, <a href="${d.url}" target="_blank">${d.url}</a> (consulté le : ${todayFR()}).`,
+  dictionnaire:d=>`${d.prenoms} ${d.noms} (dir), <em>${d.titre}</em>${d.volume?`, ${d.volume}`:''}, ${d.ville}, ${d.editeur}, ${d.annee}${d.page?`, p. ${d.page}`:''}${d.url?`, <a href="${d.url}" target="_blank">${d.url}</a> (consulté le : ${todayFR()})`:''}.`
 };
 
-let currentType = null, currentCitation = '';
-let history = JSON.parse(localStorage.getItem('citatio_history') || '[]');
+let currentType=null, currentCitation='';
+let history=JSON.parse(localStorage.getItem('citatio_history')||'[]');
 
-function renderTypeButtons() {
-  const grid = document.getElementById('type-grid');
-  grid.innerHTML = '';
-  const scanBtn = document.createElement('button');
-  scanBtn.id = 'btn-scan-global';
-  scanBtn.className = 'type-btn type-btn--scan';
-  scanBtn.innerHTML = '<i class="fas fa-camera"></i> Capturer ISBN';
-  scanBtn.onclick = () => { if (typeof globalStartScanner === 'function') globalStartScanner(); };
+function renderTypeButtons(){
+  const grid=document.getElementById('type-grid');
+  grid.innerHTML='';
+  const scanBtn=document.createElement('button');
+  scanBtn.className='type-btn type-btn--scan';
+  scanBtn.innerHTML='<i class="fas fa-camera"></i> Capturer ISBN';
+  scanBtn.onclick=()=>{ if(typeof startScanner==='function') startScanner(); };
   grid.appendChild(scanBtn);
-  Object.entries(TYPES).forEach(([key, type]) => {
-    const btn = document.createElement('button');
-    btn.className = 'type-btn';
-    btn.dataset.type = key;
-    btn.innerHTML = `<i class="${type.icon}"></i> ${type.label}`;
-    btn.onclick = () => selectType(key);
+  Object.entries(TYPES).forEach(([key,type])=>{
+    const btn=document.createElement('button');
+    btn.className='type-btn';
+    btn.dataset.type=key;
+    btn.innerHTML=`<i class="${type.icon}"></i> ${type.label}`;
+    btn.onclick=()=>selectType(key);
     grid.appendChild(btn);
   });
 }
-function selectType(key) { currentType = key; document.querySelectorAll('.type-btn').forEach(b => b.classList.toggle('active', b.dataset.type === key)); document.getElementById('form-card-title').innerHTML = `<i class="${TYPES[key].icon}"></i> ${TYPES[key].label}`; renderForm(key); setResult(''); }
-function renderForm(key) { const fields = TYPES[key].fields; const container = document.getElementById('dynamic-form'); container.innerHTML = ''; const gridDiv = document.createElement('div'); gridDiv.className = 'form-grid'; fields.forEach(f => { const group = document.createElement('div'); group.className = `form-group${f.full ? ' full' : ''}`; const label = document.createElement('label'); label.htmlFor = 'f_' + f.id; label.innerHTML = f.label + (f.required ? '<span class="req">*</span>' : '<span class="opt">(optionnel)</span>'); group.appendChild(label); let input; if (f.type === 'select') { input = document.createElement('select'); f.options.forEach(opt => { const o = document.createElement('option'); o.value = opt; o.textContent = opt; input.appendChild(o); }); } else if (f.type === 'date') { input = document.createElement('input'); input.type = 'date'; } else { input = document.createElement('input'); input.type = f.type || 'text'; if (f.hint) input.placeholder = f.hint; } input.id = 'f_' + f.id; input.required = !!f.required; group.appendChild(input); if (f.hint && f.type !== 'select' && !input.placeholder) { const hint = document.createElement('span'); hint.className = 'field-hint'; hint.textContent = f.hint; group.appendChild(hint); } const errMsg = document.createElement('span'); errMsg.className = 'error-msg'; errMsg.id = 'err_' + f.id; errMsg.textContent = 'Champ requis.'; group.appendChild(errMsg); gridDiv.appendChild(group); }); container.appendChild(gridDiv); const actions = document.createElement('div'); actions.className = 'form-actions'; actions.innerHTML = `<button class="btn btn-primary" onclick="generateCitation()"><i class="fas fa-quote-right"></i> Générer la citation</button><button class="btn btn-secondary" onclick="resetForm()"><i class="fas fa-undo-alt"></i> Réinitialiser</button>`; container.appendChild(actions); }
-function generateCitation() { if (!currentType) return; let valid = true; TYPES[currentType].fields.forEach(f => { const el = document.getElementById('f_' + f.id); const err = document.getElementById('err_' + f.id); if (f.required && el && !el.value.trim()) { el.classList.add('error'); err.classList.add('visible'); valid = false; } else if (el) { el.classList.remove('error'); err.classList.remove('visible'); } }); if (!valid) { showToast('⚠ Veuillez remplir les champs obligatoires.'); return; } const data = {}; TYPES[currentType].fields.forEach(f => { data[f.id] = v(f.id); }); const html = GENERATORS[currentType](data); currentCitation = html; setResult(html); }
-function setResult(html) { const box = document.getElementById('result-box'); const actions = document.getElementById('result-actions'); if (!html) { box.innerHTML = '<span class="result-placeholder">La citation générée apparaîtra ici…</span>'; box.classList.remove('has-content'); actions.style.display = 'none'; currentCitation = ''; } else { box.innerHTML = html; box.classList.add('has-content'); actions.style.display = 'flex'; } }
-function copyCitation() { if (!currentCitation) return; const tmp = document.createElement('div'); tmp.innerHTML = currentCitation; const text = tmp.textContent || tmp.innerText; navigator.clipboard.writeText(text).then(() => { const conf = document.getElementById('copy-confirm'); conf.classList.add('show'); setTimeout(() => conf.classList.remove('show'), 2000); }); }
-function saveCitation() { if (!currentCitation) return; const tmp = document.createElement('div'); tmp.innerHTML = currentCitation; const text = tmp.textContent || tmp.innerText; const item = { id: Date.now(), type: currentType, typeLabel: TYPES[currentType].label, icon: TYPES[currentType].icon, html: currentCitation, text, date: new Date().toLocaleString('fr-FR') }; history.unshift(item); if (history.length > 50) history = history.slice(0,50); localStorage.setItem('citatio_history', JSON.stringify(history)); renderHistory(); showToast('✓ Citation sauvegardée !'); }
-function renderHistory() { const list = document.getElementById('history-list'); const count = document.getElementById('history-count'); count.textContent = history.length; if (!history.length) { list.innerHTML = '<p class="history-empty">Aucune citation sauvegardée.</p>'; return; } list.innerHTML = ''; history.forEach(item => { const el = document.createElement('div'); el.className = 'history-item'; el.innerHTML = `<div class="history-item-content"><div class="history-type"><i class="${item.icon}"></i> ${item.typeLabel}</div><div class="history-text">${item.html}</div><div class="history-date"><i class="far fa-calendar-alt"></i> ${item.date}</div></div><div class="history-actions"><button class="btn-icon" title="Copier" onclick="copyHistoryItem(${item.id})"><i class="fas fa-copy"></i></button><button class="btn-icon danger" title="Supprimer" onclick="deleteHistoryItem(${item.id})"><i class="fas fa-trash-alt"></i></button></div>`; list.appendChild(el); }); }
-function copyHistoryItem(id) { const item = history.find(h => h.id === id); if (!item) return; navigator.clipboard.writeText(item.text).then(() => showToast('✓ Copié !')); }
-function deleteHistoryItem(id) { history = history.filter(h => h.id !== id); localStorage.setItem('citatio_history', JSON.stringify(history)); renderHistory(); }
-function clearHistory() { if (!history.length) return; history = []; localStorage.setItem('citatio_history', JSON.stringify(history)); renderHistory(); showToast('Historique effacé.'); }
-function resetForm() { if (!currentType) return; TYPES[currentType].fields.forEach(f => { const el = document.getElementById('f_' + f.id); if (el) { el.value = ''; el.classList.remove('error'); } const err = document.getElementById('err_' + f.id); if (err) err.classList.remove('visible'); }); setResult(''); }
-function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
-function quitterApplication() { window.top.location.href = 'https://outils-online.github.io/Acceuil/'; }
+function selectType(key){
+  currentType=key;
+  document.querySelectorAll('.type-btn').forEach(b=>b.classList.toggle('active',b.dataset.type===key));
+  document.getElementById('form-card-title').innerHTML=`<i class="${TYPES[key].icon}"></i> ${TYPES[key].label}`;
+  renderForm(key);
+  setResult('');
+}
+function renderForm(key){
+  const fields=TYPES[key].fields;
+  const container=document.getElementById('dynamic-form');
+  container.innerHTML='';
+  const gridDiv=document.createElement('div'); gridDiv.className='form-grid';
+  fields.forEach(f=>{
+    const group=document.createElement('div'); group.className=`form-group${f.full?' full':''}`;
+    const label=document.createElement('label'); label.htmlFor='f_'+f.id;
+    label.innerHTML=f.label+(f.required?'<span class="req">*</span>':'<span class="opt">(optionnel)</span>');
+    group.appendChild(label);
+    let input;
+    if(f.type==='select'){ input=document.createElement('select'); f.options.forEach(opt=>{let o=document.createElement('option'); o.value=opt; o.textContent=opt; input.appendChild(o);});}
+    else if(f.type==='date'){ input=document.createElement('input'); input.type='date';}
+    else{ input=document.createElement('input'); input.type=f.type||'text'; if(f.hint) input.placeholder=f.hint;}
+    input.id='f_'+f.id; input.required=!!f.required;
+    group.appendChild(input);
+    if(f.hint && f.type!=='select' && !input.placeholder){
+      let hintSpan=document.createElement('span'); hintSpan.className='field-hint'; hintSpan.textContent=f.hint; group.appendChild(hintSpan);
+    }
+    let errSpan=document.createElement('span'); errSpan.className='error-msg'; errSpan.id='err_'+f.id; errSpan.textContent='Champ requis.'; group.appendChild(errSpan);
+    gridDiv.appendChild(group);
+  });
+  container.appendChild(gridDiv);
+  let actions=document.createElement('div'); actions.className='form-actions';
+  actions.innerHTML=`<button class="btn btn-primary" onclick="generateCitation()"><i class="fas fa-quote-right"></i> Générer</button><button class="btn btn-secondary" onclick="resetForm()"><i class="fas fa-undo-alt"></i> Réinitialiser</button>`;
+  container.appendChild(actions);
+  setTimeout(()=>setupISBNField(), 0);
+}
+function generateCitation(){
+  if(!currentType) return;
+  let valid=true;
+  TYPES[currentType].fields.forEach(f=>{
+    let el=document.getElementById('f_'+f.id), err=document.getElementById('err_'+f.id);
+    if(f.required && el && !el.value.trim()){ el.classList.add('error'); err.classList.add('visible'); valid=false;}
+    else if(el){ el.classList.remove('error'); err.classList.remove('visible');}
+  });
+  if(!valid){ showToast('⚠ Remplissez les champs obligatoires.'); return; }
+  let data={}; TYPES[currentType].fields.forEach(f=>{ data[f.id]=v(f.id); });
+  let html=GENERATORS[currentType](data);
+  currentCitation=html; setResult(html);
+}
+function setResult(html){
+  let box=document.getElementById('result-box'), actions=document.getElementById('result-actions');
+  if(!html){ box.innerHTML='<span class="result-placeholder">La citation générée apparaîtra ici…</span>'; box.classList.remove('has-content'); actions.style.display='none'; currentCitation='';}
+  else{ box.innerHTML=html; box.classList.add('has-content'); actions.style.display='flex';}
+}
+function copyCitation(){ if(!currentCitation) return; let d=document.createElement('div'); d.innerHTML=currentCitation; navigator.clipboard.writeText(d.textContent||d.innerText).then(()=>{ let c=document.getElementById('copy-confirm'); c.classList.add('show'); setTimeout(()=>c.classList.remove('show'),2000);});}
+function saveCitation(){ if(!currentCitation) return; let d=document.createElement('div'); d.innerHTML=currentCitation; let item={ id:Date.now(), type:currentType, typeLabel:TYPES[currentType].label, icon:TYPES[currentType].icon, html:currentCitation, text:d.textContent||d.innerText, date:new Date().toLocaleString('fr-FR') }; history.unshift(item); if(history.length>50) history=history.slice(0,50); localStorage.setItem('citatio_history',JSON.stringify(history)); renderHistory(); showToast('✓ Sauvegardée');}
+function renderHistory(){ let list=document.getElementById('history-list'), cnt=document.getElementById('history-count'); cnt.textContent=history.length; if(!history.length){ list.innerHTML='<p class="history-empty">Aucune citation sauvegardée.</p>'; return;} list.innerHTML=''; history.forEach(item=>{ let div=document.createElement('div'); div.className='history-item'; div.innerHTML=`<div class="history-item-content"><div class="history-type"><i class="${item.icon}"></i> ${item.typeLabel}</div><div class="history-text">${item.html}</div><div class="history-date"><i class="far fa-calendar-alt"></i> ${item.date}</div></div><div class="history-actions"><button class="btn-icon" onclick="copyHistoryItem(${item.id})"><i class="fas fa-copy"></i></button><button class="btn-icon danger" onclick="deleteHistoryItem(${item.id})"><i class="fas fa-trash-alt"></i></button></div>`; list.appendChild(div);});}
+function copyHistoryItem(id){ let item=history.find(h=>h.id===id); if(item) navigator.clipboard.writeText(item.text).then(()=>showToast('✓ Copié !'));}
+function deleteHistoryItem(id){ history=history.filter(h=>h.id!==id); localStorage.setItem('citatio_history',JSON.stringify(history)); renderHistory();}
+function clearHistory(){ if(history.length){ history=[]; localStorage.setItem('citatio_history','[]'); renderHistory(); showToast('Historique effacé.');}}
+function resetForm(){ if(!currentType) return; TYPES[currentType].fields.forEach(f=>{ let el=document.getElementById('f_'+f.id); if(el) el.value=''; let err=document.getElementById('err_'+f.id); if(err) err.classList.remove('visible'); }); setResult('');}
+function showToast(msg){ let t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500);}
+function quitterApplication(){ window.top.location.href='https://outils-online.github.io/Acceuil/';}
 
+/* MODULE ISBN complet avec scanner */
+function setupISBNField(){
+  let field=document.getElementById('f_isbn');
+  if(!field || field.dataset.isbnReady) return;
+  field.dataset.isbnReady='1';
+  let btn=document.createElement('button');
+  btn.type='button';
+  btn.innerHTML='<i class="fas fa-camera"></i> Scanner ISBN';
+  btn.style.marginTop='8px';
+  btn.style.padding='8px 16px';
+  btn.style.borderRadius='15px';
+  btn.style.border='1px solid var(--secondary)';
+  btn.style.background='transparent';
+  btn.style.cursor='pointer';
+  btn.style.fontWeight='600';
+  btn.onclick=()=>startScanner();
+  field.parentNode.appendChild(btn);
+  let feedback=document.createElement('span');
+  feedback.id='isbn-feedback';
+  feedback.style.display='block';
+  feedback.style.fontSize='0.7rem';
+  feedback.style.marginTop='4px';
+  field.parentNode.appendChild(feedback);
+  field.addEventListener('input', debounce(e=>fetchISBN(e.target.value),500));
+}
+
+async function fetchISBN(isbn){
+  let clean=isbn.replace(/[^0-9Xx]/g,'').toUpperCase();
+  if(clean.length!==10 && clean.length!==13) return;
+  let fb=document.getElementById('isbn-feedback');
+  if(fb) fb.textContent='⏳ Recherche...';
+  try{
+    let ol=await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${clean}&format=json&jscmd=data`).then(r=>r.json());
+    if(ol[`ISBN:${clean}`]){ fillFromOpenLibrary(ol[`ISBN:${clean}`]); if(fb) fb.textContent='✓ Open Library'; showToast('✓ ISBN trouvé (Open Library)'); return;}
+  }catch(e){}
+  try{
+    let gb=await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${clean}`).then(r=>r.json());
+    if(gb.items && gb.items[0]){ fillFromGoogleBooks(gb.items[0]); if(fb) fb.textContent='✓ Google Books'; showToast('✓ ISBN trouvé (Google Books)'); return;}
+  }catch(e){}
+  if(fb) fb.textContent='✗ Introuvable';
+}
+function fillFromOpenLibrary(book){
+  let set=(id,val)=>{ let el=document.getElementById('f_'+id); if(el && !el.value.trim()) el.value=val; };
+  set('titre',book.title||'');
+  set('editeur',book.publishers?.[0]?.name||'');
+  set('ville',book.publish_places?.[0]?.name||'');
+  set('annee',(book.publish_date||'').match(/\d{4}/)?.[0]||'');
+  set('collection',book.series?.[0]?.name||'');
+  let author=book.authors?.[0]?.name||'';
+  if(author){
+    let parts=author.split(',').map(s=>s.trim());
+    if(parts.length>1){ set('noms',parts[0]); set('prenoms',parts[1]); }
+    else{ let names=author.split(/\s+/); if(names.length>1){ set('prenoms',names.slice(0,-1).join(' ')); set('noms',names[names.length-1]);} else set('noms',author);}
+  }
+}
+function fillFromGoogleBooks(item){
+  let info=item.volumeInfo||{};
+  let set=(id,val)=>{ let el=document.getElementById('f_'+id); if(el && !el.value.trim()) el.value=val; };
+  set('titre',info.title||'');
+  set('editeur',info.publisher||'');
+  set('annee',(info.publishedDate||'').match(/\d{4}/)?.[0]||'');
+  let authors=info.authors||[];
+  if(authors.length){
+    let full=authors[0];
+    let parts=full.split(',').map(s=>s.trim());
+    if(parts.length>1){ set('noms',parts[0]); set('prenoms',parts[1]); }
+    else{ let names=full.split(/\s+/); if(names.length>1){ set('prenoms',names.slice(0,-1).join(' ')); set('noms',names[names.length-1]);} else set('noms',full);}
+  }
+}
+function debounce(fn,ms){ let t; return function(...a){ clearTimeout(t); t=setTimeout(()=>fn.apply(this,a),ms);}; }
+
+/* SCANNER avec BarcodeDetector et Quagga2 */
+let scannerActive=false, videoStream=null, animFrame=null;
+async function startScanner(){
+  if(scannerActive) return;
+  buildOverlay();
+  let video=document.getElementById('isbn-scan-video');
+  let hint=document.getElementById('isbn-scan-hint');
+  hint.textContent='Ouverture caméra...';
+  try{
+    let stream=await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' } });
+    videoStream=stream;
+    video.srcObject=stream;
+    await video.play();
+    hint.textContent='Approchez le code-barres';
+    scannerActive=true;
+    if('BarcodeDetector' in window){
+      let detector=new BarcodeDetector({ formats:['ean_13','ean_8','upc_a','code_128'] });
+      function tick(){
+        if(!scannerActive) return;
+        if(video.readyState>=2){
+          detector.detect(video).then(codes=>{ if(codes.length) onISBNDetected(codes[0].rawValue); }).catch(()=>{});
+        }
+        animFrame=requestAnimationFrame(tick);
+      }
+      tick();
+    }else{
+      // fallback Quagga2
+      let script=document.createElement('script');
+      script.src='https://cdn.jsdelivr.net/npm/@ericblade/quagga2@1.2.6/dist/quagga.min.js';
+      script.onload=()=>{
+        let canvas=document.createElement('canvas');
+        canvas.id='quagga-canvas'; canvas.style.display='none';
+        document.body.appendChild(canvas);
+        function quaggaTick(){
+          if(!scannerActive) return;
+          if(video.readyState>=2){
+            let vw=video.videoWidth, vh=video.videoHeight;
+            if(vw&&vh){
+              canvas.width=vw; canvas.height=vh;
+              let ctx=canvas.getContext('2d');
+              ctx.drawImage(video,0,0,vw,vh);
+              let cropW=Math.round(vw*0.9), cropH=Math.round(vh*0.5);
+              let cropX=Math.round((vw-cropW)/2), cropY=Math.round((vh-cropH)/2);
+              let cropCanvas=document.createElement('canvas');
+              cropCanvas.width=cropW; cropCanvas.height=cropH;
+              cropCanvas.getContext('2d').drawImage(canvas,cropX,cropY,cropW,cropH,0,0,cropW,cropH);
+              Quagga.decodeSingle({ decoder:{ readers:['ean_reader','ean_8_reader','code_128_reader'] }, src:cropCanvas.toDataURL() }, res=>{ if(res?.codeResult?.code) onISBNDetected(res.codeResult.code); });
+            }
+          }
+          animFrame=requestAnimationFrame(quaggaTick);
+        }
+        quaggaTick();
+      };
+      document.head.appendChild(script);
+    }
+  }catch(e){ hint.textContent='Erreur caméra : autorisez l\'accès'; console.error(e);}
+}
+function buildOverlay(){
+  if(document.getElementById('isbn-scan-overlay')) return;
+  let div=document.createElement('div'); div.id='isbn-scan-overlay';
+  div.innerHTML=`<video id="isbn-scan-video" autoplay playsinline muted style="width:100%;max-width:460px;border-radius:24px;"></video><p id="isbn-scan-hint" style="color:#fff;">Initialisation...</p><button class="scan-close" onclick="stopScanner()">✕ Fermer</button>`;
+  document.body.appendChild(div);
+}
+function stopScanner(){
+  scannerActive=false;
+  if(animFrame) cancelAnimationFrame(animFrame);
+  if(videoStream) videoStream.getTracks().forEach(t=>t.stop());
+  let ov=document.getElementById('isbn-scan-overlay'); if(ov) ov.remove();
+}
+function onISBNDetected(code){
+  let clean=code.replace(/[^0-9X]/gi,'');
+  if(clean.length===13||clean.length===10){
+    stopScanner();
+    selectType('ouvrage');
+    setTimeout(()=>{
+      let field=document.getElementById('f_isbn');
+      if(field){ field.value=clean; field.dispatchEvent(new Event('input')); fetchISBN(clean); }
+    },200);
+  }
+}
+window.startScanner=startScanner;
+window.stopScanner=stopScanner;
 renderTypeButtons();
 renderHistory();
-
-// Simulation minimale du module ISBN (pour la démo, le scanner réel serait ajouté)
-window.globalStartScanner = function() { showToast('Scanner ISBN — fonction avancée disponible'); };
 </script>
 </body>
 </html>
