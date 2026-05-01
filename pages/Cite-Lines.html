@@ -4,9 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <title>Générateur de Citations Bibliographiques</title>
-  <!-- Polices selon charte -->
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
-  <!-- Font Awesome 6 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
   <style>
     /* ===== VARIABLES — Charte Graphique Ivoire & Corail ===== */
@@ -26,13 +24,7 @@
       --radius-input: 12px;
       --transition: 0.2s ease;
     }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Inter', sans-serif;
       background: var(--bg-page);
@@ -41,8 +33,6 @@
       font-size: 15px;
       line-height: 1.6;
     }
-
-    /* Croix fermeture */
     .close-btn {
       position: fixed;
       top: 20px;
@@ -68,7 +58,6 @@
       border-color: var(--accent);
       transform: scale(1.02);
     }
-
     .container {
       max-width: 1000px;
       margin: 0 auto;
@@ -77,7 +66,6 @@
       grid-template-columns: 1fr;
       gap: 2rem;
     }
-
     .section-title {
       font-family: 'Space Grotesk', sans-serif;
       font-size: 1.7rem;
@@ -86,19 +74,15 @@
       color: var(--primary);
       margin-bottom: 0.25rem;
     }
-
     .section-sub {
       font-size: 0.9rem;
       color: var(--ink-light);
     }
-
-    /* Type selector */
     .type-grid {
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
     }
-
     .type-btn {
       padding: 8px 20px;
       border: 1.5px solid var(--secondary);
@@ -137,8 +121,6 @@
       background: var(--accent) !important;
       border-color: var(--accent) !important;
     }
-
-    /* Cards */
     .card {
       background: var(--bg-card);
       border: 1px solid var(--border-light);
@@ -148,7 +130,6 @@
       transition: box-shadow var(--transition);
     }
     .card:hover { box-shadow: var(--shadow-hover); }
-
     .card-title {
       font-family: 'Space Grotesk', sans-serif;
       font-size: 1.2rem;
@@ -167,8 +148,6 @@
       background: var(--accent);
       border-radius: 50%;
     }
-
-    /* Form */
     .form-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -215,8 +194,6 @@
     .field-hint { font-size: 0.7rem; color: var(--ink-light); font-style: italic; margin-top: 2px; }
     .error-msg { font-size: 0.7rem; color: var(--accent); display: none; margin-top: 4px; }
     .error-msg.visible { display: block; }
-
-    /* Buttons */
     .form-actions {
       display: flex;
       flex-wrap: wrap;
@@ -256,8 +233,6 @@
       color: var(--accent);
       transform: translateY(-2px);
     }
-
-    /* Result */
     .result-box {
       background: var(--bg-page);
       border: 2px dashed var(--secondary);
@@ -313,8 +288,6 @@
       border-radius: 40px;
     }
     .copy-confirm.show { display: flex; }
-
-    /* History */
     .history-header {
       display: flex;
       align-items: center;
@@ -392,8 +365,6 @@
     }
     .btn-icon:hover { background: var(--secondary); color: white; }
     .btn-icon.danger:hover { background: var(--accent); color: white; }
-
-    /* Toast */
     .toast {
       position: fixed;
       bottom: 2rem;
@@ -412,8 +383,6 @@
       box-shadow: var(--shadow-default);
     }
     .toast.show { opacity: 1; transform: translateY(0); }
-
-    /* Scanner overlay */
     #isbn-scan-overlay {
       position: fixed;
       inset: 0;
@@ -445,7 +414,6 @@
       border-radius: 15px;
       cursor: pointer;
     }
-
     @media (max-width: 680px) {
       .form-grid { grid-template-columns: 1fr; gap: 16px; }
       .type-btn { font-size: 0.8rem; padding: 6px 14px; }
@@ -454,21 +422,17 @@
   </style>
 </head>
 <body>
-
 <button class="close-btn" onclick="quitterApplication()"><i class="fas fa-times"></i></button>
-
 <div class="container">
   <div>
     <p class="section-title">Générateur de citations</p>
     <p class="section-sub" style="margin-bottom:1rem;">Sélectionnez le type de source à citer</p>
     <div class="type-grid" id="type-grid"></div>
   </div>
-
   <div class="card" id="form-card">
     <div class="card-title"><span class="card-title-icon"></span><span id="form-card-title">Choisissez un type de source</span></div>
     <div id="dynamic-form"></div>
   </div>
-
   <div class="card">
     <div class="card-title"><span class="card-title-icon"></span>Résultat</div>
     <div class="result-box" id="result-box"><span class="result-placeholder">La citation générée apparaîtra ici…</span></div>
@@ -478,7 +442,6 @@
       <span class="copy-confirm" id="copy-confirm"><i class="fas fa-check-circle"></i> Copié !</span>
     </div>
   </div>
-
   <div class="card">
     <div class="history-header">
       <div class="card-title" style="margin-bottom:0;padding-bottom:0;border:none;">
@@ -493,7 +456,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-/* ---------- MODÈLES DE FORMULAIRES ---------- */
+// ========== MODÈLES DE FORMULAIRES (inchangés) ==========
 const TYPES = {
   ouvrage: { label:'Ouvrage', icon:'fas fa-book', fields:[
     { id:'isbn', label:'ISBN', required:false, full:true, hint:'ex: 9782070368228 — scanner auto' },
@@ -507,78 +470,49 @@ const TYPES = {
     { id:'page', label:'Page(s)', required:false }
   ] },
   periodique:{ label:'Périodique', icon:'fas fa-newspaper', fields:[
-    { id:'prenoms', label:'Prénom(s)', required:true },
-    { id:'noms', label:'Nom(s)', required:true },
-    { id:'titre', label:'Titre de l\'article', required:true, full:true },
-    { id:'ville', label:'Ville d\'édition', required:true },
-    { id:'journal', label:'Journal', required:true },
-    { id:'date', label:'Date', required:true, type:'date' },
-    { id:'page', label:'Page(s)', required:false },
-    { id:'url', label:'URL', required:false, full:true, type:'url' }
+    { id:'prenoms', label:'Prénom(s)', required:true }, { id:'noms', label:'Nom(s)', required:true },
+    { id:'titre', label:'Titre de l\'article', required:true, full:true }, { id:'ville', label:'Ville d\'édition', required:true },
+    { id:'journal', label:'Journal', required:true }, { id:'date', label:'Date', required:true, type:'date' },
+    { id:'page', label:'Page(s)', required:false }, { id:'url', label:'URL', required:false, full:true, type:'url' }
   ] },
   musique:{ label:'Musique', icon:'fas fa-music', fields:[
-    { id:'prenoms', label:'Prénom(s)', required:true },
-    { id:'noms', label:'Nom(s)', required:true },
-    { id:'titre', label:'Titre', required:true },
-    { id:'min', label:'Durée (min)', required:true, type:'number' },
-    { id:'sec', label:'Durée (sec)', required:true, type:'number' },
-    { id:'album', label:'Album', required:true },
-    { id:'ville', label:'Ville', required:true },
-    { id:'producteur', label:'Producteur', required:true },
-    { id:'annee', label:'Année', required:true, type:'number' },
-    { id:'url', label:'URL', required:false, full:true }
+    { id:'prenoms', label:'Prénom(s)', required:true }, { id:'noms', label:'Nom(s)', required:true },
+    { id:'titre', label:'Titre', required:true }, { id:'min', label:'Durée (min)', required:true, type:'number' },
+    { id:'sec', label:'Durée (sec)', required:true, type:'number' }, { id:'album', label:'Album', required:true },
+    { id:'ville', label:'Ville', required:true }, { id:'producteur', label:'Producteur', required:true },
+    { id:'annee', label:'Année', required:true, type:'number' }, { id:'url', label:'URL', required:false, full:true }
   ] },
   video:{ label:'Vidéo', icon:'fas fa-video', fields:[
-    { id:'prenoms', label:'Prénom(s)', required:true },
-    { id:'noms', label:'Nom(s)', required:true },
-    { id:'titre', label:'Titre', required:true, full:true },
-    { id:'ville', label:'Ville', required:true },
-    { id:'editeur', label:'Éditeur', required:true },
-    { id:'collection', label:'Collection', required:false },
-    { id:'annee', label:'Année', required:true, type:'number' },
-    { id:'min', label:'Durée (min)', required:true, type:'number' },
-    { id:'sec', label:'Durée (sec)', required:true, type:'number' },
-    { id:'url', label:'URL', required:false }
+    { id:'prenoms', label:'Prénom(s)', required:true }, { id:'noms', label:'Nom(s)', required:true },
+    { id:'titre', label:'Titre', required:true, full:true }, { id:'ville', label:'Ville', required:true },
+    { id:'editeur', label:'Éditeur', required:true }, { id:'collection', label:'Collection', required:false },
+    { id:'annee', label:'Année', required:true, type:'number' }, { id:'min', label:'Durée (min)', required:true, type:'number' },
+    { id:'sec', label:'Durée (sec)', required:true, type:'number' }, { id:'url', label:'URL', required:false }
   ] },
   revue:{ label:'Revue', icon:'fas fa-graduation-cap', fields:[
-    { id:'prenoms', label:'Prénom(s) auteur', required:true },
-    { id:'noms', label:'Nom(s) auteur', required:true },
-    { id:'titre_article', label:'Titre article', required:true, full:true },
-    { id:'prenoms_dir', label:'Prénom(s) dir.', required:false },
-    { id:'noms_dir', label:'Nom(s) dir.', required:false },
-    { id:'titre_numero', label:'Titre du numéro', required:true, full:true },
-    { id:'ville', label:'Ville', required:true },
-    { id:'titre_revue', label:'Titre revue', required:true },
-    { id:'numero', label:'Numéro', required:false },
-    { id:'annee', label:'Année', required:true, type:'number' },
-    { id:'page', label:'Page(s)', required:false },
-    { id:'url', label:'URL', required:false }
+    { id:'prenoms', label:'Prénom(s) auteur', required:true }, { id:'noms', label:'Nom(s) auteur', required:true },
+    { id:'titre_article', label:'Titre article', required:true, full:true }, { id:'prenoms_dir', label:'Prénom(s) dir.', required:false },
+    { id:'noms_dir', label:'Nom(s) dir.', required:false }, { id:'titre_numero', label:'Titre du numéro', required:true, full:true },
+    { id:'ville', label:'Ville', required:true }, { id:'titre_revue', label:'Titre revue', required:true },
+    { id:'numero', label:'Numéro', required:false }, { id:'annee', label:'Année', required:true, type:'number' },
+    { id:'page', label:'Page(s)', required:false }, { id:'url', label:'URL', required:false }
   ] },
   loi:{ label:'Loi', icon:'fas fa-gavel', fields:[
     { id:'type_acte', label:'Type d\'acte', required:true, type:'select', options:['Loi','Ordonnance','Décret','Arrêté'] },
-    { id:'numero_loi', label:'Numéro', required:true },
-    { id:'date_loi', label:'Date', required:true, type:'date' },
-    { id:'article', label:'Article', required:false },
-    { id:'recueil', label:'Recueil', required:false },
-    { id:'numero_article', label:'Numéro article', required:false },
-    { id:'date_vigueur', label:'Date vigueur', required:false, type:'date' },
+    { id:'numero_loi', label:'Numéro', required:true }, { id:'date_loi', label:'Date', required:true, type:'date' },
+    { id:'article', label:'Article', required:false }, { id:'recueil', label:'Recueil', required:false },
+    { id:'numero_article', label:'Numéro article', required:false }, { id:'date_vigueur', label:'Date vigueur', required:false, type:'date' },
     { id:'url', label:'URL', required:false }
   ] },
   siteweb:{ label:'Site web', icon:'fas fa-globe', fields:[
-    { id:'auteur', label:'Auteur(s)', required:false, full:true },
-    { id:'titre', label:'Titre du site', required:true, full:true },
-    { id:'plateforme', label:'Plateforme', required:false },
-    { id:'url', label:'URL', required:true, full:true }
+    { id:'auteur', label:'Auteur(s)', required:false, full:true }, { id:'titre', label:'Titre du site', required:true, full:true },
+    { id:'plateforme', label:'Plateforme', required:false }, { id:'url', label:'URL', required:true, full:true }
   ] },
   dictionnaire:{ label:'Dictionnaire', icon:'fas fa-book-open', fields:[
-    { id:'prenoms', label:'Prénom(s)', required:true },
-    { id:'noms', label:'Nom(s)', required:true },
-    { id:'titre', label:'Titre', required:true, full:true },
-    { id:'volume', label:'Volume', required:false },
-    { id:'ville', label:'Ville', required:true },
-    { id:'editeur', label:'Éditeur', required:true },
-    { id:'annee', label:'Année', required:true, type:'number' },
-    { id:'page', label:'Page(s)', required:false },
+    { id:'prenoms', label:'Prénom(s)', required:true }, { id:'noms', label:'Nom(s)', required:true },
+    { id:'titre', label:'Titre', required:true, full:true }, { id:'volume', label:'Volume', required:false },
+    { id:'ville', label:'Ville', required:true }, { id:'editeur', label:'Éditeur', required:true },
+    { id:'annee', label:'Année', required:true, type:'number' }, { id:'page', label:'Page(s)', required:false },
     { id:'url', label:'URL', required:false }
   ] }
 };
@@ -603,8 +537,7 @@ let currentType=null, currentCitation='';
 let history=JSON.parse(localStorage.getItem('citatio_history')||'[]');
 
 function renderTypeButtons(){
-  const grid=document.getElementById('type-grid');
-  grid.innerHTML='';
+  const grid=document.getElementById('type-grid'); grid.innerHTML='';
   const scanBtn=document.createElement('button');
   scanBtn.className='type-btn type-btn--scan';
   scanBtn.innerHTML='<i class="fas fa-camera"></i> Capturer ISBN';
@@ -682,9 +615,7 @@ function resetForm(){ if(!currentType) return; TYPES[currentType].fields.forEach
 function showToast(msg){ let t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500);}
 function quitterApplication(){ window.top.location.href='https://outils-online.github.io/Acceuil/';}
 
-/* ========================================================
-   MODULE ISBN COMPLET — RÉPARÉ (inspiré de Cite-Lines.html)
-   ======================================================== */
+// ================= MODULE ISBN COMPLET (réparé) =================
 function setField(id, value) {
   let el = document.getElementById('f_'+id);
   if(el && value && !el.value.trim()) el.value = value;
@@ -698,14 +629,51 @@ function splitAuthor(name) {
   return {prenom:parts.slice(0,-1).join(' '), nom:parts[parts.length-1]};
 }
 
+// Récupération BnF via SRU (identique à Cite-Lines.html)
+async function fillFromBNF(xmlText) {
+  const parser = new DOMParser();
+  const xml = parser.parseFromString(xmlText, "text/xml");
+  const get = (tag, code) => {
+    const field = xml.querySelector(`datafield[tag="${tag}"], [tag="${tag}"]`);
+    if (!field) return '';
+    const subfield = field.querySelector(`subfield[code="${code}"], [code="${code}"]`);
+    return subfield ? subfield.textContent.trim() : '';
+  };
+  const titre = get('200', 'a');
+  const auteur = get('700', 'a');
+  const prenom = get('700', 'b');
+  const editeur = get('210', 'c');
+  const annee = get('210', 'd');
+  const ville = get('210', 'a');
+  if (titre) setField('titre', titre);
+  if (editeur) setField('editeur', editeur);
+  if (ville) setField('ville', ville.replace(/[\[\]]/g, ''));
+  if (annee) setField('annee', extractYear(annee));
+  if (auteur || prenom) { setField('prenoms', prenom); setField('noms', auteur); }
+  return !!(titre || auteur || editeur);
+}
+
+// Cascade : BnF → OpenLibrary → Google Books
 async function fetchISBN(isbn) {
-  let clean = isbn.replace(/[^0-9Xx]/g,'').toUpperCase();
-  if(clean.length!==10 && clean.length!==13) return false;
+  let clean = isbn.replace(/[^0-9Xx]/g, '').toUpperCase();
+  if (clean.length !== 10 && clean.length !== 13) return false;
   let fb = document.getElementById('isbn-feedback');
-  if(fb) fb.textContent = '⏳ Recherche...';
+  if (fb) fb.textContent = '⏳ Recherche BnF...';
+  try {
+    const bnfUrl = `https://catalogue.bnf.fr/api/SRU?operation=searchRetrieve&version=1.2&query=bib.isbn%20any%20"${clean}"&recordSchema=unimarcxchange`;
+    const bnfRes = await fetch(bnfUrl);
+    const bnfText = await bnfRes.text();
+    const bnfOk = await fillFromBNF(bnfText);
+    if (bnfOk) {
+      if (fb) fb.textContent = '✓ Données BnF';
+      showToast('✓ ISBN trouvé (BnF)');
+      return true;
+    }
+  } catch(e) { console.warn('BnF error', e); }
+  if (fb) fb.textContent = '⏳ Recherche OpenLibrary...';
   try {
     let ol = await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${clean}&format=json&jscmd=data`).then(r=>r.json());
-    if(ol[`ISBN:${clean}`]) {
+    if (ol[`ISBN:${clean}`]) {
       let book = ol[`ISBN:${clean}`];
       setField('titre', book.title || '');
       setField('editeur', book.publishers?.[0]?.name || '');
@@ -713,34 +681,35 @@ async function fetchISBN(isbn) {
       setField('annee', extractYear(book.publish_date || ''));
       setField('collection', book.series?.[0]?.name || '');
       let authorName = book.authors?.[0]?.name || '';
-      if(authorName) { let {prenom,nom}=splitAuthor(authorName); setField('prenoms', prenom); setField('noms', nom); }
-      if(fb) fb.textContent = '✓ Open Library';
-      showToast('✓ ISBN trouvé (Open Library)');
+      if (authorName) { let {prenom,nom}=splitAuthor(authorName); setField('prenoms', prenom); setField('noms', nom); }
+      if (fb) fb.textContent = '✓ OpenLibrary';
+      showToast('✓ ISBN trouvé (OpenLibrary)');
       return true;
     }
   } catch(e) {}
+  if (fb) fb.textContent = '⏳ Recherche Google Books...';
   try {
     let gb = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${clean}`).then(r=>r.json());
-    if(gb.items && gb.items[0]) {
+    if (gb.items && gb.items[0]) {
       let info = gb.items[0].volumeInfo;
       setField('titre', info.title || '');
       setField('editeur', info.publisher || '');
       setField('annee', extractYear(info.publishedDate || ''));
       let authors = info.authors || [];
-      if(authors.length) { let {prenom,nom}=splitAuthor(authors[0]); setField('prenoms', prenom); setField('noms', nom); }
-      if(fb) fb.textContent = '✓ Google Books';
+      if (authors.length) { let {prenom,nom}=splitAuthor(authors[0]); setField('prenoms', prenom); setField('noms', nom); }
+      if (fb) fb.textContent = '✓ Google Books';
       showToast('✓ ISBN trouvé (Google Books)');
       return true;
     }
   } catch(e) {}
-  if(fb) fb.textContent = '✗ Introuvable';
+  if (fb) fb.textContent = '✗ Introuvable';
   showToast('❌ ISBN non trouvé');
   return false;
 }
 
 function setupISBNField() {
   let field = document.getElementById('f_isbn');
-  if(!field || field.dataset.isbnReady) return;
+  if (!field || field.dataset.isbnReady) return;
   field.dataset.isbnReady = '1';
   let btn = document.createElement('button');
   btn.type = 'button';
@@ -761,27 +730,24 @@ function setupISBNField() {
   fb.style.marginTop = '4px';
   field.parentNode.appendChild(fb);
   field.addEventListener('input', debounce(e => {
-    let val = e.target.value.replace(/[^0-9X]/gi,'');
-    if(val.length===10 || val.length===13) fetchISBN(val);
+    let val = e.target.value.replace(/[^0-9X]/gi, '');
+    if (val.length === 10 || val.length === 13) fetchISBN(val);
   }, 500));
 }
-
 function debounce(fn, ms) { let t; return function(...a){ clearTimeout(t); t=setTimeout(()=>fn.apply(this,a), ms); }; }
 
-/* ------------- SCANNER CAMERA (BarcodeDetector + Quagga2) ------------- */
+// ================= SCANNER CAMÉRA (BarcodeDetector + Quagga2) =================
 let scannerActive = false, videoStream = null, animFrame = null;
-
 function buildOverlay() {
-  if(document.getElementById('isbn-scan-overlay')) return;
+  if (document.getElementById('isbn-scan-overlay')) return;
   let div = document.createElement('div'); div.id = 'isbn-scan-overlay';
   div.innerHTML = `<video id="isbn-scan-video" autoplay playsinline muted style="width:100%;max-width:460px;border-radius:24px;"></video>
                    <p id="isbn-scan-hint" style="color:#fff;">Initialisation...</p>
                    <button class="scan-close" onclick="stopScanner()">✕ Fermer</button>`;
   document.body.appendChild(div);
 }
-
 async function startScanner() {
-  if(scannerActive) return;
+  if (scannerActive) return;
   buildOverlay();
   let video = document.getElementById('isbn-scan-video');
   let hint = document.getElementById('isbn-scan-hint');
@@ -793,15 +759,12 @@ async function startScanner() {
     await video.play();
     hint.textContent = 'Centrez le code-barres ISBN';
     scannerActive = true;
-
-    if('BarcodeDetector' in window) {
+    if ('BarcodeDetector' in window) {
       let detector = new BarcodeDetector({ formats: ['ean_13','ean_8','upc_a','code_128'] });
       function tick() {
-        if(!scannerActive) return;
-        if(video.readyState >= 2) {
-          detector.detect(video).then(codes => {
-            if(codes.length > 0) onISBNDetected(codes[0].rawValue);
-          }).catch(()=>{});
+        if (!scannerActive) return;
+        if (video.readyState >= 2) {
+          detector.detect(video).then(codes => { if (codes.length > 0) onISBNDetected(codes[0].rawValue); }).catch(()=>{});
         }
         animFrame = requestAnimationFrame(tick);
       }
@@ -815,10 +778,10 @@ async function startScanner() {
         canvas.id = 'quagga-canvas'; canvas.style.display = 'none';
         document.body.appendChild(canvas);
         function quaggaTick() {
-          if(!scannerActive) return;
-          if(video.readyState >= 2) {
+          if (!scannerActive) return;
+          if (video.readyState >= 2) {
             let vw = video.videoWidth, vh = video.videoHeight;
-            if(vw && vh) {
+            if (vw && vh) {
               canvas.width = vw; canvas.height = vh;
               let ctx = canvas.getContext('2d');
               ctx.drawImage(video, 0, 0, vw, vh);
@@ -830,9 +793,7 @@ async function startScanner() {
               Quagga.decodeSingle({
                 decoder: { readers: ['ean_reader','ean_8_reader','code_128_reader'] },
                 src: cropCanvas.toDataURL()
-              }, result => {
-                if(result && result.codeResult && result.codeResult.code) onISBNDetected(result.codeResult.code);
-              });
+              }, result => { if (result && result.codeResult && result.codeResult.code) onISBNDetected(result.codeResult.code); });
             }
           }
           animFrame = requestAnimationFrame(quaggaTick);
@@ -846,24 +807,21 @@ async function startScanner() {
     console.error(err);
   }
 }
-
 function stopScanner() {
   scannerActive = false;
-  if(animFrame) cancelAnimationFrame(animFrame);
-  if(videoStream) videoStream.getTracks().forEach(t => t.stop());
+  if (animFrame) cancelAnimationFrame(animFrame);
+  if (videoStream) videoStream.getTracks().forEach(t => t.stop());
   let ov = document.getElementById('isbn-scan-overlay');
-  if(ov) ov.remove();
+  if (ov) ov.remove();
 }
-
 function onISBNDetected(code) {
   let clean = String(code).replace(/[^0-9X]/gi, '');
-  if(clean.length === 13 || clean.length === 10) {
+  if (clean.length === 13 || clean.length === 10) {
     stopScanner();
-    // Sélectionner le type "Ouvrage"
     selectType('ouvrage');
     setTimeout(() => {
       let field = document.getElementById('f_isbn');
-      if(field) {
+      if (field) {
         field.value = clean;
         field.dispatchEvent(new Event('input', { bubbles: true }));
         fetchISBN(clean);
@@ -871,14 +829,12 @@ function onISBNDetected(code) {
     }, 200);
   }
 }
-
 window.startScanner = startScanner;
 window.stopScanner = stopScanner;
 
-// Initialisation
 renderTypeButtons();
 renderHistory();
-setupISBNField(); // pour le cas où le champ ISBN existe déjà
+setupISBNField();
 </script>
 </body>
 </html>
