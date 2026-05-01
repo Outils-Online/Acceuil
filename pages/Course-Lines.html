@@ -452,7 +452,7 @@ select option { background: white; }
   left: 0;
   right: 0;
   width: 100%;
-  z-index: 9900;
+  z-index: 9899;
   background: rgba(253,252,240,0.95);
   backdrop-filter: blur(20px);
   border-top: 1px solid var(--border-color);
@@ -495,13 +495,18 @@ select option { background: white; }
   background: rgba(0,0,0,0.5); backdrop-filter: blur(6px);
   display: flex; align-items: flex-end;
 }
+/* Dans ton fichier CSS */
 .modal-sheet {
-  background: var(--bg-main); border: 1px solid var(--border-color);
-  border-radius: 26px 26px 0 0; padding: 16px 20px 40px;
-  width: 100%; max-height: 85vh; overflow-y: auto;
-  box-shadow: 0 -8px 30px rgba(0,0,0,0.1);
-  position: fixed; /* Indispensable pour que le z-index fonctionne */
-  z-index: 9999; /* Un chiffre élevé pour passer devant tout le reste */
+    position: fixed;
+    bottom: var(--nav-h); /* S'arrête pile au début de ta nav */
+    left: 0;
+    right: 0;
+    z-index: 10000; /* Toujours plus que 9899 */
+    background: white;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+    /* Marge intérieure globale */
+    padding: 1%;
 }
 .modal-handle { width: 40px; height: 5px; background: var(--border-color); border-radius: 3px; margin: 0 auto 18px; }
 .modal-title { font-family: var(--font-display); font-size: 1.3rem; margin-bottom: 8px; color: var(--color-primary); }
