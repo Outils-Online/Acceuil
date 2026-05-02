@@ -2112,7 +2112,10 @@ function renderForm(key){
   let actions=document.createElement('div'); actions.className='form-actions';
   actions.innerHTML=`<button class="btn btn-primary" onclick="generateCitation()"><i class="fas fa-quote-right"></i> Générer</button><button class="btn btn-secondary" onclick="resetForm()"><i class="fas fa-undo-alt"></i> Réinitialiser</button>`;
   container.appendChild(actions);
-  setTimeout(()=>setupISBNField(), 0);
+setTimeout(() => {
+    setupISBNField();
+    setupURLField();
+  }, 0);
 }
 function generateCitation(){
   if(!currentType) return;
@@ -2141,6 +2144,98 @@ function clearHistory(){ if(history.length){ history=[]; localStorage.setItem('c
 function resetForm(){ if(!currentType) return; TYPES[currentType].fields.forEach(f=>{ let el=document.getElementById('f_'+f.id); if(el) el.value=''; let err=document.getElementById('err_'+f.id); if(err) err.classList.remove('visible'); }); setResult('');}
 function showToast(msg){ let t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500);}
 function quitterApplication(){ window.top.location.href='https://outils-online.github.io/Acceuil/';}
+
+// ================= MODULE AUTO-FILL URL (Microlink) =================
+async function fetchMetadataFromURL(url) {
+  if (!url) {
+    showToast('❌ Veuillez entrer une URL valide');
+    return;
+  }
+  if (!url.startsWith('http')) url = 'https://' + url;
+
+  let fb = document.getElementById('url-feedback');
+  if (fb) fb.textContent = '⏳ Extraction des données en cours...';
+
+  try {
+    // Appel à l'API gratuite Microlink
+    let res = await fetch(`https://api.microlink.io?url=${encodeURIComponent(url)}`);
+    let json = await res.json();
+
+    if (json.status === 'success' && json.data) {
+      let data = json.data;
+
+      // 1. Remplir le Titre
+      if (data.title) setField('titre', data.title);
+      if (data.title) setField('titre_article', data.title); // Pour la revue
+
+      // 2. Remplir le Journal / Éditeur
+      if (data.publisher) {
+        setField('journal', data.publisher);
+        setField('plateforme', data.publisher);
+        setField('titre_revue', data.publisher);
+      }
+
+      // 3. Remplir la Date (Format YYYY-MM-DD requis pour les input type="date")
+      if (data.date) {
+        let dateObj = new Date(data.date);
+        if (!isNaN(dateObj)) {
+          let yyyy = dateObj.getFullYear();
+          let mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+          let dd = String(dateObj.getDate()).padStart(2, '0');
+          setField('date', `${yyyy}-${mm}-${dd}`);
+        }
+      }
+
+      // 4. Remplir l'Auteur
+      if (data.author) {
+        let {prenom, nom} = splitAuthor(data.author);
+        setField('prenoms', prenom);
+        setField('noms', nom);
+        setField('auteur', data.author); // Pour site web
+      }
+
+      if (fb) fb.textContent = '✓ Données récupérées !';
+      showToast('✓ Métadonnées extraites avec succès');
+    } else {
+      if (fb) fb.textContent = '❌ Impossible d\'extraire les données du site';
+      showToast('❌ Aucun résultat trouvé pour cette URL');
+    }
+  } catch(err) {
+    if (fb) fb.textContent = '❌ Erreur réseau ou blocage du site';
+    showToast('❌ Erreur de connexion');
+    console.error('[Microlink API]', err);
+  }
+}
+
+function setupURLField() {
+  let field = document.getElementById('f_url');
+  // On ne l'ajoute que si le champ existe et n'a pas déjà le bouton
+  if (!field || field.dataset.urlReady) return;
+  field.dataset.urlReady = '1';
+
+  let btn = document.createElement('button');
+  btn.type = 'button';
+  btn.innerHTML = '<i class="fas fa-magic"></i> Auto-Fill via URL';
+  btn.style.marginTop = '8px';
+  btn.style.padding = '8px 16px';
+  btn.style.borderRadius = '15px';
+  btn.style.border = '1px solid var(--secondary)';
+  btn.style.background = 'var(--secondary)';
+  btn.style.color = 'white';
+  btn.style.cursor = 'pointer';
+  btn.style.fontWeight = '600';
+  btn.style.fontSize = '0.85rem';
+  btn.onclick = () => fetchMetadataFromURL(field.value);
+  
+  field.parentNode.appendChild(btn);
+
+  let fb = document.createElement('span');
+  fb.id = 'url-feedback';
+  fb.style.display = 'block';
+  fb.style.fontSize = '0.7rem';
+  fb.style.marginTop = '4px';
+  field.parentNode.appendChild(fb);
+}
 
 // ================= MODULE ISBN COMPLET (réparé) =================
 function setField(id, value) {
