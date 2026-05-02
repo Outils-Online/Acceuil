@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Générateur de Citations Bibliographiques</title>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
@@ -150,7 +150,7 @@
     }
     .form-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr));
       gap: 20px;
     }
     .form-group { display: flex; flex-direction: column; gap: 6px; }
@@ -177,7 +177,7 @@
       background: var(--bg-page);
       color: var(--primary);
       font-family: 'Inter', sans-serif;
-      font-size: 0.9rem;
+      font-size: 16px; /* ≥16px : empêche le zoom automatique iOS/Android au focus */
       transition: all var(--transition);
       outline: none;
       width: 100%;
@@ -418,6 +418,10 @@
       .form-grid { grid-template-columns: 1fr; gap: 16px; }
       .type-btn { font-size: 0.8rem; padding: 6px 14px; }
       .close-btn { top: 12px; right: 16px; width: 40px; height: 40px; }
+      .container { padding: 1rem; gap: 1.2rem; }
+      .card { padding: 1.2rem; }
+      .section-title { font-size: 1.3rem; }
+      .btn { padding: 10px 18px; font-size: 0.85rem; }
     }
   </style>
 </head>
