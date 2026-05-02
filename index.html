@@ -2417,34 +2417,34 @@ function closeFusionModal() {
         window.refreshLogo();
     });
 })();
+(function() { // On enferme le code pour ne pas perturber le reste du site
+        let etapeCreee = false;
 
-    // 1. Dès que la page se charge, on crée un "point de repère"
-    // Cela empêche le premier clic "Retour" de quitter le site
-    window.onload = function() {
-        history.pushState({ page: "accueil" }, "");
-    };
+        // 1. Écoute du message de l'iframe
+        window.addEventListener('message', function(event) {
+            if (event.data === 'etape_suivante' && !etapeCreee) {
+                try {
+                    history.pushState({ page: "navigation_active" }, "");
+                    etapeCreee = true;
+                    console.log("Point de repère créé avec succès");
+                } catch (e) {
+                    console.error("Erreur historique : ", e);
+                }
+            }
+        });
 
-    // 2. On écoute si l'iframe bouge
-    window.addEventListener('message', function(event) {
-        if (event.data === 'etape_suivante') {
-            // Chaque mouvement dans l'iframe ajoute un nouveau point de repère
-            history.pushState({ page: "navigation_iframe" }, "");
-        }
-    });
-
-    // 3. On intercepte le bouton retour
-    window.onpopstate = function(event) {
-        // Si l'utilisateur essaie de reculer
-        if (event.state && (event.state.page === "navigation_iframe" || event.state.page === "accueil")) {
+        // 2. Gestion du bouton retour
+        window.onpopstate = function(event) {
+            const iframe = document.getElementById('monIframe');
             
-            // ACTION : On force l'affichage de notre index
-            // Tu peux par exemple recharger l'iframe à son état initial
-            document.getElementById('monIframe').src = "tapage_initiale.html";
-            
-            // Ou simplement rester sur la page sans rien faire
-            console.log("Retour bloqué : on reste sur index.html");
-        }
-    };
+            // On vérifie si l'iframe existe bien avant de faire quoi que ce soit
+            if (iframe && etapeCreee && event.state && event.state.page === "navigation_active") {
+                etapeCreee = false;
+                // On remet l'URL d'origine (on recharge l'iframe)
+                iframe.src = iframe.src; 
+            }
+        };
+    })();
 </script>
 </body>
 </html>
