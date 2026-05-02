@@ -2156,47 +2156,146 @@ function splitAuthor(name) {
   return {prenom:parts.slice(0,-1).join(' '), nom:parts[parts.length-1]};
 }
 
-// Récupération BnF via SRU (identique à Cite-Lines.html)
+// ─── UNIMARC helpers — parsing robuste sans espaces de noms ───────────────────
+function _bnfGetAll(xml, tag, code) {
+  const results = [];
+  const allNodes = xml.getElementsByTagName('*');
+  for (let el of allNodes) {
+    const local = el.localName || el.nodeName.split(':').pop();
+    if (local !== 'datafield') continue;
+    if (el.getAttribute('tag') !== tag) continue;
+    if (!code) { results.push(el.textContent.trim()); continue; }
+    const subNodes = el.getElementsByTagName('*');
+    for (let sf of subNodes) {
+      const sfLocal = sf.localName || sf.nodeName.split(':').pop();
+      if (sfLocal === 'subfield' && sf.getAttribute('code') === code) {
+        results.push(sf.textContent.trim());
+      }
+    }
+  }
+  return results;
+}
+function _bnfGet(xml, tag, code) { return _bnfGetAll(xml, tag, code)[0] || ''; }
+function _bnfClean(s) { return (s || '').replace(/[\[\]]/g, '').replace(/\s*[,;:.\/]\s*$/, '').trim(); }
+
+// ─── Remplissage depuis UNIMARC BnF ──────────────────────────────────────────
 async function fillFromBNF(xmlText) {
   const parser = new DOMParser();
-  const xml = parser.parseFromString(xmlText, "text/xml");
-  const get = (tag, code) => {
-    const field = xml.querySelector(`datafield[tag="${tag}"], [tag="${tag}"]`);
-    if (!field) return '';
-    const subfield = field.querySelector(`subfield[code="${code}"], [code="${code}"]`);
-    return subfield ? subfield.textContent.trim() : '';
-  };
-  const titre = get('200', 'a');
-  const auteur = get('700', 'a');
-  const prenom = get('700', 'b');
-  const editeur = get('210', 'c');
-  const annee = get('210', 'd');
-  const ville = get('210', 'a');
-  if (titre) setField('titre', titre);
-  if (editeur) setField('editeur', editeur);
-  if (ville) setField('ville', ville.replace(/[\[\]]/g, ''));
-  if (annee) setField('annee', extractYear(annee));
-  if (auteur || prenom) { setField('prenoms', prenom); setField('noms', auteur); }
-  return !!(titre || auteur || editeur);
+  const xml = parser.parseFromString(xmlText, 'text/xml');
+
+  // Vérifie qu'on a bien au moins un record
+  let hasRecord = false;
+  for (let n of xml.getElementsByTagName('*')) {
+    const local = n.localName || n.nodeName.split(':').pop();
+    if (local === 'record' || local === 'recordData') { hasRecord = true; break; }
+  }
+  if (!hasRecord) return false;
+
+  // ── TITRE — 200 $a (titre propre) + $e (sous-titre) ──
+  const titrePropre = _bnfClean(_bnfGet(xml, '200', 'a'));
+  const sousTitre   = _bnfClean(_bnfGet(xml, '200', 'e'));
+  const titreComplet = sousTitre ? `${titrePropre} : ${sousTitre}` : titrePropre;
+
+  // ── AUTEURS — 700 (principal), 701 (co-auteur), 702 (autre), 710 (collectivité) ──
+  let nomAuteur = '', prenomAuteur = '';
+  for (const zone of ['700', '701', '702']) {
+    const nom    = _bnfClean(_bnfGet(xml, zone, 'a'));
+    const prenom = _bnfClean(_bnfGet(xml, zone, 'b'));
+    if (nom) { nomAuteur = nom; prenomAuteur = prenom; break; }
+  }
+  if (!nomAuteur) nomAuteur = _bnfClean(_bnfGet(xml, '710', 'a'));
+
+  // ── PUBLICATION — Zone 214 (nouvel UNIMARC BnF depuis ~2017) puis 210 ──
+  // 214 $a=lieu, $c=éditeur, $d=date  /  210 idem
+  const ville   = _bnfClean(_bnfGetAll(xml, '214', 'a')[0]   || _bnfGetAll(xml, '210', 'a')[0]   || '');
+  const editeur = _bnfClean(_bnfGetAll(xml, '214', 'c')[0]   || _bnfGetAll(xml, '210', 'c')[0]   || '');
+  const anneeRaw=              _bnfGetAll(xml, '214', 'd')[0] || _bnfGetAll(xml, '210', 'd')[0]   || '';
+
+  // ── COLLECTION — 225 $a + $v (numéro) ──
+  const collTitre = _bnfClean(_bnfGet(xml, '225', 'a'));
+  const collNum   = _bnfClean(_bnfGet(xml, '225', 'v'));
+  const collection = collTitre ? (collNum ? `${collTitre}, n°${collNum}` : collTitre) : '';
+
+  // ── PAGES — 215 $a (ex: "342 p.") ──
+  const physique = _bnfGet(xml, '215', 'a');
+  const pagesMatch = physique.match(/(\d+)\s*(p\.|pages|f\.|ff\.)/i);
+  const pages = pagesMatch ? pagesMatch[1] : '';
+
+  // ── Remplissage ──
+  if (titreComplet) setField('titre', titreComplet);
+  if (nomAuteur)    { setField('noms', nomAuteur); setField('prenoms', prenomAuteur); }
+  if (editeur)      setField('editeur', editeur);
+  if (ville)        setField('ville', ville);
+  if (anneeRaw)     setField('annee', extractYear(anneeRaw));
+  if (collection)   setField('collection', collection);
+  if (pages)        setField('page', pages);
+
+  console.log('[BnF UNIMARC]', { titreComplet, nomAuteur, prenomAuteur, editeur, ville, anneeRaw, collection, pages });
+  return !!(titreComplet || nomAuteur || editeur);
 }
 
-// Cascade : BnF → OpenLibrary → Google Books
+// ─── Fallback Dublin Core BnF (structure plus simple) ────────────────────────
+async function fillFromBNFDublinCore(xmlText) {
+  const parser = new DOMParser();
+  const xml = parser.parseFromString(xmlText, 'text/xml');
+  const dcGet = (tag) => {
+    for (let el of xml.getElementsByTagName('*')) {
+      if ((el.localName || el.nodeName.split(':').pop()).toLowerCase() === tag)
+        return el.textContent.trim();
+    }
+    return '';
+  };
+  const dcGetAll = (tag) => {
+    const r = [];
+    for (let el of xml.getElementsByTagName('*'))
+      if ((el.localName || el.nodeName.split(':').pop()).toLowerCase() === tag) r.push(el.textContent.trim());
+    return r;
+  };
+  const titre    = dcGet('title');
+  const creators = dcGetAll('creator');
+  const publisher= dcGet('publisher');
+  const date     = dcGet('date');
+  // dc:description contient parfois "Lieu : Éditeur, AAAA"
+  const desc = dcGet('description');
+  const descMatch = desc.match(/^([^:]+)\s*:\s*([^,]+)/);
+
+  if (titre)          setField('titre', titre);
+  if (publisher)      setField('editeur', _bnfClean(publisher));
+  if (descMatch)      { setField('ville', _bnfClean(descMatch[1])); setField('editeur', _bnfClean(descMatch[2])); }
+  if (date)           setField('annee', extractYear(date));
+  if (creators.length){ const {prenom,nom}=splitAuthor(creators[0]); setField('prenoms', prenom); setField('noms', nom); }
+  return !!(titre || creators.length || publisher);
+}
+
+// ─── Cascade : BnF UNIMARC → BnF Dublin Core → OpenLibrary → Google Books ────
 async function fetchISBN(isbn) {
   let clean = isbn.replace(/[^0-9Xx]/g, '').toUpperCase();
   if (clean.length !== 10 && clean.length !== 13) return false;
   let fb = document.getElementById('isbn-feedback');
-  if (fb) fb.textContent = '⏳ Recherche BnF...';
+
+  // 1. BnF UNIMARC — requête adj (correspondance exacte), maximumRecords=3
+  if (fb) fb.textContent = '⏳ Recherche BnF (UNIMARC)…';
   try {
-    const bnfUrl = `https://catalogue.bnf.fr/api/SRU?operation=searchRetrieve&version=1.2&query=bib.isbn%20any%20"${clean}"&recordSchema=unimarcxchange`;
-    const bnfRes = await fetch(bnfUrl);
-    const bnfText = await bnfRes.text();
-    const bnfOk = await fillFromBNF(bnfText);
-    if (bnfOk) {
-      if (fb) fb.textContent = '✓ Données BnF';
-      showToast('✓ ISBN trouvé (BnF)');
-      return true;
+    const isbnQ  = encodeURIComponent('"' + clean + '"');
+    const bnfUrl = `https://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.isbn%20adj%20${isbnQ}&recordSchema=unimarcXchange&maximumRecords=3`;
+    const res    = await fetch(bnfUrl);
+    if (res.ok) {
+      const ok = await fillFromBNF(await res.text());
+      if (ok) { if (fb) fb.textContent = '✓ BnF UNIMARC'; showToast('✓ ISBN trouvé (BnF)'); return true; }
     }
-  } catch(e) { console.warn('BnF error', e); }
+  } catch(e) { console.warn('[BnF UNIMARC]', e); }
+
+  // 2. BnF Dublin Core
+  if (fb) fb.textContent = '⏳ Recherche BnF (Dublin Core)…';
+  try {
+    const isbnQ = encodeURIComponent('"' + clean + '"');
+    const dcUrl = `https://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.isbn%20adj%20${isbnQ}&recordSchema=dublincore&maximumRecords=1`;
+    const res   = await fetch(dcUrl);
+    if (res.ok) {
+      const ok = await fillFromBNFDublinCore(await res.text());
+      if (ok) { if (fb) fb.textContent = '✓ BnF Dublin Core'; showToast('✓ ISBN trouvé (BnF)'); return true; }
+    }
+  } catch(e) { console.warn('[BnF DC]', e); }
   if (fb) fb.textContent = '⏳ Recherche OpenLibrary...';
   try {
     let ol = await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${clean}&format=json&jscmd=data`).then(r=>r.json());
