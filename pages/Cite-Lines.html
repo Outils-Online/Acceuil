@@ -2343,18 +2343,29 @@ function stopScanner() {
 }
 function onISBNDetected(code) {
   let clean = String(code).replace(/[^0-9X]/gi, '');
-  if (clean.length === 13 || clean.length === 10) {
-    stopScanner();
-    selectType('ouvrage');
-    setTimeout(() => {
-      let field = document.getElementById('f_isbn');
-      if (field) {
-        field.value = clean;
-        field.dispatchEvent(new Event('input', { bubbles: true }));
-        fetchISBN(clean);
-      }
-    }, 200);
-  }
+  if (clean.length !== 13 && clean.length !== 10) return;
+
+  stopScanner();
+  selectType('ouvrage');
+
+  // Attente active du champ f_isbn (jusqu'à 3 secondes)
+  let attempts = 0;
+  const MAX = 30;
+  const interval = setInterval(() => {
+    let field = document.getElementById('f_isbn');
+    attempts++;
+    if (field) {
+      clearInterval(interval);
+      field.value = clean;
+      // setupISBNField() se charge de l'écouteur 'input',
+      // mais on appelle fetchISBN directement pour éviter la double requête
+      setupISBNField();
+      fetchISBN(clean);
+    } else if (attempts >= MAX) {
+      clearInterval(interval);
+      console.warn('Champ f_isbn introuvable après scan ISBN');
+    }
+  }, 100);
 }
 window.startScanner = startScanner;
 window.stopScanner = stopScanner;
