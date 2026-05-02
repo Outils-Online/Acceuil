@@ -1976,9 +1976,7 @@ function closeFusionModal() {
         fontSize: '11px', color: 'rgba(10,36,114,0.55)',
         fontFamily: 'inherit', lineHeight: '1.5'
       });
-      noSupport.innerHTML = '<i class="fa-solid fa-folder-open" style="margin-right:6px;color:rgba(10,36,114,0.35)"></i> '
-        + '<strong style="color:#0A2472">Liaison dossier</strong>'
-        + '<br><span style="opacity:0.65;font-size:10px">Enregistre les backups directement dans un dossier de ton PC. Disponible uniquement sur Chrome ou Edge — pas sur Firefox.</span>';
+      noSupport.innerHTML = '<strong style="color:#0A2472">Liaison dossier</strong><br><span style="opacity:0.6">Enregistrement backups impossible sur ce navigateur.</span>';
       panel.appendChild(noSupport);
     }
     if (_canUseDir) {
