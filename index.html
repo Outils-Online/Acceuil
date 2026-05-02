@@ -2418,28 +2418,28 @@ function closeFusionModal() {
     });
 })();
 
-// 1. On enregistre l'adresse de départ de l'iframe
-    const urlInitiale = document.getElementById('monIframe').src;
-
-    // 2. On écoute les mouvements dans l'iframe
+    // 1. On écoute quand l'iframe bouge
     window.addEventListener('message', function(event) {
         if (event.data === 'etape_suivante') {
-            // On pose le "caillou" dans l'historique
-            history.pushState({ action: "reset_iframe" }, "");
+            // On ajoute une étape manuelle dans l'historique du navigateur
+            history.pushState({ isIframeActive: true }, "");
         }
     });
 
-    // 3. L'action quand on appuie sur "RETOUR"
+    // 2. Quand on appuie sur "Retour"
     window.onpopstate = function(event) {
         const iframe = document.getElementById('monIframe');
         
-        // Si on revient en arrière et que c'est une étape qu'on a créée
-        if (event.state && event.state.action === "reset_iframe") {
-            // On force l'iframe à recharger sa page de base
-            iframe.src = urlInitiale; 
-        } else {
-            // Sinon, on laisse le navigateur faire le retour normal
-            // vers la page précédente (ex: Google)
+        // Si on détecte qu'on revient d'une étape d'iframe
+        if (iframe) {
+            // ACTION : On remet l'iframe à zéro ou on la cache
+            // Cela "casse" la boucle de l'iframe et rend la main à index.html
+            iframe.src = ""; 
+            
+            // Si tu veux carrément la faire disparaître pour voir ton index :
+            // iframe.style.display = 'none';
+            
+            console.log("L'iframe a été réinitialisée, vous êtes sur index.html");
         }
     };
 </script>
