@@ -4736,7 +4736,7 @@ par le code ci-dessous (nouveau design Quartz Ink Glassmorphism + fa-shield-halv
       var blob = new Blob([json], { type: 'application/json' });
       var url  = URL.createObjectURL(blob);
       var a    = document.createElement('a');
-      a.href = url; a.download = CONFIG.FILENAME; a.style.display = 'none';
+      a.href = url; a.download = (typeof window._buildSaveFilename === 'function') ? window._buildSaveFilename() : CONFIG.FILENAME; a.style.display = 'none';
       document.body.appendChild(a); a.click();
       setTimeout(function () { document.body.removeChild(a); URL.revokeObjectURL(url); }, 1500);
       localStorage.setItem(CONFIG.BACKUP_FILE_KEY, new Date().toISOString());
