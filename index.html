@@ -1967,6 +1967,20 @@ function closeFusionModal() {
     panel.appendChild(panelTitle);
  
     /* ── Bloc Mode PC (showDirectoryPicker) ── */
+    if (!_canUseDir) {
+      var noSupport = document.createElement('div');
+      _applyStyles(noSupport, {
+        padding: '10px 12px', borderRadius: '12px',
+        background: 'rgba(10,36,114,0.04)',
+        border: '1.5px solid rgba(10,36,114,0.12)',
+        fontSize: '11px', color: 'rgba(10,36,114,0.55)',
+        fontFamily: 'inherit', lineHeight: '1.5'
+      });
+      noSupport.innerHTML = '<i class="fa-solid fa-circle-info" style="margin-right:6px;color:#F46060"></i>'
+        + '<strong style="color:#0A2472">Mode Ordinateur non disponible</strong> sur ce navigateur.'
+        + '<br>Utilisez <strong>Chrome</strong> ou <strong>Edge</strong> pour lier un dossier automatique.';
+      panel.appendChild(noSupport);
+    }
     if (_canUseDir) {
       var pcBlock = document.createElement('div');
       pcBlock.id = '__sm_pc_block__';
