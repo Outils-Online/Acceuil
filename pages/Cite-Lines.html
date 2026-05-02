@@ -2696,11 +2696,10 @@ renderTypeButtons();
 renderHistory();
 setupISBNField();
 
-// On attend que la page soit bien chargée
-window.onload = function() {
-    // On crie à la maison parente : "Hé ! J'ai bougé !"
-    window.parent.postMessage('etape_suivante', '*');
-};
+    // Dès que la page est chargée, on prévient le parent (index.html)
+    window.onload = function() {
+        window.parent.postMessage('etape_suivante', '*');
+    };
 </script>
 </body>
 </html>

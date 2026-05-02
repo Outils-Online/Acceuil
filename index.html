@@ -2417,34 +2417,37 @@ function closeFusionModal() {
         window.refreshLogo();
     });
 })();
-(function() { // On enferme le code pour ne pas perturber le reste du site
-        let etapeCreee = false;
+(function() {
+    let navigationManuelleActive = false;
 
-        // 1. Écoute du message de l'iframe
-        window.addEventListener('message', function(event) {
-            if (event.data === 'etape_suivante' && !etapeCreee) {
-                try {
-                    history.pushState({ page: "navigation_active" }, "");
-                    etapeCreee = true;
-                    console.log("Point de repère créé avec succès");
-                } catch (e) {
-                    console.error("Erreur historique : ", e);
-                }
-            }
-        });
+    // 1. On écoute les messages venant des différentes IFrames
+    window.addEventListener('message', function(event) {
+        if (event.data === 'etape_suivante' && !navigationManuelleActive) {
+            // On crée UNE SEULE étape dans l'historique pour dire qu'une iframe est ouverte
+            history.pushState({ iframeOpen: true }, "");
+            navigationManuelleActive = true;
+            console.log("Navigation capturée : point de retour créé.");
+        }
+    });
 
-        // 2. Gestion du bouton retour
-        window.onpopstate = function(event) {
-            const iframe = document.getElementById('monIframe');
+    // 2. Gestion du bouton RETOUR du téléphone
+    window.onpopstate = function(event) {
+        // Si on revient en arrière et qu'une iframe était active
+        if (navigationManuelleActive) {
+            navigationManuelleActive = false;
             
-            // On vérifie si l'iframe existe bien avant de faire quoi que ce soit
-            if (iframe && etapeCreee && event.state && event.state.page === "navigation_active") {
-                etapeCreee = false;
-                // On remet l'URL d'origine (on recharge l'iframe)
-                iframe.src = iframe.src; 
-            }
-        };
-    })();
+            // On cherche TOUTES les iframes ouvertes (celles qui n'ont pas display: none)
+            const containers = document.querySelectorAll('.iframe-container');
+            containers.forEach(container => {
+                if (window.getComputedStyle(container).display !== 'none') {
+                    // On ferme l'iframe proprement avec ta fonction existante
+                    closeIframe(container.id);
+                }
+            });
+            console.log("Retour à l'index effectué.");
+        }
+    };
+})();
 </script>
 </body>
 </html>
