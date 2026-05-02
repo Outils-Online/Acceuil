@@ -2417,6 +2417,23 @@ function closeFusionModal() {
         window.refreshLogo();
     });
 })();
+
+// La maison écoute l'interphone
+window.addEventListener('message', function(event) {
+    if (event.data === 'etape_suivante') {
+        // On pose un "caillou" dans l'historique du téléphone
+        history.pushState({ action: "retour_iframe" }, "");
+    }
+});
+
+// Quand on touche au bouton retour (on rencontre un caillou)
+window.onpopstate = function(event) {
+    // Si c'est un caillou qu'on a posé nous-mêmes
+    if (event.state && event.state.action === "retour_iframe") {
+        // On dit à l'iframe de reculer d'une page
+        document.querySelector('iframe').contentWindow.history.back();
+    }
+};
 </script>
 </body>
 </html>

@@ -2695,6 +2695,12 @@ window.stopScanner = stopScanner;
 renderTypeButtons();
 renderHistory();
 setupISBNField();
+
+// On attend que la page soit bien chargée
+window.onload = function() {
+    // On crie à la maison parente : "Hé ! J'ai bougé !"
+    window.parent.postMessage('etape_suivante', '*');
+};
 </script>
 </body>
 </html>
