@@ -2418,28 +2418,31 @@ function closeFusionModal() {
     });
 })();
 
-    // 1. On écoute quand l'iframe bouge
+    // 1. Dès que la page se charge, on crée un "point de repère"
+    // Cela empêche le premier clic "Retour" de quitter le site
+    window.onload = function() {
+        history.pushState({ page: "accueil" }, "");
+    };
+
+    // 2. On écoute si l'iframe bouge
     window.addEventListener('message', function(event) {
         if (event.data === 'etape_suivante') {
-            // On ajoute une étape manuelle dans l'historique du navigateur
-            history.pushState({ isIframeActive: true }, "");
+            // Chaque mouvement dans l'iframe ajoute un nouveau point de repère
+            history.pushState({ page: "navigation_iframe" }, "");
         }
     });
 
-    // 2. Quand on appuie sur "Retour"
+    // 3. On intercepte le bouton retour
     window.onpopstate = function(event) {
-        const iframe = document.getElementById('monIframe');
-        
-        // Si on détecte qu'on revient d'une étape d'iframe
-        if (iframe) {
-            // ACTION : On remet l'iframe à zéro ou on la cache
-            // Cela "casse" la boucle de l'iframe et rend la main à index.html
-            iframe.src = ""; 
+        // Si l'utilisateur essaie de reculer
+        if (event.state && (event.state.page === "navigation_iframe" || event.state.page === "accueil")) {
             
-            // Si tu veux carrément la faire disparaître pour voir ton index :
-            // iframe.style.display = 'none';
+            // ACTION : On force l'affichage de notre index
+            // Tu peux par exemple recharger l'iframe à son état initial
+            document.getElementById('monIframe').src = "tapage_initiale.html";
             
-            console.log("L'iframe a été réinitialisée, vous êtes sur index.html");
+            // Ou simplement rester sur la page sans rien faire
+            console.log("Retour bloqué : on reste sur index.html");
         }
     };
 </script>
