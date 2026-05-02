@@ -2418,22 +2418,30 @@ function closeFusionModal() {
     });
 })();
 
-// La maison écoute l'interphone
-window.addEventListener('message', function(event) {
-    if (event.data === 'etape_suivante') {
-        // On pose un "caillou" dans l'historique du téléphone
-        history.pushState({ action: "retour_iframe" }, "");
-    }
-});
+// 1. On enregistre l'adresse de départ de l'iframe
+    const urlInitiale = document.getElementById('monIframe').src;
 
-// Quand on touche au bouton retour (on rencontre un caillou)
-window.onpopstate = function(event) {
-    // Si c'est un caillou qu'on a posé nous-mêmes
-    if (event.state && event.state.action === "retour_iframe") {
-        // On dit à l'iframe de reculer d'une page
-        document.querySelector('iframe').contentWindow.history.back();
-    }
-};
+    // 2. On écoute les mouvements dans l'iframe
+    window.addEventListener('message', function(event) {
+        if (event.data === 'etape_suivante') {
+            // On pose le "caillou" dans l'historique
+            history.pushState({ action: "reset_iframe" }, "");
+        }
+    });
+
+    // 3. L'action quand on appuie sur "RETOUR"
+    window.onpopstate = function(event) {
+        const iframe = document.getElementById('monIframe');
+        
+        // Si on revient en arrière et que c'est une étape qu'on a créée
+        if (event.state && event.state.action === "reset_iframe") {
+            // On force l'iframe à recharger sa page de base
+            iframe.src = urlInitiale; 
+        } else {
+            // Sinon, on laisse le navigateur faire le retour normal
+            // vers la page précédente (ex: Google)
+        }
+    };
 </script>
 </body>
 </html>
