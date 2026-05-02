@@ -1332,6 +1332,10 @@ function closeListImportModal() { const m = document.getElementById('list-import
 
 function init() { loadState(); cancelEdit(); render(); }
 init();
+  // Dès que la page est chargée, on prévient le parent (index.html)
+    window.onload = function() {
+        window.parent.postMessage('etape_suivante', '*');
+    };
 </script>
 </body>
 </html>

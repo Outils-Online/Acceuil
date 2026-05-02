@@ -441,6 +441,10 @@
             const file = new File([lastPdfBlob], originalName + "_Signe.pdf", { type: "application/pdf" });
             try { await navigator.share({ files: [file], title: 'Document Signé' }); } catch(e) { console.log(e); }
         }
+          // Dès que la page est chargée, on prévient le parent (index.html)
+    window.onload = function() {
+        window.parent.postMessage('etape_suivante', '*');
+    };
     </script>
 </body>
 </html>
