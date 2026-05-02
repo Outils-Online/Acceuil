@@ -1094,76 +1094,156 @@ function showToast(m) {
 
 <!-- ── OCR Tesseract — 100% local, aucune donnée envoyée ── -->
 <script>
-// ── Extraction fiable : date ──────────────────────────────
-function extractDate(text) {
-    const match = text.match(/\b(\d{2})[\/\-\.](\d{2})[\/\-\.](\d{2,4})\b/);
-    if (!match) return null;
-    let [_, d, m, y] = match;
-    if (y.length === 2) y = '20' + y;
-    const day = parseInt(d), month = parseInt(m), year = parseInt(y);
-    if (month < 1 || month > 12) return null;
-    if (day < 1 || day > 31) return null;
-    if (year < 2000 || year > 2035) return null;
-    return `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
+
+// ── 1. Prétraitement image pour Tesseract ─────────────────
+// Tesseract performe bien mieux sur une image :
+//   • agrandie x2 (résolution suffisante pour police condensée)
+//   • binarisée (noir pur / blanc pur, pas de gris)
+//   • avec un léger dé-bruit
+function preprocessForOCR(sourceCanvas) {
+    const scale = 2;
+    const out = document.createElement('canvas');
+    out.width  = sourceCanvas.width  * scale;
+    out.height = sourceCanvas.height * scale;
+    const ctx = out.getContext('2d');
+
+    // Agrandissement avec lissage désactivé (netteté maximale)
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(sourceCanvas, 0, 0, out.width, out.height);
+
+    // Binarisation adaptative : on calcule le seuil sur la luminosité moyenne
+    const imgData = ctx.getImageData(0, 0, out.width, out.height);
+    const d = imgData.data;
+    let sum = 0;
+    for (let i = 0; i < d.length; i += 4) {
+        sum += d[i] * 0.299 + d[i+1] * 0.587 + d[i+2] * 0.114;
+    }
+    const avg = sum / (d.length / 4);
+    // Seuil légèrement en-dessous de la moyenne pour ne pas perdre le texte clair
+    const threshold = avg * 0.85;
+
+    for (let i = 0; i < d.length; i += 4) {
+        const lum = d[i] * 0.299 + d[i+1] * 0.587 + d[i+2] * 0.114;
+        const v = lum < threshold ? 0 : 255;
+        d[i] = d[i+1] = d[i+2] = v;
+        d[i+3] = 255;
+    }
+    ctx.putImageData(imgData, 0, 0);
+    return out;
 }
 
-// ── Extraction fiable : montant ───────────────────────────
+// ── 2. Extraction fiable : date ───────────────────────────
+function extractDate(text) {
+    // Patterns français : JJ/MM/AA, JJ-MM-AAAA, JJ.MM.AAAA
+    // On cherche toutes les occurrences et on prend la plus récente valide
+    const re = /\b(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})\b/g;
+    let match, best = null;
+    while ((match = re.exec(text)) !== null) {
+        let [_, d, m, y] = match;
+        if (y.length === 2) y = '20' + y;
+        const day = parseInt(d), month = parseInt(m), year = parseInt(y);
+        if (month < 1 || month > 12) continue;
+        if (day  < 1 || day  > 31)  continue;
+        if (year < 2015 || year > 2035) continue;
+        // On garde la date la plus récente (= la date du ticket, pas d'expiration DLC)
+        const iso = `${y}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+        if (!best || iso > best) best = iso;
+    }
+    return best;
+}
+
+// ── 3. Extraction fiable : montant ────────────────────────
 function extractMontant(text) {
+    // Priorité décroissante : label explicite → montant isolé en fin de ligne
     const patterns = [
-        /total\s*ttc\s*[:\*]?\s*(\d+[.,]\d{2})/i,
-        /total\s*[:\*]?\s*(\d+[.,]\d{2})/i,
-        /à\s*payer\s*[:\*]?\s*(\d+[.,]\d{2})/i,
-        /montant\s*[:\*]?\s*(\d+[.,]\d{2})/i,
-        /net\s*à\s*payer\s*[:\*]?\s*(\d+[.,]\d{2})/i,
+        /net\s*[aà]\s*payer\s*[:\*=]?\s*(\d+[.,]\d{2})/i,
+        /total\s*ttc\s*[:\*=]?\s*(\d+[.,]\d{2})/i,
+        /[aà]\s*payer\s*[:\*=]?\s*(\d+[.,]\d{2})/i,
+        /total\s*[:\*=]?\s*(\d+[.,]\d{2})/i,
+        /montant\s*[:\*=]?\s*(\d+[.,]\d{2})/i,
+        /regl[eé]\s*[:\*=]?\s*(\d+[.,]\d{2})/i,
+        /esp[eè]ces?\s*[:\*=]?\s*(\d+[.,]\d{2})/i,
+        /carte\s*[:\*=]?\s*(\d+[.,]\d{2})/i,
     ];
     for (const p of patterns) {
         const match = text.match(p);
         if (match) {
             const val = parseFloat(match[1].replace(',', '.'));
-            if (val >= 0.50 && val <= 5000) return val.toFixed(2);
+            if (val >= 0.10 && val <= 9999) return val.toFixed(2);
         }
     }
     return null;
 }
 
-// ── Extraction fiable : magasin ───────────────────────────
+// ── 4. Extraction fiable : magasin (scoring) ──────────────
 function extractMagasin(text) {
+    // Liste d'enseignes connues — détection certaine, prioritaire
     const enseignes = [
         'CARREFOUR','LECLERC','LIDL','ALDI','INTERMARCHE','SUPER U','CASINO',
         'MONOPRIX','FRANPRIX','FNAC','DARTY','DECATHLON','IKEA','ZARA','H&M',
-        'MCDONALDS','KFC','BURGER KING','SEPHORA','MARIONNAUD','PHARMACIE',
+        'MCDONALDS','MCDONALD','KFC','BURGER KING','SEPHORA','MARIONNAUD',
         'BOULANGER','LEROY MERLIN','BRICOMARCHE','BRICODEPOT','PICARD','BIOCOOP',
-        'AUCHAN','SIMPLY MARKET','NETTO','PENNY','CORA','MATCH','GEANT',
+        'AUCHAN','SIMPLY MARKET','NETTO','PENNY','CORA','MATCH','GEANT CASINO',
         'GRAND FRAIS','NATURALIA','LA VIE CLAIRE','BOTANIC','ACTION','NORMAL',
-        'PRIMARK','KIABI','JULES','CELIO','PROMOD','JENNYFER','CAMAIEU',
-        'OPTICAL CENTER','ALAIN AFFLELOU','KRYS','ATOL','SPECSAVERS',
-        'CULTURA','MAISON DU MONDE','BUT','CONFORAMA','CASA','GIFI',
+        'PRIMARK','KIABI','JULES','CELIO','PROMOD','CAMAIEU','JENNYFER',
+        'OPTICAL CENTER','ALAIN AFFLELOU','KRYS','ATOL',
+        'CULTURA','MAISONS DU MONDE','BUT','CONFORAMA','CASA','GIFI',
         'NORAUTO','FEU VERT','SPEEDY','MIDAS','EUROMASTER',
-        'PAUL','ERIC KAYSER','BRIOCHE DOREE','SUBWAY','QUICK',
-        'RELAY','TABAC','PMU','FDJ'
+        'PAUL','ERIC KAYSER','BRIOCHE DOREE','SUBWAY','QUICK','FIVE GUYS',
+        'RELAY','TABAC','PMU','FDJ','PHARMACIE','PARAPHARMACIE',
+        'SNCF','RATP','VINCI','TOTAL ENERGIES','BP','SHELL','ESSO',
+        'LA POSTE','CHRONOPOST','COLISSIMO'
     ];
-    const upper = text.toUpperCase().replace(/\n/g, ' ');
-    const found = enseignes.find(e => upper.includes(e));
+
+    const upper = text.toUpperCase();
+    // Cherche l'enseigne la plus longue qui apparait (évite "U" de SUPER U qui matche en premier)
+    let found = null;
+    enseignes.forEach(e => {
+        if (upper.includes(e)) {
+            if (!found || e.length > found.length) found = e;
+        }
+    });
     if (found) return found;
 
-    // Fallback : première ligne lisible (non chiffres, entre 3 et 30 chars)
-    const firstLine = text.split('\n')
+    // Fallback : scoring des lignes du haut du ticket
+    // Un bon nom de magasin est : court, que des lettres/espaces, pas une adresse ni un tel
+    const BLACKLIST = /^\d|tva|siret|siren|tel|fax|code|caisse|ticket|article|qte|ref|tpe|cb|visa|master/i;
+    const lines = text.split('\n')
         .map(l => l.trim())
-        .find(l => l.length >= 3 && l.length <= 30 && /[a-zA-Z]{3,}/.test(l) && !/^\d+$/.test(l));
-    return (firstLine && firstLine.length <= 30) ? firstLine.toUpperCase() : null;
+        .filter(l => l.length >= 3 && l.length <= 35)
+        .filter(l => /[a-zA-Z]{3,}/.test(l))     // au moins 3 lettres consécutives
+        .filter(l => !/^\d+$/.test(l))             // pas que des chiffres
+        .filter(l => !BLACKLIST.test(l))            // pas un mot-clé technique
+        .filter(l => (l.match(/\d/g) || []).length <= 2); // max 2 chiffres (évite les adresses)
+
+    // On prend la ligne du haut qui passe tous les filtres — c'est presque toujours le nom
+    // mais seulement si elle apparait dans les 8 premières lignes non vides du ticket
+    const topLines = text.split('\n').filter(l => l.trim()).slice(0, 8).map(l => l.trim().toUpperCase());
+    const candidate = lines.find(l => topLines.includes(l.toUpperCase()));
+
+    return candidate ? candidate.toUpperCase() : null;
 }
 
-// ── OCR principal ─────────────────────────────────────────
+// ── 5. OCR principal ──────────────────────────────────────
 async function ocrReceipt() {
     const canvas = document.getElementById('photo-canvas');
     showToast("🔍 Lecture du reçu...");
 
     try {
+        // Prétraitement : image optimisée pour Tesseract
+        const processedCanvas = preprocessForOCR(canvas);
+
         const worker = await Tesseract.createWorker('fra', 1, {
-            logger: () => {}  // silencieux
+            logger: () => {}
         });
 
-        const { data: { text } } = await worker.recognize(canvas);
+        // Paramètres Tesseract optimisés pour les tickets de caisse
+        await worker.setParameters({
+            tessedit_pageseg_mode: '6',   // bloc de texte uniforme (pas de colonnes)
+            preserve_interword_spaces: '1',
+        });
+
+        const { data: { text } } = await worker.recognize(processedCanvas);
         await worker.terminate();
 
         const date    = extractDate(text);
