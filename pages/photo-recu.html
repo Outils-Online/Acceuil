@@ -631,6 +631,7 @@
 <!-- Librairies -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
     if (window.jspdf && window.jspdf.jsPDF) { window.jsPDF = window.jspdf.jsPDF; }
 </script>
@@ -789,9 +790,12 @@ function processCapture() {
     dateMode = null;
     ['today','prev','manual'].forEach(m => document.getElementById('chip-'+m).classList.remove('active'));
     document.getElementById('capture-date').value = '';
+    document.getElementById('capture-amount').value = '';
+    document.getElementById('capture-shop').value = '';
     document.getElementById('date-display-value').textContent = '— choisir une date';
     document.getElementById('date-display-value').style.color = 'var(--color-accent)';
     updateSaveBtn();
+    ocrReceipt();
 }
 
 function resetUI() {
@@ -1085,6 +1089,119 @@ function showToast(m) {
     t.innerText = m; t.style.display = 'block';
     clearTimeout(t._to);
     t._to = setTimeout(() => t.style.display = 'none', 2500);
+}
+</script>
+
+<!-- ── OCR Tesseract — 100% local, aucune donnée envoyée ── -->
+<script>
+// ── Extraction fiable : date ──────────────────────────────
+function extractDate(text) {
+    const match = text.match(/\b(\d{2})[\/\-\.](\d{2})[\/\-\.](\d{2,4})\b/);
+    if (!match) return null;
+    let [_, d, m, y] = match;
+    if (y.length === 2) y = '20' + y;
+    const day = parseInt(d), month = parseInt(m), year = parseInt(y);
+    if (month < 1 || month > 12) return null;
+    if (day < 1 || day > 31) return null;
+    if (year < 2000 || year > 2035) return null;
+    return `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
+}
+
+// ── Extraction fiable : montant ───────────────────────────
+function extractMontant(text) {
+    const patterns = [
+        /total\s*ttc\s*[:\*]?\s*(\d+[.,]\d{2})/i,
+        /total\s*[:\*]?\s*(\d+[.,]\d{2})/i,
+        /à\s*payer\s*[:\*]?\s*(\d+[.,]\d{2})/i,
+        /montant\s*[:\*]?\s*(\d+[.,]\d{2})/i,
+        /net\s*à\s*payer\s*[:\*]?\s*(\d+[.,]\d{2})/i,
+    ];
+    for (const p of patterns) {
+        const match = text.match(p);
+        if (match) {
+            const val = parseFloat(match[1].replace(',', '.'));
+            if (val >= 0.50 && val <= 5000) return val.toFixed(2);
+        }
+    }
+    return null;
+}
+
+// ── Extraction fiable : magasin ───────────────────────────
+function extractMagasin(text) {
+    const enseignes = [
+        'CARREFOUR','LECLERC','LIDL','ALDI','INTERMARCHE','SUPER U','CASINO',
+        'MONOPRIX','FRANPRIX','FNAC','DARTY','DECATHLON','IKEA','ZARA','H&M',
+        'MCDONALDS','KFC','BURGER KING','SEPHORA','MARIONNAUD','PHARMACIE',
+        'BOULANGER','LEROY MERLIN','BRICOMARCHE','BRICODEPOT','PICARD','BIOCOOP',
+        'AUCHAN','SIMPLY MARKET','NETTO','PENNY','CORA','MATCH','GEANT',
+        'GRAND FRAIS','NATURALIA','LA VIE CLAIRE','BOTANIC','ACTION','NORMAL',
+        'PRIMARK','KIABI','JULES','CELIO','PROMOD','JENNYFER','CAMAIEU',
+        'OPTICAL CENTER','ALAIN AFFLELOU','KRYS','ATOL','SPECSAVERS',
+        'CULTURA','MAISON DU MONDE','BUT','CONFORAMA','CASA','GIFI',
+        'NORAUTO','FEU VERT','SPEEDY','MIDAS','EUROMASTER',
+        'PAUL','ERIC KAYSER','BRIOCHE DOREE','SUBWAY','QUICK',
+        'RELAY','TABAC','PMU','FDJ'
+    ];
+    const upper = text.toUpperCase().replace(/\n/g, ' ');
+    const found = enseignes.find(e => upper.includes(e));
+    if (found) return found;
+
+    // Fallback : première ligne lisible (non chiffres, entre 3 et 30 chars)
+    const firstLine = text.split('\n')
+        .map(l => l.trim())
+        .find(l => l.length >= 3 && l.length <= 30 && /[a-zA-Z]{3,}/.test(l) && !/^\d+$/.test(l));
+    return (firstLine && firstLine.length <= 30) ? firstLine.toUpperCase() : null;
+}
+
+// ── OCR principal ─────────────────────────────────────────
+async function ocrReceipt() {
+    const canvas = document.getElementById('photo-canvas');
+    showToast("🔍 Lecture du reçu...");
+
+    try {
+        const worker = await Tesseract.createWorker('fra', 1, {
+            logger: () => {}  // silencieux
+        });
+
+        const { data: { text } } = await worker.recognize(canvas);
+        await worker.terminate();
+
+        const date    = extractDate(text);
+        const montant = extractMontant(text);
+        const magasin = extractMagasin(text);
+
+        // Remplissage uniquement si fiable
+        if (date) {
+            document.getElementById('capture-date').value = date;
+            ['today','prev','manual'].forEach(m =>
+                document.getElementById('chip-'+m).classList.toggle('active', m === 'manual')
+            );
+            dateMode = 'manual';
+            refreshDateDisplay();
+        }
+
+        if (montant !== null) {
+            document.getElementById('capture-amount').value = montant;
+        }
+
+        if (magasin) {
+            document.getElementById('capture-shop').value = magasin;
+        }
+
+        // Toast adapté au résultat
+        const found = [date ? 'date' : null, montant ? 'montant' : null, magasin ? 'magasin' : null].filter(Boolean);
+        if (found.length === 0) {
+            showToast("Remplissage manuel requis");
+        } else if (found.length === 3) {
+            showToast("✅ Reçu lu entièrement");
+        } else {
+            showToast(`✅ ${found.join(', ')} détecté${found.length > 1 ? 's' : ''}`);
+        }
+
+    } catch(e) {
+        console.error('OCR error:', e);
+        showToast("Remplissage manuel requis");
+    }
 }
 </script>
 
