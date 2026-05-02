@@ -2273,6 +2273,108 @@ function buildOverlay() {
                    <button class="scan-close" onclick="stopScanner()">✕ Fermer</button>`;
   document.body.appendChild(div);
 }
+
+/**
+ * Sélectionne la meilleure caméra arrière disponible :
+ * Priorité : caméra principale (pas grand-angle, pas téléobjectif)
+ * Compatible Chrome/Safari/Firefox sur mobile et desktop.
+ */
+async function getBestRearCameraStream() {
+  // 1. Essai avec exact facingMode + haute résolution (Chrome Android)
+  const constraints = [
+    // Tentative 1 : caméra arrière, haute résolution, zoom natif à 1 (caméra principale)
+    {
+      video: {
+        facingMode: { exact: 'environment' },
+        width: { ideal: 4096 },
+        height: { ideal: 2160 },
+        zoom: { ideal: 1 }
+      }
+    },
+    // Tentative 2 : caméra arrière, haute résolution sans zoom forcé
+    {
+      video: {
+        facingMode: { exact: 'environment' },
+        width: { ideal: 4096 },
+        height: { ideal: 2160 }
+      }
+    },
+    // Tentative 3 : facingMode souple (Safari iOS)
+    {
+      video: {
+        facingMode: 'environment',
+        width: { ideal: 1920 },
+        height: { ideal: 1080 }
+      }
+    },
+    // Tentative 4 : fallback générique
+    { video: { facingMode: 'environment' } },
+    // Tentative 5 : toute caméra disponible
+    { video: true }
+  ];
+
+  // Sur Chrome Android, on peut énumérer les devices et choisir
+  // la caméra arrière principale (évite le grand-angle)
+  if (navigator.mediaDevices.enumerateDevices) {
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoCams = devices.filter(d => d.kind === 'videoinput');
+
+      if (videoCams.length > 1) {
+        // Filtrer les caméras arrière identifiables par leur label
+        const rearCams = videoCams.filter(d => {
+          const label = (d.label || '').toLowerCase();
+          return label.includes('back') || label.includes('rear') ||
+                 label.includes('environment') || label.includes('arrière') ||
+                 label.includes('0,') || // pattern Chrome Android : "camera2 0, facing back"
+                 label.includes('facing back');
+        });
+
+        // Parmi les caméras arrière, préférer la caméra principale (souvent la 2ème, index 0)
+        // et exclure "ultra" (grand-angle) et "tele"
+        const mainCam = rearCams.find(d => {
+          const label = (d.label || '').toLowerCase();
+          return !label.includes('ultra') && !label.includes('wide') &&
+                 !label.includes('tele') && !label.includes('macro') &&
+                 !label.includes('depth') && !label.includes('2,') &&
+                 !label.includes('3,') && !label.includes('4,');
+        }) || rearCams[0];
+
+        if (mainCam) {
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+              video: {
+                deviceId: { exact: mainCam.deviceId },
+                width: { ideal: 4096 },
+                height: { ideal: 2160 }
+              }
+            });
+            console.log('[Camera] Caméra sélectionnée :', mainCam.label);
+            return stream;
+          } catch(e) {
+            console.warn('[Camera] Impossible de sélectionner par deviceId, fallback constraints', e);
+          }
+        }
+      }
+    } catch(e) {
+      console.warn('[Camera] enumerateDevices échoué', e);
+    }
+  }
+
+  // Fallback : essayer les contraintes en cascade
+  for (const constraint of constraints) {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia(constraint);
+      console.log('[Camera] Stream obtenu avec contrainte :', JSON.stringify(constraint.video));
+      return stream;
+    } catch(e) {
+      console.warn('[Camera] Contrainte échouée, essai suivant...', e.name);
+    }
+  }
+
+  throw new Error('Aucune caméra accessible');
+}
+
 async function startScanner() {
   if (scannerActive) return;
   buildOverlay();
@@ -2280,12 +2382,21 @@ async function startScanner() {
   let hint = document.getElementById('isbn-scan-hint');
   hint.textContent = 'Ouverture caméra...';
   try {
-    let stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+    const stream = await getBestRearCameraStream();
     videoStream = stream;
     video.srcObject = stream;
     await video.play();
     hint.textContent = 'Centrez le code-barres ISBN';
     scannerActive = true;
+
+    // Appliquer le focus continu si supporté
+    const track = stream.getVideoTracks()[0];
+    if (track) {
+      try {
+        await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
+      } catch(e) { /* non supporté sur certains navigateurs */ }
+    }
+
     if ('BarcodeDetector' in window) {
       let detector = new BarcodeDetector({ formats: ['ean_13','ean_8','upc_a','code_128'] });
       function tick() {
@@ -2331,7 +2442,7 @@ async function startScanner() {
     }
   } catch(err) {
     hint.textContent = 'Erreur caméra : autorisez l\'accès';
-    console.error(err);
+    console.error('[Camera] Erreur :', err);
   }
 }
 function stopScanner() {
