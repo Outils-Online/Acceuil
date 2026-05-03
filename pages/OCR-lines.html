@@ -669,8 +669,6 @@
     chargerDictionnaire();
     window.parent.postMessage('etape_suivante', '*');
 };
-    window.startISBNScanner = () => startISBNScanner();
-    window.stopISBNScanner  = () => stopISBNScanner();
 
     async function initCamera() {
         try {
@@ -1115,7 +1113,7 @@
         throw new Error('Aucune caméra accessible');
     }
 
-    async function startISBNScanner() {
+    window.startISBNScanner = async function startISBNScanner() {
         if (_isbnScannerActive) return;
         _buildISBNOverlay();
         const video = document.getElementById('isbn-scan-video');
@@ -1190,7 +1188,7 @@
         }
     }
 
-    function stopISBNScanner() {
+    window.stopISBNScanner = function stopISBNScanner() {
         _isbnScannerActive = false;                           // coupe la boucle en premier
         if (_isbnFrame) { cancelAnimationFrame(_isbnFrame); _isbnFrame = null; }
         if (_isbnStream) { _isbnStream.getTracks().forEach(t => t.stop()); _isbnStream = null; }
