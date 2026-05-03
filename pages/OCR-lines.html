@@ -1364,7 +1364,8 @@
 
     function injectHeaders(texte, prenom, titre, ville, editeur, collection, annee) {
         return texte.replace(/p\.\s*(\d+)/gi, (match, num) => {
-            const header = `(${prenom}, ${titre}, ${ville}, ${editeur}, coll. « ${collection} », ${annee}, p. ${num}.)`;
+            const collPart = collection ? `, coll. « ${collection} »` : '';
+            const header = `(${prenom}, ${titre}, ${ville}, ${editeur}${collPart}, ${annee}, p. ${num}.)`;
             return `${header}`;
         });
     }
