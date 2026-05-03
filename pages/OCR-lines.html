@@ -843,7 +843,7 @@
         const p = document.getElementById('pageInput').value;
         if (!p) return alert("Indiquez la page.");
         const texte = ocrEditArea.value.replace(/\s\s+/g, ' ').trim();
-        historyData.push(`${texte} p. ${p}`);
+        historyData.push(`« ${texte} » p. ${p}`);
         document.getElementById('pageInput').value = "";
         updateCount();
         closeModal();
@@ -1364,7 +1364,7 @@
 
     function injectHeaders(texte, prenom, titre, ville, editeur, collection, annee) {
         return texte.replace(/p\.\s*(\d+)/gi, (match, num) => {
-            const header = `${prenom}, ${titre}, ${ville}, ${editeur}, coll. « ${collection} », ${annee}, p. ${num}`;
+            const header = `(${prenom}, ${titre}, ${ville}, ${editeur}, coll. « ${collection} », ${annee}, p. ${num}.)`;
             return `${header}`;
         });
     }
