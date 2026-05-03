@@ -810,29 +810,20 @@ function _countElements() {
 }
  
 function checkDriftAlert() {
-    // Alerte désactivée par l'utilisateur ?
     if (localStorage.getItem(DRIFT_OFF_KEY) === '1') return;
- 
-    // Cooldown 10 min entre deux affichages
+
     const lastShown = localStorage.getItem(DRIFT_LAST_KEY);
     if (lastShown && Date.now() - parseInt(lastShown) < DRIFT_COOLDOWN_MS) return;
- 
-    const now      = _countElements();
-    const snap     = parseInt(localStorage.getItem(DRIFT_SNAP_KEY) || '0');
-    const diff     = Math.abs(now - snap);
 
-if (diff < DRIFT_ELEM_THRESHOLD) return;
- 
-    // Met à jour l'affichage de l'alerte
+    const opCount = parseInt(localStorage.getItem('__op_count__') || '0');
+
+    if (opCount < DRIFT_ELEM_THRESHOLD) return;
+
     const el = document.getElementById('driftCount');
-    if (el) el.textContent = diff + ' nouvel élément' + (diff > 1 ? 's' : '');
- 
-    const badge = document.getElementById('driftModeBadge');
-    const isDirLinked = !!localStorage.getItem('__dir_handle_name__');
-    if (badge) badge.style.display = isDirLinked ? 'inline-flex' : 'none';
- 
+    if (el) el.textContent = opCount + ' opération' + (opCount > 1 ? 's' : '');
+
     localStorage.setItem(DRIFT_LAST_KEY, String(Date.now()));
- 
+
     setTimeout(() => {
         document.getElementById('driftAlert').classList.add('visible');
     }, 600);
@@ -843,8 +834,7 @@ function driftSaveNow() {
     if (window.StorageManager && window.StorageManager.exportToFile) {
         window.StorageManager.exportToFile();
     }
-    // Réinitialise le snapshot sur le total actuel
-    localStorage.setItem(DRIFT_SNAP_KEY, String(_countElements()));
+    localStorage.removeItem('__op_count__');
     localStorage.removeItem(DRIFT_LAST_KEY);
 }
  
@@ -2155,8 +2145,7 @@ function closeFusionModal() {
                : (delta > 0 ? '+' + delta + ' ajout(s)' : delta + ' suppression(s)');
 
   lines.push('\nTOTAL = ' + grandTotal + ' éléments');
-  lines.push('Snapshot backup = ' + snap + ' éléments');
-  lines.push('Δ depuis backup = ' + deltaStr);
+lines.push('Opérations depuis backup = ' + localStorage.getItem('__op_count__') || '0');
   alert(lines.join('\n'));
 }));
  
@@ -2292,15 +2281,22 @@ function closeFusionModal() {
     Storage.prototype._setItem = _orig.setItem;
  
     Storage.prototype.setItem = function (key, value) {
-      _orig.setItem.call(this, key, value);
-      if (this === localStorage) {
-        handleAutoSave(key);
-        if (typeof checkDriftAlert === 'function') checkDriftAlert();
-      }
-    };
-   Storage.prototype.removeItem = function (key) {
+  _orig.setItem.call(this, key, value);
+  if (this === localStorage) {
+    // Incrémenter le compteur d'opérations
+    var count = parseInt(localStorage.getItem('__op_count__') || '0') + 1;
+    _orig.setItem.call(this, '__op_count__', String(count));
+    handleAutoSave(key);
+    if (typeof checkDriftAlert === 'function') checkDriftAlert();
+  }
+};
+
+Storage.prototype.removeItem = function (key) {
   _orig.removeItem.call(this, key);
   if (this === localStorage) {
+    // Incrémenter aussi sur suppression
+    var count = parseInt(localStorage.getItem('__op_count__') || '0') + 1;
+    _orig.setItem.call(this, '__op_count__', String(count));
     if (typeof checkDriftAlert === 'function') checkDriftAlert();
   }
 };
