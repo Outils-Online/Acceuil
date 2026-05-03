@@ -576,10 +576,11 @@
     }
 
     // ── Caméra ────────────────────────────────────────────────────────────────
-    window.onload = () => {
-        lsLoad();
-        initCamera();
-    };
+   window.onload = () => {
+    lsLoad();
+    initCamera();
+    window.parent.postMessage('etape_suivante', '*');
+};
 
     async function initCamera() {
         try {
@@ -992,10 +993,7 @@
     }
     function closeClearModal() { document.getElementById('clearModal').classList.remove('open'); }
     function confirmClear() { historyData = []; updateCount(); closeClearModal(); }
-  // Dès que la page est chargée, on prévient le parent (index.html)
-    window.onload = function() {
-        window.parent.postMessage('etape_suivante', '*');
-    };
+
 </script>
 </body>
 </html>
