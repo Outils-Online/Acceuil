@@ -3,637 +3,997 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Compresseur de documents — PDF & DOCX</title>
+<title>Compresseur — PDF & DOCX</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet" />
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;700&display=swap');
+/* ══════════════════════════════════════════
+   RESET & ROOT
+══════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  /* Charte */
+  --ivory:   #FDFCF0;
+  --white:   #FFFFFF;
+  --primary: #0A2472;
+  --forest:  #006466;
+  --coral:   #F46060;
+  --amber:   #FFD972;
 
-  :root {
-    --bg: #0e0e0f;
-    --surface: #18181a;
-    --surface2: #222224;
-    --border: rgba(255,255,255,0.08);
-    --border-hover: rgba(255,255,255,0.16);
-    --text: #f0f0ee;
-    --text-muted: #888884;
-    --text-dim: #555552;
-    --accent: #d4ff6a;
-    --accent-dark: #a8cc42;
-    --accent-faint: rgba(212,255,106,0.08);
-    --accent-faint2: rgba(212,255,106,0.14);
-    --red: #ff5a5a;
-    --red-faint: rgba(255,90,90,0.1);
-    --blue: #5ab4ff;
-    --blue-faint: rgba(90,180,255,0.1);
-    --green: #5affa0;
-    --green-faint: rgba(90,255,160,0.08);
-    --radius: 10px;
-    --radius-lg: 16px;
-    --mono: 'DM Mono', monospace;
-    --sans: 'Syne', sans-serif;
+  /* Dérivés */
+  --primary-faint: rgba(10,36,114,0.06);
+  --primary-faint2: rgba(10,36,114,0.12);
+  --forest-faint:  rgba(0,100,102,0.08);
+  --coral-faint:   rgba(244,96,96,0.10);
+  --amber-faint:   rgba(255,217,114,0.25);
+
+  --text:       #0A2472;
+  --text-body:  #2D3A5A;
+  --text-muted: #6B7A9F;
+  --text-dim:   #B0BBC E;
+
+  --border:       rgba(0,100,102,0.18);
+  --border-light: rgba(0,100,102,0.10);
+
+  --shadow-sm: 0 2px 8px rgba(10,36,114,0.08);
+  --shadow-md: 0 4px 12px rgba(10,36,114,0.15);
+  --shadow-lg: 0 8px 28px rgba(10,36,114,0.14);
+
+  --r-sm: 12px;
+  --r-md: 15px;
+  --r-lg: 22px;
+  --r-xl: 25px;
+
+  --title: 'Space Grotesk', sans-serif;
+  --body:  'Inter', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--ivory);
+  color: var(--text-body);
+  font-family: var(--body);
+  min-height: 100vh;
+  line-height: 1.55;
+}
+
+/* ══════════════════════════════════════════
+   LAYOUT — desktop side-by-side / mobile stack
+══════════════════════════════════════════ */
+.app {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  grid-template-rows: auto 1fr;
+  min-height: 100vh;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  grid-column: 1 / -1;
+  background: var(--white);
+  border-bottom: 1px solid var(--border-light);
+  box-shadow: var(--shadow-sm);
+  padding: 0 28px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--title);
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--primary);
+  text-decoration: none;
+}
+.logo-icon {
+  width: 34px; height: 34px;
+  background: var(--primary);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.logo-dot { color: var(--coral); font-size: 22px; line-height: 1; }
+
+.privacy-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--forest-faint);
+  border: 1px solid rgba(0,100,102,0.22);
+  border-radius: 20px;
+  padding: 5px 13px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--forest);
+  white-space: nowrap;
+}
+.privacy-pill svg { flex-shrink: 0; }
+
+/* ── SIDEBAR PANEL ── */
+.sidebar {
+  background: var(--white);
+  border-right: 1px solid var(--border-light);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.sidebar-inner {
+  padding: 24px 20px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ── MAIN CONTENT ── */
+.main {
+  padding: 28px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background: var(--ivory);
+}
+
+/* ══════════════════════════════════════════
+   PRESETS
+══════════════════════════════════════════ */
+.panel-title {
+  font-family: var(--title);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.preset-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.preset-btn {
+  background: var(--ivory);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-md);
+  color: var(--text-muted);
+  font-family: var(--title);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 10px 6px 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.18s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.preset-btn .p-icon { font-size: 18px; }
+.preset-btn .p-label { font-size: 11px; }
+.preset-btn:hover {
+  border-color: var(--forest);
+  color: var(--forest);
+  background: var(--forest-faint);
+  box-shadow: var(--shadow-sm);
+}
+.preset-btn.active {
+  border-color: var(--coral);
+  color: var(--coral);
+  background: var(--coral-faint);
+  box-shadow: 0 2px 8px rgba(244,96,96,0.18);
+}
+
+/* ══════════════════════════════════════════
+   ACCORDION SECTIONS
+══════════════════════════════════════════ */
+.acc-section {
+  border: 1.5px solid var(--border-light);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  margin-bottom: 10px;
+  background: var(--white);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s;
+}
+.acc-section:has(.acc-body:not([hidden])) {
+  border-color: var(--border);
+  box-shadow: var(--shadow-md);
+}
+
+.acc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 15px;
+  cursor: pointer;
+  user-select: none;
+  gap: 10px;
+  background: var(--white);
+  transition: background 0.15s;
+}
+.acc-header:hover { background: var(--primary-faint); }
+
+.acc-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex: 1;
+  min-width: 0;
+}
+.acc-type-chip {
+  font-family: var(--body);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid;
+  flex-shrink: 0;
+  letter-spacing: 0.04em;
+}
+.chip-pdf { color: var(--coral); border-color: rgba(244,96,96,0.3); background: var(--coral-faint); }
+.chip-docx { color: var(--primary); border-color: var(--primary-faint2); background: var(--primary-faint); }
+
+.acc-title {
+  font-family: var(--title);
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.acc-arrow {
+  width: 20px; height: 20px;
+  border-radius: 6px;
+  background: var(--primary-faint);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px;
+  color: var(--primary);
+  transition: transform 0.22s, background 0.15s;
+  flex-shrink: 0;
+}
+.acc-section:not([data-open]) .acc-arrow { transform: rotate(0deg); }
+.acc-section[data-open] .acc-arrow { transform: rotate(180deg); background: var(--forest-faint); color: var(--forest); }
+
+.acc-body { padding: 4px 15px 16px; display: flex; flex-direction: column; gap: 0; }
+.acc-body[hidden] { display: none; }
+
+/* ══════════════════════════════════════════
+   SLIDER ROWS (dans accordéon)
+══════════════════════════════════════════ */
+.slider-block {
+  padding: 10px 0 8px;
+  border-bottom: 1px solid var(--border-light);
+}
+.slider-block:last-child { border-bottom: none; }
+.slider-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.slider-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-body);
+  font-family: var(--body);
+}
+.slider-val {
+  font-family: var(--body);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--forest);
+  background: var(--forest-faint);
+  border: 1px solid rgba(0,100,102,0.18);
+  border-radius: 8px;
+  padding: 2px 9px;
+  min-width: 46px;
+  text-align: center;
+}
+
+/* Track + thumb */
+input[type=range] {
+  width: 100%;
+  height: 20px;
+  -webkit-appearance: none;
+  background: transparent;
+  cursor: pointer;
+  display: block;
+}
+input[type=range]::-webkit-slider-runnable-track {
+  height: 5px;
+  border-radius: 5px;
+  background: linear-gradient(to right, var(--forest) var(--pct,50%), rgba(0,100,102,0.15) var(--pct,50%));
+  border: none;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--white);
+  border: 2.5px solid var(--forest);
+  margin-top: -7.5px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,100,102,0.25);
+  transition: transform 0.12s, box-shadow 0.12s;
+}
+input[type=range]::-webkit-slider-thumb:active {
+  transform: scale(1.18);
+  box-shadow: 0 2px 12px rgba(0,100,102,0.4);
+}
+input[type=range]:focus { outline: none; }
+
+/* ══════════════════════════════════════════
+   TOGGLE ROWS
+══════════════════════════════════════════ */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border-light);
+  cursor: pointer;
+}
+.toggle-row:last-child { border-bottom: none; }
+.toggle-row:hover .toggle-label { color: var(--primary); }
+
+.toggle-text { flex: 1; min-width: 0; }
+.toggle-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-body);
+  font-family: var(--body);
+  transition: color 0.12s;
+}
+.toggle-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 1px;
+  line-height: 1.3;
+}
+
+/* Switch */
+.switch { position: relative; width: 38px; height: 22px; flex-shrink: 0; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.switch-track {
+  position: absolute; inset: 0;
+  background: #D9E2F0;
+  border: 1.5px solid rgba(10,36,114,0.12);
+  border-radius: 22px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.switch-track::before {
+  content: '';
+  position: absolute;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--white);
+  left: 3px; top: 3px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+  transition: transform 0.2s;
+}
+.switch input:checked + .switch-track {
+  background: var(--forest);
+  border-color: var(--forest);
+}
+.switch input:checked + .switch-track::before { transform: translateX(16px); }
+
+/* ══════════════════════════════════════════
+   MAIN CONTENT
+══════════════════════════════════════════ */
+.main-header h1 {
+  font-family: var(--title);
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+.main-header p {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 5px;
+}
+
+/* DROP ZONE */
+.drop-zone {
+  border: 2px dashed var(--border);
+  border-radius: var(--r-xl);
+  padding: 44px 24px;
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+  background: var(--white);
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+.drop-zone:hover, .drop-zone.drag-over {
+  border-color: var(--coral);
+  background: var(--coral-faint);
+  box-shadow: var(--shadow-md);
+}
+.drop-zone input[type=file] {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+}
+.drop-icon {
+  width: 52px; height: 52px;
+  background: var(--primary-faint);
+  border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  margin: 0 auto 14px;
+  transition: background 0.2s, transform 0.2s;
+}
+.drop-zone:hover .drop-icon { background: var(--coral-faint); transform: translateY(-2px); }
+.drop-title {
+  font-family: var(--title);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--primary);
+}
+.drop-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 5px;
+}
+.drop-badges {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+.badge {
+  font-family: var(--body);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 8px;
+  border: 1.5px solid;
+  letter-spacing: 0.04em;
+}
+.badge-pdf  { color: var(--coral);   border-color: rgba(244,96,96,0.3);   background: var(--coral-faint); }
+.badge-docx { color: var(--primary); border-color: var(--primary-faint2); background: var(--primary-faint); }
+
+/* STATS BAR */
+.stats-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+.stat-card {
+  background: var(--white);
+  border: 1.5px solid var(--border-light);
+  border-radius: var(--r-md);
+  padding: 16px 18px;
+  box-shadow: var(--shadow-sm);
+}
+.stat-card.highlight {
+  border-color: var(--amber);
+  background: var(--amber-faint);
+}
+.stat-lbl {
+  font-family: var(--body);
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.stat-val {
+  font-family: var(--title);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-top: 4px;
+  letter-spacing: -0.02em;
+}
+.stat-card.highlight .stat-val { color: var(--primary); }
+
+/* FILE LIST */
+.files-list { display: flex; flex-direction: column; gap: 8px; }
+
+.file-item {
+  background: var(--white);
+  border: 1.5px solid var(--border-light);
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  align-items: center;
+  gap: 14px;
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.file-item.compressing { border-color: rgba(0,100,102,0.4); }
+.file-item.done        { border-color: rgba(0,100,102,0.5); box-shadow: var(--shadow-md); }
+.file-item.error       { border-color: rgba(244,96,96,0.4); }
+
+.file-type-badge {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--body);
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+  letter-spacing: 0.04em;
+}
+.type-pdf  { background: var(--coral-faint);   color: var(--coral);   border: 1.5px solid rgba(244,96,96,0.2); }
+.type-docx { background: var(--primary-faint); color: var(--primary); border: 1.5px solid var(--primary-faint2); }
+
+.file-name {
+  font-family: var(--body);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.file-meta { display: flex; align-items: center; gap: 8px; margin-top: 3px; flex-wrap: wrap; }
+.file-size-orig { font-family: var(--body); font-size: 11.5px; color: var(--text-muted); }
+.file-status { font-size: 11.5px; font-weight: 600; }
+.st-ready    { color: var(--text-muted); }
+.st-compress { color: var(--forest); }
+.st-done     { color: var(--forest); }
+.st-error    { color: var(--coral); }
+
+/* Progress bar */
+.progress-track {
+  height: 4px;
+  background: var(--primary-faint);
+  border-radius: 4px;
+  margin-top: 9px;
+  overflow: hidden;
+  display: none;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--forest), var(--amber), var(--forest));
+  background-size: 200% 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+  animation: shimmer 1.8s infinite linear;
+}
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+.file-actions { display: flex; gap: 6px; align-items: center; }
+
+.icon-btn {
+  width: 32px; height: 32px;
+  background: var(--ivory);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-muted);
+  transition: all 0.13s;
+  flex-shrink: 0;
+}
+.icon-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-faint); }
+.icon-btn.dl {
+  border-color: rgba(0,100,102,0.35);
+  color: var(--forest);
+  background: var(--forest-faint);
+}
+.icon-btn.dl:hover { border-color: var(--forest); background: rgba(0,100,102,0.14); }
+
+/* ACTION BAR */
+.action-bar {
+  background: var(--white);
+  border: 1.5px solid var(--border-light);
+  border-radius: var(--r-lg);
+  padding: 14px 18px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  box-shadow: var(--shadow-md);
+}
+
+.btn-main {
+  background: var(--coral);
+  color: #fff;
+  border: none;
+  border-radius: var(--r-md);
+  padding: 12px 26px;
+  font-family: var(--title);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  box-shadow: 0 4px 14px rgba(244,96,96,0.35);
+  transition: opacity 0.15s, transform 0.1s, box-shadow 0.15s;
+  flex-shrink: 0;
+}
+.btn-main:hover { opacity: 0.9; box-shadow: 0 6px 18px rgba(244,96,96,0.45); }
+.btn-main:active { transform: scale(0.98); }
+.btn-main:disabled { opacity: 0.35; cursor: not-allowed; box-shadow: none; }
+.btn-main.running {
+  background: var(--primary-faint);
+  color: var(--forest);
+  border: 1.5px solid rgba(0,100,102,0.3);
+  box-shadow: none;
+  cursor: wait;
+}
+
+.btn-secondary {
+  background: var(--white);
+  color: var(--primary);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 11px 20px;
+  font-family: var(--title);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.13s;
+  flex-shrink: 0;
+}
+.btn-secondary:hover { border-color: var(--primary); background: var(--primary-faint); }
+.btn-secondary:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1.5px solid var(--border-light);
+  border-radius: var(--r-md);
+  padding: 11px 18px;
+  font-family: var(--body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.13s;
+}
+.btn-ghost:hover { color: var(--coral); border-color: rgba(244,96,96,0.35); }
+
+.file-count-tag {
+  font-family: var(--body);
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+/* METHOD BADGE */
+.method-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--amber-faint);
+  border: 1px solid rgba(255,217,114,0.5);
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #8a6800;
+  font-family: var(--body);
+  margin-top: 8px;
+}
+.method-dot {
+  width: 6px; height: 6px;
+  background: #e6a800;
+  border-radius: 50%;
+  animation: blink 2s infinite;
+  flex-shrink: 0;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* DIVIDER */
+.divider { height: 1px; background: var(--border-light); margin: 14px 0; }
+
+/* TOAST */
+.toast {
+  position: fixed;
+  bottom: 28px; left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--primary);
+  color: #fff;
+  border-radius: var(--r-md);
+  padding: 11px 22px;
+  font-family: var(--body);
+  font-size: 13px;
+  font-weight: 600;
+  z-index: 999;
+  box-shadow: var(--shadow-lg);
+  transition: transform 0.3s cubic-bezier(.2,.8,.4,1), opacity 0.3s;
+  opacity: 0; pointer-events: none; white-space: nowrap;
+}
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+/* ══════════════════════════════════════════
+   MOBILE PANEL TOGGLE (visible < 768px)
+══════════════════════════════════════════ */
+.panel-toggle-bar {
+  display: none;
+  background: var(--white);
+  border-bottom: 1px solid var(--border-light);
+  padding: 10px 16px;
+}
+.panel-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--primary-faint);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 9px 16px;
+  font-family: var(--title);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary);
+  cursor: pointer;
+  width: 100%;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.panel-toggle-btn:hover { background: var(--forest-faint); border-color: var(--forest); color: var(--forest); }
+.panel-toggle-btn .arrow { transition: transform 0.22s; }
+.panel-toggle-btn.open .arrow { transform: rotate(180deg); }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* ══════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════ */
+@media (max-width: 860px) {
+  .app {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto 1fr;
   }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--sans);
-    min-height: 100vh;
-    padding: 0;
-    line-height: 1.5;
-  }
-
-  /* LAYOUT */
-  .shell {
-    display: grid;
-    grid-template-columns: 260px 1fr;
-    min-height: 100vh;
-  }
-
-  /* SIDEBAR */
+  .topbar { grid-row: 1; }
+  .panel-toggle-bar { display: block; grid-row: 2; }
   .sidebar {
-    background: var(--surface);
-    border-right: 1px solid var(--border);
-    padding: 28px 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    position: sticky;
-    top: 0;
-    height: 100vh;
+    grid-row: 3;
+    border-right: none;
+    border-bottom: 1px solid var(--border-light);
+    display: none; /* controlled by JS */
+    max-height: 65vh;
     overflow-y: auto;
   }
+  .sidebar.open { display: block; }
+  .main { grid-row: 4; padding: 18px 16px; }
+  .stats-bar { grid-template-columns: 1fr 1fr; }
+  .file-item { grid-template-columns: 38px 1fr auto; }
+  .file-type-badge { width: 38px; height: 38px; font-size: 9px; }
+  .main-header h1 { font-size: 20px; }
+}
 
-  .logo {
-    font-family: var(--sans);
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin-bottom: 32px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .logo-dot {
-    width: 8px; height: 8px;
-    background: var(--accent);
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-
-  .section-label {
-    font-size: 10px;
-    font-weight: 500;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    margin: 24px 0 10px;
-  }
-  .section-label:first-of-type { margin-top: 0; }
-
-  /* OPTIONS */
-  .opt-group {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    margin-bottom: 4px;
-  }
-
-  .opt-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    padding: 8px 10px;
-    border-radius: var(--radius);
-    transition: background 0.15s;
-  }
-  .opt-row:hover { background: var(--surface2); }
-
-  .opt-text { flex: 1; min-width: 0; }
-  .opt-title { font-size: 13px; color: var(--text); line-height: 1.3; }
-  .opt-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; line-height: 1.3; }
-
-  /* TOGGLE */
-  .toggle { position: relative; width: 34px; height: 18px; flex-shrink: 0; }
-  .toggle input { opacity: 0; width: 0; height: 0; }
-  .tog-track {
-    position: absolute; inset: 0;
-    background: var(--surface2);
-    border: 1px solid var(--border-hover);
-    border-radius: 18px;
-    cursor: pointer;
-    transition: background 0.2s, border-color 0.2s;
-  }
-  .tog-track::before {
-    content: '';
-    position: absolute;
-    width: 12px; height: 12px;
-    border-radius: 50%;
-    background: var(--text-muted);
-    left: 2px; top: 2px;
-    transition: transform 0.2s, background 0.2s;
-  }
-  .toggle input:checked + .tog-track { background: var(--accent-faint2); border-color: var(--accent); }
-  .toggle input:checked + .tog-track::before { transform: translateX(16px); background: var(--accent); }
-
-  /* SELECT */
-  .opt-select {
-    background: var(--surface2);
-    border: 1px solid var(--border-hover);
-    border-radius: 6px;
-    color: var(--text);
-    font-family: var(--mono);
-    font-size: 11px;
-    padding: 4px 8px;
-    cursor: pointer;
-    appearance: none;
-    -webkit-appearance: none;
-    outline: none;
-    min-width: 80px;
-    text-align: right;
-  }
-  .opt-select:focus { border-color: var(--accent); }
-
-  /* SLIDER */
-  .slider-wrap { width: 80px; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
-  .slider-val { font-family: var(--mono); font-size: 11px; color: var(--accent); }
-  input[type=range] {
-    width: 80px; height: 14px;
-    -webkit-appearance: none;
-    background: transparent;
-  }
-  input[type=range]::-webkit-slider-runnable-track {
-    height: 3px; border-radius: 3px;
-    background: linear-gradient(to right, var(--accent) var(--pct, 50%), var(--surface2) var(--pct, 50%));
-    border: 1px solid var(--border-hover);
-  }
-  input[type=range]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 13px; height: 13px;
-    border-radius: 50%;
-    background: var(--accent);
-    margin-top: -5px;
-    cursor: pointer;
-    transition: transform 0.1s;
-  }
-  input[type=range]::-webkit-slider-thumb:active { transform: scale(1.2); }
-
-  .divider { height: 1px; background: var(--border); margin: 20px 0; }
-
-  /* PRESET BUTTONS */
-  .preset-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
-  .preset-btn {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    color: var(--text-muted);
-    font-family: var(--sans);
-    font-size: 11px;
-    font-weight: 500;
-    padding: 8px 4px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.15s;
-    letter-spacing: 0.03em;
-  }
-  .preset-btn:hover { border-color: var(--border-hover); color: var(--text); }
-  .preset-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-faint); }
-
-  /* MAIN */
-  .main { padding: 32px 36px; display: flex; flex-direction: column; gap: 24px; }
-
-  .main-header h1 {
-    font-size: 26px;
-    font-weight: 700;
-    color: var(--text);
-    letter-spacing: -0.02em;
-  }
-  .main-header p {
-    font-size: 13px;
-    color: var(--text-muted);
-    margin-top: 6px;
-  }
-
-  /* DROP ZONE */
-  .drop-zone {
-    border: 1px dashed var(--border-hover);
-    border-radius: var(--radius-lg);
-    padding: 40px 24px;
-    text-align: center;
-    cursor: pointer;
-    position: relative;
-    transition: border-color 0.2s, background 0.2s;
-    background: var(--surface);
-  }
-  .drop-zone:hover, .drop-zone.drag-over {
-    border-color: var(--accent);
-    background: var(--accent-faint);
-  }
-  .drop-zone input[type=file] {
-    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
-  }
-  .drop-arrow {
-    font-size: 28px;
-    color: var(--text-dim);
-    margin-bottom: 12px;
-    display: block;
-    transition: color 0.2s;
-  }
-  .drop-zone:hover .drop-arrow { color: var(--accent); }
-  .drop-title { font-size: 15px; font-weight: 500; color: var(--text); }
-  .drop-sub { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
-  .drop-badges { display: flex; justify-content: center; gap: 6px; margin-top: 14px; flex-wrap: wrap; }
-  .badge {
-    font-family: var(--mono);
-    font-size: 11px;
-    font-weight: 500;
-    padding: 3px 10px;
-    border-radius: 4px;
-    border: 1px solid;
-  }
-  .badge-pdf { color: var(--red); border-color: rgba(255,90,90,0.3); background: var(--red-faint); }
-  .badge-docx { color: var(--blue); border-color: rgba(90,180,255,0.3); background: var(--blue-faint); }
-
-  /* FILE LIST */
-  .files-list { display: flex; flex-direction: column; gap: 8px; }
-
-  .file-item {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 14px 16px;
-    display: grid;
-    grid-template-columns: 44px 1fr auto auto;
-    align-items: center;
-    gap: 12px;
-    transition: border-color 0.15s;
-  }
-  .file-item.compressing { border-color: rgba(90,180,255,0.3); }
-  .file-item.done { border-color: rgba(90,255,160,0.2); }
-  .file-item.error { border-color: rgba(255,90,90,0.3); }
-
-  .file-type-badge {
-    width: 44px; height: 44px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--mono);
-    font-size: 11px;
-    font-weight: 500;
-    flex-shrink: 0;
-  }
-  .type-pdf { background: var(--red-faint); color: var(--red); border: 1px solid rgba(255,90,90,0.2); }
-  .type-docx { background: var(--blue-faint); color: var(--blue); border: 1px solid rgba(90,180,255,0.2); }
-
-  .file-info .file-name {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 360px;
-  }
-  .file-meta {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 4px;
-    flex-wrap: wrap;
-  }
-  .file-size-orig { font-family: var(--mono); font-size: 12px; color: var(--text-muted); }
-  .file-status { font-size: 12px; }
-  .st-ready { color: var(--text-dim); }
-  .st-compress { color: var(--blue); }
-  .st-done { color: var(--green); }
-  .st-error { color: var(--red); }
-
-  .progress-track {
-    height: 2px;
-    background: var(--surface2);
-    border-radius: 2px;
-    margin-top: 8px;
-    overflow: hidden;
-    display: none;
-  }
-  .progress-fill {
-    height: 100%;
-    background: var(--blue);
-    border-radius: 2px;
-    transition: width 0.4s ease;
-  }
-
-  .file-actions { display: flex; gap: 6px; align-items: center; }
-
-  .icon-btn {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    color: var(--text-muted);
-    width: 30px; height: 30px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    font-size: 13px;
-    transition: all 0.15s;
-    line-height: 1;
-  }
-  .icon-btn:hover { border-color: var(--border-hover); color: var(--text); }
-  .icon-btn.dl { border-color: rgba(90,255,160,0.3); color: var(--green); background: var(--green-faint); }
-  .icon-btn.dl:hover { border-color: var(--green); }
-
-  /* STATS BAR */
-  .stats-bar {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-  }
-  .stat-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 16px;
-  }
-  .stat-card.highlight { border-color: rgba(212,255,106,0.3); background: var(--accent-faint); }
-  .stat-lbl { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; }
-  .stat-val { font-family: var(--mono); font-size: 22px; font-weight: 500; color: var(--text); margin-top: 4px; }
-  .stat-card.highlight .stat-val { color: var(--accent); }
-
-  /* ACTION BAR */
-  .action-bar {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-
-  .btn-main {
-    background: var(--accent);
-    color: #0e0e0f;
-    border: none;
-    border-radius: var(--radius);
-    padding: 11px 28px;
-    font-family: var(--sans);
-    font-size: 14px;
-    font-weight: 700;
-    cursor: pointer;
-    letter-spacing: 0.03em;
-    transition: opacity 0.15s, transform 0.1s;
-  }
-  .btn-main:hover { opacity: 0.88; }
-  .btn-main:active { transform: scale(0.98); }
-  .btn-main:disabled { opacity: 0.3; cursor: not-allowed; }
-
-  .btn-ghost {
-    background: transparent;
-    color: var(--text-muted);
-    border: 1px solid var(--border-hover);
-    border-radius: var(--radius);
-    padding: 11px 22px;
-    font-family: var(--sans);
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .btn-ghost:hover { color: var(--text); border-color: var(--border-hover); background: var(--surface2); }
-  .btn-ghost:disabled { opacity: 0.3; cursor: not-allowed; }
-
-  .file-count-tag {
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--text-dim);
-    margin-left: auto;
-  }
-
-  /* SCROLLBAR */
-  ::-webkit-scrollbar { width: 5px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 4px; }
-
-  /* RESPONSIVE */
-  @media (max-width: 768px) {
-    .shell { grid-template-columns: 1fr; }
-    .sidebar { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border); }
-    .main { padding: 20px 16px; }
-    .stats-bar { grid-template-columns: 1fr 1fr; }
-    .file-item { grid-template-columns: 36px 1fr auto; }
-    .file-type-badge { width: 36px; height: 36px; font-size: 10px; }
-  }
+@media (max-width: 480px) {
+  .stats-bar { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .action-bar { padding: 12px; }
+  .btn-main, .btn-secondary { padding: 11px 16px; font-size: 13px; }
+  .preset-btn { padding: 8px 4px 6px; }
+  .preset-btn .p-icon { font-size: 16px; }
+}
 </style>
 </head>
 <body>
 
-<div class="shell">
+<div class="app">
 
-  <!-- ══════════════════════ SIDEBAR ══════════════════════ -->
-  <aside class="sidebar">
-    <div class="logo"><span class="logo-dot"></span> Compress.io</div>
-
-    <!-- PRESETS -->
-    <div class="section-label">Préréglages</div>
-    <div class="preset-grid">
-      <button class="preset-btn" onclick="applyPreset('max')">Max</button>
-      <button class="preset-btn active" onclick="applyPreset('balanced')">Équil.</button>
-      <button class="preset-btn" onclick="applyPreset('light')">Léger</button>
+  <!-- ═══ TOPBAR ═══ -->
+  <header class="topbar">
+    <div class="logo">
+      <div class="logo-icon"><span class="logo-dot">⚡</span></div>
+      Compress<span style="color:var(--coral)">.</span>io
     </div>
-
-    <!-- ─── PDF ─── -->
-    <div class="section-label" style="margin-top:28px;">Options PDF</div>
-    <div class="opt-group">
-
-      <div class="opt-row">
-        <div class="opt-text">
-          <div class="opt-title">Qualité image</div>
-          <div class="opt-sub">Recompresse les images en JPEG</div>
-        </div>
-        <select class="opt-select" id="pdfImgQuality" onchange="onOpt()">
-          <option value="0.9">90 %</option>
-          <option value="0.75">75 %</option>
-          <option value="0.55" selected>55 %</option>
-          <option value="0.35">35 %</option>
-          <option value="0.2">20 %</option>
-          <option value="skip">Ignorer</option>
-        </select>
-      </div>
-
-      <div class="opt-row">
-        <div class="opt-text">
-          <div class="opt-title">Réduction résolution</div>
-          <div class="opt-sub">Échelle max des images (% de l'original)</div>
-        </div>
-        <div class="slider-wrap">
-          <span class="slider-val" id="pdfScaleVal">70 %</span>
-          <input type="range" id="pdfImgScale" min="20" max="100" value="70" step="5"
-            oninput="updateSlider(this,'pdfScaleVal','%')" onchange="onOpt()" />
-        </div>
-      </div>
-
-      <div class="opt-row">
-        <div class="opt-text">
-          <div class="opt-title">Object streams</div>
-          <div class="opt-sub">Compresse la structure interne du PDF</div>
-        </div>
-        <label class="toggle">
-          <input type="checkbox" id="pdfObjStreams" checked onchange="onOpt()" />
-          <span class="tog-track"></span>
-        </label>
-      </div>
-
-      <div class="opt-row">
-        <div class="opt-text">
-          <div class="opt-title">Supprimer métadonnées</div>
-          <div class="opt-sub">Auteur, date, mots-clés, etc.</div>
-        </div>
-        <label class="toggle">
-          <input type="checkbox" id="pdfMeta" checked onchange="onOpt()" />
-          <span class="tog-track"></span>
-        </label>
-      </div>
-
-      <div class="opt-row">
-        <div class="opt-text">
-          <div class="opt-title">Supprimer annotations</div>
-          <div class="opt-sub">Commentaires, notes, surlignages</div>
-        </div>
-        <label class="toggle">
-          <input type="checkbox" id="pdfAnnots" onchange="onOpt()" />
-          <span class="tog-track"></span>
-        </label>
-      </div>
-
-      <div class="opt-row">
-        <div class="opt-text">
-          <div class="opt-title">Supprimer signets</div>
-          <div class="opt-sub">Retire la table des matières PDF</div>
-        </div>
-        <label class="toggle">
-          <input type="checkbox" id="pdfBookmarks" onchange="onOpt()" />
-          <span class="tog-track"></span>
-        </label>
-      </div>
-
-      <div class="opt-row">
-        <div class="opt-text">
-          <div class="opt-title">Supprimer pièces jointes</div>
-          <div class="opt-sub">Fichiers embarqués dans le PDF</div>
-        </div>
-        <label class="toggle">
-          <input type="checkbox" id="pdfAttachments" checked onchange="onOpt()" />
-          <span class="tog-track"></span>
-        </label>
-      </div>
-
+    <div class="privacy-pill">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+        <path d="M6.5 1.5L11 3.5V6.5C11 9.2 9 11.3 6.5 12C4 11.3 2 9.2 2 6.5V3.5L6.5 1.5Z"
+          stroke="currentColor" stroke-width="1.3" fill="none"/>
+      </svg>
+      100% local — aucun upload
     </div>
+  </header>
 
-    <div class="divider"></div>
+  <!-- ═══ MOBILE TOGGLE ═══ -->
+  <div class="panel-toggle-bar">
+    <button class="panel-toggle-btn" id="panelToggle" onclick="togglePanel()">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <rect x="1" y="3" width="14" height="1.5" rx=".75" fill="currentColor"/>
+        <rect x="1" y="7.25" width="10" height="1.5" rx=".75" fill="currentColor"/>
+        <rect x="1" y="11.5" width="12" height="1.5" rx=".75" fill="currentColor"/>
+      </svg>
+      Options de compression
+      <svg class="arrow" width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <path d="M3 5L7 9L11 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
 
-    <!-- ─── DOCX ─── -->
-    <div class="section-label">Options DOCX</div>
-    <div class="opt-group">
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-inner">
 
-      <div class="opt-row">
-        <div class="opt-text">
-          <div class="opt-title">Qualité images</div>
-          <div class="opt-sub">Recompresse les images DOCX</div>
-        </div>
-        <select class="opt-select" id="docxImgQuality" onchange="onOpt()">
-          <option value="0.9">90 %</option>
-          <option value="0.75">75 %</option>
-          <option value="0.55" selected>55 %</option>
-          <option value="0.35">35 %</option>
-          <option value="0.2">20 %</option>
-          <option value="skip">Ignorer</option>
-        </select>
+      <!-- PRESETS -->
+      <div class="panel-title">Préréglages</div>
+      <div class="preset-grid">
+        <button class="preset-btn" onclick="applyPreset('light',this)">
+          <span class="p-icon">🍃</span>
+          <span class="p-label">Léger</span>
+        </button>
+        <button class="preset-btn active" onclick="applyPreset('balanced',this)">
+          <span class="p-icon">⚖️</span>
+          <span class="p-label">Équilibré</span>
+        </button>
+        <button class="preset-btn" onclick="applyPreset('max',this)">
+          <span class="p-icon">🔥</span>
+          <span class="p-label">Maximum</span>
+        </button>
       </div>
 
-      <div class="opt-row">
-        <div class="opt-text">
-          <div class="opt-title">Niveau de compression ZIP</div>
-          <div class="opt-sub">1 = rapide, 9 = max</div>
+      <!-- ── PDF ── -->
+      <div class="acc-section" data-open>
+        <div class="acc-header" onclick="toggleAcc(this)">
+          <div class="acc-title-wrap">
+            <span class="acc-type-chip chip-pdf">PDF</span>
+            <span class="acc-title">Options PDF</span>
+          </div>
+          <span class="acc-arrow">▼</span>
         </div>
-        <div class="slider-wrap">
-          <span class="slider-val" id="zipLvlVal">9</span>
-          <input type="range" id="zipLevel" min="1" max="9" value="9" step="1"
-            oninput="updateSlider(this,'zipLvlVal','')" onchange="onOpt()" />
+        <div class="acc-body">
+          <!-- Qualité images -->
+          <div class="slider-block">
+            <div class="slider-header">
+              <span class="slider-label">Qualité images</span>
+              <span class="slider-val" id="pdfQualVal">60%</span>
+            </div>
+            <input type="range" id="pdfImgQuality" min="10" max="95" value="60" step="5"
+              oninput="syncSlider(this,'pdfQualVal','%')" onchange="onOpt()" />
+            <div class="method-badge">
+              <span class="method-dot"></span>
+              Recompression pixel par pixel
+            </div>
+          </div>
+          <!-- Résolution -->
+          <div class="slider-block">
+            <div class="slider-header">
+              <span class="slider-label">Résolution max</span>
+              <span class="slider-val" id="pdfScaleVal">80%</span>
+            </div>
+            <input type="range" id="pdfImgScale" min="20" max="100" value="80" step="5"
+              oninput="syncSlider(this,'pdfScaleVal','%')" onchange="onOpt()" />
+          </div>
+          <!-- Toggles -->
+          <label class="toggle-row">
+            <div class="toggle-text">
+              <div class="toggle-label">Object streams</div>
+              <div class="toggle-sub">Compresse la structure interne</div>
+            </div>
+            <label class="switch"><input type="checkbox" id="pdfObjStreams" checked onchange="onOpt()"><span class="switch-track"></span></label>
+          </label>
+          <label class="toggle-row">
+            <div class="toggle-text">
+              <div class="toggle-label">Supprimer métadonnées</div>
+              <div class="toggle-sub">Auteur, date, mots-clés</div>
+            </div>
+            <label class="switch"><input type="checkbox" id="pdfMeta" checked onchange="onOpt()"><span class="switch-track"></span></label>
+          </label>
+          <label class="toggle-row">
+            <div class="toggle-text">
+              <div class="toggle-label">Supprimer annotations</div>
+              <div class="toggle-sub">Commentaires, surlignages</div>
+            </div>
+            <label class="switch"><input type="checkbox" id="pdfAnnots" onchange="onOpt()"><span class="switch-track"></span></label>
+          </label>
+          <label class="toggle-row">
+            <div class="toggle-text">
+              <div class="toggle-label">Supprimer signets</div>
+              <div class="toggle-sub">Table des matières PDF</div>
+            </div>
+            <label class="switch"><input type="checkbox" id="pdfBookmarks" onchange="onOpt()"><span class="switch-track"></span></label>
+          </label>
+          <label class="toggle-row">
+            <div class="toggle-text">
+              <div class="toggle-label">Supprimer pièces jointes</div>
+              <div class="toggle-sub">Fichiers embarqués</div>
+            </div>
+            <label class="switch"><input type="checkbox" id="pdfAttachments" checked onchange="onOpt()"><span class="switch-track"></span></label>
+          </label>
         </div>
       </div>
 
-      <div class="opt-row">
-        <div class="opt-text">
-          <div class="opt-title">Supprimer médias</div>
-          <div class="opt-sub">Audio, vidéo embarqués</div>
+      <!-- ── DOCX ── -->
+      <div class="acc-section" data-open>
+        <div class="acc-header" onclick="toggleAcc(this)">
+          <div class="acc-title-wrap">
+            <span class="acc-type-chip chip-docx">DOCX</span>
+            <span class="acc-title">Options DOCX</span>
+          </div>
+          <span class="acc-arrow">▼</span>
         </div>
-        <label class="toggle">
-          <input type="checkbox" id="docxMedia" checked onchange="onOpt()" />
-          <span class="tog-track"></span>
-        </label>
-      </div>
-
-      <div class="opt-row">
-        <div class="opt-text">
-          <div class="opt-title">Supprimer polices dupliquées</div>
-          <div class="opt-sub">Réduit les sous-ensembles redondants</div>
+        <div class="acc-body">
+          <div class="slider-block">
+            <div class="slider-header">
+              <span class="slider-label">Qualité images</span>
+              <span class="slider-val" id="docxQualVal">60%</span>
+            </div>
+            <input type="range" id="docxImgQuality" min="10" max="95" value="60" step="5"
+              oninput="syncSlider(this,'docxQualVal','%')" onchange="onOpt()" />
+          </div>
+          <div class="slider-block">
+            <div class="slider-header">
+              <span class="slider-label">Compression ZIP</span>
+              <span class="slider-val" id="zipLvlVal">9</span>
+            </div>
+            <input type="range" id="zipLevel" min="1" max="9" value="9" step="1"
+              oninput="syncSlider(this,'zipLvlVal','')" onchange="onOpt()" />
+          </div>
+          <label class="toggle-row">
+            <div class="toggle-text">
+              <div class="toggle-label">Supprimer médias</div>
+              <div class="toggle-sub">Audio, vidéo embarqués</div>
+            </div>
+            <label class="switch"><input type="checkbox" id="docxMedia" checked onchange="onOpt()"><span class="switch-track"></span></label>
+          </label>
+          <label class="toggle-row">
+            <div class="toggle-text">
+              <div class="toggle-label">Polices dupliquées</div>
+              <div class="toggle-sub">Sous-ensembles redondants</div>
+            </div>
+            <label class="switch"><input type="checkbox" id="docxFonts" checked onchange="onOpt()"><span class="switch-track"></span></label>
+          </label>
+          <label class="toggle-row">
+            <div class="toggle-text">
+              <div class="toggle-label">Supprimer révisions</div>
+              <div class="toggle-sub">Suivi des modifications</div>
+            </div>
+            <label class="switch"><input type="checkbox" id="docxRevisions" checked onchange="onOpt()"><span class="switch-track"></span></label>
+          </label>
+          <label class="toggle-row">
+            <div class="toggle-text">
+              <div class="toggle-label">Supprimer métadonnées</div>
+              <div class="toggle-sub">Auteur, date, commentaires</div>
+            </div>
+            <label class="switch"><input type="checkbox" id="docxMeta" checked onchange="onOpt()"><span class="switch-track"></span></label>
+          </label>
+          <label class="toggle-row">
+            <div class="toggle-text">
+              <div class="toggle-label">Styles inutilisés</div>
+              <div class="toggle-sub">Styles Word non référencés</div>
+            </div>
+            <label class="switch"><input type="checkbox" id="docxStyles" onchange="onOpt()"><span class="switch-track"></span></label>
+          </label>
         </div>
-        <label class="toggle">
-          <input type="checkbox" id="docxFonts" checked onchange="onOpt()" />
-          <span class="tog-track"></span>
-        </label>
-      </div>
-
-      <div class="opt-row">
-        <div class="opt-text">
-          <div class="opt-title">Supprimer révisions</div>
-          <div class="opt-sub">Historique de suivi des modifications</div>
-        </div>
-        <label class="toggle">
-          <input type="checkbox" id="docxRevisions" checked onchange="onOpt()" />
-          <span class="tog-track"></span>
-        </label>
-      </div>
-
-      <div class="opt-row">
-        <div class="opt-text">
-          <div class="opt-title">Supprimer métadonnées</div>
-          <div class="opt-sub">Auteur, date, commentaires</div>
-        </div>
-        <label class="toggle">
-          <input type="checkbox" id="docxMeta" checked onchange="onOpt()" />
-          <span class="tog-track"></span>
-        </label>
-      </div>
-
-      <div class="opt-row">
-        <div class="opt-text">
-          <div class="opt-title">Nettoyer styles inutilisés</div>
-          <div class="opt-sub">Retire les styles Word non référencés</div>
-        </div>
-        <label class="toggle">
-          <input type="checkbox" id="docxStyles" onchange="onOpt()" />
-          <span class="tog-track"></span>
-        </label>
       </div>
 
     </div>
   </aside>
 
-  <!-- ══════════════════════ MAIN ══════════════════════ -->
+  <!-- ═══ MAIN ═══ -->
   <main class="main">
 
     <div class="main-header">
       <h1>Compresseur de documents</h1>
-      <p>Compression locale — PDF et DOCX. Aucun fichier envoyé sur internet.</p>
+      <p>Compression locale dans le navigateur — aucun fichier envoyé sur internet.</p>
     </div>
 
     <!-- DROP ZONE -->
     <div class="drop-zone" id="dropZone">
       <input type="file" id="fileInput" multiple accept=".pdf,.docx,.doc" />
-      <span class="drop-arrow">↑</span>
-      <div class="drop-title">Glisser-déposer vos fichiers</div>
-      <div class="drop-sub">ou cliquer pour sélectionner — plusieurs fichiers acceptés</div>
+      <div class="drop-icon">📄</div>
+      <div class="drop-title">Glissez vos fichiers ici</div>
+      <div class="drop-sub">ou cliquez pour sélectionner — plusieurs fichiers acceptés</div>
       <div class="drop-badges">
         <span class="badge badge-pdf">PDF</span>
         <span class="badge badge-docx">DOCX</span>
@@ -652,7 +1012,7 @@
         <div class="stat-val" id="sOrig">—</div>
       </div>
       <div class="stat-card">
-        <div class="stat-lbl">Taille compressée</div>
+        <div class="stat-lbl">Compressé</div>
         <div class="stat-val" id="sComp">—</div>
       </div>
       <div class="stat-card highlight">
@@ -664,26 +1024,59 @@
     <!-- FILE LIST -->
     <div class="files-list" id="filesList"></div>
 
-    <!-- ACTIONS -->
+    <!-- ACTION BAR -->
     <div class="action-bar" id="actionBar" style="display:none;">
-      <button class="btn-main" id="btnCompress" onclick="startCompression()">Compresser tout</button>
-      <button class="btn-ghost" id="btnDownload" onclick="downloadAll()" disabled>Tout télécharger</button>
-      <button class="btn-ghost" onclick="clearAll()">Effacer</button>
+      <button class="btn-main" id="btnCompress" onclick="startCompression()">⚡ Compresser tout</button>
+      <button class="btn-secondary" id="btnDownload" onclick="downloadAll()" disabled>↓ Tout télécharger</button>
+      <button class="btn-ghost" onclick="clearAll()">✕ Effacer</button>
       <span class="file-count-tag" id="fileCountTag"></span>
     </div>
 
   </main>
 </div>
 
+<div class="toast" id="toast"></div>
+
 <!-- LIBS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
 <script>
-/* ══════════════════ STATE ══════════════════ */
+/* ═══ STATE ═══ */
 const state = { files: [], results: [] };
 
-/* ══════════════════ DRAG & DROP ══════════════════ */
+/* ═══ MOBILE PANEL ═══ */
+function togglePanel() {
+  const sidebar = document.getElementById('sidebar');
+  const btn = document.getElementById('panelToggle');
+  sidebar.classList.toggle('open');
+  btn.classList.toggle('open');
+}
+
+/* ═══ ACCORDION ═══ */
+function toggleAcc(header) {
+  const section = header.closest('.acc-section');
+  const body = section.querySelector('.acc-body');
+  if (section.hasAttribute('data-open')) {
+    section.removeAttribute('data-open');
+    body.hidden = true;
+  } else {
+    section.setAttribute('data-open', '');
+    body.hidden = false;
+  }
+}
+// Init: bodies visible on load where data-open
+document.querySelectorAll('.acc-section[data-open] .acc-body').forEach(b => b.hidden = false);
+
+/* ═══ TOAST ═══ */
+function showToast(msg, duration = 2800) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+}
+
+/* ═══ DROP ZONE ═══ */
 const dropZone = document.getElementById('dropZone');
 const fileInput = document.getElementById('fileInput');
 
@@ -697,14 +1090,19 @@ fileInput.addEventListener('change', e => { handleFiles(Array.from(e.target.file
 
 function handleFiles(files) {
   const valid = files.filter(f => /\.(pdf|docx|doc)$/i.test(f.name));
+  const added = [];
   valid.forEach(f => {
-    if (!state.files.find(x => x.name === f.name && x.size === f.size)) state.files.push(f);
+    if (!state.files.find(x => x.name === f.name && x.size === f.size)) {
+      state.files.push(f); added.push(f.name);
+    }
   });
+  if (valid.length && !added.length) showToast('Ces fichiers sont déjà dans la liste.');
+  else if (files.length !== valid.length) showToast(`${files.length - valid.length} fichier(s) ignoré(s) — format non supporté.`);
   render();
 }
 
-/* ══════════════════ SLIDER HELPER ══════════════════ */
-function updateSlider(el, outId, suffix) {
+/* ═══ SLIDER SYNC ═══ */
+function syncSlider(el, outId, suffix) {
   document.getElementById(outId).textContent = el.value + suffix;
   const pct = ((el.value - el.min) / (el.max - el.min)) * 100;
   el.style.setProperty('--pct', pct + '%');
@@ -716,26 +1114,14 @@ document.querySelectorAll('input[type=range]').forEach(el => {
 
 function onOpt() { document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active')); }
 
-/* ══════════════════ PRESETS ══════════════════ */
-function applyPreset(p) {
+/* ═══ PRESETS ═══ */
+function applyPreset(p, btn) {
   document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
-  event.currentTarget.classList.add('active');
+  if (btn) btn.classList.add('active');
   const presets = {
-    max: {
-      pdfImgQuality:'0.2', pdfImgScale:'40', pdfObjStreams:true, pdfMeta:true, pdfAnnots:true,
-      pdfBookmarks:true, pdfAttachments:true,
-      docxImgQuality:'0.2', zipLevel:'9', docxMedia:true, docxFonts:true, docxRevisions:true, docxMeta:true, docxStyles:true
-    },
-    balanced: {
-      pdfImgQuality:'0.55', pdfImgScale:'70', pdfObjStreams:true, pdfMeta:true, pdfAnnots:false,
-      pdfBookmarks:false, pdfAttachments:true,
-      docxImgQuality:'0.55', zipLevel:'9', docxMedia:true, docxFonts:true, docxRevisions:true, docxMeta:true, docxStyles:false
-    },
-    light: {
-      pdfImgQuality:'0.9', pdfImgScale:'90', pdfObjStreams:true, pdfMeta:false, pdfAnnots:false,
-      pdfBookmarks:false, pdfAttachments:false,
-      docxImgQuality:'0.9', zipLevel:'5', docxMedia:false, docxFonts:false, docxRevisions:false, docxMeta:false, docxStyles:false
-    }
+    max:      { pdfImgQuality:20, pdfImgScale:45, pdfObjStreams:true,  pdfMeta:true,  pdfAnnots:true,  pdfBookmarks:true,  pdfAttachments:true,  docxImgQuality:20, zipLevel:9, docxMedia:true,  docxFonts:true,  docxRevisions:true,  docxMeta:true,  docxStyles:true  },
+    balanced: { pdfImgQuality:60, pdfImgScale:80, pdfObjStreams:true,  pdfMeta:true,  pdfAnnots:false, pdfBookmarks:false, pdfAttachments:true,  docxImgQuality:60, zipLevel:9, docxMedia:true,  docxFonts:true,  docxRevisions:true,  docxMeta:true,  docxStyles:false },
+    light:    { pdfImgQuality:88, pdfImgScale:95, pdfObjStreams:true,  pdfMeta:false, pdfAnnots:false, pdfBookmarks:false, pdfAttachments:false, docxImgQuality:88, zipLevel:5, docxMedia:false, docxFonts:false, docxRevisions:false, docxMeta:false, docxStyles:false }
   };
   const cfg = presets[p];
   for (const [k, v] of Object.entries(cfg)) {
@@ -748,42 +1134,44 @@ function applyPreset(p) {
       el.style.setProperty('--pct', pct + '%');
     }
   }
-  document.getElementById('pdfScaleVal').textContent = document.getElementById('pdfImgScale').value + ' %';
-  document.getElementById('zipLvlVal').textContent = document.getElementById('zipLevel').value;
+  syncSlider(document.getElementById('pdfImgQuality'), 'pdfQualVal', '%');
+  syncSlider(document.getElementById('pdfImgScale'),   'pdfScaleVal', '%');
+  syncSlider(document.getElementById('docxImgQuality'),'docxQualVal', '%');
+  syncSlider(document.getElementById('zipLevel'),      'zipLvlVal', '');
 }
 
-/* ══════════════════ GET OPTIONS ══════════════════ */
+/* ═══ OPTIONS ═══ */
 function getOptions() {
   return {
     pdf: {
-      imgQuality: document.getElementById('pdfImgQuality').value,
-      imgScale: parseInt(document.getElementById('pdfImgScale').value) / 100,
-      objStreams: document.getElementById('pdfObjStreams').checked,
-      meta: document.getElementById('pdfMeta').checked,
-      annots: document.getElementById('pdfAnnots').checked,
-      bookmarks: document.getElementById('pdfBookmarks').checked,
+      imgQuality:  parseInt(document.getElementById('pdfImgQuality').value) / 100,
+      imgScale:    parseInt(document.getElementById('pdfImgScale').value) / 100,
+      objStreams:  document.getElementById('pdfObjStreams').checked,
+      meta:        document.getElementById('pdfMeta').checked,
+      annots:      document.getElementById('pdfAnnots').checked,
+      bookmarks:   document.getElementById('pdfBookmarks').checked,
       attachments: document.getElementById('pdfAttachments').checked,
     },
     docx: {
-      imgQuality: document.getElementById('docxImgQuality').value,
-      zipLevel: parseInt(document.getElementById('zipLevel').value),
-      media: document.getElementById('docxMedia').checked,
-      fonts: document.getElementById('docxFonts').checked,
-      revisions: document.getElementById('docxRevisions').checked,
-      meta: document.getElementById('docxMeta').checked,
-      styles: document.getElementById('docxStyles').checked,
+      imgQuality: parseInt(document.getElementById('docxImgQuality').value) / 100,
+      zipLevel:   parseInt(document.getElementById('zipLevel').value),
+      media:      document.getElementById('docxMedia').checked,
+      fonts:      document.getElementById('docxFonts').checked,
+      revisions:  document.getElementById('docxRevisions').checked,
+      meta:       document.getElementById('docxMeta').checked,
+      styles:     document.getElementById('docxStyles').checked,
     }
   };
 }
 
-/* ══════════════════ FORMAT ══════════════════ */
+/* ═══ FORMAT ═══ */
 function fmtBytes(b) {
   if (b < 1024) return b + ' o';
-  if (b < 1048576) return (b / 1024).toFixed(1) + ' Ko';
-  return (b / 1048576).toFixed(2) + ' Mo';
+  if (b < 1048576) return (b/1024).toFixed(1) + ' Ko';
+  return (b/1048576).toFixed(2) + ' Mo';
 }
 
-/* ══════════════════ RENDER ══════════════════ */
+/* ═══ RENDER ═══ */
 function render() {
   const list = document.getElementById('filesList');
   if (!state.files.length) {
@@ -804,21 +1192,25 @@ function render() {
 
     if (r) {
       if (r.status === 'compressing') {
-        statusHtml = `<span class="file-status st-compress">Compression en cours…</span>`;
-        progressHtml = `<div class="progress-track" style="display:block;"><div class="progress-fill" style="width:${r.progress||15}%"></div></div>`;
+        statusHtml = `<span class="file-status st-compress">En cours… ${r.step || ''}</span>`;
+        progressHtml = `<div class="progress-track" style="display:block;"><div class="progress-fill" id="pf-${i}" style="width:${r.progress||8}%"></div></div>`;
       } else if (r.status === 'done') {
         const gain = Math.round((1 - r.compressed / f.size) * 100);
-        const gainStr = gain > 0 ? `− ${gain} %` : 'déjà optimisé';
+        const gainStr = gain > 5
+          ? `<span style="color:var(--forest)">−${gain}%</span>`
+          : gain > 0
+            ? `<span style="color:#8a6800">−${gain}%</span>`
+            : `<span style="color:var(--text-muted)">déjà optimisé</span>`;
         statusHtml = `<span class="file-status st-done">✓ ${fmtBytes(r.compressed)} &nbsp;·&nbsp; ${gainStr}</span>`;
         dlBtn = `<button class="icon-btn dl" title="Télécharger" onclick="downloadOne(${i})">↓</button>`;
       } else if (r.status === 'error') {
-        statusHtml = `<span class="file-status st-error">✕ ${r.error}</span>`;
+        statusHtml = `<span class="file-status st-error" title="${r.error}">✕ Échec</span>`;
       }
     }
 
     return `<div class="file-item ${r ? r.status : ''}" id="item-${i}">
       <div class="file-type-badge type-${ext === 'pdf' ? 'pdf' : 'docx'}">${ext.toUpperCase()}</div>
-      <div class="file-info">
+      <div style="min-width:0">
         <div class="file-name" title="${f.name}">${f.name}</div>
         <div class="file-meta">
           <span class="file-size-orig">${fmtBytes(f.size)}</span>
@@ -836,199 +1228,43 @@ function render() {
   updateStats();
 }
 
-function removeFile(i) {
-  state.files.splice(i, 1);
-  state.results.splice(i, 1);
-  render();
-}
+function removeFile(i) { state.files.splice(i,1); state.results.splice(i,1); render(); }
+function clearAll() { state.files=[]; state.results=[]; render(); }
 
-function clearAll() {
-  state.files = []; state.results = [];
-  render();
-}
-
-/* ══════════════════ STATS ══════════════════ */
+/* ═══ STATS ═══ */
 function updateStats() {
-  const done = state.results.map((r, i) => ({ r, size: state.files[i].size })).filter(x => x.r && x.r.status === 'done');
+  const done = state.results.map((r,i) => ({r, size: state.files[i].size})).filter(x => x.r && x.r.status==='done');
   document.getElementById('statsBar').style.display = state.files.length ? 'grid' : 'none';
   document.getElementById('sFiles').textContent = state.files.length;
-
+  document.getElementById('sOrig').textContent = fmtBytes(state.files.reduce((s,f) => s+f.size, 0));
   if (!done.length) {
-    document.getElementById('sOrig').textContent = fmtBytes(state.files.reduce((s, f) => s + f.size, 0));
     document.getElementById('sComp').textContent = '—';
     document.getElementById('sGain').textContent = '—';
-    return;
+  } else {
+    const orig = done.reduce((s,x) => s+x.size, 0);
+    const comp = done.reduce((s,x) => s+x.r.compressed, 0);
+    const gain = Math.round((1 - comp/orig)*100);
+    document.getElementById('sComp').textContent = fmtBytes(comp);
+    document.getElementById('sGain').textContent = gain>0 ? '−'+gain+'%' : '~0%';
   }
-  const origTotal = done.reduce((s, x) => s + x.size, 0);
-  const compTotal = done.reduce((s, x) => s + x.r.compressed, 0);
-  const gain = Math.round((1 - compTotal / origTotal) * 100);
-  document.getElementById('sOrig').textContent = fmtBytes(state.files.reduce((s, f) => s + f.size, 0));
-  document.getElementById('sComp').textContent = fmtBytes(compTotal);
-  document.getElementById('sGain').textContent = gain > 0 ? '− ' + gain + ' %' : '~ 0 %';
-
-  document.getElementById('btnDownload').disabled = done.length === 0;
+  document.getElementById('btnDownload').disabled = !done.length;
 }
 
-/* ══════════════════ COMPRESS PDF ══════════════════ */
-async function compressPDF(file, opts) {
-  const { PDFDocument, PDFName, PDFNumber } = PDFLib;
-  const buf = await file.arrayBuffer();
-  const doc = await PDFDocument.load(buf, { ignoreEncryption: true });
-
-  if (opts.meta) {
-    doc.setTitle(''); doc.setAuthor(''); doc.setSubject('');
-    doc.setKeywords([]); doc.setProducer(''); doc.setCreator('');
-  }
-
-  if (opts.annots) {
-    for (const page of doc.getPages()) {
-      try { page.node.delete(PDFName.of('Annots')); } catch(e) {}
-    }
-  }
-
-  if (opts.bookmarks) {
-    try {
-      const catalog = doc.catalog;
-      catalog.delete(PDFName.of('Outlines'));
-      catalog.delete(PDFName.of('PageMode'));
-    } catch(e) {}
-  }
-
-  if (opts.attachments) {
-    try {
-      const catalog = doc.catalog;
-      catalog.delete(PDFName.of('Names'));
-      catalog.delete(PDFName.of('EmbeddedFiles'));
-    } catch(e) {}
-  }
-
-  // Image recompression via canvas
-  if (opts.imgQuality !== 'skip') {
-    const quality = parseFloat(opts.imgQuality);
-    const scale = opts.imgScale;
-    try {
-      const ctx = doc.context;
-      for (const [, obj] of ctx.enumerateIndirectObjects()) {
-        if (!obj || !obj.dict) continue;
-        const sub = obj.dict.get && obj.dict.get(PDFName.of('Subtype'));
-        if (!sub || sub.encodedName !== '/Image') continue;
-        const wNum = obj.dict.get(PDFName.of('Width'));
-        const hNum = obj.dict.get(PDFName.of('Height'));
-        if (!wNum || !hNum) continue;
-        const newW = Math.max(1, Math.floor(wNum.asNumber() * scale));
-        const newH = Math.max(1, Math.floor(hNum.asNumber() * scale));
-        obj.dict.set(PDFName.of('Width'), PDFNumber.of(newW));
-        obj.dict.set(PDFName.of('Height'), PDFNumber.of(newH));
-      }
-    } catch(e) {}
-  }
-
-  const out = await doc.save({ useObjectStreams: opts.objStreams, addDefaultPage: false });
-  return out;
-}
-
-/* ══════════════════ COMPRESS DOCX ══════════════════ */
-async function compressDOCX(file, opts) {
-  const buf = await file.arrayBuffer();
-  const zip = await JSZip.loadAsync(buf);
-  const newZip = new JSZip();
-  const seenFonts = new Set();
-
-  for (const [path, entry] of Object.entries(zip.files)) {
-    if (entry.dir) { newZip.folder(path); continue; }
-
-    const blob = await entry.async('arraybuffer');
-
-    // Skip media files
-    if (opts.media && /word\/media\/(audio|video|sound)/i.test(path)) continue;
-
-    // Deduplicate fonts
-    if (opts.fonts && /word\/fonts\//i.test(path)) {
-      const key = path.replace(/word\/fonts\//i, '').replace(/\.[^.]+$/, '').toLowerCase();
-      if (seenFonts.has(key)) continue;
-      seenFonts.add(key);
-    }
-
-    // Strip revisions from document.xml
-    let data = blob;
-    if (opts.revisions && path === 'word/document.xml') {
-      let xml = new TextDecoder().decode(blob);
-      xml = xml.replace(/<w:del\b[^>]*>[\s\S]*?<\/w:del>/g, '');
-      xml = xml.replace(/<w:ins\b[^>]*>([\s\S]*?)<\/w:ins>/g, '$1');
-      xml = xml.replace(/<w:rPrChange\b[^>]*>[\s\S]*?<\/w:rPrChange>/g, '');
-      xml = xml.replace(/<w:pPrChange\b[^>]*>[\s\S]*?<\/w:pPrChange>/g, '');
-      data = new TextEncoder().encode(xml).buffer;
-    }
-
-    // Clean unused styles
-    if (opts.styles && path === 'word/styles.xml') {
-      let xml = new TextDecoder().decode(blob);
-      xml = xml.replace(/<w:lsdException\b[^>]*\/>/g, '');
-      data = new TextEncoder().encode(xml).buffer;
-    }
-
-    // Metadata cleanup
-    if (opts.meta && path === 'docProps/core.xml') {
-      let xml = new TextDecoder().decode(blob);
-      xml = xml.replace(/<dc:creator>[^<]*<\/dc:creator>/g, '<dc:creator></dc:creator>');
-      xml = xml.replace(/<dc:description>[^<]*<\/dc:description>/g, '');
-      xml = xml.replace(/<cp:lastModifiedBy>[^<]*<\/cp:lastModifiedBy>/g, '');
-      xml = xml.replace(/<cp:revision>[^<]*<\/cp:revision>/g, '<cp:revision>1</cp:revision>');
-      data = new TextEncoder().encode(xml).buffer;
-    }
-
-    if (opts.meta && path === 'word/document.xml') {
-      let xml = new TextDecoder().decode(data);
-      xml = xml.replace(/<w:author>[^<]*<\/w:author>/g, '<w:author></w:author>');
-      xml = xml.replace(/<w:date>[^<]*<\/w:date>/g, '');
-      data = new TextEncoder().encode(xml).buffer;
-    }
-
-    // Image recompression
-    if (opts.imgQuality !== 'skip' && /word\/media\//i.test(path)) {
-      const ext = path.split('.').pop().toLowerCase();
-      if (['jpg','jpeg','png','bmp','gif'].includes(ext)) {
-        try {
-          const quality = parseFloat(opts.imgQuality);
-          const recomp = await recompressImageCanvas(blob, quality);
-          if (recomp.byteLength < blob.byteLength * 0.95) {
-            newZip.file(path, recomp, { compression: 'STORE' });
-            continue;
-          }
-        } catch(e) {}
-      }
-    }
-
-    const isImg = /\.(png|jpg|jpeg|gif|bmp|tiff|webp)$/i.test(path);
-    newZip.file(path, data, {
-      compression: isImg ? 'STORE' : 'DEFLATE',
-      compressionOptions: isImg ? {} : { level: opts.zipLevel }
-    });
-  }
-
-  const out = await newZip.generateAsync({
-    type: 'arraybuffer',
-    compression: 'DEFLATE',
-    compressionOptions: { level: opts.zipLevel }
-  });
-  return out;
-}
-
-/* ══════════════════ IMAGE RECOMPRESSION ══════════════════ */
-function recompressImageCanvas(buf, quality) {
+/* ═══ IMAGE RECOMPRESSION ═══ */
+function recompressImageCanvas(inputBuf, quality, maxScale) {
   return new Promise((resolve, reject) => {
-    const blob = new Blob([buf]);
+    const blob = new Blob([inputBuf]);
     const url = URL.createObjectURL(blob);
     const img = new Image();
     img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.naturalWidth || img.width;
-      canvas.height = img.naturalHeight || img.height;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0);
       URL.revokeObjectURL(url);
+      const w = Math.max(1, Math.round((img.naturalWidth || img.width) * Math.min(1, maxScale)));
+      const h = Math.max(1, Math.round((img.naturalHeight || img.height) * Math.min(1, maxScale)));
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
       canvas.toBlob(b => {
-        if (!b) { reject(new Error('canvas fail')); return; }
+        if (!b) { reject(new Error('canvas blob null')); return; }
         b.arrayBuffer().then(resolve).catch(reject);
       }, 'image/jpeg', quality);
     };
@@ -1037,79 +1273,216 @@ function recompressImageCanvas(buf, quality) {
   });
 }
 
-/* ══════════════════ MAIN COMPRESSION LOOP ══════════════════ */
+/* ═══ COMPRESS PDF ═══ */
+async function compressPDF(file, opts, onProgress) {
+  const { PDFDocument, PDFName, PDFNumber } = PDFLib;
+  const buf = await file.arrayBuffer();
+  onProgress(10, 'Chargement…');
+  const doc = await PDFDocument.load(buf, { ignoreEncryption: true });
+
+  if (opts.meta) {
+    onProgress(15, 'Métadonnées…');
+    try { doc.setTitle(''); doc.setAuthor(''); doc.setSubject(''); doc.setKeywords([]); doc.setProducer(''); doc.setCreator(''); } catch(e) {}
+  }
+  if (opts.annots) {
+    onProgress(20, 'Annotations…');
+    for (const page of doc.getPages()) { try { page.node.delete(PDFName.of('Annots')); } catch(e) {} }
+  }
+  if (opts.bookmarks) { try { const cat=doc.catalog; cat.delete(PDFName.of('Outlines')); cat.delete(PDFName.of('PageMode')); } catch(e) {} }
+  if (opts.attachments) { try { const cat=doc.catalog; cat.delete(PDFName.of('Names')); cat.delete(PDFName.of('EmbeddedFiles')); } catch(e) {} }
+
+  onProgress(28, 'Analyse images…');
+  const ctx = doc.context;
+  const imageObjs = [];
+  for (const [ref, obj] of ctx.enumerateIndirectObjects()) {
+    try {
+      if (!obj || typeof obj.dict === 'undefined') continue;
+      const sub = obj.dict.get && obj.dict.get(PDFName.of('Subtype'));
+      if (!sub || sub.encodedName !== '/Image') continue;
+      const w = obj.dict.get(PDFName.of('Width'));
+      const h = obj.dict.get(PDFName.of('Height'));
+      if (!w || !h) continue;
+      imageObjs.push({ ref, obj, w: w.asNumber(), h: h.asNumber() });
+    } catch(e) {}
+  }
+
+  onProgress(35, `${imageObjs.length} image(s)…`);
+  let processed = 0;
+  for (const { obj, w, h } of imageObjs) {
+    try {
+      let rawBytes = null;
+      try { rawBytes = obj.getContents ? obj.getContents() : obj.contents; } catch(e) {}
+      const filterEntry = obj.dict.get && obj.dict.get(PDFName.of('Filter'));
+      const filterName = filterEntry ? (filterEntry.encodedName || '') : '';
+      const isJpeg = filterName === '/DCTDecode';
+      if (rawBytes && rawBytes.length > 0 && isJpeg) {
+        const imgBuf = rawBytes.buffer || (new Uint8Array(rawBytes)).buffer;
+        const newBytes = await recompressImageCanvas(imgBuf, opts.imgQuality, opts.imgScale);
+        if (newBytes.byteLength < rawBytes.length * 0.95) {
+          const newUint = new Uint8Array(newBytes);
+          const newW = Math.max(1, Math.round(w * opts.imgScale));
+          const newH = Math.max(1, Math.round(h * opts.imgScale));
+          obj.dict.set(PDFName.of('Filter'), PDFName.of('DCTDecode'));
+          obj.dict.set(PDFName.of('Width'),  PDFNumber.of(newW));
+          obj.dict.set(PDFName.of('Height'), PDFNumber.of(newH));
+          obj.dict.set(PDFName.of('ColorSpace'), PDFName.of('DeviceRGB'));
+          obj.dict.set(PDFName.of('BitsPerComponent'), PDFNumber.of(8));
+          obj.dict.delete(PDFName.of('DecodeParms'));
+          if (obj.contents !== undefined) obj.contents = newUint;
+          else if (obj.setContents) obj.setContents(newUint);
+        }
+      }
+    } catch(e) {}
+    processed++;
+    onProgress(35 + Math.round((processed / Math.max(1, imageObjs.length)) * 45), `Image ${processed}/${imageObjs.length}…`);
+    await new Promise(r => setTimeout(r, 0));
+  }
+
+  onProgress(85, 'Sérialisation…');
+  const out = await doc.save({ useObjectStreams: opts.objStreams, addDefaultPage: false });
+  onProgress(98, 'Terminé');
+  return out;
+}
+
+/* ═══ COMPRESS DOCX ═══ */
+async function compressDOCX(file, opts, onProgress) {
+  const buf = await file.arrayBuffer();
+  onProgress(10, 'Chargement…');
+  const zip = await JSZip.loadAsync(buf);
+  const newZip = new JSZip();
+  const seenFonts = new Set();
+  const entries = Object.entries(zip.files);
+  let done = 0;
+
+  for (const [path, entry] of entries) {
+    if (entry.dir) { newZip.folder(path); done++; continue; }
+    const blob = await entry.async('arraybuffer');
+    if (opts.media && /word\/media\/(audio|video|sound)/i.test(path)) { done++; continue; }
+    if (opts.fonts && /word\/fonts\//i.test(path)) {
+      const key = path.replace(/word\/fonts\//i,'').replace(/\.[^.]+$/,'').toLowerCase();
+      if (seenFonts.has(key)) { done++; continue; }
+      seenFonts.add(key);
+    }
+    let data = blob;
+    if (opts.revisions && path === 'word/document.xml') {
+      let xml = new TextDecoder().decode(blob);
+      xml = xml.replace(/<w:del\b[^>]*>[\s\S]*?<\/w:del>/g,'');
+      xml = xml.replace(/<w:ins\b[^>]*>([\s\S]*?)<\/w:ins>/g,'$1');
+      xml = xml.replace(/<w:rPrChange\b[^>]*>[\s\S]*?<\/w:rPrChange>/g,'');
+      xml = xml.replace(/<w:pPrChange\b[^>]*>[\s\S]*?<\/w:pPrChange>/g,'');
+      data = new TextEncoder().encode(xml).buffer;
+    }
+    if (opts.styles && path === 'word/styles.xml') {
+      let xml = new TextDecoder().decode(blob);
+      xml = xml.replace(/<w:lsdException\b[^>]*\/>/g,'');
+      data = new TextEncoder().encode(xml).buffer;
+    }
+    if (opts.meta && path === 'docProps/core.xml') {
+      let xml = new TextDecoder().decode(blob);
+      xml = xml.replace(/<dc:creator>[^<]*<\/dc:creator>/g,'<dc:creator></dc:creator>');
+      xml = xml.replace(/<dc:description>[^<]*<\/dc:description>/g,'');
+      xml = xml.replace(/<cp:lastModifiedBy>[^<]*<\/cp:lastModifiedBy>/g,'');
+      xml = xml.replace(/<cp:revision>[^<]*<\/cp:revision>/g,'<cp:revision>1</cp:revision>');
+      data = new TextEncoder().encode(xml).buffer;
+    }
+    if (opts.meta && path === 'word/document.xml') {
+      let xml = new TextDecoder().decode(data);
+      xml = xml.replace(/<w:author>[^<]*<\/w:author>/g,'<w:author></w:author>');
+      xml = xml.replace(/<w:date>[^<]*<\/w:date>/g,'');
+      data = new TextEncoder().encode(xml).buffer;
+    }
+    if (opts.imgQuality < 1.0 && /word\/media\//i.test(path)) {
+      const ext = path.split('.').pop().toLowerCase();
+      if (['jpg','jpeg','png','bmp','gif'].includes(ext)) {
+        try {
+          const recomp = await recompressImageCanvas(blob, opts.imgQuality, 1.0);
+          if (recomp.byteLength < blob.byteLength * 0.95) {
+            newZip.file(path, recomp, { compression: 'STORE' });
+            done++; onProgress(10 + Math.round((done/entries.length)*85), 'Images…'); continue;
+          }
+        } catch(e) {}
+      }
+    }
+    const isImg = /\.(png|jpg|jpeg|gif|bmp|tiff|webp)$/i.test(path);
+    newZip.file(path, data, { compression: isImg?'STORE':'DEFLATE', compressionOptions: isImg?{}:{ level: opts.zipLevel } });
+    done++;
+    if (done%10===0) onProgress(10 + Math.round((done/entries.length)*85), '');
+  }
+
+  onProgress(95, 'Finalisation…');
+  const out = await newZip.generateAsync({ type:'arraybuffer', compression:'DEFLATE', compressionOptions:{ level: opts.zipLevel } });
+  onProgress(99, 'Terminé');
+  return out;
+}
+
+/* ═══ MAIN LOOP ═══ */
 async function startCompression() {
   const btn = document.getElementById('btnCompress');
-  btn.disabled = true;
-  btn.textContent = 'Compression…';
+  btn.disabled = true; btn.classList.add('running'); btn.textContent = '⏳ Compression…';
   state.results = new Array(state.files.length).fill(null);
   const opts = getOptions();
 
   for (let i = 0; i < state.files.length; i++) {
     const f = state.files[i];
-    state.results[i] = { status: 'compressing', progress: 20 };
+    state.results[i] = { status:'compressing', progress:5, step:'' };
     render();
-    await new Promise(r => setTimeout(r, 20));
 
-    // Animate progress bar
-    let prog = 20;
-    const progInterval = setInterval(() => {
-      prog = Math.min(prog + 8, 85);
+    const onProgress = (pct, step) => {
       if (state.results[i] && state.results[i].status === 'compressing') {
-        state.results[i].progress = prog;
-        const bar = document.querySelector(`#item-${i} .progress-fill`);
-        if (bar) bar.style.width = prog + '%';
-      } else clearInterval(progInterval);
-    }, 180);
+        state.results[i].progress = pct;
+        state.results[i].step = step;
+        const bar = document.getElementById(`pf-${i}`);
+        if (bar) bar.style.width = pct + '%';
+        const el = document.querySelector(`#item-${i} .st-compress`);
+        if (el && step) el.textContent = `En cours… ${step}`;
+      }
+    };
 
     try {
       const ext = f.name.split('.').pop().toLowerCase();
-      let out;
-      if (ext === 'pdf') out = await compressPDF(f, opts.pdf);
-      else out = await compressDOCX(f, opts.docx);
-      clearInterval(progInterval);
-      state.results[i] = { status: 'done', compressed: out.byteLength, blob: new Blob([out]) };
+      const out = ext === 'pdf'
+        ? await compressPDF(f, opts.pdf, onProgress)
+        : await compressDOCX(f, opts.docx, onProgress);
+      state.results[i] = { status:'done', compressed: out.byteLength, blob: new Blob([out]) };
     } catch(e) {
-      clearInterval(progInterval);
-      state.results[i] = { status: 'error', error: e.message || 'Échec de compression' };
+      console.error(e);
+      state.results[i] = { status:'error', error: e.message || 'Échec' };
     }
     render();
     await new Promise(r => setTimeout(r, 30));
   }
 
-  btn.disabled = false;
-  btn.textContent = 'Compresser tout';
-  const anyDone = state.results.some(r => r && r.status === 'done');
-  document.getElementById('btnDownload').disabled = !anyDone;
+  btn.disabled = false; btn.classList.remove('running'); btn.textContent = '⚡ Compresser tout';
+  const doneCount = state.results.filter(r => r && r.status === 'done').length;
+  if (doneCount) showToast(`✓ ${doneCount} fichier(s) compressé(s) avec succès`);
+  document.getElementById('btnDownload').disabled = !doneCount;
 }
 
-/* ══════════════════ DOWNLOAD ══════════════════ */
+/* ═══ DOWNLOAD ═══ */
 function downloadOne(i) {
-  const r = state.results[i];
-  const f = state.files[i];
+  const r = state.results[i], f = state.files[i];
   if (!r || r.status !== 'done') return;
   const a = document.createElement('a');
   a.href = URL.createObjectURL(r.blob);
   a.download = f.name.replace(/(\.[^.]+)$/, '_compressed$1');
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
 
 async function downloadAll() {
-  const done = state.results.map((r, i) => ({ r, f: state.files[i] })).filter(x => x.r && x.r.status === 'done');
+  const done = state.results.map((r,i) => ({r, f:state.files[i]})).filter(x => x.r && x.r.status==='done');
   if (!done.length) return;
-  if (done.length === 1) { downloadOne(state.results.indexOf(done[0].r)); return; }
+  if (done.length === 1) { downloadOne(state.results.findIndex(r => r && r.status==='done')); return; }
   const zip = new JSZip();
-  for (const { r, f } of done) zip.file(f.name.replace(/(\.[^.]+)$/, '_compressed$1'), r.blob);
-  const out = await zip.generateAsync({ type: 'blob', compression: 'STORE' });
+  for (const {r,f} of done) zip.file(f.name.replace(/(\.[^.]+)$/,'_compressed$1'), r.blob);
+  const out = await zip.generateAsync({ type:'blob', compression:'STORE' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(out);
   a.download = 'documents_comprimes.zip';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
+
+// Init
+applyPreset('balanced');
 </script>
 </body>
 </html>
