@@ -2106,49 +2106,59 @@ function closeFusionModal() {
  
     // ── Bouton Debug (liste toutes les clés et leur comptage) ──
     panel.appendChild(_createPanelButton('🔍 Inspecter le localStorage', '#5a3e9e', function () {
-      togglePanel(false);
-      var SKIP = new Set(['__last_backup_file__','__backup_size__','__drift_snooze__','__dir_handle_name__']);
-      var lines = ['[StorageManager — Inspection localStorage]\n'];
-      var grandTotal = 0;
-      for (var i = 0; i < localStorage.length; i++) {
-        var k = localStorage.key(i);
-        if (SKIP.has(k) || k.indexOf('__') === 0) continue;
-        var raw = localStorage.getItem(k) || '';
-        var parsed = null;
-        try { parsed = JSON.parse(raw); } catch(e) {}
-        var score = 0; var info = '';
-        if (parsed === null || typeof parsed !== 'object') {
-          score = 1; info = 'scalaire → +1  val=' + String(raw).slice(0,30);
-        } else if (Array.isArray(parsed)) {
-          score = parsed.length || 1; info = 'tableau → +' + score + '  len=' + parsed.length;
-        } else {
-          var subTotal = 0; var subFound = false;
-          Object.keys(parsed).forEach(function(pk) {
-            if (Array.isArray(parsed[pk])) { subTotal += parsed[pk].length; subFound = true; }
-          });
-            if (k === 'ovni_v9') {
-            var sess = parsed.sessions;
-            score = (sess && typeof sess === 'object' && !Array.isArray(sess)) ? Object.keys(sess).length : 1;
-            info = 'ovni_v9.sessions → +' + score + ' sessions';
-          } else if (k === 'clics') {
-            score = Object.keys(parsed).length || 1;
-            info = 'clics obj plat → +' + score;
-          } else if (subFound && subTotal > 0) {
-            score = subTotal; info = 'obj+sous-tableaux → +' + score;
-            Object.keys(parsed).forEach(function(pk) {
-              if (Array.isArray(parsed[pk])) info += '  .' + pk + '[' + parsed[pk].length + ']';
-            });
-          } else {
-            score = Object.keys(parsed).length || 1;
-            info = 'obj plat → +' + score + '  clés=' + Object.keys(parsed).slice(0,5).join(',');
+  togglePanel(false);
+  var SKIP = new Set(['__last_backup_file__','__backup_size__','__drift_snooze__','__dir_handle_name__']);
+  var lines = ['[StorageManager — Inspection localStorage]\n'];
+  var grandTotal = 0;
+  for (var i = 0; i < localStorage.length; i++) {
+    var k = localStorage.key(i);
+    if (SKIP.has(k) || k.indexOf('__') === 0) continue;
+    var raw = localStorage.getItem(k) || '';
+    var parsed = null;
+    try { parsed = JSON.parse(raw); } catch(e) {}
+    var score = 0; var info = '';
+    if (parsed === null || typeof parsed !== 'object') {
+      score = 1; info = 'scalaire → +1  val=' + String(raw).slice(0,30);
+    } else if (Array.isArray(parsed)) {
+      score = parsed.length || 1; info = 'tableau → +' + score + '  len=' + parsed.length;
+    } else {
+      if (k === 'ovni_v9') {
+        var sess = parsed.sessions;
+        score = (sess && typeof sess === 'object' && !Array.isArray(sess)) ? Object.keys(sess).length : 1;
+        info = 'ovni_v9.sessions → +' + score + ' sessions';
+      } else if (k === 'clics') {
+        score = Object.keys(parsed).length || 1;
+        info = 'clics obj plat → +' + score;
+      } else {
+        var best = 0; var hasSub = false;
+        Object.keys(parsed).forEach(function(pk) {
+          if (Array.isArray(parsed[pk]) && parsed[pk].length > best) {
+            best = parsed[pk].length; hasSub = true;
           }
+        });
+        if (hasSub && best > 0) {
+          score = best; info = 'obj+sous-tableau → +' + score;
+        } else {
+          score = Object.keys(parsed).length || 1;
+          info = 'obj plat → +' + score + '  clés=' + Object.keys(parsed).slice(0,5).join(',');
         }
-        grandTotal += score;
-        lines.push('  "' + k + '" : ' + info);
       }
-      lines.push('\nTOTAL = ' + grandTotal + ' éléments');
-      alert(lines.join('\n'));
-    }));
+    }
+    grandTotal += score;
+    lines.push('  "' + k + '" : ' + info);
+  }
+
+  // ── Delta depuis le dernier backup ──
+  var snap = parseInt(localStorage.getItem('__drift_elem_snap__') || '0');
+  var delta = grandTotal - snap;
+  var deltaStr = delta === 0 ? 'aucun changement'
+               : (delta > 0 ? '+' + delta + ' ajout(s)' : delta + ' suppression(s)');
+
+  lines.push('\nTOTAL = ' + grandTotal + ' éléments');
+  lines.push('Snapshot backup = ' + snap + ' éléments');
+  lines.push('Δ depuis backup = ' + deltaStr);
+  alert(lines.join('\n'));
+}));
  
     mainBtn.addEventListener('click', function (e) {
       e.stopPropagation();
