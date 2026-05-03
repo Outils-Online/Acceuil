@@ -819,9 +819,9 @@ function checkDriftAlert() {
  
     const now      = _countElements();
     const snap     = parseInt(localStorage.getItem(DRIFT_SNAP_KEY) || '0');
-    const diff     = now - snap;
- 
-    if (diff < DRIFT_ELEM_THRESHOLD) return;
+    const diff     = Math.abs(now - snap);
+
+if (diff < DRIFT_ELEM_THRESHOLD) return;
  
     // Met à jour l'affichage de l'alerte
     const el = document.getElementById('driftCount');
@@ -2285,7 +2285,12 @@ function closeFusionModal() {
         if (typeof checkDriftAlert === 'function') checkDriftAlert();
       }
     };
-    Storage.prototype.removeItem = function (key) { _orig.removeItem.call(this, key); };
+   Storage.prototype.removeItem = function (key) {
+  _orig.removeItem.call(this, key);
+  if (this === localStorage) {
+    if (typeof checkDriftAlert === 'function') checkDriftAlert();
+  }
+};
     Storage.prototype.clear = function () { _orig.clear.call(this); };
   }
  
