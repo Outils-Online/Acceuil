@@ -1,640 +1,878 @@
 <!DOCTYPE html>
-<html lang="fr" data-theme="light">
+<html lang="fr" class="">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Citatio Pro - Focus Mode</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Local-Lines — Dashboard localStorage</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        fontFamily: {
+          serif: ['Playfair Display', 'Georgia', 'serif'],
+          mono: ['JetBrains Mono', 'monospace'],
+          sans: ['DM Sans', 'sans-serif'],
+        }
+      }
+    }
+  }
+</script>
+<style>
+  :root {
+    /* ── Quartz Ink & Coral ── */
+    --bg-main:          #FDFCF0;
+    --surface:          #FFFFFF;
+    --text-main:        #0A2472;
+    --color-primary:    #0A2472;
+    --color-secondary:  #006466;
+    --color-accent:     #F46060;
+    --color-highlight:  #FFD972;
 
-    <style>
-        :root {
-            --bg: #f5f2ee;
-            --bg-card: #ffffff;
-            --ink: #1a1714;
-            --ink-muted: #6b6560;
-            --ink-light: #a09b96;
-            --accent: #c0392b;
-            --accent-light: #e8d5d3;
-            --border: #e0dbd5;
-            --shadow: 0 2px 16px rgba(26,23,20,0.08);
-            --radius: 4px;
-            --radius-lg: 8px;
-            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+    /* Legacy aliases — mapped to new palette */
+    --ink:              var(--text-main);
+    --paper:            var(--surface);
+    --cream:            var(--bg-main);
+    --accent-gold:      var(--color-highlight);
+    --accent-sage:      var(--color-secondary);
+    --accent-terracotta:var(--color-accent);
+    --accent-slate:     var(--color-primary);
 
-        [data-theme="dark"] {
-            --bg: #16140f;
-            --bg-card: #1f1c17;
-            --ink: #f0ebe4;
-            --ink-muted: #9c9488;
-            --ink-light: #5a554e;
-            --accent: #e05a4e;
-            --accent-light: #2e1a18;
-            --border: #2e2a24;
-        }
+    --shadow-soft: 0 4px 24px rgba(10,36,114,0.08), 0 1px 4px rgba(10,36,114,0.04);
+    --shadow-lift: 0 12px 40px rgba(10,36,114,0.14), 0 2px 8px rgba(10,36,114,0.07);
+    --border-light: rgba(10,36,114,0.1);
 
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    /* Mondrian stripe for headers / progress bars */
+    --mondrian: linear-gradient(to right,
+      var(--color-primary)   0%  60%,
+      var(--color-secondary) 60% 75%,
+      var(--color-accent)    75% 90%,
+      var(--color-highlight) 90% 100%
+    );
+  }
+  .dark {
+    --bg-main:   #06091a;
+    --surface:   #0d1230;
+    --text-main: #d8e4ff;
+    --ink:       var(--text-main);
+    --paper:     var(--surface);
+    --cream:     var(--bg-main);
+    --border-light: rgba(255,255,255,0.09);
+    --shadow-soft: 0 4px 24px rgba(0,0,0,0.3), 0 1px 4px rgba(0,0,0,0.2);
+    --shadow-lift: 0 12px 40px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.25);
+  }
 
-        body {
-            font-family: 'DM Sans', sans-serif;
-            background: var(--bg);
-            color: var(--ink);
-            min-height: 100vh;
-            overflow-x: hidden;
-            transition: background var(--transition);
-        }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg-main);
+    color: var(--text-main);
+    min-height: 100vh;
+    transition: background 0.3s, color 0.3s;
+  }
 
-        /* --- BOUTON FERMER --- */
-        .exit-btn {
-            position: fixed;
-            top: 15px;
-            right: 15px;
-            z-index: 1001;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: var(--shadow);
-            color: var(--ink);
-            font-size: 1.2rem;
-        }
+  /* ── HEATMAP ── */
+  .heatmap-cell {
+    width: 11px; height: 11px;
+    border-radius: 2px;
+    background: rgba(10,36,114,0.08);
+    cursor: pointer;
+    transition: transform 0.1s;
+    flex-shrink: 0;
+  }
+  .dark .heatmap-cell { background: rgba(255,255,255,0.06); }
+  .heatmap-cell:hover { transform: scale(1.4); }
+  .heatmap-cell[data-count="1"] { background: rgba(0,100,102,0.25); }
+  .heatmap-cell[data-count="2"] { background: rgba(0,100,102,0.55); }
+  .heatmap-cell[data-count="3"] { background: #006466; }
+  .heatmap-cell[data-count="4"] { background: var(--color-primary); }
+  .dark .heatmap-cell[data-count="1"] { background: rgba(0,100,102,0.3); }
+  .dark .heatmap-cell[data-count="2"] { background: rgba(0,100,102,0.6); }
+  .dark .heatmap-cell[data-count="3"] { background: #006466; }
+  .dark .heatmap-cell[data-count="4"] { background: #FFD972; }
 
-        /* --- LAYOUT --- */
-        .main-container {
-            max-width: 700px;
-            margin: 0 auto;
-            padding: 3.5rem 1rem 10rem 1rem;
-        }
+  /* ── WIDGET BASE ── */
+  .widget {
+    background: var(--surface);
+    border-radius: 18px;
+    box-shadow: var(--shadow-soft);
+    border: 1px solid var(--border-light);
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+  }
+  .widget:hover { box-shadow: var(--shadow-lift); }
+  .widget-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 18px 22px 14px;
+    border-bottom: 1px solid var(--border-light);
+    border-top: 3px solid transparent;
+    border-image: var(--mondrian) 1;
+    cursor: grab;
+    user-select: none;
+  }
+  .widget-header:active { cursor: grabbing; }
+  .sortable-ghost { opacity: 0.3; }
+  .sortable-chosen { box-shadow: var(--shadow-lift) !important; }
 
-        /* --- RECHERCHE & FILTRES --- */
-        .search-area {
-            position: sticky;
-            top: 10px;
-            z-index: 10;
-            margin-bottom: 2rem;
-        }
-        
-        input#search {
-            width: 100%;
-            padding: 14px 20px;
-            border: 1.5px solid var(--border);
-            border-radius: 100px;
-            background: var(--bg-card);
-            color: var(--ink);
-            font-size: 1rem;
-            outline: none;
-            box-shadow: var(--shadow);
-        }
+  /* ── CITATIONS ── */
+  .citation-card {
+    font-family: 'Playfair Display', serif;
+    border-left: 3px solid var(--color-highlight);
+    padding: 14px 18px;
+    background: linear-gradient(135deg, rgba(255,217,114,0.07) 0%, transparent 100%);
+    border-radius: 4px;
+    position: relative;
+  }
+  .citation-card::before {
+    content: '\201C';
+    font-size: 48px;
+    color: var(--color-highlight);
+    opacity: 0.45;
+    position: absolute;
+    top: -4px; left: 8px;
+    line-height: 1;
+    font-family: 'Playfair Display', serif;
+  }
+  .citation-card .cite-content { padding-left: 20px; }
+  .citation-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px; font-weight: 600;
+    padding: 2px 8px; border-radius: 20px;
+    text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .badge-periodique { background: rgba(244,96,96,0.12); color: var(--color-accent); }
+  .badge-ouvrage    { background: rgba(0,100,102,0.12); color: var(--color-secondary); }
 
-        .filter-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 10px;
-        }
+  /* ── OCR / ARCHIVE ── */
+  .ocr-card {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.7;
+    background: #fffef5;
+    border: 1px solid rgba(255,217,114,0.5);
+    border-radius: 6px;
+    padding: 16px 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .dark .ocr-card {
+    background: rgba(255,217,114,0.04);
+    border-color: rgba(255,217,114,0.15);
+    color: #c8d8ff;
+  }
+  .ocr-card::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(transparent, transparent 23px, rgba(10,36,114,0.025) 23px, rgba(10,36,114,0.025) 24px);
+    pointer-events: none;
+  }
+  .ocr-entry {
+    position: relative; z-index: 1;
+    padding: 3px 0;
+    border-bottom: 1px dashed rgba(10,36,114,0.12);
+  }
+  .dark .ocr-entry { border-color: rgba(255,255,255,0.08); }
+  .ocr-entry:last-child { border-bottom: none; }
+  .scan-stamp {
+    display: inline-block;
+    border: 2px solid var(--color-accent);
+    color: var(--color-accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; font-weight: 500;
+    padding: 1px 6px; border-radius: 2px;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    transform: rotate(-1deg);
+  }
 
-        .type-filter {
-            display: flex;
-            gap: 8px;
-            overflow-x: auto;
-            flex: 1;
-            scrollbar-width: none;
-        }
-        .type-filter::-webkit-scrollbar { display: none; }
+  /* ── CHECKLIST / LOGISTIQUE ── */
+  .checklist-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: background 0.15s;
+    cursor: pointer;
+  }
+  .checklist-item:hover { background: rgba(10,36,114,0.04); }
+  .dark .checklist-item:hover { background: rgba(255,217,114,0.05); }
+  .checklist-item.done .item-label {
+    text-decoration: line-through;
+    opacity: 0.4;
+  }
+  .custom-checkbox {
+    width: 18px; height: 18px;
+    border: 2px solid rgba(10,36,114,0.2);
+    border-radius: 5px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+  .checklist-item.done .custom-checkbox {
+    background: var(--color-secondary);
+    border-color: var(--color-secondary);
+    color: white;
+  }
+  .cost-badge {
+    margin-left: auto;
+    font-size: 11px; font-weight: 500;
+    color: var(--color-secondary);
+    font-variant-numeric: tabular-nums;
+  }
 
-        .filter-btn {
-            padding: 6px 15px;
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            background: var(--bg-card);
-            color: var(--ink-muted);
-            font-size: 0.8rem;
-            font-weight: 600;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: 0.2s;
-        }
-        .filter-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+  /* ── MICRO BADGES (CLICS) ── */
+  .stat-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    box-shadow: var(--shadow-soft);
+    font-size: 12px; font-weight: 500;
+  }
+  .stat-badge .stat-num {
+    font-weight: 700; font-size: 13px;
+    color: var(--color-primary);
+  }
 
-        /* Bouton Spécial A-Z */
-        .sort-btn {
-            background: var(--bg-card);
-            border: 1.5px solid var(--border);
-            color: var(--ink);
-            width: 35px;
-            height: 35px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 0.7rem;
-            cursor: pointer;
-            flex-shrink: 0;
-        }
-        .sort-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+  /* ── SEARCH ── */
+  .search-bar {
+    position: sticky; top: 0; z-index: 50;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 3px solid transparent;
+    border-image: var(--mondrian) 1;
+  }
 
-        /* --- CARTES --- */
-        .citation-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            padding: 1.5rem;
-            margin-bottom: 1.2rem;
-            box-shadow: var(--shadow);
-        }
-        .cite-label { font-size: 0.7rem; text-transform: uppercase; font-weight: 700; color: var(--accent); margin-bottom: 0.8rem; }
-        .cite-content { font-family: 'Libre Baskerville', serif; font-size: 1.05rem; line-height: 1.6; margin-bottom: 1.2rem; }
-        .cite-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--ink-light); }
+  /* ── JSON VIEWER ── */
+  .json-viewer {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    white-space: pre-wrap;
+    word-break: break-all;
+    background: rgba(0,0,0,0.02);
+    border-radius: 8px;
+    padding: 12px;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  .dark .json-viewer { background: rgba(255,255,255,0.03); }
 
-        /* --- DRAWER --- */
-        .side-drawer {
-            position: fixed; top: 0; left: 0; width: 85%; max-width: 350px; height: 100%;
-            background: var(--bg-card); z-index: 1000; transform: translateX(-100%);
-            transition: var(--transition); padding: 2rem; overflow-y: auto;
-        }
-        .side-drawer.open { transform: translateX(0); }
-        .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 999; display: none; }
-        .drawer-overlay.visible { display: block; }
-        .drawer-section { margin-bottom: 2rem; }
-        .drawer-title { font-family: 'Libre Baskerville', serif; font-size: 1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+  /* ── TOOLTIP ── */
+  .tooltip-wrap { position: relative; }
+  .tooltip-wrap .tooltip {
+    display: none;
+    position: absolute; bottom: 130%; left: 50%;
+    transform: translateX(-50%);
+    background: var(--color-primary);
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 100;
+  }
+  .tooltip-wrap:hover .tooltip { display: block; }
 
-        /* --- BOUTONS FLOTTANTS --- */
-        .fab-container { position: fixed; bottom: 20px; left: 20px; display: flex; flex-direction: column; gap: 12px; z-index: 100; }
-        .btn-fab { width: 48px; height: 48px; border-radius: 50%; border: none; color: white; cursor: pointer; box-shadow: var(--shadow); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
-        .fab-clean { background: var(--ink); }
-        .fab-stats { background: var(--accent); }
+  /* ── COPY BTN ── */
+  .copy-btn {
+    opacity: 0;
+    transition: opacity 0.15s;
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-size: 11px; font-weight: 500;
+    background: rgba(10,36,114,0.07);
+    cursor: pointer;
+    border: none;
+    color: var(--color-accent);
+  }
+  .citation-card:hover .copy-btn { opacity: 1; }
+  .dark .copy-btn { background: rgba(255,255,255,0.08); }
 
-        .theme-toggle { margin-top: 1rem; padding: 12px; width: 100%; border: 1px solid var(--border); background: var(--bg); border-radius: var(--radius); cursor: pointer; font-weight: 600; }
+  /* ── SECTION ACCENT LINES ── */
+  .accent-line { height: 3px; border-radius: 99px; }
 
-        /* --- OCR CARDS --- */
-        .ocr-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            padding: 1.5rem;
-            margin-bottom: 1.2rem;
-            box-shadow: var(--shadow);
-        }
-        .ocr-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 0.8rem;
-            gap: 1rem;
-        }
-        .ocr-source {
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            font-weight: 700;
-            color: var(--accent);
-            flex-shrink: 0;
-        }
-        .ocr-page {
-            font-size: 0.7rem;
-            color: var(--ink-light);
-            background: var(--bg);
-            padding: 2px 8px;
-            border-radius: 20px;
-            flex-shrink: 0;
-        }
-        .ocr-text {
-            font-family: 'Libre Baskerville', serif;
-            font-size: 0.95rem;
-            line-height: 1.65;
-            color: var(--ink);
-            white-space: pre-wrap;
-            word-break: break-word;
-        }
-        .ocr-text mark {
-            background: var(--accent-light);
-            color: var(--ink);
-            border-radius: 2px;
-            padding: 0 2px;
-        }
-        .ocr-actions {
-            margin-top: 1rem;
-            display: flex;
-            justify-content: flex-end;
-            gap: 8px;
-        }
-        .ocr-empty {
-            text-align: center;
-            padding: 3rem 1rem;
-            color: var(--ink-muted);
-            font-size: 0.9rem;
-        }
-        .ocr-empty .ocr-empty-icon { font-size: 2.5rem; margin-bottom: 0.8rem; }
-        .ocr-stats-bar {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 1.2rem;
-            font-size: 0.78rem;
-            color: var(--ink-muted);
-        }
-        .ocr-stat-pill {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 4px 12px;
-        }
-    </style>
+  /* ── SEARCH HIGHLIGHT ── */
+  mark { background: rgba(244,96,96,0.18); border-radius: 2px; padding: 0 1px; color: var(--color-primary); }
+
+  /* ── CATEGORY CHIP ── */
+  .cat-chip {
+    font-size: 10px; font-weight: 600;
+    padding: 2px 7px; border-radius: 20px;
+    background: rgba(0,0,0,0.06);
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .dark .cat-chip { background: rgba(255,255,255,0.08); }
+
+  /* ── PROGRESS BAR ── */
+  .progress-bar { height: 6px; border-radius: 99px; background: rgba(10,36,114,0.08); overflow: hidden; }
+  .dark .progress-bar { background: rgba(255,255,255,0.08); }
+  .progress-fill { height: 100%; border-radius: 99px; background: var(--mondrian); background-size: 300px 100%; transition: width 0.4s ease; }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .widget { animation: fadeUp 0.4s ease both; }
+  .widget:nth-child(1) { animation-delay: 0.05s; }
+  .widget:nth-child(2) { animation-delay: 0.1s; }
+  .widget:nth-child(3) { animation-delay: 0.15s; }
+  .widget:nth-child(4) { animation-delay: 0.2s; }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 99px; }
+  .dark ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); }
+
+  /* ── HIDDEN ON SEARCH ── */
+  .hidden-search { display: none !important; }
+
+  /* ── SYNC SPIN ── */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinning { animation: spin 0.6s linear; }
+</style>
 </head>
-<body>
+<body class="antialiased">
 
-<div class="exit-btn" onclick="window.parent.postMessage('close-iframe', '*')" title="Fermer">✕</div>
-<div class="drawer-overlay" id="overlay" onclick="toggleDrawer()"></div>
+<!-- ════════ SEARCH BAR ════════ -->
+<div class="search-bar bg-white/85 dark:bg-[#06091a]/85 border-b border-black/5 dark:border-white/5">
+  <div class="max-w-5xl mx-auto px-4 py-3 flex items-center gap-3">
+    <div class="flex items-center gap-2 flex-1 bg-black/5 dark:bg-white/5 rounded-xl px-4 py-2">
+      <i class="fas fa-search text-gray-400 text-sm"></i>
+      <input id="searchInput" type="text" placeholder="Rechercher dans toutes les données…"
+        class="flex-1 bg-transparent text-sm outline-none placeholder-gray-400 font-sans"
+        style="color: var(--text-main)">
+    </div>
+    <button id="syncBtn" onclick="syncData()" title="Rafraîchir"
+      class="w-9 h-9 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center hover:bg-black/10 dark:hover:bg-white/10 transition">
+      <i id="syncIcon" class="fas fa-rotate-right text-sm text-gray-500"></i>
+    </button>
+    <button onclick="toggleDark()" title="Mode sombre"
+      class="w-9 h-9 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center hover:bg-black/10 dark:hover:bg-white/10 transition">
+      <i id="darkIcon" class="fas fa-moon text-sm text-gray-500"></i>
+    </button>
+  </div>
+</div>
 
-<aside class="side-drawer" id="drawer">
-    <h2 style="font-family: 'Libre Baskerville'; margin-bottom: 1.5rem;">Citatio Pro</h2>
-    <div class="drawer-section"><h3 class="drawer-title">📈 Usage</h3><canvas id="clickChart" style="max-height: 150px;"></canvas></div>
-    <div class="drawer-section"><h3 class="drawer-title">💾 Sauvegarde</h3><div id="backupInfo" style="font-size:0.85rem; padding:10px; background:var(--bg); border-radius:4px;"></div></div>
-    <button class="theme-toggle" onclick="toggleTheme()">🌓 Inverser le thème</button>
-</aside>
+<!-- ════════ HEADER ════════ -->
+<div class="max-w-5xl mx-auto px-4 pt-8 pb-4">
+  <div class="flex items-end justify-between gap-4 mb-6">
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1">Dashboard</p>
+      <h1 class="text-3xl font-bold tracking-tight" style="color: var(--color-primary)">
+        Local<span style="color: var(--color-accent)">Lines</span>
+      </h1>
+      <p class="text-sm text-gray-400 mt-1">Visualisation intelligente du localStorage</p>
+    </div>
+    <div class="text-right">
+      <p class="text-xs text-gray-400" id="lastSync">—</p>
+    </div>
+  </div>
 
-<main class="main-container">
-    <section class="search-area">
-        <input type="text" id="search" placeholder="Rechercher..." oninput="render()">
-        
-        <div class="filter-row">
-            <button id="alphaBtn" class="sort-btn" onclick="toggleAlphaSort()" title="Tri Alphabétique">A-Z</button>
-            <div class="type-filter">
-                <button class="filter-btn active" onclick="setView('citations'); setFilter('all', this)">Tous</button>
-                <button class="filter-btn" onclick="setView('citations'); setFilter('livre', this)">Livres</button>
-                <button class="filter-btn" onclick="setView('citations'); setFilter('web', this)">Web</button>
-                <button class="filter-btn" onclick="setView('citations'); setFilter('video', this)">Vidéos</button>
-                <button class="filter-btn" id="ocrTabBtn" onclick="setView('ocr', this)">📷 OCR</button>
-            </div>
+  <!-- STAT BADGES -->
+  <div id="statBadges" class="flex flex-wrap gap-2 mb-6"></div>
+
+  <!-- HEATMAP -->
+  <div class="widget mb-4 p-4">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-xs font-semibold uppercase tracking-widest text-gray-400">Activité de capture</span>
+      <div class="flex items-center gap-2 text-xs text-gray-400">
+        <span>Moins</span>
+        <div class="flex gap-1">
+          <div class="w-2.5 h-2.5 rounded-sm" style="background:rgba(10,36,114,0.08)"></div>
+          <div class="w-2.5 h-2.5 rounded-sm" style="background:rgba(0,100,102,0.3)"></div>
+          <div class="w-2.5 h-2.5 rounded-sm" style="background:#006466"></div>
+          <div class="w-2.5 h-2.5 rounded-sm" style="background:#0A2472"></div>
         </div>
-    </section>
-
-    <div id="citationList"></div>
-
-    <!-- Contrôles spécifiques OCR (cachés par défaut) -->
-    <div id="ocrControls" style="display:none; margin-bottom:1rem;">
-        <select id="ocrSourceFilter" onchange="ocrState.sourceFiler = this.value; ocrState.page = 0; renderOCR();"
-            style="width:100%; padding:10px 14px; border:1.5px solid var(--border); border-radius:var(--radius-lg);
-                   background:var(--bg-card); color:var(--ink); font-size:0.85rem; font-family:'DM Sans',sans-serif;
-                   outline:none; cursor:pointer; box-shadow:var(--shadow);">
-            <option value="">— Toutes les sources —</option>
-        </select>
+        <span>Plus</span>
+      </div>
     </div>
+    <div id="heatmapGrid" class="flex gap-1 flex-wrap overflow-x-auto pb-1"></div>
+    <div id="heatmapTooltip" class="text-xs text-gray-400 mt-2 h-4"></div>
+  </div>
+</div>
 
-    <div id="ocrList" style="display:none;"></div>
-    <div id="ocrLoadMore" style="display:none; text-align:center; margin-bottom:2rem;">
-        <button onclick="ocrLoadMore()"
-            style="padding:10px 28px; border:1.5px solid var(--accent); border-radius:20px; background:none;
-                   color:var(--accent); font-weight:700; font-size:0.85rem; cursor:pointer;">
-            Charger plus…
-        </button>
-    </div>
-</main>
-
-<div class="fab-container">
-    <button class="btn-fab fab-stats" onclick="toggleDrawer()">📊</button>
-    <button class="btn-fab fab-clean" onclick="smartClean()">🧹</button>
+<!-- ════════ SORTABLE WIDGETS ════════ -->
+<div class="max-w-5xl mx-auto px-4 pb-12">
+  <div id="widgetContainer" class="flex flex-col gap-4"></div>
 </div>
 
 <script>
-    const getD = (k) => JSON.parse(localStorage.getItem(k) || '[]');
-    let citations = getD('citatio_history');
-    const clics = JSON.parse(localStorage.getItem('clics') || '{}');
-    const backupDate = localStorage.getItem('__last_backup_date__');
-    
-    let currentType = 'all';
-    let isAlphaSort = false;
-    let currentView = 'citations'; // 'citations' | 'ocr'
-    let ocrSearch = '';
+// ═══════════════════════════════════════════
+//  DATA — load from localStorage or use JSON fixture
+// ═══════════════════════════════════════════
+const FIXTURE = {
+  "__drift_last_shown__": "1777769758813",
+  "mode": "creative",
+  "__drift_elem_snap__": "15",
+  "citatio_history": "[{\"id\":1777769864858,\"type\":\"periodique\",\"typeLabel\":\"Périodique\",\"icon\":\"fas fa-newspaper\",\"html\":\"Rémy Cougnenc, « Le choix des services publics via une hausse de la taxe foncière de la Métropole de Montpellier », Marseille, <em>Journal La Marseillaise</em>, 2 mai 2026, <a href=\\\"https://www.lamarseillaise.fr/economie/le-choix-des-services-publics-via-une-hausse-de-la-taxe-fonciere-de-la-metropole-de-montpellier-HC20118179\\\" target=\\\"_blank\\\">https://www.lamarseillaise.fr/economie/le-choix-des-services-publics-via-une-hausse-de-la-taxe-fonciere-de-la-metropole-de-montpellier-HC20118179</a> (consulté le : 3 mai 2026).\",\"text\":\"Rémy Cougnenc, ...\",\"date\":\"03/05/2026 02:57:44\"},{\"id\":1777769807355,\"type\":\"ouvrage\",\"typeLabel\":\"Ouvrage\",\"icon\":\"fas fa-book\",\"html\":\"Martin Panchaud, <em>La couleur des choses</em>, Bussy-Saint-Georges, Çà et là, 2022, p. 224.\",\"text\":\"Martin Panchaud, La couleur des choses, Bussy-Saint-Georges, Çà et là, 2022, p. 224.\",\"date\":\"03/05/2026 02:56:47\"},{\"id\":1777769785058,\"type\":\"ouvrage\",\"typeLabel\":\"Ouvrage\",\"icon\":\"fas fa-book\",\"html\":\". Whoogy's, <em>Manuel du cuisinier amateur : 150 recettes et techniques</em>, Vanves, Chêne, 2022, p. 258.\",\"text\":\". Whoogy's, Manuel du cuisinier amateur : 150 recettes et techniques, Vanves, Chêne, 2022, p. 258.\",\"date\":\"03/05/2026 02:56:25\"}]",
+  "clics": "{\"ocr-lines\":4,\"ytlive-lines\":2,\"course-lines\":1,\"photo-recu\":1,\"cite-lines\":1,\"local-lines\":1}",
+  "ovni_v9": "{\"view\":\"list\",\"listMode\":\"todo\",\"editingId\":null,\"sessions\":{\"sess_default\":{\"id\":\"sess_default\",\"name\":\"Liste principale\",\"recipes\":{},\"singles\":0,\"totalCost\":0,\"list\":[]},\"sess_1777769668313\":{\"id\":\"sess_1777769668313\",\"name\":\"Courses 2\",\"recipes\":{\"OVNI Burger\":5},\"singles\":0,\"totalCost\":12.110000000000001,\"list\":[{\"name\":\"Boeuf\",\"qty\":400,\"unit\":\"g\",\"cat\":\"Viandes\",\"price\":1.12,\"done\":false},{\"name\":\"Tomate\",\"qty\":80,\"unit\":\"g\",\"cat\":\"Fruits & Légumes\",\"price\":0.032,\"done\":true},{\"name\":\"Salade\",\"qty\":100,\"unit\":\"g\",\"cat\":\"Fruits & Légumes\",\"price\":0.02,\"done\":true},{\"name\":\"Oignons\",\"qty\":100,\"unit\":\"g\",\"cat\":\"Fruits & Légumes\",\"price\":0.03,\"done\":true},{\"name\":\"Cheddar\",\"qty\":100,\"unit\":\"g\",\"cat\":\"Produits frais\",\"price\":0.26,\"done\":false},{\"name\":\"Jaune d'oeuf\",\"qty\":20,\"unit\":\"g\",\"cat\":\"Produits frais\",\"price\":0.036,\"done\":false},{\"name\":\"Moutarde\",\"qty\":6,\"unit\":\"g\",\"cat\":\"Épicerie salée\",\"price\":0.007,\"done\":false},{\"name\":\"Huile de pepin\",\"qty\":100,\"unit\":\"g\",\"cat\":\"Épicerie salée\",\"price\":0.12,\"done\":false},{\"name\":\"Ketchup\",\"qty\":20,\"unit\":\"g\",\"cat\":\"Épicerie salée\",\"price\":0.02,\"done\":false},{\"name\":\"Miel\",\"qty\":4,\"unit\":\"g\",\"cat\":\"Épicerie salée\",\"price\":0.004,\"done\":false},{\"name\":\"Pain\",\"qty\":5,\"unit\":\"pièce\",\"cat\":\"Épicerie salée\",\"price\":0.687,\"done\":false},{\"name\":\"Sucre\",\"qty\":20,\"unit\":\"g\",\"cat\":\"Épicerie salée\",\"price\":0.004,\"done\":false},{\"name\":\"Sel\",\"qty\":15,\"unit\":\"g\",\"cat\":\"Épicerie salée\",\"price\":0.003,\"done\":false},{\"name\":\"Huile d'olive\",\"qty\":10,\"unit\":\"g\",\"cat\":\"Épicerie salée\",\"price\":0.002,\"done\":false},{\"name\":\"Emballage\",\"qty\":5,\"unit\":\"pièce\",\"cat\":\"Consommables\",\"price\":0.052,\"done\":false},{\"name\":\"Serviette\",\"qty\":5,\"unit\":\"pièce\",\"cat\":\"Consommables\",\"price\":0.025,\"done\":false}]}},\"currentSessionId\":\"sess_1777769668313\",\"recipes\":[{\"id\":1777769686664.4778,\"name\":\"OVNI Burger\",\"ingredients\":[{\"name\":\"Boeuf\",\"qty\":80,\"unit\":\"g\",\"cat\":\"Viandes\",\"price\":1.12},{\"name\":\"Tomate\",\"qty\":16,\"unit\":\"g\",\"cat\":\"Fruits & Légumes\",\"price\":0.032},{\"name\":\"Salade\",\"qty\":20,\"unit\":\"g\",\"cat\":\"Fruits & Légumes\",\"price\":0.02},{\"name\":\"Oignons\",\"qty\":20,\"unit\":\"g\",\"cat\":\"Fruits & Légumes\",\"price\":0.03},{\"name\":\"Cheddar\",\"qty\":20,\"unit\":\"g\",\"cat\":\"Produits frais\",\"price\":0.26},{\"name\":\"Jaune d'oeuf\",\"qty\":4,\"unit\":\"g\",\"cat\":\"Produits frais\",\"price\":0.036},{\"name\":\"Moutarde\",\"qty\":1.2,\"unit\":\"g\",\"cat\":\"Épicerie salée\",\"price\":0.007},{\"name\":\"Huile de pepin\",\"qty\":20,\"unit\":\"g\",\"cat\":\"Épicerie salée\",\"price\":0.12},{\"name\":\"Ketchup\",\"qty\":4,\"unit\":\"g\",\"cat\":\"Épicerie salée\",\"price\":0.02},{\"name\":\"Miel\",\"qty\":0.8,\"unit\":\"g\",\"cat\":\"Épicerie salée\",\"price\":0.004},{\"name\":\"Pain\",\"qty\":1,\"unit\":\"pièce\",\"cat\":\"Épicerie salée\",\"price\":0.687},{\"name\":\"Sucre\",\"qty\":4,\"unit\":\"g\",\"cat\":\"Épicerie salée\",\"price\":0.004},{\"name\":\"Sel\",\"qty\":3,\"unit\":\"g\",\"cat\":\"Épicerie salée\",\"price\":0.003},{\"name\":\"Huile d'olive\",\"qty\":2,\"unit\":\"g\",\"cat\":\"Épicerie salée\",\"price\":0.002},{\"name\":\"Emballage\",\"qty\":1,\"unit\":\"pièce\",\"cat\":\"Consommables\",\"price\":0.052},{\"name\":\"Serviette\",\"qty\":1,\"unit\":\"pièce\",\"cat\":\"Consommables\",\"price\":0.025}]}],\"categoryOrder\":[\"Fruits & Légumes\",\"Viandes\",\"Poissons\",\"Produits frais\",\"Épicerie salée\",\"Épicerie sucrée\",\"Liquides\",\"Surgelés\",\"Autre\"]}",
+  "ocr_history_v1": "[{\"savedAt\":\"2026-05-03T00:23:32.129Z\",\"meta\":{\"prenom\":\"Ggg\",\"titre\":\"Ggg\",\"ville\":\"Gg\",\"editeur\":\"Gg\",\"collection\":\"Yt\",\"annee\":\"2003\"},\"entries\":[\"-aites-vous aider pour arrêter de fumer IS SSSSS p. 22\"]},{\"savedAt\":\"2026-05-03T00:58:26.232Z\",\"meta\":{\"prenom\":\"Jdjd\",\"titre\":\"Ggg\",\"ville\":\"Marseille\",\"editeur\":\"Gallinard\",\"collection\":\"5567\",\"annee\":\"2003\"},\"entries\":[\"-aites-vous aider pour arrêter de fumer IS SSSSS p. 22\",\"1 oustenezrentu< VS vous bouquiveres. CT irez en cuisinant, celui que vous bouquis eret Ce un fui que vous partagerez avec nes pa < ei 2 3 p. 25\"]}]",
+  "shopHistory": "{\"GH\":1,\"TUI\":1}",
+  "__op_count__": "7",
+  "yt_history": "[\"Bfmtv\"]"
+};
 
-    function toggleDrawer() {
-        document.getElementById('drawer').classList.toggle('open');
-        document.getElementById('overlay').classList.toggle('visible');
+// Known widget keys
+const KNOWN_KEYS = ['citatio_history','ocr_history_v1','ovni_v9','clics'];
+const MISC_SKIP = [...KNOWN_KEYS, '__drift_last_shown__','__drift_elem_snap__','__op_count__','local_lines_layout','local_lines_dark'];
+
+// ═══════════════════════════════════════════
+//  LOAD DATA (localStorage → fixture fallback)
+// ═══════════════════════════════════════════
+function loadData() {
+  // Try real localStorage first, fill missing keys from fixture
+  const data = {};
+  for (const [k, v] of Object.entries(FIXTURE)) {
+    try {
+      data[k] = localStorage.getItem(k) !== null ? localStorage.getItem(k) : v;
+    } catch { data[k] = v; }
+  }
+  // Also capture any extra real localStorage keys
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (!(k in data)) data[k] = localStorage.getItem(k);
     }
+  } catch {}
+  return data;
+}
 
-    function toggleTheme() {
-        const doc = document.documentElement;
-        doc.setAttribute('data-theme', doc.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+function safeJSON(str, fallback = null) {
+  if (str === null || str === undefined) return fallback;
+  if (typeof str !== 'string') return str;
+  try { return JSON.parse(str); } catch { return fallback; }
+}
+
+// ═══════════════════════════════════════════
+//  DARK MODE
+// ═══════════════════════════════════════════
+function toggleDark() {
+  const isDark = document.documentElement.classList.toggle('dark');
+  document.getElementById('darkIcon').className = isDark ? 'fas fa-sun text-sm text-yellow-400' : 'fas fa-moon text-sm text-gray-500';
+  try { localStorage.setItem('local_lines_dark', isDark ? '1' : '0'); } catch {}
+}
+function initDark() {
+  let isDark = false;
+  try { isDark = localStorage.getItem('local_lines_dark') === '1'; } catch {}
+  if (!isDark) isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+    document.getElementById('darkIcon').className = 'fas fa-sun text-sm text-yellow-400';
+  }
+}
+
+// ═══════════════════════════════════════════
+//  HEATMAP
+// ═══════════════════════════════════════════
+function buildHeatmap(data) {
+  const citations = safeJSON(data['citatio_history'], []);
+  const ocr = safeJSON(data['ocr_history_v1'], []);
+  const counts = {};
+
+  citations.forEach(c => {
+    if (c.date) {
+      const [d, m, y] = c.date.split(' ')[0].split('/');
+      const key = `${y}-${m}-${d}`;
+      counts[key] = (counts[key] || 0) + 1;
     }
-
-    function toggleAlphaSort() {
-        isAlphaSort = !isAlphaSort;
-        document.getElementById('alphaBtn').classList.toggle('active', isAlphaSort);
-        if (currentView === 'citations') render();
-        else renderOCR();
+  });
+  ocr.forEach(o => {
+    if (o.savedAt) {
+      const key = o.savedAt.split('T')[0];
+      counts[key] = (counts[key] || 0) + 1;
     }
+  });
 
-    function setFilter(type, btn) {
-        currentType = type;
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        render();
-    }
+  const grid = document.getElementById('heatmapGrid');
+  const tip = document.getElementById('heatmapTooltip');
+  grid.innerHTML = '';
 
-    function setView(view, btn) {
-        currentView = view;
-        document.getElementById('citationList').style.display = view === 'citations' ? '' : 'none';
-        document.getElementById('ocrList').style.display = view === 'ocr' ? '' : 'none';
-        document.getElementById('ocrControls').style.display = view === 'ocr' ? '' : 'none';
-        document.getElementById('ocrLoadMore').style.display = 'none';
-        document.getElementById('alphaBtn').style.display = view === 'ocr' ? 'none' : '';
-
-        if (view === 'ocr') {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('ocrTabBtn').classList.add('active');
-            document.getElementById('search').placeholder = 'Rechercher dans les textes OCR...';
-            ocrState.page = 0;
-            renderOCR();
-        } else {
-            document.getElementById('search').placeholder = 'Rechercher...';
-        }
-    }
-
-    function render() {
-        const container = document.getElementById('citationList');
-        const search = document.getElementById('search').value.toLowerCase();
-        container.innerHTML = "";
-
-        let list = citations.filter(c => {
-            const matchesSearch = c.text.toLowerCase().includes(search);
-            const matchesType = currentType === 'all' || c.typeLabel.toLowerCase().includes(currentType);
-            return matchesSearch && matchesType;
-        });
-
-        if (isAlphaSort) {
-            list.sort((a, b) => a.text.localeCompare(b.text, 'fr', {sensitivity: 'base'}));
-        } else {
-            list.sort((a, b) => b.id - a.id);
-        }
-
-        list.forEach(cite => {
-            const card = document.createElement('div');
-            card.className = "citation-card";
-            card.innerHTML = `
-                <div class="cite-label">${cite.typeLabel}</div>
-                <div class="cite-content">${cite.html}</div>
-                <div class="cite-meta">
-                    <span>${cite.date}</span>
-                    <button onclick="copyText('${cite.id}')" style="background:none; border:1px solid var(--accent); color:var(--accent); padding:5px 12px; border-radius:4px; font-weight:700; cursor:pointer;">COPIER</button>
-                </div>
-            `;
-            container.appendChild(card);
-        });
-    }
-
-    /* ================================================================
-       OCR — Système v2
-       parseOCRData()  : lecture & structuration depuis ocr_history_v1
-       filterOCRData() : filtrage texte + source
-       renderOCR()     : rendu paginé (BATCH_SIZE items par lot)
-    ================================================================ */
-
-    const BATCH_SIZE = 20;
-
-    // État OCR centralisé
-    const ocrState = {
-        all: [],       // données brutes parsées (cache)
-        filtered: [],  // après filtres actifs
-        page: 0,       // lot courant
-        sourceFiler: '', // valeur du <select>
-    };
-
-    /**
-     * Lit ocr_history_v1 depuis le localStorage et retourne un tableau plat
-     * d'objets { text, page, source, meta, savedAt }.
-     * Chaque entry brute se termine par « p. XX » → extrait via regex.
-     */
-    function parseOCRData() {
-        const PAGE_RE = /\bp\.?\s*(\d+)\s*$/i;
-        const raw = localStorage.getItem('ocr_history_v1');
-        if (!raw) return [];
-
-        let parsed;
-        try { parsed = JSON.parse(raw); } catch { return []; }
-        if (!Array.isArray(parsed)) return [];
-
-        const results = [];
-
-        for (const doc of parsed) {
-            if (!doc || typeof doc !== 'object') continue;
-
-            const meta    = doc.meta    || {};
-            const savedAt = doc.savedAt || '';
-            const source  = meta.title  || meta.auteur || meta.author || meta.name || 'Source inconnue';
-            const entries = Array.isArray(doc.entries) ? doc.entries : [];
-
-            for (const entry of entries) {
-                if (typeof entry !== 'string' || !entry.trim()) continue;
-
-                const match = PAGE_RE.exec(entry);
-                const page  = match ? match[1] : '';
-                // Supprime « p. XX » de fin pour l'affichage
-                const text  = entry.replace(PAGE_RE, '').trimEnd();
-
-                results.push({ text, page, source, meta, savedAt });
-            }
-        }
-
-        return results;
-    }
-
-    /**
-     * Filtre ocrState.all selon la recherche textuelle et le select source.
-     * Met à jour ocrState.filtered et remet page à 0.
-     */
-    function filterOCRData(search = '', source = '') {
-        const q = search.toLowerCase().trim();
-        ocrState.filtered = ocrState.all.filter(item => {
-            const matchText   = !q || item.text.toLowerCase().includes(q) || item.source.toLowerCase().includes(q);
-            const matchSource = !source || item.source === source;
-            return matchText && matchSource;
-        });
-        ocrState.page = 0;
-    }
-
-    /** Popule le <select> avec les sources uniques */
-    function populateSourceSelect() {
-        const sel = document.getElementById('ocrSourceFilter');
-        const sources = [...new Set(ocrState.all.map(d => d.source))].sort((a, b) =>
-            a.localeCompare(b, 'fr', { sensitivity: 'base' })
-        );
-        // Vider sauf le premier option "Toutes"
-        while (sel.options.length > 1) sel.remove(1);
-        for (const s of sources) {
-            const opt = document.createElement('option');
-            opt.value = s;
-            opt.textContent = s;
-            sel.appendChild(opt);
-        }
-    }
-
-    /** Échappe le HTML et surligne la query */
-    function highlight(rawText, query) {
-        const escaped = rawText.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-        if (!query) return escaped;
-        const safe = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        return escaped.replace(new RegExp(`(${safe})`, 'gi'), '<mark>$1</mark>');
-    }
-
-    /** Construit et insère un lot de cartes OCR dans le container */
-    function appendOCRBatch(container, items, startIdx, search) {
-        const frag = document.createDocumentFragment();
-        for (let i = startIdx; i < items.length && i < startIdx + BATCH_SIZE; i++) {
-            const item = items[i];
-            const card = document.createElement('div');
-            card.className = 'ocr-card';
-            card.innerHTML = `
-                <div class="ocr-header">
-                    <span class="ocr-source">📷 ${item.source}</span>
-                    ${item.page ? `<span class="ocr-page">p. ${item.page}</span>` : ''}
-                </div>
-                <div class="ocr-text">${highlight(item.text, search)}</div>
-                <div class="ocr-actions">
-                    <button data-global-idx="${i}"
-                        style="background:none; border:1px solid var(--accent); color:var(--accent);
-                               padding:5px 12px; border-radius:4px; font-weight:700; cursor:pointer; font-size:0.78rem;"
-                        onclick="copyOCR(this)">COPIER</button>
-                </div>`;
-            frag.appendChild(card);
-        }
-        container.appendChild(frag);
-    }
-
-    /**
-     * Rendu principal OCR.
-     * Si reset=true (défaut), vide le container et repart du lot 0.
-     * Si reset=false, ajoute simplement le lot suivant (bouton "Charger plus").
-     */
-    function renderOCR(reset = true) {
-        const container    = document.getElementById('ocrList');
-        const loadMoreBtn  = document.getElementById('ocrLoadMore');
-        const search       = document.getElementById('search').value;
-
-        // Premier appel : charger & cacher les données
-        if (reset) {
-            if (ocrState.all.length === 0) {
-                ocrState.all = parseOCRData();
-                populateSourceSelect();
-            }
-            filterOCRData(search, ocrState.sourceFiler);
-            container.innerHTML = '';
-        }
-
-        const { filtered, page } = ocrState;
-
-        // Aucune donnée dans le storage
-        if (ocrState.all.length === 0) {
-            container.innerHTML = `
-                <div class="ocr-empty">
-                    <div class="ocr-empty-icon">📷</div>
-                    <strong>Aucune donnée OCR trouvée</strong>
-                    <p style="margin-top:.5rem;font-size:.82rem;">
-                        La clé <code>ocr_history_v1</code> est absente ou vide dans le localStorage.
-                    </p>
-                </div>`;
-            loadMoreBtn.style.display = 'none';
-            return;
-        }
-
-        // Stats bar (seulement au premier rendu du filtre)
-        if (page === 0) {
-            const allSources = [...new Set(filtered.map(d => d.source))];
-            const statsBar = document.createElement('div');
-            statsBar.className = 'ocr-stats-bar';
-            statsBar.innerHTML = `
-                <span class="ocr-stat-pill">📄 ${filtered.length} passage${filtered.length !== 1 ? 's' : ''}</span>
-                <span class="ocr-stat-pill">📚 ${allSources.length} source${allSources.length !== 1 ? 's' : ''}</span>`;
-            container.appendChild(statsBar);
-        }
-
-        // Aucun résultat après filtrage
-        if (filtered.length === 0) {
-            container.innerHTML += `
-                <div class="ocr-empty">
-                    <div class="ocr-empty-icon">🔍</div>
-                    <strong>Aucun résultat</strong>
-                </div>`;
-            loadMoreBtn.style.display = 'none';
-            return;
-        }
-
-        const startIdx = page * BATCH_SIZE;
-        appendOCRBatch(container, filtered, startIdx, search);
-        ocrState.page++;
-
-        // Afficher ou cacher le bouton "Charger plus"
-        loadMoreBtn.style.display = ocrState.page * BATCH_SIZE < filtered.length ? '' : 'none';
-    }
-
-    /** Appelé par le bouton "Charger plus" */
-    function ocrLoadMore() {
-        renderOCR(false);
-    }
-
-    window.copyOCR = (btn) => {
-        const idx = parseInt(btn.dataset.globalIdx, 10);
-        const item = ocrState.filtered[idx];
-        if (!item) return;
-        navigator.clipboard.writeText(`${item.text}${item.page ? ` (p. ${item.page})` : ''}`);
-        const orig = btn.textContent;
-        btn.textContent = '✓ COPIÉ';
-        setTimeout(() => { btn.textContent = orig; }, 1500);
-    };
-
-    window.copyText = (id) => {
-        const c = citations.find(x => x.id == id);
-        navigator.clipboard.writeText(c.text);
-    };
-
-    window.smartClean = () => {
-        const seen = new Set();
-        const unique = citations.filter(c => {
-            const isDup = seen.has(c.text);
-            seen.add(c.text);
-            return !isDup;
-        });
-        if(confirm(`Supprimer ${citations.length - unique.length} doublons ?`)) {
-            localStorage.setItem('citatio_history', JSON.stringify(unique));
-            location.reload();
-        }
-    };
-
-    // Relancer le rendu quand on tape dans la recherche
-    document.getElementById('search').addEventListener('input', () => {
-        if (currentView === 'ocr') {
-            ocrState.page = 0;
-            renderOCR(true);
-        } else {
-            render();
-        }
+  // Generate last 90 days
+  const today = new Date();
+  for (let i = 89; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const key = d.toISOString().split('T')[0];
+    const count = counts[key] || 0;
+    const cell = document.createElement('div');
+    cell.className = 'heatmap-cell tooltip-wrap';
+    if (count > 0) cell.setAttribute('data-count', Math.min(count, 4));
+    cell.title = '';
+    cell.addEventListener('mouseenter', () => {
+      const label = d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+      tip.textContent = count > 0 ? `${label} — ${count} élément${count > 1 ? 's' : ''}` : `${label} — aucune activité`;
     });
+    cell.addEventListener('mouseleave', () => { tip.textContent = ''; });
+    grid.appendChild(cell);
+  }
+}
 
-    function initStats() {
-        document.getElementById('backupInfo').innerHTML = backupDate ? `Synchro : ${new Date(backupDate).toLocaleString('fr-FR')}` : 'Aucun backup';
-        const ctx = document.getElementById('clickChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: Object.keys(clics),
-                datasets: [{ data: Object.values(clics), backgroundColor: '#c0392b', borderRadius: 4 }]
-            },
-            options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { display: false } } } }
-        });
+// ═══════════════════════════════════════════
+//  STAT BADGES
+// ═══════════════════════════════════════════
+const CLICS_META = {
+  'ocr-lines':   { icon: 'fas fa-file-alt',    label: 'Scans OCR',   color: '#FFD972' },
+  'ytlive-lines':{ icon: 'fab fa-youtube',      label: 'YouTube',     color: '#F46060' },
+  'course-lines':{ icon: 'fas fa-shopping-cart',label: 'Courses',     color: '#006466' },
+  'photo-recu':  { icon: 'fas fa-receipt',      label: 'Reçus photo', color: '#0A2472' },
+  'cite-lines':  { icon: 'fas fa-quote-right',  label: 'Citations',   color: '#F46060' },
+  'local-lines': { icon: 'fas fa-database',     label: 'Local-Lines', color: '#006466' },
+};
+
+function buildStatBadges(data) {
+  const clics = safeJSON(data['clics'], {});
+  const container = document.getElementById('statBadges');
+  container.innerHTML = '';
+  for (const [key, val] of Object.entries(clics)) {
+    const meta = CLICS_META[key] || { icon: 'fas fa-circle', label: key, color: '#999' };
+    const div = document.createElement('div');
+    div.className = 'stat-badge';
+    div.innerHTML = `<i class="${meta.icon}" style="color:${meta.color};font-size:12px"></i><span class="stat-num">${val}</span><span class="text-gray-400">${meta.label}</span>`;
+    container.appendChild(div);
+  }
+}
+
+// ═══════════════════════════════════════════
+//  WIDGET BUILDERS
+// ═══════════════════════════════════════════
+function buildCitationsWidget(data) {
+  const citations = safeJSON(data['citatio_history'], []);
+  const el = document.createElement('div');
+  el.className = 'widget';
+  el.dataset.widgetId = 'citations';
+
+  el.innerHTML = `
+    <div class="widget-header">
+      <div class="accent-line w-8" style="background:var(--color-highlight)"></div>
+      <i class="fas fa-book-open" style="color:var(--color-highlight)"></i>
+      <span class="font-semibold text-sm">Bibliothèque de Citations</span>
+      <span class="ml-auto text-xs text-gray-400 font-mono">${citations.length} référence${citations.length > 1 ? 's' : ''}</span>
+    </div>
+    <div class="p-4 flex flex-col gap-3" id="citationsBody">
+      ${citations.map(c => buildCitationCard(c)).join('')}
+    </div>
+  `;
+  return el;
+}
+
+function buildCitationCard(c) {
+  const badgeClass = c.type === 'periodique' ? 'badge-periodique' : 'badge-ouvrage';
+  const badgeLabel = c.typeLabel || c.type;
+  return `
+    <div class="citation-card group" data-searchable="${(c.text || '').toLowerCase()}">
+      <div class="cite-content">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="citation-badge ${badgeClass}"><i class="${c.icon || 'fas fa-file'}"></i> ${badgeLabel}</span>
+          <span class="text-xs text-gray-400 ml-auto font-mono">${c.date || ''}</span>
+          <button class="copy-btn" onclick="copyText(this, ${JSON.stringify((c.text||'').replace(/"/g,'&quot;'))})" title="Copier la référence">
+            <i class="fas fa-copy mr-1"></i>Copier
+          </button>
+        </div>
+        <div class="font-serif text-sm leading-relaxed citation-html">${c.html || c.text || ''}</div>
+      </div>
+    </div>`;
+}
+
+function buildOCRWidget(data) {
+  const ocr = safeJSON(data['ocr_history_v1'], []);
+  const el = document.createElement('div');
+  el.className = 'widget';
+  el.dataset.widgetId = 'ocr';
+  el.innerHTML = `
+    <div class="widget-header">
+      <div class="accent-line w-8" style="background:var(--color-accent)"></div>
+      <i class="fas fa-file-alt" style="color:var(--color-accent)"></i>
+      <span class="font-semibold text-sm">Archives OCR</span>
+      <span class="ml-auto text-xs text-gray-400 font-mono">${ocr.length} document${ocr.length > 1 ? 's' : ''}</span>
+    </div>
+    <div class="p-4 flex flex-col gap-4" id="ocrBody">
+      ${ocr.map((o, i) => buildOCRCard(o, i)).join('')}
+    </div>`;
+  return el;
+}
+
+function buildOCRCard(o, i) {
+  const date = o.savedAt ? new Date(o.savedAt).toLocaleString('fr-FR') : '—';
+  const m = o.meta || {};
+  const entries = (o.entries || []).map(e => `<div class="ocr-entry">${escapeHtml(e)}</div>`).join('');
+  const allText = (o.entries || []).join(' ').toLowerCase();
+  return `
+    <div class="ocr-card" data-searchable="${allText}">
+      <div class="flex items-start justify-between gap-3 mb-3 flex-wrap">
+        <div>
+          ${m.prenom ? `<span class="font-mono text-xs font-semibold" style="color:var(--color-accent)">${escapeHtml(m.prenom)}</span>` : ''}
+          ${m.titre ? `<span class="font-mono text-xs text-gray-500"> / ${escapeHtml(m.titre)}</span>` : ''}
+          <div class="flex flex-wrap gap-1 mt-1">
+            ${m.ville ? `<span class="cat-chip">${escapeHtml(m.ville)}</span>` : ''}
+            ${m.editeur ? `<span class="cat-chip">${escapeHtml(m.editeur)}</span>` : ''}
+            ${m.annee ? `<span class="cat-chip">${escapeHtml(m.annee)}</span>` : ''}
+          </div>
+        </div>
+        <div class="text-right flex-shrink-0">
+          <span class="scan-stamp">Scan #${i+1}</span>
+          <div class="text-xs text-gray-400 mt-1 font-mono">${date}</div>
+        </div>
+      </div>
+      <div class="flex flex-col gap-1 text-xs">${entries}</div>
+      <div class="text-right mt-2">
+        <span class="text-xs text-gray-400 font-mono">${(o.entries||[]).length} ligne${(o.entries||[]).length > 1 ? 's' : ''}</span>
+      </div>
+    </div>`;
+}
+
+function buildLogistiqueWidget(data) {
+  const ovni = safeJSON(data['ovni_v9'], null);
+  if (!ovni) return null;
+  const el = document.createElement('div');
+  el.className = 'widget';
+  el.dataset.widgetId = 'logistique';
+
+  const currentId = ovni.currentSessionId;
+  const sessions = ovni.sessions || {};
+  const current = sessions[currentId];
+  const list = (current && current.list) || [];
+  const done = list.filter(i => i.done).length;
+  const total = list.length;
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  const totalCost = list.reduce((s, i) => s + (i.price || 0), 0);
+
+  // Group by category
+  const bycat = {};
+  list.forEach(item => {
+    const cat = item.cat || 'Autre';
+    if (!bycat[cat]) bycat[cat] = [];
+    bycat[cat].push(item);
+  });
+
+  const catHtml = Object.entries(bycat).map(([cat, items]) => `
+    <div class="mb-3">
+      <div class="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1 px-2">${escapeHtml(cat)}</div>
+      ${items.map(item => buildCheckItem(item, currentId)).join('')}
+    </div>`).join('');
+
+  const recipeName = Object.keys(current?.recipes || {})[0] || '';
+
+  el.innerHTML = `
+    <div class="widget-header">
+      <div class="accent-line w-8" style="background:var(--color-secondary)"></div>
+      <i class="fas fa-shopping-basket" style="color:var(--color-secondary)"></i>
+      <span class="font-semibold text-sm">${escapeHtml(current?.name || 'Courses')}</span>
+      ${recipeName ? `<span class="ml-2 text-xs text-gray-400">— ${escapeHtml(recipeName)} ×${current.recipes[recipeName]}</span>` : ''}
+      <span class="ml-auto text-xs text-gray-400 font-mono">${done}/${total} · ${totalCost.toFixed(2)}€</span>
+    </div>
+    <div class="p-4">
+      <div class="progress-bar mb-4">
+        <div class="progress-fill" style="width:${pct}%"></div>
+      </div>
+      <div id="checklistBody">${catHtml}</div>
+    </div>`;
+  return el;
+}
+
+function buildCheckItem(item, sessionId) {
+  const doneClass = item.done ? 'done' : '';
+  const checkIcon = item.done ? '<i class="fas fa-check text-white" style="font-size:9px"></i>' : '';
+  const cost = item.price !== undefined ? `${item.price.toFixed(3)}€` : '';
+  return `
+    <div class="checklist-item ${doneClass}" data-name="${escapeHtml(item.name)}" data-session="${escapeHtml(sessionId)}" onclick="toggleItem(this)" data-searchable="${item.name.toLowerCase()}">
+      <div class="custom-checkbox">${checkIcon}</div>
+      <span class="item-label text-sm">${escapeHtml(item.name)}</span>
+      <span class="text-xs text-gray-400">${item.qty}${item.unit}</span>
+      <span class="cost-badge">${cost}</span>
+    </div>`;
+}
+
+function buildMiscWidget(data) {
+  const miscKeys = Object.keys(data).filter(k => !MISC_SKIP.includes(k));
+  if (miscKeys.length === 0) return null;
+  const el = document.createElement('div');
+  el.className = 'widget';
+  el.dataset.widgetId = 'misc';
+  const items = miscKeys.map(k => {
+    const val = data[k];
+    const parsed = safeJSON(val, null);
+    const display = parsed !== null ? JSON.stringify(parsed, null, 2) : String(val);
+    return `
+      <div class="border-b border-black/5 dark:border-white/5 last:border-0 py-3">
+        <div class="flex items-center gap-2 mb-2">
+          <i class="fas fa-key text-gray-400 text-xs"></i>
+          <span class="text-xs font-semibold font-mono" style="color:var(--color-primary)">${escapeHtml(k)}</span>
+        </div>
+        <div class="json-viewer" data-searchable="${display.toLowerCase()}">${escapeHtml(display)}</div>
+      </div>`;
+  }).join('');
+  el.innerHTML = `
+    <div class="widget-header">
+      <div class="accent-line w-8" style="background:var(--color-primary)"></div>
+      <i class="fas fa-database" style="color:var(--color-primary)"></i>
+      <span class="font-semibold text-sm">Données Diverses</span>
+      <span class="ml-auto text-xs text-gray-400 font-mono">${miscKeys.length} clé${miscKeys.length > 1 ? 's' : ''}</span>
+    </div>
+    <div class="p-4">${items}</div>`;
+  return el;
+}
+
+// ═══════════════════════════════════════════
+//  TOGGLE CHECKLIST ITEM
+// ═══════════════════════════════════════════
+function toggleItem(el) {
+  const sessionId = el.dataset.session;
+  const name = el.dataset.name;
+  const isDone = el.classList.toggle('done');
+  const checkbox = el.querySelector('.custom-checkbox');
+  checkbox.innerHTML = isDone ? '<i class="fas fa-check text-white" style="font-size:9px"></i>' : '';
+  el.querySelector('.item-label').style.textDecoration = isDone ? 'line-through' : '';
+  el.querySelector('.item-label').style.opacity = isDone ? '0.4' : '';
+
+  // Update localStorage
+  try {
+    const raw = localStorage.getItem('ovni_v9') || FIXTURE['ovni_v9'];
+    const ovni = safeJSON(raw, null);
+    if (ovni && ovni.sessions && ovni.sessions[sessionId]) {
+      const item = ovni.sessions[sessionId].list.find(i => i.name === name);
+      if (item) item.done = isDone;
+      localStorage.setItem('ovni_v9', JSON.stringify(ovni));
     }
+  } catch {}
 
-    initStats();
-    render();
-      // Dès que la page est chargée, on prévient le parent (index.html)
-    window.onload = function() {
-        window.parent.postMessage('etape_suivante', '*');
-    };
+  // Update progress bar
+  const allItems = document.querySelectorAll('#checklistBody .checklist-item');
+  const doneCount = document.querySelectorAll('#checklistBody .checklist-item.done').length;
+  const pct = allItems.length > 0 ? Math.round((doneCount / allItems.length) * 100) : 0;
+  const fill = document.querySelector('.progress-fill');
+  if (fill) fill.style.width = pct + '%';
+}
+
+// ═══════════════════════════════════════════
+//  COPY
+// ═══════════════════════════════════════════
+function copyText(btn, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    btn.innerHTML = '<i class="fas fa-check mr-1"></i>Copié !';
+    btn.style.color = 'var(--color-secondary)';
+    setTimeout(() => { btn.innerHTML = '<i class="fas fa-copy mr-1"></i>Copier'; btn.style.color = ''; }, 1500);
+  }).catch(() => {});
+}
+
+// ═══════════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════════
+function escapeHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ═══════════════════════════════════════════
+//  SEARCH
+// ═══════════════════════════════════════════
+let searchQuery = '';
+document.getElementById('searchInput').addEventListener('input', function() {
+  searchQuery = this.value.toLowerCase().trim();
+  applySearch();
+});
+
+function applySearch() {
+  if (!searchQuery) {
+    document.querySelectorAll('[data-searchable]').forEach(el => {
+      el.closest('.citation-card, .ocr-card, .checklist-item, .json-viewer')?.classList.remove('hidden-search');
+      el.innerHTML = el.innerHTML.replace(/<mark>(.*?)<\/mark>/gi, '$1');
+    });
+    document.querySelectorAll('.widget').forEach(w => w.classList.remove('hidden-search'));
+    return;
+  }
+  document.querySelectorAll('[data-searchable]').forEach(el => {
+    const card = el.closest('.citation-card, .ocr-card, .checklist-item, .json-viewer') || el;
+    if (el.dataset.searchable.includes(searchQuery)) {
+      card.classList.remove('hidden-search');
+    } else {
+      card.classList.add('hidden-search');
+    }
+  });
+}
+
+// ═══════════════════════════════════════════
+//  SORTABLE / LAYOUT PERSISTENCE
+// ═══════════════════════════════════════════
+const WIDGET_ORDER_DEFAULT = ['citations','ocr','logistique','misc'];
+
+function getLayout() {
+  try {
+    const saved = localStorage.getItem('local_lines_layout');
+    if (saved) return JSON.parse(saved);
+  } catch {}
+  return WIDGET_ORDER_DEFAULT;
+}
+
+function saveLayout() {
+  const order = [...document.querySelectorAll('[data-widget-id]')].map(el => el.dataset.widgetId);
+  try { localStorage.setItem('local_lines_layout', JSON.stringify(order)); } catch {}
+}
+
+function initSortable() {
+  Sortable.create(document.getElementById('widgetContainer'), {
+    animation: 200,
+    ghostClass: 'sortable-ghost',
+    chosenClass: 'sortable-chosen',
+    handle: '.widget-header',
+    onEnd: saveLayout
+  });
+}
+
+// ═══════════════════════════════════════════
+//  MAIN RENDER
+// ═══════════════════════════════════════════
+let currentData = {};
+
+function render() {
+  currentData = loadData();
+  buildHeatmap(currentData);
+  buildStatBadges(currentData);
+
+  const container = document.getElementById('widgetContainer');
+  container.innerHTML = '';
+
+  const builders = {
+    citations: () => buildCitationsWidget(currentData),
+    ocr: () => buildOCRWidget(currentData),
+    logistique: () => buildLogistiqueWidget(currentData),
+    misc: () => buildMiscWidget(currentData),
+  };
+
+  const layout = getLayout();
+  const all = [...new Set([...layout, ...WIDGET_ORDER_DEFAULT])];
+
+  all.forEach(id => {
+    if (builders[id]) {
+      const widget = builders[id]();
+      if (widget) container.appendChild(widget);
+    }
+  });
+
+  initSortable();
+  document.getElementById('lastSync').textContent = 'Sync : ' + new Date().toLocaleTimeString('fr-FR');
+}
+
+function syncData() {
+  const icon = document.getElementById('syncIcon');
+  icon.classList.add('spinning');
+  setTimeout(() => { icon.classList.remove('spinning'); render(); }, 600);
+}
+
+// ═══════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════
+initDark();
+render();
 </script>
-
 </body>
 </html>
