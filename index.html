@@ -870,6 +870,9 @@ window.onload = () => {
     initUI();
     setMode(mode);
     document.getElementById('mainGrid').style.visibility = 'visible';
+    if (!localStorage.getItem(DRIFT_SNAP_KEY)) {
+    localStorage.setItem(DRIFT_SNAP_KEY, String(_countElements()));
+}
     checkDriftAlert();
  
     // Drag & drop fusion
