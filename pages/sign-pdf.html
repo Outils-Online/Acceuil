@@ -196,8 +196,16 @@
 
     <!-- Bandeau supérieur -->
     <div class="top-bar">
-        <div class="exit-btn" onclick="window.parent.postMessage('close-iframe', '*')" title="Fermer">✕</div>
-        <div class="logo-mini" id="logo-mosaic" onclick="refreshLogo()">
+<button class="icon-btn" onclick="
+    const parentWin = window.parent;
+    // On cherche dans le parent quel container est affiché
+    const containers = parentWin.document.querySelectorAll('.iframe-container');
+    containers.forEach(c => {
+        if (parentWin.getComputedStyle(c).display !== 'none') {
+            parentWin.closeIframe(c.id);
+        }
+    });
+">✕</button>        <div class="logo-mini" id="logo-mosaic" onclick="refreshLogo()">
             <svg id="mosaic-svg" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
         </div>
     </div>

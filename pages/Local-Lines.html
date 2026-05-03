@@ -3,874 +3,451 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Local-Lines — Dashboard localStorage</title>
+<title>LocalLines</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <script>
-  tailwind.config = {
-    darkMode: 'class',
-    theme: {
-      extend: {
-        fontFamily: {
-          serif: ['Playfair Display', 'Georgia', 'serif'],
-          mono: ['JetBrains Mono', 'monospace'],
-          sans: ['DM Sans', 'sans-serif'],
-        }
-      }
-    }
-  }
+  tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: {
+    serif: ['Playfair Display','Georgia','serif'],
+    mono:  ['JetBrains Mono','monospace'],
+    sans:  ['DM Sans','sans-serif'],
+  }}}}
 </script>
 <style>
   :root {
-    /* ── Quartz Ink & Coral ── */
-    --bg-main:          #FDFCF0;
-    --surface:          #FFFFFF;
-    --text-main:        #0A2472;
-    --color-primary:    #0A2472;
-    --color-secondary:  #006466;
-    --color-accent:     #F46060;
-    --color-highlight:  #FFD972;
-
-    /* Legacy aliases — mapped to new palette */
-    --ink:              var(--text-main);
-    --paper:            var(--surface);
-    --cream:            var(--bg-main);
-    --accent-gold:      var(--color-highlight);
-    --accent-sage:      var(--color-secondary);
-    --accent-terracotta:var(--color-accent);
-    --accent-slate:     var(--color-primary);
-
-    --shadow-soft: 0 4px 24px rgba(10,36,114,0.08), 0 1px 4px rgba(10,36,114,0.04);
-    --shadow-lift: 0 12px 40px rgba(10,36,114,0.14), 0 2px 8px rgba(10,36,114,0.07);
-    --border-light: rgba(10,36,114,0.1);
-
-    /* Mondrian stripe for headers / progress bars */
-    --mondrian: linear-gradient(to right,
-      var(--color-primary)   0%  60%,
-      var(--color-secondary) 60% 75%,
-      var(--color-accent)    75% 90%,
-      var(--color-highlight) 90% 100%
-    );
+    --bg-main:         #FDFCF0;
+    --surface:         #FFFFFF;
+    --text-main:       #0A2472;
+    --text-soft:       #6b7a9e;
+    --color-primary:   #0A2472;
+    --color-secondary: #006466;
+    --color-accent:    #F46060;
+    --color-highlight: #FFD972;
+    --border:          rgba(10,36,114,0.09);
+    --shadow:          0 2px 12px rgba(10,36,114,0.07);
+    --mondrian: linear-gradient(to right,#0A2472 0% 60%,#006466 60% 75%,#F46060 75% 90%,#FFD972 90%);
   }
   .dark {
     --bg-main:   #06091a;
     --surface:   #0d1230;
     --text-main: #d8e4ff;
-    --ink:       var(--text-main);
-    --paper:     var(--surface);
-    --cream:     var(--bg-main);
-    --border-light: rgba(255,255,255,0.09);
-    --shadow-soft: 0 4px 24px rgba(0,0,0,0.3), 0 1px 4px rgba(0,0,0,0.2);
-    --shadow-lift: 0 12px 40px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.25);
+    --text-soft: #6b7a9e;
+    --border:    rgba(255,255,255,0.08);
+    --shadow:    0 2px 12px rgba(0,0,0,0.3);
   }
-
   * { box-sizing: border-box; }
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--bg-main);
-    color: var(--text-main);
-    min-height: 100vh;
-    transition: background 0.3s, color 0.3s;
-  }
+  body { font-family:'DM Sans',sans-serif; background:var(--bg-main); color:var(--text-main); min-height:100vh; transition:background .3s,color .3s; }
 
-  /* ── HEATMAP ── */
-  .heatmap-cell {
-    width: 11px; height: 11px;
-    border-radius: 2px;
-    background: rgba(10,36,114,0.08);
-    cursor: pointer;
-    transition: transform 0.1s;
-    flex-shrink: 0;
-  }
-  .dark .heatmap-cell { background: rgba(255,255,255,0.06); }
-  .heatmap-cell:hover { transform: scale(1.4); }
-  .heatmap-cell[data-count="1"] { background: rgba(0,100,102,0.25); }
-  .heatmap-cell[data-count="2"] { background: rgba(0,100,102,0.55); }
-  .heatmap-cell[data-count="3"] { background: #006466; }
-  .heatmap-cell[data-count="4"] { background: var(--color-primary); }
-  .dark .heatmap-cell[data-count="1"] { background: rgba(0,100,102,0.3); }
-  .dark .heatmap-cell[data-count="2"] { background: rgba(0,100,102,0.6); }
-  .dark .heatmap-cell[data-count="3"] { background: #006466; }
-  .dark .heatmap-cell[data-count="4"] { background: #FFD972; }
+  .topbar { position:sticky; top:0; z-index:50; background:rgba(253,252,240,0.9); backdrop-filter:blur(18px); border-bottom:1px solid var(--border); }
+  .dark .topbar { background:rgba(6,9,26,0.9); }
+  .topbar-mondrian { height:2px; background:var(--mondrian); }
 
-  /* ── WIDGET BASE ── */
-  .widget {
-    background: var(--surface);
-    border-radius: 18px;
-    box-shadow: var(--shadow-soft);
-    border: 1px solid var(--border-light);
-    overflow: hidden;
-    transition: box-shadow 0.2s;
-  }
-  .widget:hover { box-shadow: var(--shadow-lift); }
-  .widget-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 18px 22px 14px;
-    border-bottom: 1px solid var(--border-light);
-    border-top: 3px solid transparent;
-    border-image: var(--mondrian) 1;
-    cursor: grab;
-    user-select: none;
-  }
-  .widget-header:active { cursor: grabbing; }
-  .sortable-ghost { opacity: 0.3; }
-  .sortable-chosen { box-shadow: var(--shadow-lift) !important; }
+  .search-input { background:transparent; outline:none; width:100%; font-size:13px; color:var(--text-main); }
+  .search-input::placeholder { color:var(--text-soft); }
 
-  /* ── CITATIONS ── */
-  .citation-card {
-    font-family: 'Playfair Display', serif;
-    border-left: 3px solid var(--color-highlight);
-    padding: 14px 18px;
-    background: linear-gradient(135deg, rgba(255,217,114,0.07) 0%, transparent 100%);
-    border-radius: 4px;
-    position: relative;
-  }
-  .citation-card::before {
-    content: '\201C';
-    font-size: 48px;
-    color: var(--color-highlight);
-    opacity: 0.45;
-    position: absolute;
-    top: -4px; left: 8px;
-    line-height: 1;
-    font-family: 'Playfair Display', serif;
-  }
-  .citation-card .cite-content { padding-left: 20px; }
-  .citation-badge {
-    display: inline-flex; align-items: center; gap: 5px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 10px; font-weight: 600;
-    padding: 2px 8px; border-radius: 20px;
-    text-transform: uppercase; letter-spacing: 0.05em;
-  }
-  .badge-periodique { background: rgba(244,96,96,0.12); color: var(--color-accent); }
-  .badge-ouvrage    { background: rgba(0,100,102,0.12); color: var(--color-secondary); }
+  /* HEATMAP */
+  .heatmap-cell { width:10px; height:10px; border-radius:2px; background:rgba(10,36,114,0.07); flex-shrink:0; cursor:default; transition:transform .1s; }
+  .dark .heatmap-cell { background:rgba(255,255,255,0.06); }
+  .heatmap-cell:hover { transform:scale(1.5); }
+  .heatmap-cell[data-count="1"] { background:rgba(0,100,102,0.28); }
+  .heatmap-cell[data-count="2"] { background:rgba(0,100,102,0.58); }
+  .heatmap-cell[data-count="3"] { background:#006466; }
+  .heatmap-cell[data-count="4"] { background:#0A2472; }
+  .dark .heatmap-cell[data-count="4"] { background:#FFD972; }
 
-  /* ── OCR / ARCHIVE ── */
-  .ocr-card {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12.5px;
-    line-height: 1.7;
-    background: #fffef5;
-    border: 1px solid rgba(255,217,114,0.5);
-    border-radius: 6px;
-    padding: 16px 18px;
-    position: relative;
-    overflow: hidden;
-  }
-  .dark .ocr-card {
-    background: rgba(255,217,114,0.04);
-    border-color: rgba(255,217,114,0.15);
-    color: #c8d8ff;
-  }
-  .ocr-card::after {
-    content: '';
-    position: absolute; inset: 0;
-    background: repeating-linear-gradient(transparent, transparent 23px, rgba(10,36,114,0.025) 23px, rgba(10,36,114,0.025) 24px);
-    pointer-events: none;
-  }
-  .ocr-entry {
-    position: relative; z-index: 1;
-    padding: 3px 0;
-    border-bottom: 1px dashed rgba(10,36,114,0.12);
-  }
-  .dark .ocr-entry { border-color: rgba(255,255,255,0.08); }
-  .ocr-entry:last-child { border-bottom: none; }
-  .scan-stamp {
-    display: inline-block;
-    border: 2px solid var(--color-accent);
-    color: var(--color-accent);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px; font-weight: 500;
-    padding: 1px 6px; border-radius: 2px;
-    text-transform: uppercase; letter-spacing: 0.08em;
-    transform: rotate(-1deg);
-  }
+  /* ACCORDION SECTIONS */
+  .section { border-bottom:1px solid var(--border); }
+  .section:last-child { border-bottom:none; }
+  .section-head { display:flex; align-items:center; gap:12px; padding:13px 18px; cursor:pointer; user-select:none; transition:background .15s; }
+  .section-head:hover { background:rgba(10,36,114,0.025); }
+  .dark .section-head:hover { background:rgba(255,255,255,0.02); }
+  .section-icon { width:26px; height:26px; border-radius:7px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:11px; }
+  .section-title { font-size:13px; font-weight:600; }
+  .section-meta { margin-left:auto; font-size:11px; color:var(--text-soft); font-family:'JetBrains Mono',monospace; }
+  .chevron { font-size:9px; color:var(--text-soft); transition:transform .2s; margin-left:6px; }
+  .section.open .chevron { transform:rotate(90deg); }
+  .section-body { display:none; }
+  .section.open .section-body { display:block; }
 
-  /* ── CHECKLIST / LOGISTIQUE ── */
-  .checklist-item {
-    display: flex; align-items: center; gap: 10px;
-    padding: 8px 12px;
-    border-radius: 8px;
-    transition: background 0.15s;
-    cursor: pointer;
-  }
-  .checklist-item:hover { background: rgba(10,36,114,0.04); }
-  .dark .checklist-item:hover { background: rgba(255,217,114,0.05); }
-  .checklist-item.done .item-label {
-    text-decoration: line-through;
-    opacity: 0.4;
-  }
-  .custom-checkbox {
-    width: 18px; height: 18px;
-    border: 2px solid rgba(10,36,114,0.2);
-    border-radius: 5px;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    transition: all 0.15s;
-  }
-  .checklist-item.done .custom-checkbox {
-    background: var(--color-secondary);
-    border-color: var(--color-secondary);
-    color: white;
-  }
-  .cost-badge {
-    margin-left: auto;
-    font-size: 11px; font-weight: 500;
-    color: var(--color-secondary);
-    font-variant-numeric: tabular-nums;
-  }
+  /* CITATIONS */
+  .cite-row { display:flex; align-items:flex-start; gap:12px; padding:12px 18px; border-top:1px solid var(--border); transition:background .12s; }
+  .cite-row:hover { background:rgba(255,217,114,0.04); }
+  .cite-dot { width:5px; height:5px; border-radius:50%; flex-shrink:0; margin-top:7px; }
+  .cite-body { flex:1; min-width:0; }
+  .cite-html { font-family:'Playfair Display',serif; font-size:13px; line-height:1.65; }
+  .cite-html a { color:var(--color-secondary); text-decoration:underline; text-underline-offset:2px; word-break:break-all; }
+  .cite-date { font-size:10px; color:var(--text-soft); font-family:'JetBrains Mono',monospace; margin-top:3px; }
+  .type-badge { display:inline-flex; align-items:center; gap:3px; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; padding:1px 6px; border-radius:20px; margin-bottom:3px; }
+  .copy-btn { flex-shrink:0; opacity:0; border:none; cursor:pointer; background:rgba(10,36,114,0.06); color:var(--color-accent); font-size:10px; padding:4px 7px; border-radius:5px; transition:opacity .15s; margin-top:1px; }
+  .cite-row:hover .copy-btn { opacity:1; }
+  .dark .copy-btn { background:rgba(255,255,255,0.07); }
 
-  /* ── MICRO BADGES (CLICS) ── */
-  .stat-badge {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 5px 12px;
-    border-radius: 20px;
-    background: var(--surface);
-    border: 1px solid var(--border-light);
-    box-shadow: var(--shadow-soft);
-    font-size: 12px; font-weight: 500;
-  }
-  .stat-badge .stat-num {
-    font-weight: 700; font-size: 13px;
-    color: var(--color-primary);
-  }
+  /* OCR */
+  .ocr-doc { padding:13px 18px; border-top:1px solid var(--border); }
+  .ocr-meta { display:flex; align-items:center; gap:6px; margin-bottom:8px; flex-wrap:wrap; }
+  .ocr-chip { font-size:10px; font-weight:600; padding:2px 7px; border-radius:4px; background:rgba(10,36,114,0.06); color:var(--text-soft); font-family:'JetBrains Mono',monospace; }
+  .dark .ocr-chip { background:rgba(255,255,255,0.06); }
+  .ocr-stamp { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--color-accent); border:1.5px solid var(--color-accent); padding:1px 5px; border-radius:2px; transform:rotate(-1deg); display:inline-block; }
+  .ocr-lines { font-family:'JetBrains Mono',monospace; font-size:11.5px; line-height:1.8; background:rgba(255,217,114,0.05); border-radius:6px; padding:10px 12px; border:1px solid rgba(255,217,114,0.2); }
+  .dark .ocr-lines { background:rgba(255,217,114,0.03); border-color:rgba(255,217,114,0.1); }
+  .ocr-line { padding:1px 0; border-bottom:1px dashed rgba(10,36,114,0.08); }
+  .dark .ocr-line { border-color:rgba(255,255,255,0.06); }
+  .ocr-line:last-child { border-bottom:none; }
 
-  /* ── SEARCH ── */
-  .search-bar {
-    position: sticky; top: 0; z-index: 50;
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-bottom: 3px solid transparent;
-    border-image: var(--mondrian) 1;
-  }
+  /* CHECKLIST */
+  .check-cat { padding:7px 18px 2px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--text-soft); }
+  .check-item { display:flex; align-items:center; gap:10px; padding:8px 18px; border-top:1px solid var(--border); cursor:pointer; transition:background .12s; }
+  .check-item:hover { background:rgba(10,36,114,0.025); }
+  .dark .check-item:hover { background:rgba(255,255,255,0.02); }
+  .check-item.done .check-label { text-decoration:line-through; opacity:.35; }
+  .checkbox { width:15px; height:15px; border:1.5px solid rgba(10,36,114,0.2); border-radius:4px; flex-shrink:0; display:flex; align-items:center; justify-content:center; transition:all .15s; }
+  .check-item.done .checkbox { background:var(--color-secondary); border-color:var(--color-secondary); }
+  .check-label { font-size:13px; flex:1; }
+  .check-qty { font-size:11px; color:var(--text-soft); font-family:'JetBrains Mono',monospace; }
+  .check-cost { font-size:11px; color:var(--color-secondary); font-family:'JetBrains Mono',monospace; font-weight:500; min-width:42px; text-align:right; }
+  .progress-strip { height:2px; background:var(--mondrian); background-size:300px; transition:width .4s ease; }
+  .progress-track { height:2px; background:rgba(10,36,114,0.07); }
+  .dark .progress-track { background:rgba(255,255,255,0.06); }
 
-  /* ── JSON VIEWER ── */
-  .json-viewer {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11.5px;
-    white-space: pre-wrap;
-    word-break: break-all;
-    background: rgba(0,0,0,0.02);
-    border-radius: 8px;
-    padding: 12px;
-    max-height: 200px;
-    overflow-y: auto;
-  }
-  .dark .json-viewer { background: rgba(255,255,255,0.03); }
+  /* MISC */
+  .misc-row { padding:11px 18px; border-top:1px solid var(--border); }
+  .misc-key { font-size:10px; font-weight:700; font-family:'JetBrains Mono',monospace; color:var(--color-secondary); margin-bottom:4px; }
+  .misc-val { font-family:'JetBrains Mono',monospace; font-size:11px; white-space:pre-wrap; word-break:break-all; color:var(--text-soft); max-height:80px; overflow:hidden; }
+  .misc-val.expanded { max-height:none; }
+  .misc-expand { font-size:10px; color:var(--color-accent); cursor:pointer; font-weight:600; border:none; background:none; padding:0; margin-top:3px; display:block; }
 
-  /* ── TOOLTIP ── */
-  .tooltip-wrap { position: relative; }
-  .tooltip-wrap .tooltip {
-    display: none;
-    position: absolute; bottom: 130%; left: 50%;
-    transform: translateX(-50%);
-    background: var(--color-primary);
-    color: #fff;
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 11px;
-    white-space: nowrap;
-    pointer-events: none;
-    z-index: 100;
-  }
-  .tooltip-wrap:hover .tooltip { display: block; }
+  /* STATS */
+  .stat-pill { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:20px; background:var(--surface); border:1px solid var(--border); font-size:11px; font-weight:500; box-shadow:var(--shadow); }
+  .stat-pill strong { color:var(--color-primary); font-weight:700; }
 
-  /* ── COPY BTN ── */
-  .copy-btn {
-    opacity: 0;
-    transition: opacity 0.15s;
-    padding: 3px 8px;
-    border-radius: 5px;
-    font-size: 11px; font-weight: 500;
-    background: rgba(10,36,114,0.07);
-    cursor: pointer;
-    border: none;
-    color: var(--color-accent);
-  }
-  .citation-card:hover .copy-btn { opacity: 1; }
-  .dark .copy-btn { background: rgba(255,255,255,0.08); }
+  .sortable-ghost { opacity:.2; }
+  .sortable-chosen { box-shadow:0 8px 30px rgba(10,36,114,0.13) !important; }
 
-  /* ── SECTION ACCENT LINES ── */
-  .accent-line { height: 3px; border-radius: 99px; }
+  mark { background:rgba(244,96,96,0.14); color:var(--color-primary); border-radius:2px; padding:0 1px; }
+  .hidden-search { display:none !important; }
 
-  /* ── SEARCH HIGHLIGHT ── */
-  mark { background: rgba(244,96,96,0.18); border-radius: 2px; padding: 0 1px; color: var(--color-primary); }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:none} }
+  .section { animation:fadeIn .3s ease both; }
+  .section:nth-child(1){animation-delay:.03s} .section:nth-child(2){animation-delay:.07s}
+  .section:nth-child(3){animation-delay:.11s} .section:nth-child(4){animation-delay:.15s}
 
-  /* ── CATEGORY CHIP ── */
-  .cat-chip {
-    font-size: 10px; font-weight: 600;
-    padding: 2px 7px; border-radius: 20px;
-    background: rgba(0,0,0,0.06);
-    text-transform: uppercase; letter-spacing: 0.04em;
-  }
-  .dark .cat-chip { background: rgba(255,255,255,0.08); }
+  @keyframes spin { to{transform:rotate(360deg)} }
+  .spinning { animation:spin .55s linear; }
 
-  /* ── PROGRESS BAR ── */
-  .progress-bar { height: 6px; border-radius: 99px; background: rgba(10,36,114,0.08); overflow: hidden; }
-  .dark .progress-bar { background: rgba(255,255,255,0.08); }
-  .progress-fill { height: 100%; border-radius: 99px; background: var(--mondrian); background-size: 300px 100%; transition: width 0.4s ease; }
-
-  /* ── ANIMATIONS ── */
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(12px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  .widget { animation: fadeUp 0.4s ease both; }
-  .widget:nth-child(1) { animation-delay: 0.05s; }
-  .widget:nth-child(2) { animation-delay: 0.1s; }
-  .widget:nth-child(3) { animation-delay: 0.15s; }
-  .widget:nth-child(4) { animation-delay: 0.2s; }
-
-  /* ── SCROLLBAR ── */
-  ::-webkit-scrollbar { width: 5px; height: 5px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 99px; }
-  .dark ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); }
-
-  /* ── HIDDEN ON SEARCH ── */
-  .hidden-search { display: none !important; }
-
-  /* ── SYNC SPIN ── */
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .spinning { animation: spin 0.6s linear; }
+  ::-webkit-scrollbar{width:4px} ::-webkit-scrollbar-thumb{background:rgba(10,36,114,0.12);border-radius:99px}
+  .dark ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1)}
 </style>
 </head>
 <body class="antialiased">
 
-<!-- ════════ SEARCH BAR ════════ -->
-<div class="search-bar bg-white/85 dark:bg-[#06091a]/85 border-b border-black/5 dark:border-white/5">
-  <div class="max-w-5xl mx-auto px-4 py-3 flex items-center gap-3">
-    <div class="flex items-center gap-2 flex-1 bg-black/5 dark:bg-white/5 rounded-xl px-4 py-2">
-      <i class="fas fa-search text-gray-400 text-sm"></i>
-      <input id="searchInput" type="text" placeholder="Rechercher dans toutes les données…"
-        class="flex-1 bg-transparent text-sm outline-none placeholder-gray-400 font-sans"
-        style="color: var(--text-main)">
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-mondrian"></div>
+  <div class="max-w-2xl mx-auto px-5 py-2.5 flex items-center gap-3">
+    <span class="font-bold text-sm tracking-tight flex-shrink-0" style="color:var(--color-primary)">
+      Local<span style="color:var(--color-accent)">Lines</span>
+    </span>
+    <div class="flex-1 flex items-center gap-2 rounded-lg px-3 py-1.5" style="background:rgba(10,36,114,0.05)">
+      <i class="fas fa-search text-xs" style="color:var(--text-soft)"></i>
+      <input id="searchInput" class="search-input" type="text" placeholder="Rechercher…">
     </div>
-    <button id="syncBtn" onclick="syncData()" title="Rafraîchir"
-      class="w-9 h-9 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center hover:bg-black/10 dark:hover:bg-white/10 transition">
-      <i id="syncIcon" class="fas fa-rotate-right text-sm text-gray-500"></i>
+    <button onclick="syncData()" class="w-8 h-8 rounded-lg flex items-center justify-center hover:opacity-70 transition">
+      <i id="syncIcon" class="fas fa-rotate-right text-xs" style="color:var(--text-soft)"></i>
     </button>
-    <button onclick="toggleDark()" title="Mode sombre"
-      class="w-9 h-9 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center hover:bg-black/10 dark:hover:bg-white/10 transition">
-      <i id="darkIcon" class="fas fa-moon text-sm text-gray-500"></i>
+    <button onclick="toggleDark()" class="w-8 h-8 rounded-lg flex items-center justify-center hover:opacity-70 transition">
+      <i id="darkIcon" class="fas fa-moon text-xs" style="color:var(--text-soft)"></i>
     </button>
   </div>
 </div>
 
-<!-- ════════ HEADER ════════ -->
-<div class="max-w-5xl mx-auto px-4 pt-8 pb-4">
-  <div class="flex items-end justify-between gap-4 mb-6">
-    <div>
-      <p class="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1">Dashboard</p>
-      <h1 class="text-3xl font-bold tracking-tight" style="color: var(--color-primary)">
-        Local<span style="color: var(--color-accent)">Lines</span>
-      </h1>
-      <p class="text-sm text-gray-400 mt-1">Visualisation intelligente du localStorage</p>
-    </div>
-    <div class="text-right">
-      <p class="text-xs text-gray-400" id="lastSync">—</p>
-    </div>
-  </div>
+<!-- MAIN -->
+<div class="max-w-2xl mx-auto px-5 pt-5 pb-16">
 
-  <!-- STAT BADGES -->
-  <div id="statBadges" class="flex flex-wrap gap-2 mb-6"></div>
+  <!-- Stats -->
+  <div id="statRow" class="flex flex-wrap gap-2 mb-4"></div>
 
-  <!-- HEATMAP -->
-  <div class="widget mb-4 p-4">
-    <div class="flex items-center justify-between mb-3">
-      <span class="text-xs font-semibold uppercase tracking-widest text-gray-400">Activité de capture</span>
-      <div class="flex items-center gap-2 text-xs text-gray-400">
+  <!-- Heatmap -->
+  <div class="rounded-xl border mb-3 overflow-hidden" style="background:var(--surface);border-color:var(--border);box-shadow:var(--shadow)">
+    <div class="flex items-center justify-between px-4 pt-3 pb-2">
+      <span class="text-xs font-semibold uppercase tracking-widest" style="color:var(--text-soft)">Activité de capture</span>
+      <div class="flex items-center gap-1.5" style="font-size:10px;color:var(--text-soft)">
         <span>Moins</span>
-        <div class="flex gap-1">
-          <div class="w-2.5 h-2.5 rounded-sm" style="background:rgba(10,36,114,0.08)"></div>
-          <div class="w-2.5 h-2.5 rounded-sm" style="background:rgba(0,100,102,0.3)"></div>
-          <div class="w-2.5 h-2.5 rounded-sm" style="background:#006466"></div>
-          <div class="w-2.5 h-2.5 rounded-sm" style="background:#0A2472"></div>
-        </div>
+        <div style="width:8px;height:8px;border-radius:2px;background:rgba(10,36,114,0.07)"></div>
+        <div style="width:8px;height:8px;border-radius:2px;background:rgba(0,100,102,0.32)"></div>
+        <div style="width:8px;height:8px;border-radius:2px;background:#006466"></div>
+        <div style="width:8px;height:8px;border-radius:2px;background:#0A2472"></div>
         <span>Plus</span>
       </div>
     </div>
-    <div id="heatmapGrid" class="flex gap-1 flex-wrap overflow-x-auto pb-1"></div>
-    <div id="heatmapTooltip" class="text-xs text-gray-400 mt-2 h-4"></div>
+    <div id="heatmapGrid" class="flex gap-1 flex-wrap px-4 pb-2"></div>
+    <div id="heatmapTip" class="px-4 pb-3 h-4 text-xs" style="color:var(--text-soft)"></div>
   </div>
-</div>
 
-<!-- ════════ SORTABLE WIDGETS ════════ -->
-<div class="max-w-5xl mx-auto px-4 pb-12">
-  <div id="widgetContainer" class="flex flex-col gap-4"></div>
+  <!-- Sections -->
+  <div id="sectionsContainer" class="rounded-xl border overflow-hidden" style="background:var(--surface);border-color:var(--border);box-shadow:var(--shadow)">
+  </div>
+
 </div>
 
 <script>
-// ═══════════════════════════════════════════
-//  DATA — load from localStorage or use JSON fixture
-// ═══════════════════════════════════════════
 const FIXTURE = {
   "__drift_last_shown__": "1777769758813",
   "mode": "creative",
   "__drift_elem_snap__": "15",
-  "citatio_history": "[{\"id\":1777769864858,\"type\":\"periodique\",\"typeLabel\":\"Périodique\",\"icon\":\"fas fa-newspaper\",\"html\":\"Rémy Cougnenc, « Le choix des services publics via une hausse de la taxe foncière de la Métropole de Montpellier », Marseille, <em>Journal La Marseillaise</em>, 2 mai 2026, <a href=\\\"https://www.lamarseillaise.fr/economie/le-choix-des-services-publics-via-une-hausse-de-la-taxe-fonciere-de-la-metropole-de-montpellier-HC20118179\\\" target=\\\"_blank\\\">https://www.lamarseillaise.fr/economie/le-choix-des-services-publics-via-une-hausse-de-la-taxe-fonciere-de-la-metropole-de-montpellier-HC20118179</a> (consulté le : 3 mai 2026).\",\"text\":\"Rémy Cougnenc, ...\",\"date\":\"03/05/2026 02:57:44\"},{\"id\":1777769807355,\"type\":\"ouvrage\",\"typeLabel\":\"Ouvrage\",\"icon\":\"fas fa-book\",\"html\":\"Martin Panchaud, <em>La couleur des choses</em>, Bussy-Saint-Georges, Çà et là, 2022, p. 224.\",\"text\":\"Martin Panchaud, La couleur des choses, Bussy-Saint-Georges, Çà et là, 2022, p. 224.\",\"date\":\"03/05/2026 02:56:47\"},{\"id\":1777769785058,\"type\":\"ouvrage\",\"typeLabel\":\"Ouvrage\",\"icon\":\"fas fa-book\",\"html\":\". Whoogy's, <em>Manuel du cuisinier amateur : 150 recettes et techniques</em>, Vanves, Chêne, 2022, p. 258.\",\"text\":\". Whoogy's, Manuel du cuisinier amateur : 150 recettes et techniques, Vanves, Chêne, 2022, p. 258.\",\"date\":\"03/05/2026 02:56:25\"}]",
+  "citatio_history": "[{\"id\":1777769864858,\"type\":\"periodique\",\"typeLabel\":\"Périodique\",\"icon\":\"fas fa-newspaper\",\"html\":\"Rémy Cougnenc, « Le choix des services publics via une hausse de la taxe foncière de la Métropole de Montpellier », Marseille, <em>Journal La Marseillaise</em>, 2 mai 2026, <a href=\\\"https://www.lamarseillaise.fr/economie/le-choix-des-services-publics-via-une-hausse-de-la-taxe-fonciere-de-la-metropole-de-montpellier-HC20118179\\\" target=\\\"_blank\\\">lamarseillaise.fr</a> (consulté le : 3 mai 2026).\",\"text\":\"Rémy Cougnenc, Le choix des services publics via une hausse de la taxe foncière de la Métropole de Montpellier, Journal La Marseillaise, 2 mai 2026.\",\"date\":\"03/05/2026 02:57:44\"},{\"id\":1777769807355,\"type\":\"ouvrage\",\"typeLabel\":\"Ouvrage\",\"icon\":\"fas fa-book\",\"html\":\"Martin Panchaud, <em>La couleur des choses</em>, Bussy-Saint-Georges, Çà et là, 2022, p. 224.\",\"text\":\"Martin Panchaud, La couleur des choses, Bussy-Saint-Georges, Çà et là, 2022, p. 224.\",\"date\":\"03/05/2026 02:56:47\"},{\"id\":1777769785058,\"type\":\"ouvrage\",\"typeLabel\":\"Ouvrage\",\"icon\":\"fas fa-book\",\"html\":\". Whoogy's, <em>Manuel du cuisinier amateur : 150 recettes et techniques</em>, Vanves, Chêne, 2022, p. 258.\",\"text\":\". Whoogy's, Manuel du cuisinier amateur, Vanves, Chêne, 2022, p. 258.\",\"date\":\"03/05/2026 02:56:25\"}]",
   "clics": "{\"ocr-lines\":4,\"ytlive-lines\":2,\"course-lines\":1,\"photo-recu\":1,\"cite-lines\":1,\"local-lines\":1}",
-  "ovni_v9": "{\"view\":\"list\",\"listMode\":\"todo\",\"editingId\":null,\"sessions\":{\"sess_default\":{\"id\":\"sess_default\",\"name\":\"Liste principale\",\"recipes\":{},\"singles\":0,\"totalCost\":0,\"list\":[]},\"sess_1777769668313\":{\"id\":\"sess_1777769668313\",\"name\":\"Courses 2\",\"recipes\":{\"OVNI Burger\":5},\"singles\":0,\"totalCost\":12.110000000000001,\"list\":[{\"name\":\"Boeuf\",\"qty\":400,\"unit\":\"g\",\"cat\":\"Viandes\",\"price\":1.12,\"done\":false},{\"name\":\"Tomate\",\"qty\":80,\"unit\":\"g\",\"cat\":\"Fruits & Légumes\",\"price\":0.032,\"done\":true},{\"name\":\"Salade\",\"qty\":100,\"unit\":\"g\",\"cat\":\"Fruits & Légumes\",\"price\":0.02,\"done\":true},{\"name\":\"Oignons\",\"qty\":100,\"unit\":\"g\",\"cat\":\"Fruits & Légumes\",\"price\":0.03,\"done\":true},{\"name\":\"Cheddar\",\"qty\":100,\"unit\":\"g\",\"cat\":\"Produits frais\",\"price\":0.26,\"done\":false},{\"name\":\"Jaune d'oeuf\",\"qty\":20,\"unit\":\"g\",\"cat\":\"Produits frais\",\"price\":0.036,\"done\":false},{\"name\":\"Moutarde\",\"qty\":6,\"unit\":\"g\",\"cat\":\"Épicerie salée\",\"price\":0.007,\"done\":false},{\"name\":\"Huile de pepin\",\"qty\":100,\"unit\":\"g\",\"cat\":\"Épicerie salée\",\"price\":0.12,\"done\":false},{\"name\":\"Ketchup\",\"qty\":20,\"unit\":\"g\",\"cat\":\"Épicerie salée\",\"price\":0.02,\"done\":false},{\"name\":\"Miel\",\"qty\":4,\"unit\":\"g\",\"cat\":\"Épicerie salée\",\"price\":0.004,\"done\":false},{\"name\":\"Pain\",\"qty\":5,\"unit\":\"pièce\",\"cat\":\"Épicerie salée\",\"price\":0.687,\"done\":false},{\"name\":\"Sucre\",\"qty\":20,\"unit\":\"g\",\"cat\":\"Épicerie salée\",\"price\":0.004,\"done\":false},{\"name\":\"Sel\",\"qty\":15,\"unit\":\"g\",\"cat\":\"Épicerie salée\",\"price\":0.003,\"done\":false},{\"name\":\"Huile d'olive\",\"qty\":10,\"unit\":\"g\",\"cat\":\"Épicerie salée\",\"price\":0.002,\"done\":false},{\"name\":\"Emballage\",\"qty\":5,\"unit\":\"pièce\",\"cat\":\"Consommables\",\"price\":0.052,\"done\":false},{\"name\":\"Serviette\",\"qty\":5,\"unit\":\"pièce\",\"cat\":\"Consommables\",\"price\":0.025,\"done\":false}]}},\"currentSessionId\":\"sess_1777769668313\",\"recipes\":[{\"id\":1777769686664.4778,\"name\":\"OVNI Burger\",\"ingredients\":[{\"name\":\"Boeuf\",\"qty\":80,\"unit\":\"g\",\"cat\":\"Viandes\",\"price\":1.12},{\"name\":\"Tomate\",\"qty\":16,\"unit\":\"g\",\"cat\":\"Fruits & Légumes\",\"price\":0.032},{\"name\":\"Salade\",\"qty\":20,\"unit\":\"g\",\"cat\":\"Fruits & Légumes\",\"price\":0.02},{\"name\":\"Oignons\",\"qty\":20,\"unit\":\"g\",\"cat\":\"Fruits & Légumes\",\"price\":0.03},{\"name\":\"Cheddar\",\"qty\":20,\"unit\":\"g\",\"cat\":\"Produits frais\",\"price\":0.26},{\"name\":\"Jaune d'oeuf\",\"qty\":4,\"unit\":\"g\",\"cat\":\"Produits frais\",\"price\":0.036},{\"name\":\"Moutarde\",\"qty\":1.2,\"unit\":\"g\",\"cat\":\"Épicerie salée\",\"price\":0.007},{\"name\":\"Huile de pepin\",\"qty\":20,\"unit\":\"g\",\"cat\":\"Épicerie salée\",\"price\":0.12},{\"name\":\"Ketchup\",\"qty\":4,\"unit\":\"g\",\"cat\":\"Épicerie salée\",\"price\":0.02},{\"name\":\"Miel\",\"qty\":0.8,\"unit\":\"g\",\"cat\":\"Épicerie salée\",\"price\":0.004},{\"name\":\"Pain\",\"qty\":1,\"unit\":\"pièce\",\"cat\":\"Épicerie salée\",\"price\":0.687},{\"name\":\"Sucre\",\"qty\":4,\"unit\":\"g\",\"cat\":\"Épicerie salée\",\"price\":0.004},{\"name\":\"Sel\",\"qty\":3,\"unit\":\"g\",\"cat\":\"Épicerie salée\",\"price\":0.003},{\"name\":\"Huile d'olive\",\"qty\":2,\"unit\":\"g\",\"cat\":\"Épicerie salée\",\"price\":0.002},{\"name\":\"Emballage\",\"qty\":1,\"unit\":\"pièce\",\"cat\":\"Consommables\",\"price\":0.052},{\"name\":\"Serviette\",\"qty\":1,\"unit\":\"pièce\",\"cat\":\"Consommables\",\"price\":0.025}]}],\"categoryOrder\":[\"Fruits & Légumes\",\"Viandes\",\"Poissons\",\"Produits frais\",\"Épicerie salée\",\"Épicerie sucrée\",\"Liquides\",\"Surgelés\",\"Autre\"]}",
-  "ocr_history_v1": "[{\"savedAt\":\"2026-05-03T00:23:32.129Z\",\"meta\":{\"prenom\":\"Ggg\",\"titre\":\"Ggg\",\"ville\":\"Gg\",\"editeur\":\"Gg\",\"collection\":\"Yt\",\"annee\":\"2003\"},\"entries\":[\"-aites-vous aider pour arrêter de fumer IS SSSSS p. 22\"]},{\"savedAt\":\"2026-05-03T00:58:26.232Z\",\"meta\":{\"prenom\":\"Jdjd\",\"titre\":\"Ggg\",\"ville\":\"Marseille\",\"editeur\":\"Gallinard\",\"collection\":\"5567\",\"annee\":\"2003\"},\"entries\":[\"-aites-vous aider pour arrêter de fumer IS SSSSS p. 22\",\"1 oustenezrentu< VS vous bouquiveres. CT irez en cuisinant, celui que vous bouquis eret Ce un fui que vous partagerez avec nes pa < ei 2 3 p. 25\"]}]",
+  "ovni_v9": "{\"view\":\"list\",\"listMode\":\"todo\",\"editingId\":null,\"sessions\":{\"sess_default\":{\"id\":\"sess_default\",\"name\":\"Liste principale\",\"recipes\":{},\"singles\":0,\"totalCost\":0,\"list\":[]},\"sess_1777769668313\":{\"id\":\"sess_1777769668313\",\"name\":\"Courses 2\",\"recipes\":{\"OVNI Burger\":5},\"singles\":0,\"totalCost\":12.11,\"list\":[{\"name\":\"Boeuf\",\"qty\":400,\"unit\":\"g\",\"cat\":\"Viandes\",\"price\":1.12,\"done\":false},{\"name\":\"Tomate\",\"qty\":80,\"unit\":\"g\",\"cat\":\"Fruits & Légumes\",\"price\":0.032,\"done\":true},{\"name\":\"Salade\",\"qty\":100,\"unit\":\"g\",\"cat\":\"Fruits & Légumes\",\"price\":0.02,\"done\":true},{\"name\":\"Oignons\",\"qty\":100,\"unit\":\"g\",\"cat\":\"Fruits & Légumes\",\"price\":0.03,\"done\":true},{\"name\":\"Cheddar\",\"qty\":100,\"unit\":\"g\",\"cat\":\"Produits frais\",\"price\":0.26,\"done\":false},{\"name\":\"Jaune d'oeuf\",\"qty\":20,\"unit\":\"g\",\"cat\":\"Produits frais\",\"price\":0.036,\"done\":false},{\"name\":\"Moutarde\",\"qty\":6,\"unit\":\"g\",\"cat\":\"Épicerie salée\",\"price\":0.007,\"done\":false},{\"name\":\"Huile de pepin\",\"qty\":100,\"unit\":\"g\",\"cat\":\"Épicerie salée\",\"price\":0.12,\"done\":false},{\"name\":\"Ketchup\",\"qty\":20,\"unit\":\"g\",\"cat\":\"Épicerie salée\",\"price\":0.02,\"done\":false},{\"name\":\"Miel\",\"qty\":4,\"unit\":\"g\",\"cat\":\"Épicerie salée\",\"price\":0.004,\"done\":false},{\"name\":\"Pain\",\"qty\":5,\"unit\":\"pièce\",\"cat\":\"Épicerie salée\",\"price\":0.687,\"done\":false},{\"name\":\"Sucre\",\"qty\":20,\"unit\":\"g\",\"cat\":\"Épicerie salée\",\"price\":0.004,\"done\":false},{\"name\":\"Sel\",\"qty\":15,\"unit\":\"g\",\"cat\":\"Épicerie salée\",\"price\":0.003,\"done\":false},{\"name\":\"Huile d'olive\",\"qty\":10,\"unit\":\"g\",\"cat\":\"Épicerie salée\",\"price\":0.002,\"done\":false},{\"name\":\"Emballage\",\"qty\":5,\"unit\":\"pièce\",\"cat\":\"Consommables\",\"price\":0.052,\"done\":false},{\"name\":\"Serviette\",\"qty\":5,\"unit\":\"pièce\",\"cat\":\"Consommables\",\"price\":0.025,\"done\":false}]}},\"currentSessionId\":\"sess_1777769668313\",\"recipes\":[],\"categoryOrder\":[\"Fruits & Légumes\",\"Viandes\",\"Produits frais\",\"Épicerie salée\",\"Consommables\"]}",
+  "ocr_history_v1": "[{\"savedAt\":\"2026-05-03T00:23:32.129Z\",\"meta\":{\"prenom\":\"Ggg\",\"titre\":\"Ggg\",\"ville\":\"Gg\",\"editeur\":\"Gg\",\"collection\":\"Yt\",\"annee\":\"2003\"},\"entries\":[\"-aites-vous aider pour arrêter de fumer IS SSSSS p. 22\"]},{\"savedAt\":\"2026-05-03T00:58:26.232Z\",\"meta\":{\"prenom\":\"Jdjd\",\"titre\":\"Ggg\",\"ville\":\"Marseille\",\"editeur\":\"Gallinard\",\"collection\":\"5567\",\"annee\":\"2003\"},\"entries\":[\"-aites-vous aider pour arrêter de fumer IS SSSSS p. 22\",\"1 oustenezrentu VS vous bouquiveres. CT irez en cuisinant p. 25\"]}]",
   "shopHistory": "{\"GH\":1,\"TUI\":1}",
   "__op_count__": "7",
   "yt_history": "[\"Bfmtv\"]"
 };
 
-// Known widget keys
 const KNOWN_KEYS = ['citatio_history','ocr_history_v1','ovni_v9','clics'];
-const MISC_SKIP = [...KNOWN_KEYS, '__drift_last_shown__','__drift_elem_snap__','__op_count__','local_lines_layout','local_lines_dark'];
+const MISC_SKIP  = [...KNOWN_KEYS,'__drift_last_shown__','__drift_elem_snap__','__op_count__','local_lines_layout','local_lines_dark'];
 
-// ═══════════════════════════════════════════
-//  LOAD DATA (localStorage → fixture fallback)
-// ═══════════════════════════════════════════
-function loadData() {
-  // Try real localStorage first, fill missing keys from fixture
-  const data = {};
-  for (const [k, v] of Object.entries(FIXTURE)) {
-    try {
-      data[k] = localStorage.getItem(k) !== null ? localStorage.getItem(k) : v;
-    } catch { data[k] = v; }
-  }
-  // Also capture any extra real localStorage keys
-  try {
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i);
-      if (!(k in data)) data[k] = localStorage.getItem(k);
-    }
-  } catch {}
-  return data;
+function safeJSON(s,fb=null){ if(!s||typeof s!=='string') return fb; try{return JSON.parse(s)}catch{return fb} }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
+
+function loadData(){
+  const d={};
+  for(const[k,v] of Object.entries(FIXTURE)){ try{d[k]=localStorage.getItem(k)??v}catch{d[k]=v} }
+  try{ for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(!(k in d)) d[k]=localStorage.getItem(k); } }catch{}
+  return d;
 }
 
-function safeJSON(str, fallback = null) {
-  if (str === null || str === undefined) return fallback;
-  if (typeof str !== 'string') return str;
-  try { return JSON.parse(str); } catch { return fallback; }
+/* DARK MODE */
+function toggleDark(){
+  const on=document.documentElement.classList.toggle('dark');
+  document.getElementById('darkIcon').className=on?'fas fa-sun text-xs text-yellow-400':'fas fa-moon text-xs';
+  try{localStorage.setItem('local_lines_dark',on?'1':'0')}catch{}
+}
+function initDark(){
+  let on=false;
+  try{on=localStorage.getItem('local_lines_dark')==='1'}catch{}
+  if(!on) on=matchMedia('(prefers-color-scheme:dark)').matches;
+  if(on){ document.documentElement.classList.add('dark'); document.getElementById('darkIcon').className='fas fa-sun text-xs text-yellow-400'; }
 }
 
-// ═══════════════════════════════════════════
-//  DARK MODE
-// ═══════════════════════════════════════════
-function toggleDark() {
-  const isDark = document.documentElement.classList.toggle('dark');
-  document.getElementById('darkIcon').className = isDark ? 'fas fa-sun text-sm text-yellow-400' : 'fas fa-moon text-sm text-gray-500';
-  try { localStorage.setItem('local_lines_dark', isDark ? '1' : '0'); } catch {}
-}
-function initDark() {
-  let isDark = false;
-  try { isDark = localStorage.getItem('local_lines_dark') === '1'; } catch {}
-  if (!isDark) isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  if (isDark) {
-    document.documentElement.classList.add('dark');
-    document.getElementById('darkIcon').className = 'fas fa-sun text-sm text-yellow-400';
-  }
-}
-
-// ═══════════════════════════════════════════
-//  HEATMAP
-// ═══════════════════════════════════════════
-function buildHeatmap(data) {
-  const citations = safeJSON(data['citatio_history'], []);
-  const ocr = safeJSON(data['ocr_history_v1'], []);
-  const counts = {};
-
-  citations.forEach(c => {
-    if (c.date) {
-      const [d, m, y] = c.date.split(' ')[0].split('/');
-      const key = `${y}-${m}-${d}`;
-      counts[key] = (counts[key] || 0) + 1;
-    }
-  });
-  ocr.forEach(o => {
-    if (o.savedAt) {
-      const key = o.savedAt.split('T')[0];
-      counts[key] = (counts[key] || 0) + 1;
-    }
-  });
-
-  const grid = document.getElementById('heatmapGrid');
-  const tip = document.getElementById('heatmapTooltip');
-  grid.innerHTML = '';
-
-  // Generate last 90 days
-  const today = new Date();
-  for (let i = 89; i >= 0; i--) {
-    const d = new Date(today);
-    d.setDate(d.getDate() - i);
-    const key = d.toISOString().split('T')[0];
-    const count = counts[key] || 0;
-    const cell = document.createElement('div');
-    cell.className = 'heatmap-cell tooltip-wrap';
-    if (count > 0) cell.setAttribute('data-count', Math.min(count, 4));
-    cell.title = '';
-    cell.addEventListener('mouseenter', () => {
-      const label = d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
-      tip.textContent = count > 0 ? `${label} — ${count} élément${count > 1 ? 's' : ''}` : `${label} — aucune activité`;
-    });
-    cell.addEventListener('mouseleave', () => { tip.textContent = ''; });
+/* HEATMAP */
+function buildHeatmap(data){
+  const citations=safeJSON(data.citatio_history,[]);
+  const ocr=safeJSON(data.ocr_history_v1,[]);
+  const counts={};
+  citations.forEach(c=>{ if(c.date){ const[d,m,y]=c.date.split(' ')[0].split('/'); const k=`${y}-${m}-${d}`; counts[k]=(counts[k]||0)+1; } });
+  ocr.forEach(o=>{ if(o.savedAt){ const k=o.savedAt.split('T')[0]; counts[k]=(counts[k]||0)+1; } });
+  const grid=document.getElementById('heatmapGrid');
+  const tip=document.getElementById('heatmapTip');
+  grid.innerHTML='';
+  const today=new Date();
+  for(let i=89;i>=0;i--){
+    const d=new Date(today); d.setDate(d.getDate()-i);
+    const k=d.toISOString().split('T')[0];
+    const n=counts[k]||0;
+    const cell=document.createElement('div');
+    cell.className='heatmap-cell';
+    if(n>0) cell.dataset.count=Math.min(n,4);
+    cell.addEventListener('mouseenter',()=>{ const lbl=d.toLocaleDateString('fr-FR',{day:'numeric',month:'short'}); tip.textContent=n>0?`${lbl} — ${n} élément${n>1?'s':''}`:`${lbl}`; });
+    cell.addEventListener('mouseleave',()=>{ tip.textContent=''; });
     grid.appendChild(cell);
   }
 }
 
-// ═══════════════════════════════════════════
-//  STAT BADGES
-// ═══════════════════════════════════════════
-const CLICS_META = {
-  'ocr-lines':   { icon: 'fas fa-file-alt',    label: 'Scans OCR',   color: '#FFD972' },
-  'ytlive-lines':{ icon: 'fab fa-youtube',      label: 'YouTube',     color: '#F46060' },
-  'course-lines':{ icon: 'fas fa-shopping-cart',label: 'Courses',     color: '#006466' },
-  'photo-recu':  { icon: 'fas fa-receipt',      label: 'Reçus photo', color: '#0A2472' },
-  'cite-lines':  { icon: 'fas fa-quote-right',  label: 'Citations',   color: '#F46060' },
-  'local-lines': { icon: 'fas fa-database',     label: 'Local-Lines', color: '#006466' },
+/* STATS */
+const CLICS_META={
+  'ocr-lines':   {icon:'fas fa-file-lines',       label:'OCR',       color:'#FFD972'},
+  'ytlive-lines':{icon:'fab fa-youtube',           label:'YouTube',   color:'#F46060'},
+  'course-lines':{icon:'fas fa-basket-shopping',   label:'Courses',   color:'#006466'},
+  'photo-recu':  {icon:'fas fa-receipt',           label:'Reçus',     color:'#0A2472'},
+  'cite-lines':  {icon:'fas fa-quote-right',       label:'Citations', color:'#F46060'},
+  'local-lines': {icon:'fas fa-database',          label:'LocalLines',color:'#006466'},
 };
-
-function buildStatBadges(data) {
-  const clics = safeJSON(data['clics'], {});
-  const container = document.getElementById('statBadges');
-  container.innerHTML = '';
-  for (const [key, val] of Object.entries(clics)) {
-    const meta = CLICS_META[key] || { icon: 'fas fa-circle', label: key, color: '#999' };
-    const div = document.createElement('div');
-    div.className = 'stat-badge';
-    div.innerHTML = `<i class="${meta.icon}" style="color:${meta.color};font-size:12px"></i><span class="stat-num">${val}</span><span class="text-gray-400">${meta.label}</span>`;
-    container.appendChild(div);
+function buildStats(data){
+  const clics=safeJSON(data.clics,{});
+  const row=document.getElementById('statRow');
+  row.innerHTML='';
+  for(const[k,v] of Object.entries(clics)){
+    const m=CLICS_META[k]||{icon:'fas fa-circle',label:k,color:'#999'};
+    const p=document.createElement('div');
+    p.className='stat-pill';
+    p.innerHTML=`<i class="${m.icon}" style="color:${m.color};font-size:10px"></i><strong>${v}</strong><span style="color:var(--text-soft)">${m.label}</span>`;
+    row.appendChild(p);
   }
 }
 
-// ═══════════════════════════════════════════
-//  WIDGET BUILDERS
-// ═══════════════════════════════════════════
-function buildCitationsWidget(data) {
-  const citations = safeJSON(data['citatio_history'], []);
-  const el = document.createElement('div');
-  el.className = 'widget';
-  el.dataset.widgetId = 'citations';
-
-  el.innerHTML = `
-    <div class="widget-header">
-      <div class="accent-line w-8" style="background:var(--color-highlight)"></div>
-      <i class="fas fa-book-open" style="color:var(--color-highlight)"></i>
-      <span class="font-semibold text-sm">Bibliothèque de Citations</span>
-      <span class="ml-auto text-xs text-gray-400 font-mono">${citations.length} référence${citations.length > 1 ? 's' : ''}</span>
+/* SECTION FACTORY */
+function makeSection(id,icon,iconColor,label,meta,bodyHtml,open=true){
+  const sec=document.createElement('div');
+  sec.className='section'+(open?' open':'');
+  sec.dataset.widgetId=id;
+  sec.innerHTML=`
+    <div class="section-head" onclick="toggleSec(this)">
+      <div class="section-icon" style="background:${iconColor}18;color:${iconColor}"><i class="${icon}"></i></div>
+      <span class="section-title">${label}</span>
+      <span class="section-meta">${meta}</span>
+      <i class="fas fa-chevron-right chevron"></i>
     </div>
-    <div class="p-4 flex flex-col gap-3" id="citationsBody">
-      ${citations.map(c => buildCitationCard(c)).join('')}
-    </div>
-  `;
-  return el;
+    <div class="section-body">${bodyHtml}</div>`;
+  return sec;
 }
+function toggleSec(head){ head.closest('.section').classList.toggle('open'); }
 
-function buildCitationCard(c) {
-  const badgeClass = c.type === 'periodique' ? 'badge-periodique' : 'badge-ouvrage';
-  const badgeLabel = c.typeLabel || c.type;
-  return `
-    <div class="citation-card group" data-searchable="${(c.text || '').toLowerCase()}">
-      <div class="cite-content">
-        <div class="flex items-center gap-2 mb-2">
-          <span class="citation-badge ${badgeClass}"><i class="${c.icon || 'fas fa-file'}"></i> ${badgeLabel}</span>
-          <span class="text-xs text-gray-400 ml-auto font-mono">${c.date || ''}</span>
-          <button class="copy-btn" onclick="copyText(this, ${JSON.stringify((c.text||'').replace(/"/g,'&quot;'))})" title="Copier la référence">
-            <i class="fas fa-copy mr-1"></i>Copier
-          </button>
-        </div>
-        <div class="font-serif text-sm leading-relaxed citation-html">${c.html || c.text || ''}</div>
+/* CITATIONS */
+function buildCitations(data){
+  const list=safeJSON(data.citatio_history,[]);
+  const rows=list.map(c=>{
+    const isP=c.type==='periodique';
+    const dotColor=isP?'#F46060':'#006466';
+    const bgBadge=isP?'rgba(244,96,96,0.1)':'rgba(0,100,102,0.1)';
+    return `<div class="cite-row" data-searchable="${esc((c.text||'').toLowerCase())}">
+      <div class="cite-dot" style="background:${dotColor}"></div>
+      <div class="cite-body">
+        <div><span class="type-badge" style="background:${bgBadge};color:${dotColor}"><i class="${c.icon||'fas fa-file'}"></i> ${esc(c.typeLabel||c.type)}</span></div>
+        <div class="cite-html">${c.html||c.text||''}</div>
+        <div class="cite-date">${c.date||''}</div>
       </div>
+      <button class="copy-btn" onclick="copyText(this,${JSON.stringify(c.text||'')})" title="Copier"><i class="fas fa-copy"></i></button>
     </div>`;
-}
-
-function buildOCRWidget(data) {
-  const ocr = safeJSON(data['ocr_history_v1'], []);
-  const el = document.createElement('div');
-  el.className = 'widget';
-  el.dataset.widgetId = 'ocr';
-  el.innerHTML = `
-    <div class="widget-header">
-      <div class="accent-line w-8" style="background:var(--color-accent)"></div>
-      <i class="fas fa-file-alt" style="color:var(--color-accent)"></i>
-      <span class="font-semibold text-sm">Archives OCR</span>
-      <span class="ml-auto text-xs text-gray-400 font-mono">${ocr.length} document${ocr.length > 1 ? 's' : ''}</span>
-    </div>
-    <div class="p-4 flex flex-col gap-4" id="ocrBody">
-      ${ocr.map((o, i) => buildOCRCard(o, i)).join('')}
-    </div>`;
-  return el;
-}
-
-function buildOCRCard(o, i) {
-  const date = o.savedAt ? new Date(o.savedAt).toLocaleString('fr-FR') : '—';
-  const m = o.meta || {};
-  const entries = (o.entries || []).map(e => `<div class="ocr-entry">${escapeHtml(e)}</div>`).join('');
-  const allText = (o.entries || []).join(' ').toLowerCase();
-  return `
-    <div class="ocr-card" data-searchable="${allText}">
-      <div class="flex items-start justify-between gap-3 mb-3 flex-wrap">
-        <div>
-          ${m.prenom ? `<span class="font-mono text-xs font-semibold" style="color:var(--color-accent)">${escapeHtml(m.prenom)}</span>` : ''}
-          ${m.titre ? `<span class="font-mono text-xs text-gray-500"> / ${escapeHtml(m.titre)}</span>` : ''}
-          <div class="flex flex-wrap gap-1 mt-1">
-            ${m.ville ? `<span class="cat-chip">${escapeHtml(m.ville)}</span>` : ''}
-            ${m.editeur ? `<span class="cat-chip">${escapeHtml(m.editeur)}</span>` : ''}
-            ${m.annee ? `<span class="cat-chip">${escapeHtml(m.annee)}</span>` : ''}
-          </div>
-        </div>
-        <div class="text-right flex-shrink-0">
-          <span class="scan-stamp">Scan #${i+1}</span>
-          <div class="text-xs text-gray-400 mt-1 font-mono">${date}</div>
-        </div>
-      </div>
-      <div class="flex flex-col gap-1 text-xs">${entries}</div>
-      <div class="text-right mt-2">
-        <span class="text-xs text-gray-400 font-mono">${(o.entries||[]).length} ligne${(o.entries||[]).length > 1 ? 's' : ''}</span>
-      </div>
-    </div>`;
-}
-
-function buildLogistiqueWidget(data) {
-  const ovni = safeJSON(data['ovni_v9'], null);
-  if (!ovni) return null;
-  const el = document.createElement('div');
-  el.className = 'widget';
-  el.dataset.widgetId = 'logistique';
-
-  const currentId = ovni.currentSessionId;
-  const sessions = ovni.sessions || {};
-  const current = sessions[currentId];
-  const list = (current && current.list) || [];
-  const done = list.filter(i => i.done).length;
-  const total = list.length;
-  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-  const totalCost = list.reduce((s, i) => s + (i.price || 0), 0);
-
-  // Group by category
-  const bycat = {};
-  list.forEach(item => {
-    const cat = item.cat || 'Autre';
-    if (!bycat[cat]) bycat[cat] = [];
-    bycat[cat].push(item);
-  });
-
-  const catHtml = Object.entries(bycat).map(([cat, items]) => `
-    <div class="mb-3">
-      <div class="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1 px-2">${escapeHtml(cat)}</div>
-      ${items.map(item => buildCheckItem(item, currentId)).join('')}
-    </div>`).join('');
-
-  const recipeName = Object.keys(current?.recipes || {})[0] || '';
-
-  el.innerHTML = `
-    <div class="widget-header">
-      <div class="accent-line w-8" style="background:var(--color-secondary)"></div>
-      <i class="fas fa-shopping-basket" style="color:var(--color-secondary)"></i>
-      <span class="font-semibold text-sm">${escapeHtml(current?.name || 'Courses')}</span>
-      ${recipeName ? `<span class="ml-2 text-xs text-gray-400">— ${escapeHtml(recipeName)} ×${current.recipes[recipeName]}</span>` : ''}
-      <span class="ml-auto text-xs text-gray-400 font-mono">${done}/${total} · ${totalCost.toFixed(2)}€</span>
-    </div>
-    <div class="p-4">
-      <div class="progress-bar mb-4">
-        <div class="progress-fill" style="width:${pct}%"></div>
-      </div>
-      <div id="checklistBody">${catHtml}</div>
-    </div>`;
-  return el;
-}
-
-function buildCheckItem(item, sessionId) {
-  const doneClass = item.done ? 'done' : '';
-  const checkIcon = item.done ? '<i class="fas fa-check text-white" style="font-size:9px"></i>' : '';
-  const cost = item.price !== undefined ? `${item.price.toFixed(3)}€` : '';
-  return `
-    <div class="checklist-item ${doneClass}" data-name="${escapeHtml(item.name)}" data-session="${escapeHtml(sessionId)}" onclick="toggleItem(this)" data-searchable="${item.name.toLowerCase()}">
-      <div class="custom-checkbox">${checkIcon}</div>
-      <span class="item-label text-sm">${escapeHtml(item.name)}</span>
-      <span class="text-xs text-gray-400">${item.qty}${item.unit}</span>
-      <span class="cost-badge">${cost}</span>
-    </div>`;
-}
-
-function buildMiscWidget(data) {
-  const miscKeys = Object.keys(data).filter(k => !MISC_SKIP.includes(k));
-  if (miscKeys.length === 0) return null;
-  const el = document.createElement('div');
-  el.className = 'widget';
-  el.dataset.widgetId = 'misc';
-  const items = miscKeys.map(k => {
-    const val = data[k];
-    const parsed = safeJSON(val, null);
-    const display = parsed !== null ? JSON.stringify(parsed, null, 2) : String(val);
-    return `
-      <div class="border-b border-black/5 dark:border-white/5 last:border-0 py-3">
-        <div class="flex items-center gap-2 mb-2">
-          <i class="fas fa-key text-gray-400 text-xs"></i>
-          <span class="text-xs font-semibold font-mono" style="color:var(--color-primary)">${escapeHtml(k)}</span>
-        </div>
-        <div class="json-viewer" data-searchable="${display.toLowerCase()}">${escapeHtml(display)}</div>
-      </div>`;
   }).join('');
-  el.innerHTML = `
-    <div class="widget-header">
-      <div class="accent-line w-8" style="background:var(--color-primary)"></div>
-      <i class="fas fa-database" style="color:var(--color-primary)"></i>
-      <span class="font-semibold text-sm">Données Diverses</span>
-      <span class="ml-auto text-xs text-gray-400 font-mono">${miscKeys.length} clé${miscKeys.length > 1 ? 's' : ''}</span>
-    </div>
-    <div class="p-4">${items}</div>`;
-  return el;
+  return makeSection('citations','fas fa-book-open','#FFD972','Citations',`${list.length} réf.`,rows,true);
 }
 
-// ═══════════════════════════════════════════
-//  TOGGLE CHECKLIST ITEM
-// ═══════════════════════════════════════════
-function toggleItem(el) {
-  const sessionId = el.dataset.session;
-  const name = el.dataset.name;
-  const isDone = el.classList.toggle('done');
-  const checkbox = el.querySelector('.custom-checkbox');
-  checkbox.innerHTML = isDone ? '<i class="fas fa-check text-white" style="font-size:9px"></i>' : '';
-  el.querySelector('.item-label').style.textDecoration = isDone ? 'line-through' : '';
-  el.querySelector('.item-label').style.opacity = isDone ? '0.4' : '';
-
-  // Update localStorage
-  try {
-    const raw = localStorage.getItem('ovni_v9') || FIXTURE['ovni_v9'];
-    const ovni = safeJSON(raw, null);
-    if (ovni && ovni.sessions && ovni.sessions[sessionId]) {
-      const item = ovni.sessions[sessionId].list.find(i => i.name === name);
-      if (item) item.done = isDone;
-      localStorage.setItem('ovni_v9', JSON.stringify(ovni));
-    }
-  } catch {}
-
-  // Update progress bar
-  const allItems = document.querySelectorAll('#checklistBody .checklist-item');
-  const doneCount = document.querySelectorAll('#checklistBody .checklist-item.done').length;
-  const pct = allItems.length > 0 ? Math.round((doneCount / allItems.length) * 100) : 0;
-  const fill = document.querySelector('.progress-fill');
-  if (fill) fill.style.width = pct + '%';
+/* OCR */
+function buildOCR(data){
+  const list=safeJSON(data.ocr_history_v1,[]);
+  const docs=list.map((o,i)=>{
+    const m=o.meta||{};
+    const date=o.savedAt?new Date(o.savedAt).toLocaleDateString('fr-FR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'—';
+    const chips=[m.prenom,m.titre,m.ville,m.editeur,m.annee].filter(Boolean).map(x=>`<span class="ocr-chip">${esc(x)}</span>`).join('');
+    const lines=(o.entries||[]).map(e=>`<div class="ocr-line">${esc(e)}</div>`).join('');
+    return `<div class="ocr-doc" data-searchable="${esc((o.entries||[]).join(' ').toLowerCase())}">
+      <div class="ocr-meta">
+        <span class="ocr-stamp">#${i+1}</span>${chips}
+        <span style="margin-left:auto;font-size:10px;color:var(--text-soft);font-family:monospace">${date}</span>
+      </div>
+      <div class="ocr-lines">${lines}</div>
+    </div>`;
+  }).join('');
+  return makeSection('ocr','fas fa-file-lines','#F46060','Archives OCR',`${list.length} doc.`,docs,true);
 }
 
-// ═══════════════════════════════════════════
-//  COPY
-// ═══════════════════════════════════════════
-function copyText(btn, text) {
-  navigator.clipboard.writeText(text).then(() => {
-    btn.innerHTML = '<i class="fas fa-check mr-1"></i>Copié !';
-    btn.style.color = 'var(--color-secondary)';
-    setTimeout(() => { btn.innerHTML = '<i class="fas fa-copy mr-1"></i>Copier'; btn.style.color = ''; }, 1500);
-  }).catch(() => {});
+/* COURSES */
+function buildLogistique(data){
+  const ovni=safeJSON(data.ovni_v9,null);
+  if(!ovni) return null;
+  const sid=ovni.currentSessionId;
+  const cur=(ovni.sessions||{})[sid];
+  const list=(cur&&cur.list)||[];
+  const doneN=list.filter(i=>i.done).length;
+  const pct=list.length?Math.round(doneN/list.length*100):0;
+  const total=list.reduce((s,i)=>s+(i.price||0),0);
+  const recipeInfo=Object.entries(cur?.recipes||{}).map(([n,q])=>`${n} ×${q}`).join(', ');
+
+  const bycat={};
+  list.forEach(item=>{ const c=item.cat||'Autre'; if(!bycat[c])bycat[c]=[]; bycat[c].push(item); });
+
+  let html=`<div class="progress-track"><div class="progress-strip" id="progressFill" style="width:${pct}%"></div></div>`;
+  for(const[cat,items] of Object.entries(bycat)){
+    html+=`<div class="check-cat">${esc(cat)}</div>`;
+    html+=items.map(item=>`<div class="check-item ${item.done?'done':''}" data-name="${esc(item.name)}" data-session="${esc(sid)}" onclick="toggleItem(this)" data-searchable="${item.name.toLowerCase()}">
+      <div class="checkbox">${item.done?'<i class="fas fa-check" style="font-size:8px;color:white"></i>':''}</div>
+      <span class="check-label">${esc(item.name)}</span>
+      <span class="check-qty">${item.qty}${item.unit}</span>
+      <span class="check-cost">${item.price!==undefined?item.price.toFixed(2)+'€':''}</span>
+    </div>`).join('');
+  }
+  const meta=`${doneN}/${list.length} · ${total.toFixed(2)}€${recipeInfo?' · '+recipeInfo:''}`;
+  return makeSection('logistique','fas fa-basket-shopping','#006466',cur?.name||'Courses',meta,html,true);
 }
 
-// ═══════════════════════════════════════════
-//  UTILS
-// ═══════════════════════════════════════════
-function escapeHtml(str) {
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+/* MISC */
+function buildMisc(data){
+  const keys=Object.keys(data).filter(k=>!MISC_SKIP.includes(k));
+  if(!keys.length) return null;
+  const rows=keys.map(k=>{
+    const parsed=safeJSON(data[k],null);
+    const disp=parsed!==null?JSON.stringify(parsed,null,2):String(data[k]);
+    const needsExpand=disp.length>120;
+    return `<div class="misc-row" data-searchable="${esc(disp.toLowerCase())}">
+      <div class="misc-key">${esc(k)}</div>
+      <div class="misc-val" id="misc_${esc(k)}">${esc(disp)}</div>
+      ${needsExpand?`<button class="misc-expand" onclick="expandMisc('${esc(k)}',this)">Voir plus</button>`:''}
+    </div>`;
+  }).join('');
+  return makeSection('misc','fas fa-database','#0A2472','Données diverses',`${keys.length} clé${keys.length>1?'s':''}`,rows,false);
+}
+function expandMisc(k,btn){
+  const el=document.getElementById('misc_'+k);
+  el.classList.toggle('expanded');
+  btn.textContent=el.classList.contains('expanded')?'Voir moins':'Voir plus';
 }
 
-// ═══════════════════════════════════════════
-//  SEARCH
-// ═══════════════════════════════════════════
-let searchQuery = '';
-document.getElementById('searchInput').addEventListener('input', function() {
-  searchQuery = this.value.toLowerCase().trim();
-  applySearch();
+/* TOGGLE ITEM */
+function toggleItem(el){
+  const sid=el.dataset.session, name=el.dataset.name;
+  const isDone=el.classList.toggle('done');
+  el.querySelector('.checkbox').innerHTML=isDone?'<i class="fas fa-check" style="font-size:8px;color:white"></i>':'';
+  try{
+    const raw=localStorage.getItem('ovni_v9')||FIXTURE.ovni_v9;
+    const ovni=safeJSON(raw,null);
+    if(ovni?.sessions?.[sid]){ const item=ovni.sessions[sid].list.find(i=>i.name===name); if(item) item.done=isDone; localStorage.setItem('ovni_v9',JSON.stringify(ovni)); }
+  }catch{}
+  const all=document.querySelectorAll('.check-item');
+  const dn=document.querySelectorAll('.check-item.done').length;
+  const pct=all.length?Math.round(dn/all.length*100):0;
+  const fill=document.getElementById('progressFill');
+  if(fill) fill.style.width=pct+'%';
+}
+
+/* COPY */
+function copyText(btn,text){
+  navigator.clipboard.writeText(text).then(()=>{
+    btn.innerHTML='<i class="fas fa-check"></i>';
+    setTimeout(()=>{ btn.innerHTML='<i class="fas fa-copy"></i>'; },1400);
+  }).catch(()=>{});
+}
+
+/* SEARCH */
+document.getElementById('searchInput').addEventListener('input',function(){
+  const q=this.value.toLowerCase().trim();
+  document.querySelectorAll('[data-searchable]').forEach(el=>{
+    const card=el.closest('.cite-row,.ocr-doc,.check-item,.misc-row')||el;
+    card.classList.toggle('hidden-search', q && !el.dataset.searchable.includes(q));
+  });
 });
 
-function applySearch() {
-  if (!searchQuery) {
-    document.querySelectorAll('[data-searchable]').forEach(el => {
-      el.closest('.citation-card, .ocr-card, .checklist-item, .json-viewer')?.classList.remove('hidden-search');
-      el.innerHTML = el.innerHTML.replace(/<mark>(.*?)<\/mark>/gi, '$1');
-    });
-    document.querySelectorAll('.widget').forEach(w => w.classList.remove('hidden-search'));
-    return;
-  }
-  document.querySelectorAll('[data-searchable]').forEach(el => {
-    const card = el.closest('.citation-card, .ocr-card, .checklist-item, .json-viewer') || el;
-    if (el.dataset.searchable.includes(searchQuery)) {
-      card.classList.remove('hidden-search');
-    } else {
-      card.classList.add('hidden-search');
-    }
+/* LAYOUT */
+const DEFAULT_ORDER=['citations','ocr','logistique','misc'];
+function getLayout(){ try{ const s=localStorage.getItem('local_lines_layout'); if(s) return JSON.parse(s); }catch{} return DEFAULT_ORDER; }
+function saveLayout(){ const o=[...document.querySelectorAll('[data-widget-id]')].map(e=>e.dataset.widgetId); try{localStorage.setItem('local_lines_layout',JSON.stringify(o))}catch{} }
+function initSortable(){
+  Sortable.create(document.getElementById('sectionsContainer'),{
+    animation:180, ghostClass:'sortable-ghost', chosenClass:'sortable-chosen',
+    handle:'.section-head', onEnd:saveLayout
   });
 }
 
-// ═══════════════════════════════════════════
-//  SORTABLE / LAYOUT PERSISTENCE
-// ═══════════════════════════════════════════
-const WIDGET_ORDER_DEFAULT = ['citations','ocr','logistique','misc'];
-
-function getLayout() {
-  try {
-    const saved = localStorage.getItem('local_lines_layout');
-    if (saved) return JSON.parse(saved);
-  } catch {}
-  return WIDGET_ORDER_DEFAULT;
-}
-
-function saveLayout() {
-  const order = [...document.querySelectorAll('[data-widget-id]')].map(el => el.dataset.widgetId);
-  try { localStorage.setItem('local_lines_layout', JSON.stringify(order)); } catch {}
-}
-
-function initSortable() {
-  Sortable.create(document.getElementById('widgetContainer'), {
-    animation: 200,
-    ghostClass: 'sortable-ghost',
-    chosenClass: 'sortable-chosen',
-    handle: '.widget-header',
-    onEnd: saveLayout
-  });
-}
-
-// ═══════════════════════════════════════════
-//  MAIN RENDER
-// ═══════════════════════════════════════════
-let currentData = {};
-
-function render() {
-  currentData = loadData();
+/* RENDER */
+let currentData={};
+function render(){
+  currentData=loadData();
   buildHeatmap(currentData);
-  buildStatBadges(currentData);
-
-  const container = document.getElementById('widgetContainer');
-  container.innerHTML = '';
-
-  const builders = {
-    citations: () => buildCitationsWidget(currentData),
-    ocr: () => buildOCRWidget(currentData),
-    logistique: () => buildLogistiqueWidget(currentData),
-    misc: () => buildMiscWidget(currentData),
-  };
-
-  const layout = getLayout();
-  const all = [...new Set([...layout, ...WIDGET_ORDER_DEFAULT])];
-
-  all.forEach(id => {
-    if (builders[id]) {
-      const widget = builders[id]();
-      if (widget) container.appendChild(widget);
-    }
-  });
-
+  buildStats(currentData);
+  const c=document.getElementById('sectionsContainer');
+  c.innerHTML='';
+  const builders={citations:()=>buildCitations(currentData),ocr:()=>buildOCR(currentData),logistique:()=>buildLogistique(currentData),misc:()=>buildMisc(currentData)};
+  const layout=[...new Set([...getLayout(),...DEFAULT_ORDER])];
+  layout.forEach(id=>{ if(builders[id]){ const w=builders[id](); if(w) c.appendChild(w); } });
   initSortable();
-  document.getElementById('lastSync').textContent = 'Sync : ' + new Date().toLocaleTimeString('fr-FR');
 }
-
-function syncData() {
-  const icon = document.getElementById('syncIcon');
+function syncData(){
+  const icon=document.getElementById('syncIcon');
   icon.classList.add('spinning');
-  setTimeout(() => { icon.classList.remove('spinning'); render(); }, 600);
+  setTimeout(()=>{ icon.classList.remove('spinning'); render(); },500);
 }
 
-// ═══════════════════════════════════════════
-//  INIT
-// ═══════════════════════════════════════════
 initDark();
 render();
 </script>

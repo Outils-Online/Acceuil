@@ -503,7 +503,6 @@
     <iframe src="https://es-d-0544653420260421-019da784-8528-73d9-b9de-3f2eb3988b3e.codepen.dev/"></iframe>
 </div>
 <div id="iframe_sign_pdf" class="iframe-container">
-    <button class="close-iframe" onclick="closeIframe('iframe_sign_pdf')">✕ Fermer</button>
     <iframe src="pages/sign-pdf.html" allow="camera; microphone"></iframe>
 </div>
 <div id="iframe_photo_recu" class="iframe-container">
@@ -513,7 +512,6 @@
     <iframe data-src="pages/Cite-Lines.html"></iframe>
 </div>
 <div id="iframe_ocr_lines" class="iframe-container">
-    <button class="close-iframe" onclick="closeIframe('iframe_ocr_lines')">✕ Fermer</button>
     <iframe data-src="pages/OCR-lines.html" allow="camera; microphone"></iframe>
 </div>
 <div id="iframe_course_lines" class="iframe-container">
@@ -1050,12 +1048,25 @@ function openIframe(id, btn) {
         iframe.src = iframe.dataset.src;
     }
     container.style.display = 'block';
+    
+    // --- NOUVEAU : Masquer le bouton de sauvegarde ---
+    const smIndicator = document.getElementById('__sm_indicator__');
+    if (smIndicator) smIndicator.style.display = 'none';
+    // -------------------------------------------------
+
     clics[btn.dataset.id] = (clics[btn.dataset.id] || 0) + 1;
     localStorage.setItem('clics', JSON.stringify(clics));
     btn.querySelector('.count-badge').innerText = clics[btn.dataset.id];
 }
  
-function closeIframe(id) { document.getElementById(id).style.display = 'none'; }
+function closeIframe(id) { 
+    document.getElementById(id).style.display = 'none'; 
+
+    // --- NOUVEAU : Réafficher le bouton de sauvegarde ---
+    const smIndicator = document.getElementById('__sm_indicator__');
+    if (smIndicator) smIndicator.style.display = 'flex';
+    // ----------------------------------------------------
+}
 function openTool(id)    { document.getElementById(id).style.display = 'flex'; }
 function closeTool(id)   { document.getElementById(id).style.display = 'none'; }
  
