@@ -408,6 +408,83 @@
             box-shadow: 0 0 0 2px rgba(10,36,114,0.1);
         }
 
+        /* ── ISBN scan overlay ─────────────────────────────────────────── */
+        #isbn-scan-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: rgba(0,0,0,0.93);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            padding: 16px;
+        }
+        #isbn-scan-video {
+            width: 100%;
+            max-width: 460px;
+            border-radius: 24px;
+            box-shadow: 0 12px 28px black;
+        }
+        #isbn-scan-hint {
+            color: #bbb;
+            font-size: 13px;
+            text-align: center;
+            font-family: var(--font-body);
+        }
+        .scan-close {
+            background: transparent;
+            border: 1.5px solid rgba(255,255,255,0.4);
+            color: white;
+            padding: 10px 24px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-family: var(--font-body);
+            font-weight: 600;
+            font-size: 13px;
+            min-width: 0;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+        /* Bouton scan ISBN dans la modale */
+        #btnScanISBN {
+            width: 100%;
+            padding: 13px;
+            font-size: 14px;
+            font-weight: 700;
+            border-radius: var(--radius-sm);
+            background: var(--secondary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-bottom: 12px;
+            font-family: var(--font-body);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            transition: background 0.2s, transform 0.1s;
+        }
+        #btnScanISBN:active { transform: scale(0.96); }
+        #isbn-feedback-meta {
+            font-size: 11px;
+            color: var(--secondary);
+            margin-top: -8px;
+            margin-bottom: 8px;
+            min-height: 16px;
+            display: block;
+            font-family: var(--font-body);
+        }
+        /* Champ ISBN dans la modale */
+        #metaISBN {
+            border-style: dashed;
+            border-color: var(--secondary);
+        }
+        #metaISBN:focus { border-style: solid; }
+
         /* Loader Claude (non utilisé ici mais laissé pour compatibilité) */
         #claudeLoader {
             display: none;
@@ -488,6 +565,13 @@
 <div id="metaModal">
     <div id="metaModalBox">
         <h3><i class="fa-solid fa-book-open"></i> Métadonnées de la source</h3>
+        <!-- ISBN + scan -->
+        <button id="btnScanISBN" onclick="startISBNScanner()">
+            <i class="fa-solid fa-barcode"></i> Scanner l'ISBN
+        </button>
+        <input class="meta-field" id="metaISBN" type="text" placeholder="ISBN (optionnel — auto-remplit les champs)" inputmode="numeric">
+        <span id="isbn-feedback-meta"></span>
+        <!-- Champs auteur / titre / éditeur -->
         <input class="meta-field" id="metaPrenom"     type="text" placeholder="Prénom Nom (auteur)">
         <input class="meta-field" id="metaTitre"      type="text" placeholder="Titre">
         <input class="meta-field" id="metaVille"      type="text" placeholder="Ville d'édition">
@@ -579,8 +663,11 @@
    window.onload = () => {
     lsLoad();
     initCamera();
+    chargerDictionnaire();
     window.parent.postMessage('etape_suivante', '*');
 };
+    window.startISBNScanner = () => startISBNScanner();
+    window.stopISBNScanner  = () => stopISBNScanner();
 
     async function initCamera() {
         try {
@@ -781,7 +868,339 @@
         }
     }
 
-    window.addEventListener('load', () => { chargerDictionnaire(); });
+    // ── MODULE ISBN COMPLET ───────────────────────────────────────────────────
+
+    // ── helpers champs ──────────────────────────────────────────────────────
+    function setMetaField(id, value) {
+        const el = document.getElementById('meta' + id);
+        if (el && value && !el.value.trim()) el.value = value;
+    }
+    function isbnExtractYear(s) { return (s || '').match(/\d{4}/)?.[0] || ''; }
+    function isbnSplitAuthor(name) {
+        if (!name) return { prenom: '', nom: '' };
+        if (name.includes(',')) {
+            let [nom, prenom] = name.split(',').map(s => s.trim());
+            return { prenom: prenom || '', nom };
+        }
+        let parts = name.trim().split(/\s+/);
+        if (parts.length === 1) return { prenom: '', nom: parts[0] };
+        return { prenom: parts.slice(0, -1).join(' '), nom: parts[parts.length - 1] };
+    }
+    function isbnFeedback(msg) {
+        const fb = document.getElementById('isbn-feedback-meta');
+        if (fb) fb.textContent = msg;
+    }
+
+    // ── UNIMARC helpers ──────────────────────────────────────────────────────
+    function _bnfGetAll(xml, tag, code) {
+        const results = [];
+        for (let el of xml.getElementsByTagName('*')) {
+            const local = el.localName || el.nodeName.split(':').pop();
+            if (local !== 'datafield') continue;
+            if (el.getAttribute('tag') !== tag) continue;
+            if (!code) { results.push(el.textContent.trim()); continue; }
+            for (let sf of el.getElementsByTagName('*')) {
+                const sfLocal = sf.localName || sf.nodeName.split(':').pop();
+                if (sfLocal === 'subfield' && sf.getAttribute('code') === code)
+                    results.push(sf.textContent.trim());
+            }
+        }
+        return results;
+    }
+    function _bnfGet(xml, tag, code) { return _bnfGetAll(xml, tag, code)[0] || ''; }
+    function _bnfClean(s) { return (s || '').replace(/[\[\]]/g, '').replace(/\s*[,;:.\/]\s*$/, '').trim(); }
+
+    // ── BnF UNIMARC fill ────────────────────────────────────────────────────
+    async function fillFromBNF(xmlText) {
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(xmlText, 'text/xml');
+        let hasRecord = false;
+        for (let n of xml.getElementsByTagName('*')) {
+            const local = n.localName || n.nodeName.split(':').pop();
+            if (local === 'record' || local === 'recordData') { hasRecord = true; break; }
+        }
+        if (!hasRecord) return false;
+
+        const titrePropre = _bnfClean(_bnfGet(xml, '200', 'a'));
+        const sousTitre   = _bnfClean(_bnfGet(xml, '200', 'e'));
+        const titreComplet = sousTitre ? `${titrePropre} : ${sousTitre}` : titrePropre;
+
+        let nomAuteur = '', prenomAuteur = '';
+        for (const zone of ['700', '701', '702']) {
+            const nom    = _bnfClean(_bnfGet(xml, zone, 'a'));
+            const prenom = _bnfClean(_bnfGet(xml, zone, 'b'));
+            if (nom) { nomAuteur = nom; prenomAuteur = prenom; break; }
+        }
+        if (!nomAuteur) nomAuteur = _bnfClean(_bnfGet(xml, '710', 'a'));
+
+        const ville    = _bnfClean(_bnfGetAll(xml, '214', 'a')[0] || _bnfGetAll(xml, '210', 'a')[0] || '');
+        const editeur  = _bnfClean(_bnfGetAll(xml, '214', 'c')[0] || _bnfGetAll(xml, '210', 'c')[0] || '');
+        const anneeRaw =            _bnfGetAll(xml, '214', 'd')[0] || _bnfGetAll(xml, '210', 'd')[0] || '';
+        const collTitre = _bnfClean(_bnfGet(xml, '225', 'a'));
+        const collNum   = _bnfClean(_bnfGet(xml, '225', 'v'));
+        const collection = collTitre ? (collNum ? `${collTitre}, n°${collNum}` : collTitre) : '';
+
+        if (titreComplet) setMetaField('Titre', titreComplet);
+        if (nomAuteur) {
+            // Reconstituer "Prénom Nom" pour le champ unique
+            const full = prenomAuteur ? `${prenomAuteur} ${nomAuteur}` : nomAuteur;
+            setMetaField('Prenom', full);
+        }
+        if (editeur)   setMetaField('Editeur', editeur);
+        if (ville)     setMetaField('Ville', ville);
+        if (anneeRaw)  setMetaField('Annee', isbnExtractYear(anneeRaw));
+        if (collection) setMetaField('Collection', collection);
+
+        return !!(titreComplet || nomAuteur || editeur);
+    }
+
+    // ── BnF Dublin Core fill ─────────────────────────────────────────────────
+    async function fillFromBNFDublinCore(xmlText) {
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(xmlText, 'text/xml');
+        const dcGet = (tag) => {
+            for (let el of xml.getElementsByTagName('*'))
+                if ((el.localName || el.nodeName.split(':').pop()).toLowerCase() === tag)
+                    return el.textContent.trim();
+            return '';
+        };
+        const dcGetAll = (tag) => {
+            const r = [];
+            for (let el of xml.getElementsByTagName('*'))
+                if ((el.localName || el.nodeName.split(':').pop()).toLowerCase() === tag)
+                    r.push(el.textContent.trim());
+            return r;
+        };
+        const titre    = dcGet('title');
+        const creators = dcGetAll('creator');
+        const publisher= dcGet('publisher');
+        const date     = dcGet('date');
+        const desc     = dcGet('description');
+        const descMatch = desc.match(/^([^:]+)\s*:\s*([^,]+)/);
+
+        if (titre)          setMetaField('Titre', titre);
+        if (publisher)      setMetaField('Editeur', _bnfClean(publisher));
+        if (descMatch)      { setMetaField('Ville', _bnfClean(descMatch[1])); setMetaField('Editeur', _bnfClean(descMatch[2])); }
+        if (date)           setMetaField('Annee', isbnExtractYear(date));
+        if (creators.length) {
+            const { prenom, nom } = isbnSplitAuthor(creators[0]);
+            const full = prenom ? `${prenom} ${nom}` : nom;
+            setMetaField('Prenom', full);
+        }
+        return !!(titre || creators.length || publisher);
+    }
+
+    // ── Cascade BnF → OpenLibrary → Google Books ─────────────────────────────
+    async function fetchISBN(isbn) {
+        let clean = isbn.replace(/[^0-9Xx]/g, '').toUpperCase();
+        if (clean.length !== 10 && clean.length !== 13) return false;
+
+        // 1. BnF UNIMARC
+        isbnFeedback('⏳ BnF UNIMARC…');
+        try {
+            const q   = encodeURIComponent('"' + clean + '"');
+            const res = await fetch(`https://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.isbn%20adj%20${q}&recordSchema=unimarcXchange&maximumRecords=3`);
+            if (res.ok) {
+                const ok = await fillFromBNF(await res.text());
+                if (ok) { isbnFeedback('✓ BnF UNIMARC'); return true; }
+            }
+        } catch(e) { console.warn('[BnF UNIMARC]', e); }
+
+        // 2. BnF Dublin Core
+        isbnFeedback('⏳ BnF Dublin Core…');
+        try {
+            const q   = encodeURIComponent('"' + clean + '"');
+            const res = await fetch(`https://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.isbn%20adj%20${q}&recordSchema=dublincore&maximumRecords=1`);
+            if (res.ok) {
+                const ok = await fillFromBNFDublinCore(await res.text());
+                if (ok) { isbnFeedback('✓ BnF Dublin Core'); return true; }
+            }
+        } catch(e) { console.warn('[BnF DC]', e); }
+
+        // 3. OpenLibrary
+        isbnFeedback('⏳ OpenLibrary…');
+        try {
+            const ol = await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${clean}&format=json&jscmd=data`).then(r => r.json());
+            if (ol[`ISBN:${clean}`]) {
+                const book = ol[`ISBN:${clean}`];
+                setMetaField('Titre', book.title || '');
+                setMetaField('Editeur', book.publishers?.[0]?.name || '');
+                setMetaField('Ville', book.publish_places?.[0]?.name || '');
+                setMetaField('Annee', isbnExtractYear(book.publish_date || ''));
+                setMetaField('Collection', book.series?.[0]?.name || '');
+                const aName = book.authors?.[0]?.name || '';
+                if (aName) {
+                    const { prenom, nom } = isbnSplitAuthor(aName);
+                    setMetaField('Prenom', prenom ? `${prenom} ${nom}` : nom);
+                }
+                isbnFeedback('✓ OpenLibrary');
+                return true;
+            }
+        } catch(e) {}
+
+        // 4. Google Books
+        isbnFeedback('⏳ Google Books…');
+        try {
+            const gb = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${clean}`).then(r => r.json());
+            if (gb.items && gb.items[0]) {
+                const info = gb.items[0].volumeInfo;
+                setMetaField('Titre', info.title || '');
+                setMetaField('Editeur', info.publisher || '');
+                setMetaField('Annee', isbnExtractYear(info.publishedDate || ''));
+                const authors = info.authors || [];
+                if (authors.length) {
+                    const { prenom, nom } = isbnSplitAuthor(authors[0]);
+                    setMetaField('Prenom', prenom ? `${prenom} ${nom}` : nom);
+                }
+                isbnFeedback('✓ Google Books');
+                return true;
+            }
+        } catch(e) {}
+
+        isbnFeedback('✗ ISBN introuvable');
+        return false;
+    }
+
+    // ── Debounce ─────────────────────────────────────────────────────────────
+    function _isbnDebounce(fn, ms) { let t; return function(...a) { clearTimeout(t); t = setTimeout(() => fn.apply(this, a), ms); }; }
+
+    // ── Écoute saisie ISBN dans la modale ────────────────────────────────────
+    document.getElementById('metaISBN').addEventListener(
+        'input',
+        _isbnDebounce(e => {
+            const val = e.target.value.replace(/[^0-9X]/gi, '');
+            if (val.length === 10 || val.length === 13) fetchISBN(val);
+        }, 500)
+    );
+
+    // ── Scanner caméra ISBN ───────────────────────────────────────────────────
+    let _isbnScannerActive = false, _isbnStream = null, _isbnFrame = null;
+
+    function _buildISBNOverlay() {
+        if (document.getElementById('isbn-scan-overlay')) return;
+        const div = document.createElement('div');
+        div.id = 'isbn-scan-overlay';
+        div.innerHTML = `
+            <video id="isbn-scan-video" autoplay playsinline muted></video>
+            <p id="isbn-scan-hint">Initialisation…</p>
+            <button class="scan-close" onclick="stopISBNScanner()">✕ Fermer</button>`;
+        document.body.appendChild(div);
+    }
+
+    async function _getBestRearCamera() {
+        const fallbacks = [
+            { video: { facingMode: { exact: 'environment' }, width: { ideal: 4096 }, height: { ideal: 2160 } } },
+            { video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } } },
+            { video: { facingMode: 'environment' } },
+            { video: true }
+        ];
+        if (navigator.mediaDevices.enumerateDevices) {
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const rearCams = devices.filter(d => d.kind === 'videoinput' && /(back|rear|environment|arrière|facing back|0,)/i.test(d.label));
+                const mainCam = rearCams.find(d => !/(ultra|wide|tele|macro|depth|[234],)/i.test(d.label)) || rearCams[0];
+                if (mainCam) {
+                    try {
+                        return await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: mainCam.deviceId }, width: { ideal: 4096 }, height: { ideal: 2160 } } });
+                    } catch(e) {}
+                }
+            } catch(e) {}
+        }
+        for (const c of fallbacks) {
+            try { return await navigator.mediaDevices.getUserMedia(c); } catch(e) {}
+        }
+        throw new Error('Aucune caméra accessible');
+    }
+
+    async function startISBNScanner() {
+        if (_isbnScannerActive) return;
+        _buildISBNOverlay();
+        const video = document.getElementById('isbn-scan-video');
+        const hint  = document.getElementById('isbn-scan-hint');
+        hint.textContent = 'Ouverture caméra…';
+        try {
+            const stream = await _getBestRearCamera();
+            _isbnStream = stream;
+            video.srcObject = stream;
+            await video.play();
+            hint.textContent = 'Centrez le code-barres ISBN';
+            _isbnScannerActive = true;
+
+            // Autofocus continu
+            const track = stream.getVideoTracks()[0];
+            if (track) {
+                try { await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }); } catch(e) {}
+            }
+
+            if ('BarcodeDetector' in window) {
+                const detector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'code_128'] });
+                const tick = () => {
+                    if (!_isbnScannerActive) return;
+                    if (video.readyState >= 2)
+                        detector.detect(video).then(codes => { if (codes.length) _onISBNDetected(codes[0].rawValue); }).catch(() => {});
+                    _isbnFrame = requestAnimationFrame(tick);
+                };
+                tick();
+            } else {
+                // Fallback Quagga2
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/@ericblade/quagga2@1.2.6/dist/quagga.min.js';
+                script.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.id = 'quagga-canvas-isbn';
+                    canvas.style.display = 'none';
+                    document.body.appendChild(canvas);
+                    const quaggaTick = () => {
+                        if (!_isbnScannerActive) return;
+                        if (video.readyState >= 2) {
+                            const vw = video.videoWidth, vh = video.videoHeight;
+                            if (vw && vh) {
+                                canvas.width = vw; canvas.height = vh;
+                                canvas.getContext('2d').drawImage(video, 0, 0, vw, vh);
+                                const cw = Math.round(vw * 0.9), ch = Math.round(vh * 0.5);
+                                const cx = Math.round((vw - cw) / 2), cy = Math.round((vh - ch) / 2);
+                                const crop = document.createElement('canvas');
+                                crop.width = cw; crop.height = ch;
+                                crop.getContext('2d').drawImage(canvas, cx, cy, cw, ch, 0, 0, cw, ch);
+                                Quagga.decodeSingle({
+                                    decoder: { readers: ['ean_reader', 'ean_8_reader', 'code_128_reader'] },
+                                    src: crop.toDataURL()
+                                }, result => {
+                                    if (result && result.codeResult && result.codeResult.code)
+                                        _onISBNDetected(result.codeResult.code);
+                                });
+                            }
+                        }
+                        _isbnFrame = requestAnimationFrame(quaggaTick);
+                    };
+                    quaggaTick();
+                };
+                document.head.appendChild(script);
+            }
+        } catch(err) {
+            hint.textContent = 'Erreur caméra : autorisez l\'accès';
+            console.error('[ISBN Scanner]', err);
+        }
+    }
+
+    function stopISBNScanner() {
+        _isbnScannerActive = false;
+        if (_isbnFrame) cancelAnimationFrame(_isbnFrame);
+        if (_isbnStream) _isbnStream.getTracks().forEach(t => t.stop());
+        const ov = document.getElementById('isbn-scan-overlay');
+        if (ov) ov.remove();
+    }
+
+    function _onISBNDetected(code) {
+        const clean = String(code).replace(/[^0-9X]/gi, '');
+        if (clean.length !== 13 && clean.length !== 10) return;
+        stopISBNScanner();
+        // Mettre la valeur dans le champ et déclencher la recherche
+        const field = document.getElementById('metaISBN');
+        if (field) { field.value = clean; fetchISBN(clean); }
+    }
+
+
 
     // ── Moteur de correction OCR JS pur ──────────────────────────────────────
     function supprimerArtefacts(texte) {
