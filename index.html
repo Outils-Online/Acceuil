@@ -47,13 +47,23 @@
     }
  
     * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+        height: 100%;
+    }
+
+    /* Mobile : pas de scroll */
+    @media (max-width: 768px) {
+        html, body { overflow: hidden; }
+    }
+
+    /* Multiview desktop : scroll autorisé (déjà couvert par le desktop par défaut) */
  
     body {
         padding: 20px;
         font-family: var(--font-body);
         background: var(--bg-main);
         color: var(--text-main);
-        min-height: 100vh; overflow-x: hidden;
     }
  
     /* ── NAV ── */
@@ -150,7 +160,7 @@
     }
     /* ── FILTERS ── */
     .filters-container {
-        display: flex; justify-content: space-between; align-items: flex-start;
+        display: flex; justify-content: space-between; align-items: center;
         max-width: 1000px; margin: 0 auto 22px; gap: 10px;
     }
     .filters-group {
@@ -158,6 +168,11 @@
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         gap: 6px;
+    }
+    .filters-group:has(.perso-banner) {
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     .tag-btn {
         background: var(--surface);
@@ -451,6 +466,139 @@
     #fusionDropZone:hover { border-color: var(--color-accent); background: var(--red-bg); }
     #fusionDropZone.drag-over { border-color: var(--color-accent); background: var(--red-bg); }
  
+    /* ── PERSO BANNER ── */
+    .perso-banner {
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        width: 100%; gap: 6px;
+    }
+    .perso-banner-label {
+        display: flex; align-items: center; gap: 6px;
+        font-family: var(--font-display); font-size: 11px; font-weight: 800;
+        color: var(--color-primary); letter-spacing: 0.8px; text-transform: uppercase;
+        white-space: nowrap;
+    }
+    .perso-banner-label i { color: var(--color-highlight); font-size: 12px; }
+    .perso-slots {
+        display: flex; gap: 5px; align-items: center; justify-content: center;
+    }
+    .perso-slot {
+        width: 22px; height: 7px; border-radius: 4px;
+        background: var(--border); transition: background 0.25s; border: none;
+    }
+    .perso-slot.filled { background: var(--color-primary); }
+    .search-bar-container {
+        max-width: 1000px; margin: 0 auto 14px;
+        position: relative;
+    }
+    .search-bar-wrapper {
+        display: flex; align-items: center; gap: 0;
+        background: var(--surface);
+        border: 1.5px solid var(--border);
+        border-radius: 40px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        transition: border-color 0.18s;
+    }
+    .search-bar-wrapper:focus-within {
+        border-color: var(--color-primary);
+    }
+    .search-icon {
+        padding: 0 14px 0 16px;
+        color: var(--muted);
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+    #searchInput {
+        flex: 1; border: none; outline: none; background: transparent;
+        font-family: var(--font-body); font-size: 13px; font-weight: 500;
+        color: var(--text-main); padding: 10px 4px;
+    }
+    #searchInput::placeholder { color: var(--muted); font-weight: 400; }
+    #searchClear {
+        padding: 0 14px; cursor: pointer; color: var(--muted);
+        font-size: 13px; background: none; border: none; display: none;
+    }
+    #searchClear:hover { color: var(--color-accent); }
+
+    /* Dropdown résultats */
+    #searchDropdown {
+        display: none; position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+        background: var(--surface); border: 1.5px solid var(--border);
+        border-radius: 18px; box-shadow: var(--shadow-hover);
+        overflow: hidden; z-index: 4000; max-height: 260px; overflow-y: auto;
+    }
+    .search-result-item {
+        display: flex; align-items: center; gap: 12px;
+        padding: 10px 16px; cursor: pointer;
+        border-bottom: 1px solid var(--border);
+        transition: background 0.15s;
+    }
+    .search-result-item:last-child { border-bottom: none; }
+    .search-result-item:hover { background: var(--blue-bg); }
+    .search-result-icon {
+        width: 32px; height: 32px; border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 14px; color: white; flex-shrink: 0;
+    }
+    .search-result-info {
+        display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0;
+    }
+    .search-result-name { font-size: 13px; font-weight: 600; color: var(--text-main); }
+    .search-result-aliases {
+        font-size: 10px; color: var(--muted); white-space: nowrap;
+        overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.2px;
+    }
+    .search-result-tag {
+        font-size: 10px; font-weight: 700; color: var(--muted);
+        text-transform: uppercase; letter-spacing: 0.5px;
+        margin-left: 8px; flex-shrink: 0;
+    }
+    .search-no-result {
+        padding: 16px; text-align: center;
+        font-size: 12px; color: var(--muted);
+    }
+    /* ── Tag chips discrets dans les résultats ── */
+    .search-result-tags {
+        display: flex; flex-wrap: wrap; gap: 4px;
+        padding: 2px 0 0 44px;
+    }
+    .search-result-chip {
+        background: transparent;
+        color: var(--muted);
+        font-size: 9px; font-weight: 600;
+        font-family: var(--font-display);
+        letter-spacing: 0.2px;
+        white-space: nowrap;
+        pointer-events: none;
+        user-select: none;
+        opacity: 0.65;
+    }
+    .search-result-chip::before { content: ''; }
+    .search-result-chip:not(:last-child)::after { content: '·'; margin-left: 4px; opacity: 0.35; }
+    .search-history-header {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 10px 16px 6px;
+        font-size: 10px; font-weight: 800; text-transform: uppercase;
+        letter-spacing: 0.8px; color: var(--muted);
+        font-family: var(--font-display);
+        border-bottom: 1px solid var(--border);
+    }
+    .search-history-clear {
+        font-size: 10px; font-weight: 600; color: var(--color-accent);
+        cursor: pointer; background: none; border: none; padding: 0;
+        font-family: var(--font-body); letter-spacing: 0;
+        text-transform: none;
+    }
+    .search-history-clear:hover { opacity: 0.75; }
+    .search-result-item.history-item .search-result-icon {
+        background: var(--blue-bg) !important;
+        color: var(--muted);
+        font-size: 13px;
+    }
+    .search-result-item.history-item .search-result-icon i {
+        color: var(--muted);
+    }
+
     @media (max-width: 768px) {
         .nav-shell { gap: 12px; margin-bottom: 16px; }
         .nav-shell .spacer { display: none; }
@@ -460,6 +608,7 @@
         .mosaic-core { width: 42px; height: 42px; border-radius: 10px; }
         .close-iframe { top: 10px; right: 10px; padding: 8px 16px; font-size: 11px; border-radius: 15px; display: flex; }
         #multiviewContainer { grid-template-columns: 1fr 1fr; gap: 10px; }
+        .mv-col-header { display: none; }
     }
     @media (max-width: 480px) {
         body { padding: 12px; }
@@ -490,36 +639,48 @@
     </div>
 </div>
 
-<div id="iframe_ytlive_lines" class="iframe-container">
-    <button class="close-iframe" onclick="closeIframe('iframe_ytlive_lines')">✕ Fermer</button>
-    <iframe data-src="pages/Ytlive-Lines.html" allow="camera; microphone"></iframe>
-</div>
-<div id="iframe_calculette" class="iframe-container">
-    <button class="close-iframe" onclick="closeIframe('iframe_calculette')">✕ Fermer</button>
-    <iframe src="https://es-d-0544653420260421-019da75d-1b6e-7819-b877-2b48cfb03541.codepen.dev/"></iframe>
-</div>
-<div id="iframe_minuteur" class="iframe-container">
-    <button class="close-iframe" onclick="closeIframe('iframe_minuteur')">✕ Fermer</button>
-    <iframe src="https://es-d-0544653420260421-019da784-8528-73d9-b9de-3f2eb3988b3e.codepen.dev/"></iframe>
-</div>
+<!-- ── Bureau / Admin ── -->
 <div id="iframe_sign_pdf" class="iframe-container">
-    <iframe src="pages/sign-pdf.html" allow="camera; microphone"></iframe>
+    <iframe data-src="pages/sign-pdf.html" allow="camera; microphone"></iframe>
 </div>
-<div id="iframe_photo_recu" class="iframe-container">
+<div id="iframe_pdf_lines" class="iframe-container">
+    <iframe data-src="pages/PDF-Lines.html" allow="camera; microphone"></iframe>
+</div>
+<div id="iframe_share_lines" class="iframe-container">
+    <iframe data-src="pages/Share-Lines.html" allow="camera; microphone"></iframe>
+</div>
+<div id="iframe_fact_lines" class="iframe-container">
+    <iframe data-src="pages/Fact-Lines.html" allow="camera; microphone"></iframe>
+</div>
+<div id="iframe_compress_lines" class="iframe-container">
+    <iframe data-src="pages/Compress-Lines.html" allow="camera; microphone"></iframe>
+</div>
+<!-- ── Bureau / Compta ── -->
+<div id="iframe_recu_lines" class="iframe-container">
     <iframe data-src="pages/photo-recu.html" allow="camera; microphone"></iframe>
 </div>
-<div id="iframe_cite_lines" class="iframe-container">
+<div id="iframe_rename_lines" class="iframe-container">
+    <iframe data-src="pages/Rename-Lines.html" allow="camera; microphone"></iframe>
+</div>
+<div id="iframe_course_lines" class="iframe-container">
+    <iframe data-src="pages/Course-Lines.html" allow="camera; microphone"></iframe>
+</div>
+<div id="iframe_calc_lines" class="iframe-container">
+    <iframe data-src="pages/Calc-Lines.html" allow="camera; microphone"></iframe>
+</div>
+<!-- ── Bureau / Recherche ── -->
+<div id="iframe_cit_lines" class="iframe-container">
     <iframe data-src="pages/Cite-Lines.html"></iframe>
 </div>
 <div id="iframe_ocr_lines" class="iframe-container">
     <iframe data-src="pages/OCR-lines.html" allow="camera; microphone"></iframe>
 </div>
-<div id="iframe_course_lines" class="iframe-container">
-    <button class="close-iframe" onclick="closeIframe('iframe_course_lines')">✕ Fermer</button>
-    <iframe src="pages/Course-Lines.html" allow="camera; microphone"></iframe>
+<!-- ── Créative / Radio ── -->
+<div id="iframe_ytlive_lines" class="iframe-container">
+    <iframe data-src="pages/Ytlive-Lines.html" allow="camera; microphone"></iframe>
 </div>
+<!-- ── Perso ── -->
 <div id="iframe_local_lines" class="iframe-container">
-    <button class="close-iframe" onclick="closeIframe('iframe_local_lines')">FERMER X</button>
     <iframe data-src="pages/Local-Lines.html" allow="camera; microphone"></iframe>
 </div>
 
@@ -554,94 +715,128 @@
 </button>
 </div>
 
+<div class="search-bar-container">
+    <div class="search-bar-wrapper">
+        <span class="search-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+        <input type="text" id="searchInput" placeholder="Rechercher un outil…" autocomplete="off" oninput="onSearchInput(this.value)">
+        <button id="searchClear" onclick="clearSearch()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div id="searchDropdown"></div>
+</div>
+
 <div class="grid" id="mainGrid">
-    <button class="btn-3d btn-purple" data-id="sign-pdf"       data-main="bureau"   data-tags="admin"     onclick="openIframe('iframe_sign_pdf', this)">
+
+    <!-- ══ BUREAU — ADMIN ══ -->
+    <button class="btn-3d btn-orange" data-id="sign-pdf"        data-main="bureau" data-tags="admin" onclick="openIframe('iframe_sign_pdf', this)">
         <div class="btn-star">★</div><div class="badge-lines"><i class="fa-solid fa-file-signature"></i></div><div>Sign-Lines</div><div class="count-badge">0</div>
     </button>
-    <button class="btn-3d btn-purple" data-id="organise-pdf"   data-main="bureau"   data-tags="admin"     data-url="https://www.ilovepdf.com/fr/organiser-pdf" onclick="handleTool(this)">
-        <div class="btn-star">★</div><div class="favicon-badge"><i class="fa-solid fa-layer-group"></i></div><div>Organiser PDF</div><div class="count-badge">0</div>
+    <button class="btn-3d btn-orange" data-id="envoi-lourd"     data-main="bureau" data-tags="admin" data-url="https://www.swisstransfer.com/fr" onclick="handleTool(this)">
+        <div class="btn-star">★</div><div class="favicon-badge"><i class="fa-solid fa-weight-hanging"></i></div><div>Envoi Lourd</div><div class="count-badge">0</div>
     </button>
-    <button class="btn-3d btn-purple" data-id="pdf-jpg"        data-main="bureau"   data-tags="admin"     data-url="https://www.ilovepdf.com/pdf_to_jpg" onclick="handleTool(this)">
-        <div class="btn-star">★</div><div class="favicon-badge"><i class="fa-solid fa-image"></i></div><div>PDF → JPG</div><div class="count-badge">0</div>
+    <button class="btn-3d btn-orange" data-id="envoi-facile"    data-main="bureau" data-tags="admin" data-url="https://wormhole.app" onclick="handleTool(this)">
+        <div class="btn-star">★</div><div class="favicon-badge"><i class="fa-solid fa-bolt"></i></div><div>Envoi Facile 24h</div><div class="count-badge">0</div>
     </button>
-    <button class="btn-3d btn-purple" data-id="gmail-admin"    data-main="bureau"   data-tags="admin"     data-url="https://drive.google.com/drive/u/0/" onclick="handleTool(this)">
+    <button class="btn-3d btn-orange" data-id="pdf-lines"       data-main="bureau" data-tags="admin" onclick="openIframe('iframe_pdf_lines', this)">
+        <div class="btn-star">★</div><div class="badge-lines"><i class="fa-solid fa-file-pdf"></i></div><div>PDF-Lines</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-orange" 
+        data-id="share-lines" 
+        data-main="bureau" 
+        data-tags="admin" 
+        onclick="openIframe('iframe_share_lines', this)">
+    <div class="btn-star">★</div>
+    <div class="badge-lines"><i class="fa-solid fa-share-nodes"></i></div>
+    <div>Share-Lines</div>
+    <div class="count-badge">0</div>
+</button>
+    <button class="btn-3d btn-orange" data-id="fact-lines"      data-main="bureau" data-tags="admin" onclick="openIframe('iframe_fact_lines', this)">
+        <div class="btn-star">★</div><div class="badge-lines"><i class="fa-solid fa-receipt"></i></div><div>Fact-Lines</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-orange" data-id="compress-lines"  data-main="bureau" data-tags="admin" onclick="openIframe('iframe_compress_lines', this)">
+        <div class="btn-star">★</div><div class="badge-lines"><i class="fa-solid fa-file-zipper"></i></div><div>Compress-Lines</div><div class="count-badge">0</div>
+    </button>
+
+    <!-- ══ BUREAU — COMPTA ══ -->
+    <button class="btn-3d btn-green"  data-id="recu-lines"      data-main="bureau" data-tags="compta" onclick="openIframe('iframe_recu_lines', this)">
+        <div class="btn-star">★</div><div class="badge-lines"><i class="fa-solid fa-camera-retro"></i></div><div>Reçu-Lines</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-green"  data-id="rename-lines"    data-main="bureau" data-tags="compta" onclick="openIframe('iframe_rename_lines', this)">
+        <div class="btn-star">★</div><div class="badge-lines"><i class="fa-solid fa-pen-to-square"></i></div><div>Rename-Lines</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-green"  data-id="course-lines"    data-main="bureau" data-tags="compta" onclick="openIframe('iframe_course_lines', this)">
+        <div class="btn-star">★</div><div class="badge-lines"><i class="fa-solid fa-cart-shopping"></i></div><div>Course-Lines</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-green"  data-id="gmail-compta"    data-main="bureau" data-tags="compta" data-url="https://drive.google.com/drive/u/0/" onclick="handleTool(this)">
         <div class="btn-star">★</div><div class="favicon-badge"><i class="fa-brands fa-google-drive"></i></div><div>Gmail</div><div class="count-badge">0</div>
     </button>
-    <button class="btn-3d btn-green" data-id="photo-recu" data-main="bureau" data-tags="compta" onclick="openIframe('iframe_photo_recu', this)">
-        <div class="btn-star">★</div>
-        <div class="badge-lines"><i class="fa-solid fa-camera-retro"></i></div>
-        <div>Reçu-Lines</div>
-        <div class="count-badge">0</div>
+    <button class="btn-3d btn-green"  data-id="calc-lines"      data-main="bureau" data-tags="compta" onclick="openIframe('iframe_calc_lines', this)">
+        <div class="btn-star">★</div><div class="badge-lines"><i class="fa-solid fa-calculator"></i></div><div>Calc-Lines</div><div class="count-badge">0</div>
     </button>
-    <button class="btn-3d btn-purple" data-id="course-lines" data-main="bureau" data-tags="admin" onclick="openIframe('iframe_course_lines', this)">
-        <div class="btn-star">★</div>
-        <div class="badge-lines"><i class="fa-solid fa-cart-shopping"></i></div>
-        <div>Course-Lines</div>
-        <div class="count-badge">0</div>
-    </button>
-    <button class="btn-3d btn-blue" data-id="cite-lines" data-main="bureau" data-tags="recherche" onclick="openIframe('iframe_cite_lines', this)">
-        <div class="btn-star">★</div>
-        <div class="badge-lines"><i class="fa-solid fa-book-open"></i></div>
-        <div>Cite-Lines</div>
-        <div class="count-badge">0</div>
-    </button>
-    <button class="btn-3d btn-red" data-id="ytlive-lines" data-main="creative" data-tags="radio" onclick="openIframe('iframe_ytlive_lines', this)">
-        <div class="btn-star">★</div>
-        <div class="badge-lines"><i class="fa-brands fa-youtube"></i></div>
-        <div>Ytlive-Lines</div>
-        <div class="count-badge">0</div>
-    </button>
-    <button class="btn-3d btn-blue" data-id="local-lines" data-main="perso" data-tags="local" onclick="openIframe('iframe_local_lines', this)">
-        <div class="btn-star">★</div>
-        <div class="badge-lines"><i class="fa-solid fa-house-signal"></i></div>
-        <div>Local-Lines</div>
-        <div class="count-badge">0</div>
-    </button>
-    <button class="btn-3d btn-green"  data-id="calculette"     data-main="bureau"   data-tags="compta"    onclick="openIframe('iframe_calculette', this)">
-        <div class="btn-star">★</div><div class="badge-lines"><i class="fa-solid fa-calculator"></i></div><div>Calculette</div><div class="count-badge">0</div>
-    </button>
-    <button class="btn-3d btn-green"  data-id="drive-compta"   data-main="bureau"   data-tags="compta"    data-url="https://drive.google.com/drive/u/0/" onclick="handleTool(this)">
+    <button class="btn-3d btn-green"  data-id="drive-compta"    data-main="bureau" data-tags="compta" data-url="https://drive.google.com/drive/u/0/" onclick="handleTool(this)">
         <div class="btn-star">★</div><div class="favicon-badge"><i class="fa-solid fa-folder-open"></i></div><div>Drive</div><div class="count-badge">0</div>
     </button>
-    <button class="btn-3d btn-blue"   data-id="archive-url"    data-main="bureau"   data-tags="recherche" data-url="https://web.archive.org/" onclick="handleTool(this)">
+
+    <!-- ══ BUREAU — RECHERCHE ══ -->
+    <button class="btn-3d btn-google" data-id="archive-url"     data-main="bureau" data-tags="recherche" data-url="https://web.archive.org/" onclick="handleTool(this)">
         <div class="btn-star">★</div><div class="favicon-badge"><i class="fa-solid fa-landmark"></i></div><div>Archive URL</div><div class="count-badge">0</div>
     </button>
-    <button class="btn-3d btn-blue"   data-id="ign"            data-main="bureau"   data-tags="recherche" data-url="https://remonterletemps.ign.fr/telecharger/" onclick="handleTool(this)">
+    <button class="btn-3d btn-google" data-id="ign"             data-main="bureau" data-tags="recherche" data-url="https://remonterletemps.ign.fr/telecharger/" onclick="handleTool(this)">
         <div class="btn-star">★</div><div class="favicon-badge"><i class="fa-solid fa-map"></i></div><div>IGN</div><div class="count-badge">0</div>
     </button>
-    <button class="btn-3d btn-blue"   data-id="google-street"  data-main="bureau"   data-tags="recherche" data-url="https://www.google.com/maps" onclick="handleTool(this)">
+    <button class="btn-3d btn-google" data-id="google-street"   data-main="bureau" data-tags="recherche" data-url="https://www.google.com/maps/@44.291452,5.7721353,133789m/data=!3m1!1e3?entry=ttu&g_ep=EgoyMDI2MDQxNS4wIKXMDSoASAFQAw%3D%3D" onclick="handleTool(this)">
         <div class="btn-star">★</div><div class="favicon-badge"><i class="fa-solid fa-location-dot"></i></div><div>Google Street</div><div class="count-badge">0</div>
     </button>
-    <button class="btn-3d btn-blue"   data-id="recherche-actu" data-main="bureau"   data-tags="recherche" data-url="https://news.google.com/" onclick="handleTool(this)">
-        <div class="btn-star">★</div><div class="favicon-badge"><i class="fa-solid fa-newspaper"></i></div><div>Recherche actu</div><div class="count-badge">0</div>
-    </button>
-    <button class="btn-3d btn-blue"   data-id="minuteur"       data-main="bureau"   data-tags="recherche" onclick="openIframe('iframe_minuteur', this)">
-        <div class="btn-star">★</div><div class="badge-lines"><i class="fa-solid fa-stopwatch"></i></div><div>Minuteur</div><div class="count-badge">0</div>
-    </button>
-    <button class="btn-3d btn-blue"   data-id="ocr-lines"      data-main="bureau"   data-tags="recherche" onclick="openIframe('iframe_ocr_lines', this)">
+    <button class="btn-3d btn-google" data-id="ocr-lines"       data-main="bureau" data-tags="recherche" onclick="openIframe('iframe_ocr_lines', this)">
         <div class="btn-star">★</div><div class="badge-lines"><i class="fa-solid fa-magnifying-glass-plus"></i></div><div>OCR-Lines</div><div class="count-badge">0</div>
     </button>
-    <button class="btn-3d btn-orange" data-id="yt-mp4"         data-main="creative" data-tags="video"     data-url="https://fr.ssyoutube.com/" onclick="handleTool(this)">
+    <button class="btn-3d btn-google" data-id="synonyme-rech"   data-main="bureau" data-tags="recherche" data-url="https://www.synonymo.fr/" onclick="handleTool(this)">
+        <div class="btn-star">★</div><div class="favicon-badge"><i class="fa-solid fa-spell-check"></i></div><div>Synonymes</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-google" data-id="cit-lines"       data-main="bureau" data-tags="recherche" onclick="openIframe('iframe_cit_lines', this)">
+        <div class="btn-star">★</div><div class="badge-lines"><i class="fa-solid fa-book-open"></i></div><div>Cit-Lines</div><div class="count-badge">0</div>
+    </button>
+
+    <!-- ══ CRÉATIVE — VIDÉO ══ -->
+    <button class="btn-3d btn-red"    data-id="yt-mp4"          data-main="creative" data-tags="video" data-url="https://fr.ssyoutube.com/" onclick="handleTool(this)">
         <div class="btn-star">★</div><div class="favicon-badge"><i class="fa-solid fa-circle-down"></i></div><div>Youtube MP4</div><div class="count-badge">0</div>
     </button>
-    <button class="btn-3d btn-orange" data-id="transfer"       data-main="creative" data-tags="video"     data-url="https://www.transfernow.net/fr" onclick="handleTool(this)">
+    <button class="btn-3d btn-red"    data-id="transfer"        data-main="creative" data-tags="video" data-url="https://www.swisstransfer.com/fr" onclick="handleTool(this)">
         <div class="btn-star">★</div><div class="favicon-badge"><i class="fa-solid fa-paper-plane"></i></div><div>Transfer Fichier</div><div class="count-badge">0</div>
     </button>
-    <button class="btn-3d btn-orange" data-id="transcribe-v"   data-main="creative" data-tags="video"     data-url="https://turboscribe.ai/dashboard" onclick="handleTool(this)">
+    <button class="btn-3d btn-red"    data-id="transcribe-v"    data-main="creative" data-tags="video" data-url="https://turboscribe.ai/dashboard" onclick="handleTool(this)">
         <div class="btn-star">★</div><div class="favicon-badge"><i class="fa-solid fa-microphone-lines"></i></div><div>Transcription vidéo</div><div class="count-badge">0</div>
     </button>
-    <button class="btn-3d btn-orange" data-id="transcribe-t"   data-main="creative" data-tags="texte"     data-url="https://turboscribe.ai/dashboard" onclick="handleTool(this)">
+
+    <!-- ══ CRÉATIVE — TEXTE ══ -->
+    <button class="btn-3d btn-red"    data-id="transcribe-t"    data-main="creative" data-tags="texte" data-url="https://turboscribe.ai/dashboard" onclick="handleTool(this)">
         <div class="btn-star">★</div><div class="favicon-badge"><i class="fa-solid fa-file-lines"></i></div><div>Transcription texte</div><div class="count-badge">0</div>
     </button>
-    <button class="btn-3d btn-red"    data-id="yt-radio"       data-main="creative" data-tags="radio"     data-url="https://www.youtube.com/" onclick="handleTool(this)">
-        <div class="btn-star">★</div><div class="favicon-badge"><i class="fa-brands fa-youtube"></i></div><div>Youtube</div><div class="count-badge">0</div>
+    <button class="btn-3d btn-blue"   data-id="ocr-texte"       data-main="creative" data-tags="texte" data-url="" onclick="handleTool(this)">
+        <div class="btn-star">★</div><div class="favicon-badge"><i class="fa-solid fa-magnifying-glass-plus"></i></div><div>OCR</div><div class="count-badge">0</div>
     </button>
-    <button class="btn-3d btn-red"    data-id="gmail-radio"    data-main="creative" data-tags="radio"     data-url="https://mail.google.com/" onclick="handleTool(this)">
+    <button class="btn-3d btn-blue"   data-id="correcteur"      data-main="creative" data-tags="texte" data-url="" onclick="handleTool(this)">
+        <div class="btn-star">★</div><div class="favicon-badge"><i class="fa-solid fa-check-double"></i></div><div>Correcteur</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-blue"   data-id="synonyme-texte"  data-main="creative" data-tags="texte" data-url="" onclick="handleTool(this)">
+        <div class="btn-star">★</div><div class="favicon-badge"><i class="fa-solid fa-spell-check"></i></div><div>Synonymes</div><div class="count-badge">0</div>
+    </button>
+
+    <!-- ══ CRÉATIVE — RADIO ══ -->
+    <button class="btn-3d btn-orange" data-id="ytlive-lines"    data-main="creative" data-tags="radio" onclick="openIframe('iframe_ytlive_lines', this)">
+        <div class="btn-star">★</div><div class="badge-lines"><i class="fa-brands fa-youtube"></i></div><div>Ytlive-Lines</div><div class="count-badge">0</div>
+    </button>
+    <button class="btn-3d btn-orange" data-id="gmail-radio"     data-main="creative" data-tags="radio" data-url="https://mail.google.com/" onclick="handleTool(this)">
         <div class="btn-star">★</div><div class="favicon-badge"><i class="fa-solid fa-envelope"></i></div><div>Gmail</div><div class="count-badge">0</div>
     </button>
-    <button class="btn-3d btn-red"    data-id="yt-mp4-radio"   data-main="creative" data-tags="radio"     data-url="https://fr.ssyoutube.com/" onclick="handleTool(this)">
+    <button class="btn-3d btn-orange" data-id="yt-mp4-radio"    data-main="creative" data-tags="radio" data-url="https://fr.ssyoutube.com/" onclick="handleTool(this)">
         <div class="btn-star">★</div><div class="favicon-badge"><i class="fa-solid fa-music"></i></div><div>Youtube MP4</div><div class="count-badge">0</div>
     </button>
+
+    <!-- ══ PERSO ══ -->
+    <button class="btn-3d btn-blue"   data-id="local-lines"     data-main="perso" data-tags="local" onclick="openIframe('iframe_local_lines', this)">
+        <div class="btn-star">★</div><div class="badge-lines"><i class="fa-solid fa-house-signal"></i></div><div>Local-Lines</div><div class="count-badge">0</div>
+    </button>
+
     <button id="btnAddPerso" class="btn-3d hidden" style="border:2px dashed rgba(10,36,114,0.15);background:none" onclick="openTool('addModal')">
         <div style="font-size:30px;color:var(--muted)"><i class="fa-solid fa-plus"></i></div><div style="color:var(--muted)">Ajouter</div>
     </button>
@@ -664,6 +859,30 @@
         </select>
         <button class="btn-3d btn-blue" style="min-height:50px;width:100%" onclick="addNewTool()">Enregistrer</button>
         <button onclick="closeTool('addModal')" style="margin-top:15px;background:none;border:none;color:#777;width:100%;cursor:pointer">Annuler</button>
+    </div>
+</div>
+
+<!-- MODAL ÉDITION RAPIDE LIEN PERSO -->
+<div id="editModal" class="modal">
+    <div class="box-content">
+        <h3 style="margin-bottom:15px">Modifier le lien</h3>
+        <input type="hidden" id="editId">
+        <input type="text" id="editTitle" placeholder="Nom"         class="cam-input">
+        <input type="text" id="editUrl"   placeholder="URL"         class="cam-input">
+        <input type="text" id="editIcon"  placeholder="Icône (emoji)" class="cam-input">
+        <select id="editColor" class="cam-input">
+            <option value="btn-purple">Violet</option>
+            <option value="btn-blue">Bleu</option>
+            <option value="btn-green">Vert</option>
+            <option value="btn-orange">Orange</option>
+            <option value="btn-red">Rouge</option>
+            <option value="btn-google">Google</option>
+        </select>
+        <button class="btn-3d btn-blue" style="min-height:50px;width:100%;margin-top:4px" onclick="saveEditTool()">Enregistrer</button>
+        <button onclick="deleteEditTool()" style="margin-top:10px;background:none;border:1px solid #F46060;border-radius:10px;color:#F46060;width:100%;padding:10px;cursor:pointer;font-size:13px;">
+            <i class="fa-solid fa-trash" style="margin-right:6px"></i>Supprimer ce lien
+        </button>
+        <button onclick="closeTool('editModal')" style="margin-top:10px;background:none;border:none;color:#777;width:100%;cursor:pointer">Annuler</button>
     </div>
 </div>
 
@@ -754,7 +973,9 @@ function _buildSaveFilename() {
     const jour  = String(now.getDate()).padStart(2, '0');
     const mois  = MOIS_FR[now.getMonth()];
     const annee = now.getFullYear();
-    return `Sauv-Oo-${jour}${mois}${annee}-[${_countElements()}_elements].json`;
+    const elems = _countElements();
+    const actes = parseInt(localStorage.getItem('__op_count__') || '0');
+    return `Sauv-Oo-${jour}${mois}${annee}-[${elems}e +${actes}].json`;
 }
  
 /* ══════════════════════════════════════════════
@@ -820,7 +1041,12 @@ function checkDriftAlert() {
     const el = document.getElementById('driftCount');
     if (el) el.textContent = opCount + ' opération' + (opCount > 1 ? 's' : '');
 
-    localStorage.setItem(DRIFT_LAST_KEY, String(Date.now()));
+    // Bypass du hook setItem pour eviter de re-declencher checkDriftAlert
+    if (Storage.prototype._setItem) {
+        Storage.prototype._setItem.call(localStorage, DRIFT_LAST_KEY, String(Date.now()));
+    } else {
+        localStorage.setItem(DRIFT_LAST_KEY, String(Date.now()));
+    }
 
     setTimeout(() => {
         document.getElementById('driftAlert').classList.add('visible');
@@ -838,14 +1064,13 @@ function driftSaveNow() {
  
 function driftLater() {
     document.getElementById('driftAlert').classList.remove('visible');
-    // Snooze : on reporte le cooldown de 10 min sans réinitialiser le snap
+    // Snooze : reporte le cooldown sans réinitialiser le snapshot
     localStorage.setItem(DRIFT_LAST_KEY, String(Date.now()));
 }
  
 function driftDisable() {
     document.getElementById('driftAlert').classList.remove('visible');
     localStorage.setItem(DRIFT_OFF_KEY, '1');
-    // Met à jour le toggle dans le panel si ouvert
     const toggle = document.getElementById('__sm_drift_toggle__');
     if (toggle) { toggle.textContent = '🔔 Réactiver l\'alerte'; toggle.dataset.on = '0'; }
 }
@@ -859,11 +1084,11 @@ window.onload = () => {
     setMode(mode);
     document.getElementById('mainGrid').style.visibility = 'visible';
     if (!localStorage.getItem(DRIFT_SNAP_KEY)) {
-    localStorage.setItem(DRIFT_SNAP_KEY, String(_countElements()));
-}
+        localStorage.setItem(DRIFT_SNAP_KEY, String(_countElements()));
+    }
     checkDriftAlert();
  
-    // Drag & drop fusion
+    // Drag & drop — zone de fusion JSON
     const dz = document.getElementById('fusionDropZone');
     if (dz) {
         dz.addEventListener('dragover', e => {
@@ -926,14 +1151,21 @@ function setMode(m) {
         multiviewActive = false;
         multiviewSelectedTags = [];
         document.getElementById('btnMultiview').classList.remove('active');
+        document.body.classList.remove('multiview-active');
         const mv = document.getElementById('multiviewContainer');
         if (mv) mv.remove();
         document.getElementById('mainGrid').style.display = '';
     }
     const tags = MODE_TAGS[m] || [];
-    activeTag = tags.length > 0 ? tags[0] : null;
+    const savedTag = localStorage.getItem('activeTag');
+    if (savedTag && tags.includes(savedTag)) {
+        activeTag = savedTag;
+    } else {
+        activeTag = tags.length > 0 ? tags[0] : null;
+        if (activeTag) localStorage.setItem('activeTag', activeTag);
+    }
     renderTagFilters();
-    document.getElementById('btnAddPerso').classList.toggle('hidden', m !== 'perso');
+    document.getElementById('btnAddPerso').classList.toggle('hidden', m !== 'perso' || customTools.length >= MAX_CUSTOM_TOOLS);
     applyFilters();
 }
  
@@ -951,7 +1183,23 @@ function renderTagFilters() {
     } else {
         tags = MODE_TAGS[mode] || [];
         if (tags.length === 0) {
-            fg.innerHTML = '<span style="font-size:10px;opacity:0.5">Tes liens personnalisés</span>';
+            fg.innerHTML = '';
+            const used = customTools.length;
+            const max  = MAX_CUSTOM_TOOLS;
+            let slots = '';
+            for (let i = 0; i < max; i++) {
+                slots += `<div class="perso-slot${i < used ? ' filled' : ''}"></div>`;
+            }
+            fg.innerHTML = `
+                <div class="perso-banner">
+                    <div class="perso-banner-label">
+                        <i class="fa-solid fa-star"></i>
+                        Liens personnalisés &nbsp;<span style="opacity:0.5;font-weight:500">${used}/${max}</span>
+                    </div>
+                    <div class="perso-slots">
+                        ${slots}
+                    </div>
+                </div>`;
             return;
         }
         isActive = tag => activeTag === tag;
@@ -998,6 +1246,7 @@ function onTagClick(tag) {
         renderMultiviewGrid();
     } else {
         activeTag = tag;
+        localStorage.setItem('activeTag', tag);
         renderTagFilters();
         applyFilters();
     }
@@ -1020,6 +1269,317 @@ function toggleFavFilter() {
     document.getElementById('favFilterMain').innerText = favOnly ? '★' : '☆';
     applyFilters();
 }
+
+/* ══════════════════════════════════════════════
+   DICTIONNAIRE D'ALIAS DE RECHERCHE
+   Mots-clés supplémentaires par data-id de bouton
+══════════════════════════════════════════════ */
+const SEARCH_ALIASES = {
+    /* ── Bureau / Admin ── */
+    'sign-pdf':        ['signer','signature','pdf','document','contrat','paraph','valider','officiel'],
+    'envoi-lourd':     ['envoyer','transfert','gros fichier','lourd','swisstransfer','upload','partage','send','wetransfer'],
+    'envoi-facile':    ['envoyer','rapide','24h','wormhole','lien','temporaire','facile','léger','partage','send'],
+    'pdf-lines':       ['pdf','organiser','fusionner','merger','pages','assembler','trier','ilovepdf','document'],
+    'fact-lines':      ['facture','devis','facturation','document','commercial','client','invoice'],
+    'compress-lines':  ['compresser','compression','zip','réduire','fichier','taille','archive','optimiser'],
+
+    /* ── Bureau / Compta ── */
+    'recu-lines':      ['reçu','receipt','photo','scan','capture','ticket','caisse','dépense','note de frais','justificatif','facture'],
+    'rename-lines':    ['renommer','fichier','nom','batch','liste','modifier','rename'],
+    'course-lines':    ['courses','liste','commissions','marché','épicerie','shopping','achats','provisions','caddie'],
+    'gmail-compta':    ['gmail','google','drive','mail','email','courriel','message','cloud','fichier'],
+    'calc-lines':      ['calculette','calcul','calculatrice','addition','opération','maths','chiffres','somme','total','montant'],
+    'drive-compta':    ['drive','google','stockage','cloud','dossier','fichier','document','partage','hébergement'],
+
+    /* ── Bureau / Recherche ── */
+    'archive-url':     ['archive','wayback','web','historique','ancienne version','cache','internet','passé','sauvegarde web','url'],
+    'ign':             ['ign','carte','topographie','terrain','géographie','relief','cadastre','France','plan','satellite','aérien'],
+    'google-street':   ['google','street','maps','carte','map','plan','navigation','itinéraire','adresse','lieu','localisation','géolocalisation','trajet','gps','directions','vue'],
+    'ocr-lines':       ['ocr','texte','scan','reconnaissance','image','lire','extraire','photo','capturer','numériser'],
+    'cit-lines':       ['citation','référence','citer','source','bibliographie','livre','auteur','quote','académique','recherche'],
+
+    /* ── Créative / Vidéo ── */
+    'yt-mp4':          ['youtube','mp4','télécharger','download','vidéo','film','clip','convertir','sauvegarder','yt'],
+    'transfer':        ['transfert','envoyer','fichier','partage','gros','swisstransfer','upload','lien','send'],
+    'transcribe-v':    ['transcription','transcrire','vidéo','sous-titres','audio','parole','texte','discours','turbo'],
+
+    /* ── Créative / Texte ── */
+    'transcribe-t':    ['transcription','transcrire','texte','audio','mp3','parole','convertir','fichier','turbo'],
+    'ocr-texte':       ['ocr','texte','scan','reconnaissance','image','lire','extraire','photo','capturer','numériser'],
+    'correcteur':      ['correcteur','orthographe','grammaire','faute','corriger','texte','rédaction','vérifier','spell'],
+    'synonyme-texte':  ['synonyme','mot','dictionnaire','vocabulaire','sens','définition','langue','écriture','ortho'],
+
+    /* ── Créative / Radio ── */
+    'ytlive-lines':    ['youtube','live','direct','stream','diffusion','radio','chaîne','regarder','vidéo'],
+    'gmail-radio':     ['gmail','mail','email','message','courrier','courriel','inbox','boîte mail'],
+    'yt-mp4-radio':    ['youtube','mp3','mp4','musique','télécharger','audio','download','convertir'],
+
+    /* ── Perso ── */
+    'local-lines':     ['local','réseau','maison','domicile','wifi','intranet','home','serveur','nas','box','réseau local'],
+};
+
+/* ══════════════════════════════════════════════
+   TAGS ENRICHIS PAR OUTIL — fonction + usage réels
+   Affichés comme chips informatives dans le dropdown
+══════════════════════════════════════════════ */
+const SEARCH_TAGS = {
+    /* ── Bureau / Admin ── */
+    // Signer, remplir, ajouter du texte sur un document PDF
+    'sign-pdf':        ['signer','remplir formulaire','texte sur PDF','annotation','parapheur','document officiel','admin'],
+
+    // Envoyer des fichiers lourds via SwissTransfer
+    'envoi-lourd':     ['envoi fichier','gros fichier','transfert','swisstransfer','partage','upload','lien de téléchargement','admin'],
+
+    // Envoi rapide 24h via Wormhole
+    'envoi-facile':    ['envoi rapide','24h','wormhole','lien temporaire','partage léger','transfert','admin'],
+
+    // Organiser, fusionner, découper, extraire, convertir, dupliquer, page blanche PDF
+    'pdf-lines':       ['pdf','fusionner','découper','extraire pages','page blanche','impression','convertir','dupliquer','organiser','admin'],
+
+    // Créer des factures et devis
+    'fact-lines':      ['facture','devis','création','document commercial','client','facturation','admin','compta'],
+
+    // Compresser des fichiers en zip
+    'compress-lines':  ['compresser','zip','réduire taille','archive','fichier lourd','optimiser','admin'],
+
+    /* ── Bureau / Compta ── */
+    // Photographier reçus + faciliter envoi
+    'recu-lines':      ['reçu','photo reçu','scan','justificatif','note de frais','dépense','envoi','compta'],
+
+    // Renommer des fichiers en lot
+    'rename-lines':    ['renommer','batch','lot','fichiers','nommage','organisation','compta','admin'],
+
+    // Liste de courses + fiches recettes/produits + estimation coûts
+    'course-lines':    ['courses','liste','recette','fiche produit','estimation coût','budget','shopping','compta'],
+
+    // Gmail / Drive compta
+    'gmail-compta':    ['gmail','mail','email','google','compta','communication'],
+    'drive-compta':    ['drive','google drive','stockage','cloud','dossiers','compta'],
+
+    // Calcul orienté compta (marges, TVA, totaux)
+    'calc-lines':      ['calcul','compta','TVA','marge','total','montant','chiffres','budget'],
+
+    /* ── Bureau / Recherche ── */
+    'archive-url':     ['archive web','wayback machine','historique site','ancienne version','cache','url','recherche'],
+    'ign':             ['carte IGN','topographie','relief','géographie','cadastre','terrain','france','satellite'],
+    'google-street':   ['google maps','street view','carte','localisation','itinéraire','adresse','navigation','GPS'],
+
+    // OCR : extraire texte d'image + mise en page + notes de bas de page avec références
+    'ocr-lines':       ['OCR','extraire texte','image vers texte','scan','note de bas de page','référence','mise en page','numérisation','recherche'],
+
+    'synonyme-rech':   ['synonyme','vocabulaire','définition','langue','dictionnaire','écriture','recherche'],
+    'cit-lines':       ['citation','bibliographie','source','référence','académique','auteur','livre','recherche'],
+
+    /* ── Créative / Vidéo ── */
+    'yt-mp4':          ['youtube','télécharger vidéo','mp4','convertir','download','créative','vidéo'],
+    'transfer':        ['transfert','envoi fichier','partage','cloud','créative'],
+    'transcribe-v':    ['transcription','vidéo vers texte','sous-titres','speech-to-text','audio','créative'],
+
+    /* ── Créative / Texte ── */
+    'transcribe-t':    ['transcription','audio vers texte','mp3','speech-to-text','fichier audio','créative'],
+    // OCR créatif non fonctionnel — tags minimes
+    'ocr-texte':       ['OCR','non disponible'],
+    // Correcteur orthographique et grammatical
+    'correcteur':      ['correcteur','orthographe','grammaire','correction','fautes','relecture','texte','créative'],
+    'synonyme-texte':  ['synonyme','vocabulaire','définition','langue','dictionnaire','écriture','créative'],
+
+    /* ── Créative / Radio ── */
+    // Ouvre le live d'une page YouTube
+    'ytlive-lines':    ['youtube live','ouvrir live','direct','stream','chaîne','radio','diffusion'],
+    'gmail-radio':     ['gmail','mail','email','communication','radio'],
+    'yt-mp4-radio':    ['youtube','mp3','musique','télécharger audio','download','radio'],
+
+    /* ── Perso ── */
+    // Met en page le localStorage
+    'local-lines':     ['local storage','mise en page','données locales','navigateur','perso','debug'],
+};
+
+/* ══════════════════════════════════════════════
+   RECHERCHE D'OUTIL — avec scoring par pertinence
+══════════════════════════════════════════════ */
+function _getLabel(btn) {
+    const el = btn.querySelector('div:not(.btn-star):not(.badge-lines):not(.count-badge):not(.btn-del):not(.favicon-badge)');
+    return el ? el.textContent.trim() : (btn.dataset.id || '');
+}
+
+function _scoreBtn(btn, query) {
+    const id      = (btn.dataset.id || '').toLowerCase();
+    const label   = _getLabel(btn).toLowerCase();
+    const tags    = (btn.dataset.tags || '').toLowerCase();
+    const aliases = (SEARCH_ALIASES[id] || []).join(' ').toLowerCase();
+    const thTags  = (SEARCH_TAGS[id]   || []).join(' ').toLowerCase();
+    const q = query.toLowerCase();
+
+    if (label === q || id === q)                          return 100;
+    if (label.startsWith(q) || id.startsWith(q))         return 70;
+    if (label.includes(q))                               return 50;
+    if (tags.includes(q))                                return 40;
+    if (thTags.split(/\s+/).some(w => w === q))          return 38;
+    if (aliases.split(/\s+/).some(w => w === q))         return 35;
+    if (thTags.includes(q))                              return 25;
+    if (aliases.includes(q))                             return 20;
+    return 0;
+}
+
+/* ══════════════════════════════════════════════
+   HISTORIQUE DE RECHERCHE (3 derniers clics via barre)
+══════════════════════════════════════════════ */
+const SEARCH_HISTORY_KEY = 'search_history';
+const SEARCH_HISTORY_MAX = 3;
+
+function getSearchHistory() {
+    try { return JSON.parse(localStorage.getItem(SEARCH_HISTORY_KEY) || '[]'); }
+    catch(e) { return []; }
+}
+
+function addToSearchHistory(toolId) {
+    let history = getSearchHistory();
+    history = history.filter(id => id !== toolId); // déduplique
+    history.unshift(toolId);
+    if (history.length > SEARCH_HISTORY_MAX) history = history.slice(0, SEARCH_HISTORY_MAX);
+    localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(history));
+}
+
+function clearSearchHistory() {
+    localStorage.removeItem(SEARCH_HISTORY_KEY);
+    document.getElementById('searchDropdown').style.display = 'none';
+}
+
+function showSearchHistory() {
+    const dropdown = document.getElementById('searchDropdown');
+    const history = getSearchHistory();
+    if (!history.length) { dropdown.style.display = 'none'; return; }
+
+    const colorMap = {
+        'btn-blue':'#0A2472','btn-google':'#1565C0','btn-green':'#006466',
+        'btn-orange':'#c0853a','btn-purple':'#5a3e9e','btn-red':'#F46060'
+    };
+
+    const allBtns = Array.from(document.querySelectorAll('.btn-3d[data-id]'));
+    const historyBtns = history
+        .map(id => allBtns.find(b => b.dataset.id === id))
+        .filter(Boolean);
+
+    if (!historyBtns.length) { dropdown.style.display = 'none'; return; }
+
+    dropdown.innerHTML = `
+        <div class="search-history-header">
+            <span><i class="fa-solid fa-clock-rotate-left" style="margin-right:5px"></i>Récents</span>
+            <button class="search-history-clear" onclick="clearSearchHistory()">Effacer</button>
+        </div>`;
+
+    historyBtns.forEach(btn => {
+        const label      = _getLabel(btn);
+        const tag        = btn.dataset.tags || '';
+        const colorClass = [...btn.classList].find(c => c.startsWith('btn-') && c !== 'btn-3d') || 'btn-blue';
+        const iconEl     = btn.querySelector('.badge-lines i, .favicon-badge i');
+        const iconHTML   = iconEl ? iconEl.outerHTML : '<i class="fa-solid fa-wrench"></i>';
+        const bg         = colorMap[colorClass] || '#0A2472';
+
+        const item = document.createElement('div');
+        item.className = 'search-result-item history-item';
+        item.innerHTML = `
+            <div class="search-result-icon" style="background:${bg}">${iconHTML}</div>
+            <div class="search-result-info">
+                <span class="search-result-name">${label}</span>
+            </div>
+            <span class="search-result-tag">${tag}</span>
+        `;
+        item.addEventListener('click', () => { clearSearch(); btn.click(); });
+        dropdown.appendChild(item);
+    });
+    dropdown.style.display = 'block';
+}
+
+// Affiche l'historique au focus si la barre est vide
+document.addEventListener('DOMContentLoaded', function() {
+    const input = document.getElementById('searchInput');
+    if (input) {
+        input.addEventListener('focus', function() {
+            if (!this.value.trim()) showSearchHistory();
+        });
+    }
+});
+
+function onSearchInput(val) {
+    const clear = document.getElementById('searchClear');
+    const dropdown = document.getElementById('searchDropdown');
+    const query = val.trim();
+
+    clear.style.display = query ? 'block' : 'none';
+
+    if (!query) { showSearchHistory(); return; }
+
+    const allBtns = Array.from(document.querySelectorAll('.btn-3d[data-id]'));
+
+    // Score chaque bouton, filtre les zéros, trie par score décroissant
+    const scored = allBtns
+        .map(btn => ({ btn, score: _scoreBtn(btn, query) }))
+        .filter(x => x.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 8);
+
+    if (!scored.length) {
+        dropdown.innerHTML = '<div class="search-no-result">Aucun outil trouvé — essayez un autre mot-clé</div>';
+        dropdown.style.display = 'block';
+        return;
+    }
+
+    const colorMap = {
+        'btn-blue':'#0A2472','btn-google':'#1565C0','btn-green':'#006466',
+        'btn-orange':'#c0853a','btn-purple':'#5a3e9e','btn-red':'#F46060'
+    };
+
+    dropdown.innerHTML = '';
+    scored.forEach(({ btn }) => {
+        const label      = _getLabel(btn);
+        const tag        = btn.dataset.tags || '';
+        const colorClass = [...btn.classList].find(c => c.startsWith('btn-') && c !== 'btn-3d') || 'btn-blue';
+        const iconEl     = btn.querySelector('.badge-lines i, .favicon-badge i');
+        const iconHTML   = iconEl ? iconEl.outerHTML : '<i class="fa-solid fa-wrench"></i>';
+        const bg         = colorMap[colorClass] || '#0A2472';
+        const aliases    = (SEARCH_ALIASES[btn.dataset.id] || []).slice(0, 3).join(' · ');
+        const thTags     = (SEARCH_TAGS[btn.dataset.id] || []).filter(t => t !== 'non disponible');
+
+        const chipsHTML = thTags.length
+            ? `<div class="search-result-tags">${thTags.map(t => `<span class="search-result-chip">${t}</span>`).join('')}</div>`
+            : '';
+
+        const item = document.createElement('div');
+        item.className = 'search-result-item';
+        item.style.flexDirection = 'column';
+        item.style.alignItems    = 'stretch';
+        item.style.paddingBottom = chipsHTML ? '10px' : '';
+        item.innerHTML = `
+            <div style="display:flex;align-items:center;gap:12px">
+                <div class="search-result-icon" style="background:${bg}">${iconHTML}</div>
+                <div class="search-result-info">
+                    <span class="search-result-name">${label}</span>
+                    ${aliases ? `<span class="search-result-aliases">${aliases}</span>` : ''}
+                </div>
+                <span class="search-result-tag">${tag}</span>
+            </div>
+            ${chipsHTML}
+        `;
+        item.addEventListener('click', () => { addToSearchHistory(btn.dataset.id); clearSearch(); btn.click(); });
+        dropdown.appendChild(item);
+    });
+    dropdown.style.display = 'block';
+}
+
+function clearSearch() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('searchClear').style.display = 'none';
+    document.getElementById('searchDropdown').style.display = 'none';
+}
+
+// Fermer le dropdown si clic en dehors de la barre de recherche
+document.addEventListener('click', function(e) {
+    const container = document.querySelector('.search-bar-container');
+    if (container && !container.contains(e.target)) {
+        document.getElementById('searchDropdown').style.display = 'none';
+    }
+});
  
 /* ══════════════════════════════════════════════
    OUTILS
@@ -1048,24 +1608,22 @@ function openIframe(id, btn) {
         iframe.src = iframe.dataset.src;
     }
     container.style.display = 'block';
-    
-    // --- NOUVEAU : Masquer le bouton de sauvegarde ---
+
+    // Masquer l'indicateur de sauvegarde pendant l'affichage de l'iframe
     const smIndicator = document.getElementById('__sm_indicator__');
     if (smIndicator) smIndicator.style.display = 'none';
-    // -------------------------------------------------
 
     clics[btn.dataset.id] = (clics[btn.dataset.id] || 0) + 1;
     localStorage.setItem('clics', JSON.stringify(clics));
     btn.querySelector('.count-badge').innerText = clics[btn.dataset.id];
 }
  
-function closeIframe(id) { 
-    document.getElementById(id).style.display = 'none'; 
+function closeIframe(id) {
+    document.getElementById(id).style.display = 'none';
 
-    // --- NOUVEAU : Réafficher le bouton de sauvegarde ---
+    // Réafficher l'indicateur de sauvegarde à la fermeture
     const smIndicator = document.getElementById('__sm_indicator__');
     if (smIndicator) smIndicator.style.display = 'flex';
-    // ----------------------------------------------------
 }
 function openTool(id)    { document.getElementById(id).style.display = 'flex'; }
 function closeTool(id)   { document.getElementById(id).style.display = 'none'; }
@@ -1073,7 +1631,13 @@ function closeTool(id)   { document.getElementById(id).style.display = 'none'; }
 /* ══════════════════════════════════════════════
    OUTILS PERSO
 ══════════════════════════════════════════════ */
+const MAX_CUSTOM_TOOLS = 5;
+
 function addNewTool() {
+    if (customTools.length >= MAX_CUSTOM_TOOLS) {
+        alert(`Maximum ${MAX_CUSTOM_TOOLS} boutons personnalisés autorisés.`);
+        return;
+    }
     let t = document.getElementById('newTitle').value;
     let u = document.getElementById('newUrl').value;
     let i = document.getElementById('newIcon').value  || '🔗';
@@ -1109,6 +1673,42 @@ function deleteTool(id) {
         location.reload();
     }
 }
+
+function openEditTool(id) {
+    const t = customTools.find(t => t.id === id);
+    if (!t) return;
+    document.getElementById('editId').value    = id;
+    document.getElementById('editTitle').value = t.title;
+    document.getElementById('editUrl').value   = t.url;
+    document.getElementById('editIcon').value  = t.icon || '🔗';
+    document.getElementById('editColor').value = t.color || 'btn-purple';
+    openTool('editModal');
+}
+
+function saveEditTool() {
+    const id = document.getElementById('editId').value;
+    const t  = customTools.find(t => t.id === id);
+    if (!t) return;
+    let u = document.getElementById('editUrl').value.trim();
+    u = u.startsWith('http') ? u : 'https://' + u;
+    t.title = document.getElementById('editTitle').value.trim() || t.title;
+    t.url   = u;
+    t.icon  = document.getElementById('editIcon').value.trim() || '🔗';
+    t.color = document.getElementById('editColor').value;
+    localStorage.setItem('customTools', JSON.stringify(customTools));
+    closeTool('editModal');
+    location.reload();
+}
+
+function deleteEditTool() {
+    const id = document.getElementById('editId').value;
+    if (confirm('Supprimer ce lien ?')) {
+        customTools = customTools.filter(t => t.id !== id);
+        localStorage.setItem('customTools', JSON.stringify(customTools));
+        closeTool('editModal');
+        location.reload();
+    }
+}
  
 function resetFilters() {
     if (confirm('Tout réinitialiser ?')) { localStorage.clear(); location.reload(); }
@@ -1120,6 +1720,7 @@ function resetFilters() {
 function toggleMultiview() {
     multiviewActive = !multiviewActive;
     document.getElementById('btnMultiview').classList.toggle('active', multiviewActive);
+    document.body.classList.toggle('multiview-active', multiviewActive);
     if (!multiviewActive) {
         if (multiviewSelectedTags.length > 0) activeTag = multiviewSelectedTags[0];
         if (!activeTag) {
@@ -1511,7 +2112,6 @@ function closeFusionModal() {
             _dirHandle = handle;
             refreshIndicatorState();
             _updateDirBadge();
-            console.log('[StorageManager] Dossier restauré : ' + handle.name);
           } else {
             // Permission expirée → demande explicite
             return handle.requestPermission({ mode: 'readwrite' })
@@ -1537,7 +2137,7 @@ function closeFusionModal() {
   function initStoragePersistence() {
     if (navigator.storage && navigator.storage.persist) {
       navigator.storage.persist().then(function (granted) {
-        console.log('[StorageManager] Persistance : ' + (granted ? 'activée ✓' : 'refusée'));
+        if (!granted) console.warn('[StorageManager] Persistance non accordée.');
       }).catch(function (err) { console.warn('[StorageManager] persist() :', err); });
     }
   }
@@ -1604,7 +2204,8 @@ function closeFusionModal() {
       }
     }
  
-    return 'Sauv-Oo-' + jour + mois + annee + '-[' + totalElements + '_elements].json';
+    var actes = parseInt(localStorage.getItem('__op_count__') || '0');
+    return 'Sauv-Oo-' + jour + mois + annee + '-[' + totalElements + 'e +' + actes + '].json';
   }
  
   /* ════════════════════════════════════════
@@ -1809,7 +2410,6 @@ function closeFusionModal() {
     if (_dirHandle) {
       _modCount++;
       if (_modCount >= CONFIG.AUTO_SAVE_EVERY) {
-        console.log('[StorageManager] Auto-save PC déclenché (' + _modCount + ' modifications)');
         _exportToDirectory(true); // silent = true
       }
     }
@@ -2156,7 +2756,7 @@ function closeFusionModal() {
                : (delta > 0 ? '+' + delta + ' ajout(s)' : delta + ' suppression(s)');
 
   lines.push('\nTOTAL = ' + grandTotal + ' éléments');
-lines.push('Opérations depuis backup = ' + localStorage.getItem('__op_count__') || '0');
+  lines.push('Opérations depuis backup = ' + (localStorage.getItem('__op_count__') || '0'));
   alert(lines.join('\n'));
 }));
  
@@ -2290,27 +2890,24 @@ lines.push('Opérations depuis backup = ' + localStorage.getItem('__op_count__')
       clear     : Storage.prototype.clear
     };
     Storage.prototype._setItem = _orig.setItem;
- 
     Storage.prototype.setItem = function (key, value) {
-  _orig.setItem.call(this, key, value);
-  if (this === localStorage) {
-    // Incrémenter le compteur d'opérations
-    var count = parseInt(localStorage.getItem('__op_count__') || '0') + 1;
-    _orig.setItem.call(this, '__op_count__', String(count));
-    handleAutoSave(key);
-    if (typeof checkDriftAlert === 'function') checkDriftAlert();
-  }
-};
+      _orig.setItem.call(this, key, value);
+      if (this === localStorage) {
+        const count = parseInt(localStorage.getItem('__op_count__') || '0') + 1;
+        _orig.setItem.call(this, '__op_count__', String(count));
+        handleAutoSave(key);
+        if (typeof checkDriftAlert === 'function') checkDriftAlert();
+      }
+    };
 
-Storage.prototype.removeItem = function (key) {
-  _orig.removeItem.call(this, key);
-  if (this === localStorage) {
-    // Incrémenter aussi sur suppression
-    var count = parseInt(localStorage.getItem('__op_count__') || '0') + 1;
-    _orig.setItem.call(this, '__op_count__', String(count));
-    if (typeof checkDriftAlert === 'function') checkDriftAlert();
-  }
-};
+    Storage.prototype.removeItem = function (key) {
+      _orig.removeItem.call(this, key);
+      if (this === localStorage) {
+        const count = parseInt(localStorage.getItem('__op_count__') || '0') + 1;
+        _orig.setItem.call(this, '__op_count__', String(count));
+        if (typeof checkDriftAlert === 'function') checkDriftAlert();
+      }
+    };
     Storage.prototype.clear = function () { _orig.clear.call(this); };
   }
  
@@ -2448,10 +3045,9 @@ Storage.prototype.removeItem = function (key) {
     // 1. On écoute les messages venant des différentes IFrames
     window.addEventListener('message', function(event) {
         if (event.data === 'etape_suivante' && !navigationManuelleActive) {
-            // On crée UNE SEULE étape dans l'historique pour dire qu'une iframe est ouverte
-            history.pushState({ iframeOpen: true }, "");
+            // Crée un point de retour dans l'historique pour le bouton Retour natif
+            history.pushState({ iframeOpen: true }, '');
             navigationManuelleActive = true;
-            console.log("Navigation capturée : point de retour créé.");
         }
     });
 
@@ -2465,11 +3061,9 @@ Storage.prototype.removeItem = function (key) {
             const containers = document.querySelectorAll('.iframe-container');
             containers.forEach(container => {
                 if (window.getComputedStyle(container).display !== 'none') {
-                    // On ferme l'iframe proprement avec ta fonction existante
                     closeIframe(container.id);
                 }
             });
-            console.log("Retour à l'index effectué.");
         }
     };
 })();
