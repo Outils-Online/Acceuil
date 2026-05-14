@@ -580,8 +580,11 @@ let currentFileKey = null;
 window.addEventListener('load', () => {
   const hash = window.location.hash;
   if (hash && hash.includes('k=') && hash.includes('iv=')) {
-    // C'est un lien de réception — on montre quand même le login d'abord
-    sessionStorage.setItem('sl_pending_receive', '1');
+    // Lien de réception — affiche directement sans login
+    document.getElementById('login-view').style.display = 'none';
+    document.getElementById('app-view').style.display = 'block';
+    showReceiveView();
+    return;
   }
   checkSession();
 });
@@ -991,12 +994,11 @@ async function startDecrypt() {
       // Bucket privé : demander une presigned GET URL au Worker
       setRecvStatus('Génération lien sécurisé B2…', 30);
       const savedPwd = sessionStorage.getItem('sl_pwd') || appPassword || '';
-      if (!savedPwd) throw new Error('Mot de passe requis pour télécharger depuis Backblaze');
-
+      
       const presignResp = await fetch(
-        WORKER_URL + '/b2-download?key=' + encodeURIComponent(b2Key) + '&expires=3600',
-        { headers: { 'X-App-Password': savedPwd } }
-      );
+  WORKER_URL + '/b2-download?key=' + encodeURIComponent(b2Key) + '&expires=3600'
+);
+
       if (!presignResp.ok) throw new Error('Worker HTTP ' + presignResp.status);
       const presignData = await presignResp.json();
       if (!presignData.success) throw new Error(presignData.message || 'Presign GET échoué');
