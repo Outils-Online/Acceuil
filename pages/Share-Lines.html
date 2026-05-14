@@ -585,9 +585,11 @@ window.addEventListener('load', () => {
 //  AUTH
 // ═══════════════════════════════════════
 function checkSession() {
+  // DEBUG
+  console.log("[SL] checkSession called");
   const saved = sessionStorage.getItem('sl_session');
   const savedPwd = sessionStorage.getItem('sl_pwd');
-  if (saved === '1' && savedPwd) {
+  if (saved === '1' && savedPwd && savedPwd.length > 0) {
     appPassword = savedPwd;
     showApp();
   }
@@ -795,6 +797,8 @@ async function startUpload() {
 }
 
 async function uploadFileIO(blob, randName) {
+  // Recharge le mot de passe depuis sessionStorage au cas où
+  if (!appPassword) appPassword = sessionStorage.getItem('sl_pwd') || '';
   const exp=expiryToFileIO(currentExpiry);
   const fd=new FormData(); fd.append('file',blob,randName);
   const resp=await fetch(WORKER_URL+'/upload?expires='+exp,{method:'POST',headers:{'X-App-Password':appPassword},body:fd});
