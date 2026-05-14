@@ -14,8 +14,9 @@
       --bg-tertiary: #efefed;
       --text: #1a1a18;
       --text-secondary: #6b6b67;
-      --border: rgba(0,0,0,0.10);
-      --border-strong: rgba(0,0,0,0.20);
+      --text-tertiary: #9a9a94;
+      --border: rgba(0,0,0,0.09);
+      --border-strong: rgba(0,0,0,0.18);
       --green: #1D9E75;
       --green-dark: #0F6E56;
       --green-deeper: #085041;
@@ -26,28 +27,33 @@
       --amber-light: #FAEEDA;
       --amber-mid: #FAC775;
       --amber-text: #412402;
-      --red: #A32D2D;
+      --red: #C0392B;
       --red-light: #FCEBEB;
+      --red-mid: #F1A8A0;
+      --radius-sm: 6px;
       --radius-md: 8px;
       --radius-lg: 12px;
+      --radius-xl: 16px;
     }
 
     @media (prefers-color-scheme: dark) {
       :root {
         --bg: #1c1c1a;
-        --bg-secondary: #2a2a28;
-        --bg-tertiary: #222220;
+        --bg-secondary: #262624;
+        --bg-tertiary: #1a1a18;
         --text: #f0f0ec;
         --text-secondary: #9a9a94;
-        --border: rgba(255,255,255,0.08);
-        --border-strong: rgba(255,255,255,0.18);
-        --green-light: #0a3328;
+        --text-tertiary: #6b6b67;
+        --border: rgba(255,255,255,0.07);
+        --border-strong: rgba(255,255,255,0.16);
+        --green-light: #0a2e22;
         --green-mid: #0F6E56;
         --green-text: #9FE1CB;
-        --amber-light: #2a1e08;
-        --amber-mid: #854F0B;
+        --amber-light: #251a06;
+        --amber-mid: #7A4A0A;
         --amber-text: #FAC775;
         --red-light: #2a1010;
+        --red-mid: #7A1A1A;
       }
     }
 
@@ -59,16 +65,66 @@
       display: flex;
       align-items: flex-start;
       justify-content: center;
-      padding: 2rem 1rem 4rem;
+      padding: 1.5rem 1rem 4rem;
     }
 
-    .app { width: 100%; max-width: 520px; }
+    .app { width: 100%; max-width: 540px; }
 
-    .header { margin-bottom: 1.75rem; }
-    .logo { font-size: 26px; font-weight: 600; color: var(--text); letter-spacing: -0.5px; }
+    /* ── Header ── */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+    }
+    .logo { font-size: 22px; font-weight: 600; letter-spacing: -0.5px; }
     .logo span { color: var(--green); }
-    .tagline { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+    .tagline { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
 
+    /* ── Tabs ── */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--bg-secondary);
+      border: 0.5px solid var(--border-strong);
+      border-radius: var(--radius-lg);
+      padding: 4px;
+      margin-bottom: 1rem;
+    }
+    .tab {
+      flex: 1;
+      padding: 0.55rem 1rem;
+      border: none;
+      border-radius: var(--radius-md);
+      background: transparent;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .tab.active {
+      background: var(--bg);
+      color: var(--text);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .tab-badge {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: 99px;
+      background: var(--green);
+      color: white;
+      min-width: 18px;
+      text-align: center;
+    }
+
+    /* ── Card ── */
     .card {
       background: var(--bg);
       border: 0.5px solid var(--border);
@@ -77,63 +133,74 @@
       margin-bottom: 0.75rem;
     }
 
-    /* Drop zone */
+    /* ── Drop zone ── */
     .drop-zone {
       border: 1.5px dashed var(--border-strong);
       border-radius: var(--radius-md);
-      padding: 2.25rem 1rem;
+      padding: 2rem 1rem;
       text-align: center;
       cursor: pointer;
       transition: background 0.15s;
     }
     .drop-zone:hover, .drop-zone.drag-over { background: var(--bg-secondary); }
-    .drop-icon { font-size: 28px; margin-bottom: 0.5rem; }
+    .drop-icon { font-size: 26px; margin-bottom: 0.5rem; }
     .drop-zone p { font-size: 14px; color: var(--text-secondary); }
     .drop-zone p strong { color: var(--text); font-weight: 500; }
-    .drop-hint { font-size: 12px; margin-top: 4px; }
+    .drop-hint { font-size: 11px; margin-top: 3px; color: var(--text-tertiary); }
     input[type="file"] { display: none; }
 
-    /* File preview */
     .file-preview {
       display: none;
       align-items: center;
       gap: 10px;
-      padding: 0.65rem 0.75rem;
+      padding: 0.6rem 0.75rem;
       background: var(--bg-secondary);
       border-radius: var(--radius-md);
       margin-top: 0.75rem;
     }
-    .file-icon { font-size: 18px; flex-shrink: 0; }
     .file-name { font-size: 13px; font-weight: 500; color: var(--text); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .file-size { font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
-    .file-remove { font-size: 16px; cursor: pointer; color: var(--text-secondary); flex-shrink: 0; background: none; border: none; padding: 0; }
-    .file-remove:hover { color: var(--red); }
+    .file-size { font-size: 11px; color: var(--text-tertiary); white-space: nowrap; }
+    .file-remove { font-size: 14px; cursor: pointer; color: var(--text-tertiary); background: none; border: none; padding: 2px 4px; border-radius: 4px; }
+    .file-remove:hover { color: var(--red); background: var(--red-light); }
 
-    /* Provider badge */
     .provider-badge {
       display: none;
       align-items: center;
       gap: 6px;
-      padding: 4px 10px;
+      padding: 3px 10px;
       border-radius: 99px;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 500;
       margin-top: 0.5rem;
+      width: fit-content;
     }
     .provider-badge.fileio { background: var(--green-light); color: var(--green-deeper); }
     .provider-badge.gofile { background: var(--amber-light); color: var(--amber-text); }
 
-    /* Section label */
+    .provider-warning {
+      display: none;
+      gap: 8px;
+      padding: 0.6rem 0.75rem;
+      background: var(--amber-light);
+      border: 0.5px solid var(--amber-mid);
+      border-radius: var(--radius-md);
+      margin-top: 0.6rem;
+      font-size: 12px;
+      color: var(--amber-text);
+      line-height: 1.5;
+    }
+
+    /* ── Section label ── */
     .section-label {
       font-size: 11px;
       font-weight: 600;
-      color: var(--text-secondary);
+      color: var(--text-tertiary);
       text-transform: uppercase;
       letter-spacing: 0.6px;
-      margin-bottom: 0.65rem;
+      margin-bottom: 0.6rem;
     }
 
-    /* Expiry grid */
+    /* ── Expiry grid ── */
     .expiry-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -145,75 +212,60 @@
       border-radius: var(--radius-md);
       background: var(--bg);
       cursor: pointer;
-      font-size: 12px;
-      font-weight: 500;
+      font-size: 11px;
       color: var(--text-secondary);
       text-align: center;
       transition: all 0.12s;
       font-family: inherit;
-      line-height: 1.3;
+      line-height: 1.4;
     }
-    .exp-btn .exp-duration { font-size: 13px; font-weight: 600; color: var(--text); display: block; }
+    .exp-btn .dur { font-size: 14px; font-weight: 600; color: var(--text); display: block; }
     .exp-btn:hover { background: var(--bg-secondary); }
     .exp-btn.active { border-color: var(--green); background: var(--green-light); }
-    .exp-btn.active .exp-duration { color: var(--green-dark); }
+    .exp-btn.active .dur { color: var(--green-dark); }
     .exp-btn.active { color: var(--green-dark); }
 
-    /* Auto-destroy toggle */
+    /* ── Toggle ── */
     .toggle-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0.65rem 0;
+      padding: 0.6rem 0;
       border-top: 0.5px solid var(--border);
       margin-top: 0.75rem;
     }
-    .toggle-label { font-size: 13px; color: var(--text); display: flex; align-items: center; gap: 6px; }
-    .toggle-sub { font-size: 11px; color: var(--text-secondary); display: block; }
-    .toggle {
-      position: relative;
-      width: 36px;
-      height: 20px;
-      flex-shrink: 0;
-    }
+    .toggle-label { font-size: 13px; color: var(--text); display: flex; align-items: center; gap: 7px; }
+    .toggle-sub { font-size: 11px; color: var(--text-tertiary); display: block; margin-top: 1px; }
+    .toggle { position: relative; width: 34px; height: 19px; flex-shrink: 0; }
     .toggle input { opacity: 0; width: 0; height: 0; }
     .toggle-slider {
-      position: absolute;
-      inset: 0;
+      position: absolute; inset: 0;
       background: var(--border-strong);
-      border-radius: 99px;
-      cursor: pointer;
-      transition: background 0.2s;
+      border-radius: 99px; cursor: pointer; transition: background 0.2s;
     }
     .toggle-slider::before {
-      content: '';
-      position: absolute;
-      width: 14px;
-      height: 14px;
-      left: 3px;
-      top: 3px;
-      background: white;
-      border-radius: 50%;
-      transition: transform 0.2s;
+      content: ''; position: absolute;
+      width: 13px; height: 13px; left: 3px; top: 3px;
+      background: white; border-radius: 50%; transition: transform 0.2s;
     }
     .toggle input:checked + .toggle-slider { background: var(--green); }
-    .toggle input:checked + .toggle-slider::before { transform: translateX(16px); }
+    .toggle input:checked + .toggle-slider::before { transform: translateX(15px); }
+    .toggle input:disabled + .toggle-slider { opacity: 0.4; cursor: not-allowed; }
 
-    /* Security note */
+    /* ── Security note ── */
     .security-note {
       display: flex;
       align-items: flex-start;
       gap: 8px;
-      padding: 0.65rem 0.75rem;
+      padding: 0.6rem 0.75rem;
       background: var(--bg-secondary);
       border-radius: var(--radius-md);
       margin-top: 0.75rem;
     }
-    .security-note .s-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
     .security-note p { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
     .security-note p strong { color: var(--text); font-weight: 500; }
 
-    /* Send button */
+    /* ── Send btn ── */
     .send-btn {
       width: 100%;
       padding: 0.85rem;
@@ -232,20 +284,16 @@
       font-family: inherit;
     }
     .send-btn:hover { background: var(--green-dark); }
-    .send-btn:disabled { background: var(--bg-secondary); color: var(--text-secondary); cursor: not-allowed; }
+    .send-btn:disabled { background: var(--bg-secondary); color: var(--text-tertiary); cursor: not-allowed; }
 
-    /* Progress */
+    /* ── Progress ── */
     .progress-area { display: none; margin-top: 0.75rem; }
     .progress-bar { height: 3px; background: var(--bg-secondary); border-radius: 2px; overflow: hidden; }
     .progress-fill { height: 100%; background: var(--green); border-radius: 2px; width: 0%; transition: width 0.4s ease; }
-    .status-text { font-size: 12px; color: var(--text-secondary); margin-top: 0.4rem; text-align: center; }
+    .status-text { font-size: 12px; color: var(--text-tertiary); margin-top: 0.4rem; text-align: center; }
+    .error-msg { font-size: 13px; color: var(--red); text-align: center; margin-top: 0.5rem; display: none; padding: 0.5rem 0.75rem; background: var(--red-light); border-radius: var(--radius-md); }
 
-    /* Error */
-    .error-msg { font-size: 13px; color: var(--red); text-align: center; margin-top: 0.5rem; display: none; padding: 0.5rem; background: var(--red-light); border-radius: var(--radius-md); }
-
-    /* Result */
-    #result-view { display: none; }
-
+    /* ── Result card ── */
     .result-card {
       background: var(--green-light);
       border: 0.5px solid var(--green-mid);
@@ -253,65 +301,62 @@
       padding: 1.25rem;
       margin-bottom: 0.75rem;
     }
-
-    .result-title {
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--green-deeper);
-      margin-bottom: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
+    .result-title { font-size: 14px; font-weight: 600; color: var(--green-deeper); margin-bottom: 1rem; display: flex; align-items: center; gap: 6px; }
 
     .link-box {
       background: var(--bg);
       border: 0.5px solid var(--border-strong);
       border-radius: var(--radius-md);
-      padding: 0.65rem 0.75rem;
+      padding: 0.6rem 0.75rem;
       display: flex;
       align-items: center;
       gap: 8px;
       margin-bottom: 0.75rem;
     }
     .link-text {
-      font-size: 11px;
-      color: var(--text-secondary);
-      flex: 1;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      font-size: 11px; color: var(--text-secondary); flex: 1;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
       font-family: 'SF Mono', 'Fira Code', monospace;
     }
     .copy-btn {
-      padding: 0.35rem 0.65rem;
+      padding: 0.3rem 0.6rem;
       border: 0.5px solid var(--border-strong);
-      border-radius: var(--radius-md);
+      border-radius: var(--radius-sm);
       background: var(--bg);
       cursor: pointer;
       font-size: 12px;
       color: var(--text);
       white-space: nowrap;
-      display: flex;
-      align-items: center;
-      gap: 4px;
+      display: flex; align-items: center; gap: 4px;
       font-family: inherit;
       transition: background 0.1s;
       flex-shrink: 0;
     }
     .copy-btn:hover { background: var(--bg-secondary); }
 
-    .meta-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1rem; }
-    .meta-pill {
-      font-size: 11px;
-      padding: 3px 8px;
-      border-radius: 99px;
-      background: var(--green-mid);
-      color: var(--green-text);
-      display: flex;
-      align-items: center;
-      gap: 3px;
+    .meta-pills { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 1rem; }
+    .pill {
+      font-size: 11px; padding: 2px 8px; border-radius: 99px;
+      background: var(--green-mid); color: var(--green-text);
+      display: flex; align-items: center; gap: 3px;
     }
+
+    .result-actions { display: flex; gap: 8px; margin-bottom: 1rem; }
+    .destroy-btn {
+      flex: 1;
+      padding: 0.55rem;
+      border: 0.5px solid var(--red-mid);
+      border-radius: var(--radius-md);
+      background: var(--red-light);
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--red);
+      font-family: inherit;
+      display: flex; align-items: center; justify-content: center; gap: 5px;
+      transition: all 0.12s;
+    }
+    .destroy-btn:hover { background: var(--red); color: white; border-color: var(--red); }
+    .destroy-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
     .qr-area {
       text-align: center;
@@ -319,98 +364,206 @@
       border-top: 0.5px solid var(--green-mid);
     }
     #qr-canvas { border-radius: var(--radius-md); display: inline-block; }
-    .qr-label { font-size: 12px; color: var(--green-dark); margin-top: 0.4rem; }
+    .qr-label { font-size: 11px; color: var(--green-dark); margin-top: 0.4rem; }
 
     .new-btn {
-      width: 100%;
-      padding: 0.75rem;
+      width: 100%; padding: 0.7rem;
+      border: 0.5px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      background: var(--bg); cursor: pointer;
+      font-size: 13px; color: var(--text-secondary);
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      font-family: inherit; transition: background 0.1s;
+    }
+    .new-btn:hover { background: var(--bg-secondary); }
+
+    /* ── History tab ── */
+    #history-view { display: none; }
+
+    .history-empty {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--text-tertiary);
+    }
+    .history-empty .empty-icon { font-size: 36px; margin-bottom: 0.75rem; }
+    .history-empty p { font-size: 14px; }
+
+    .history-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+    }
+    .history-count { font-size: 13px; color: var(--text-secondary); }
+    .clear-all-btn {
+      font-size: 12px; color: var(--red);
+      background: none; border: none; cursor: pointer;
+      padding: 4px 8px; border-radius: var(--radius-sm);
+      font-family: inherit;
+    }
+    .clear-all-btn:hover { background: var(--red-light); }
+
+    /* History item */
+    .history-item {
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      margin-bottom: 0.75rem;
+      overflow: hidden;
+      transition: border-color 0.15s;
+    }
+    .history-item.destroyed { opacity: 0.5; }
+    .history-item.destroyed .hist-status { color: var(--red); }
+
+    /* Primary info row */
+    .hist-primary {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0.85rem 1rem;
+      cursor: pointer;
+    }
+    .hist-primary:hover { background: var(--bg-secondary); }
+
+    .hist-file-icon { font-size: 22px; flex-shrink: 0; }
+    .hist-main { flex: 1; min-width: 0; }
+    .hist-filename {
+      font-size: 14px; font-weight: 500; color: var(--text);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .hist-meta-row {
+      display: flex; align-items: center; gap: 8px; margin-top: 2px; flex-wrap: wrap;
+    }
+    .hist-size { font-size: 11px; color: var(--text-tertiary); }
+    .hist-provider {
+      font-size: 10px; font-weight: 600; padding: 1px 6px;
+      border-radius: 99px; text-transform: uppercase; letter-spacing: 0.3px;
+    }
+    .hist-provider.fileio { background: var(--green-light); color: var(--green-deeper); }
+    .hist-provider.gofile { background: var(--amber-light); color: var(--amber-text); }
+
+    /* Status */
+    .hist-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+    .hist-status { font-size: 11px; font-weight: 500; }
+    .hist-status.active { color: var(--green); }
+    .hist-status.destroyed { color: var(--red); }
+    .hist-status.expired { color: var(--text-tertiary); }
+    .hist-chevron { font-size: 12px; color: var(--text-tertiary); transition: transform 0.2s; }
+    .hist-chevron.open { transform: rotate(180deg); }
+
+    /* Expanded detail */
+    .hist-detail {
+      display: none;
+      padding: 0 1rem 1rem;
+      border-top: 0.5px solid var(--border);
+    }
+    .hist-detail.open { display: block; }
+
+    .hist-detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 0.75rem;
+      padding-top: 0.75rem;
+    }
+    .detail-cell { }
+    .detail-label { font-size: 10px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+    .detail-value { font-size: 13px; color: var(--text); }
+
+    .hist-link-box {
+      background: var(--bg-secondary);
+      border: 0.5px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      padding: 0.5rem 0.75rem;
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 0.75rem;
+    }
+    .hist-link-text {
+      font-size: 10px; color: var(--text-tertiary); flex: 1;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+    }
+
+    .hist-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+    .hist-action-btn {
+      flex: 1; min-width: 80px;
+      padding: 0.45rem 0.5rem;
       border: 0.5px solid var(--border-strong);
       border-radius: var(--radius-md);
       background: var(--bg);
       cursor: pointer;
-      font-size: 14px;
-      color: var(--text-secondary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
+      font-size: 12px; color: var(--text-secondary);
       font-family: inherit;
-      transition: background 0.1s;
+      display: flex; align-items: center; justify-content: center; gap: 4px;
+      transition: all 0.12s;
     }
-    .new-btn:hover { background: var(--bg-secondary); }
+    .hist-action-btn:hover { background: var(--bg-secondary); color: var(--text); }
+    .hist-action-btn.danger { border-color: var(--red-mid); color: var(--red); }
+    .hist-action-btn.danger:hover { background: var(--red); color: white; border-color: var(--red); }
+    .hist-action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-    /* Warning for gofile */
-    .provider-warning {
-      display: none;
-      align-items: flex-start;
-      gap: 8px;
-      padding: 0.65rem 0.75rem;
-      background: var(--amber-light);
-      border-radius: var(--radius-md);
+    .hist-qr {
+      text-align: center;
+      padding: 0.75rem 0 0;
+      border-top: 0.5px solid var(--border);
       margin-top: 0.75rem;
-      border: 0.5px solid var(--amber-mid);
     }
-    .provider-warning p { font-size: 12px; color: var(--amber-text); line-height: 1.5; }
+    .hist-qr-label { font-size: 11px; color: var(--text-tertiary); margin-top: 0.4rem; }
   </style>
 </head>
 <body>
 <div class="app">
+
+  <!-- Header -->
   <div class="header">
-    <div class="logo">Share<span>Lines</span></div>
-    <p class="tagline">Chiffrement AES-256 · Lien magique · Nom aléatoire · Zéro trace</p>
+    <div>
+      <div class="logo">Share<span>Lines</span></div>
+      <div class="tagline">Chiffrement AES-256 · Lien magique · Zéro trace</div>
+    </div>
   </div>
 
-  <!-- Upload view -->
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" id="tab-upload" onclick="switchTab('upload')">
+      ⬆️ Envoyer
+    </button>
+    <button class="tab" id="tab-history" onclick="switchTab('history')">
+      🕓 Historique <span class="tab-badge" id="history-badge" style="display:none">0</span>
+    </button>
+  </div>
+
+  <!-- ══════════════ UPLOAD VIEW ══════════════ -->
   <div id="upload-view">
 
-    <!-- Fichier -->
     <div class="card">
       <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()" role="button" tabindex="0">
         <div class="drop-icon">⬆️</div>
         <p><strong>Clique ou dépose</strong> ton fichier ici</p>
-        <p class="drop-hint">Chiffré AES-256 avant envoi · Nom randomisé</p>
+        <p class="drop-hint">Chiffré AES-256 avant envoi · Nom randomisé · Max 2 GB (file.io) ou illimité (GoFile)</p>
       </div>
       <input type="file" id="file-input">
 
       <div class="file-preview" id="file-preview">
-        <span class="file-icon">📄</span>
+        <span style="font-size:20px">📄</span>
         <span class="file-name" id="file-name">—</span>
         <span class="file-size" id="file-size">—</span>
-        <button class="file-remove" onclick="removeFile()" title="Retirer">✕</button>
+        <button class="file-remove" onclick="removeFile()">✕</button>
       </div>
 
-      <div class="provider-badge fileio" id="badge-fileio">
-        🟢 file.io · jusqu'à 2 GB · fiable & transparent
-      </div>
-      <div class="provider-badge gofile" id="badge-gofile">
-        🟡 GoFile · fichier &gt; 2 GB · nom randomisé · chiffré
-      </div>
-
+      <div class="provider-badge fileio" id="badge-fileio">🟢 file.io · jusqu'à 2 GB</div>
+      <div class="provider-badge gofile" id="badge-gofile">🟡 GoFile · fichier &gt; 2 GB</div>
       <div class="provider-warning" id="gofile-warning">
-        <p>⚠️ Ton fichier dépasse 2 GB — on bascule automatiquement sur GoFile. Le nom du fichier est randomisé et les données sont chiffrées AES-256 avant envoi. GoFile ne voit que du charabia.</p>
+        ⚠️ Fichier &gt; 2 GB — bascule automatique sur GoFile. Nom randomisé + chiffrement AES-256. GoFile ne voit que du charabia.
       </div>
     </div>
 
-    <!-- Expiration -->
     <div class="card">
       <p class="section-label">Expiration du lien</p>
       <div class="expiry-grid">
-        <button class="exp-btn" id="exp-1h" onclick="setExpiry('1h')">
-          <span class="exp-duration">1h</span>
-          Urgent
-        </button>
-        <button class="exp-btn active" id="exp-24h" onclick="setExpiry('24h')">
-          <span class="exp-duration">24h</span>
-          Standard
-        </button>
-        <button class="exp-btn" id="exp-7d" onclick="setExpiry('7d')">
-          <span class="exp-duration">7j</span>
-          Étendu
-        </button>
-        <button class="exp-btn" id="exp-30d" onclick="setExpiry('30d')">
-          <span class="exp-duration">30j</span>
-          Long
-        </button>
+        <button class="exp-btn" id="exp-1h" onclick="setExpiry('1h')"><span class="dur">1h</span>Urgent</button>
+        <button class="exp-btn active" id="exp-24h" onclick="setExpiry('24h')"><span class="dur">24h</span>Standard</button>
+        <button class="exp-btn" id="exp-7d" onclick="setExpiry('7d')"><span class="dur">7j</span>Étendu</button>
+        <button class="exp-btn" id="exp-30d" onclick="setExpiry('30d')"><span class="dur">30j</span>Long</button>
       </div>
 
       <div class="toggle-row">
@@ -418,7 +571,7 @@
           💣
           <span>
             Détruire après 1 téléchargement
-            <span class="toggle-sub">Uniquement avec file.io (&lt; 2 GB)</span>
+            <span class="toggle-sub">file.io uniquement (&lt; 2 GB)</span>
           </span>
         </label>
         <label class="toggle">
@@ -428,10 +581,8 @@
       </div>
 
       <div class="security-note">
-        <span class="s-icon">🔐</span>
-        <p>
-          <strong>Zéro fuite possible.</strong> Le fichier est chiffré AES-256-GCM dans ton navigateur. Le nom est randomisé. La clé de déchiffrement est cachée dans le <code>#</code> du lien — jamais transmise à aucun serveur. Même un piratage de GoFile ou file.io ne révèle rien.
-        </p>
+        <span style="font-size:14px;flex-shrink:0;margin-top:1px">🔐</span>
+        <p><strong>Zéro fuite possible.</strong> Chiffrement AES-256-GCM dans le navigateur. Nom randomisé. Clé cachée dans le <code>#</code> du lien — jamais transmise à aucun serveur.</p>
       </div>
     </div>
 
@@ -444,293 +595,529 @@
       <p class="status-text" id="status-text">En attente…</p>
     </div>
     <p class="error-msg" id="error-msg"></p>
-  </div>
 
-  <!-- Result view -->
-  <div id="result-view">
-    <div class="result-card">
-      <p class="result-title">✅ Fichier prêt à partager</p>
-
-      <div class="link-box">
-        <span class="link-text" id="share-link">—</span>
-        <button class="copy-btn" id="copy-btn" onclick="copyLink()">📋 Copier</button>
+    <!-- Result inline -->
+    <div id="result-view" style="display:none; margin-top:0.75rem">
+      <div class="result-card">
+        <p class="result-title">✅ Fichier prêt à partager</p>
+        <div class="link-box">
+          <span class="link-text" id="share-link">—</span>
+          <button class="copy-btn" id="copy-btn" onclick="copyLink()">📋 Copier</button>
+        </div>
+        <div class="meta-pills" id="meta-pills"></div>
+        <div class="result-actions">
+          <button class="destroy-btn" id="destroy-now-btn" onclick="destroyNow()" style="display:none">
+            🗑 Détruire maintenant
+          </button>
+        </div>
+        <div class="qr-area">
+          <div id="qr-canvas"></div>
+          <p class="qr-label">Scanner pour ouvrir directement</p>
+        </div>
       </div>
-
-      <div class="meta-row" id="meta-row"></div>
-
-      <div class="qr-area">
-        <div id="qr-canvas"></div>
-        <p class="qr-label">Scanner pour ouvrir directement</p>
-      </div>
+      <button class="new-btn" onclick="resetUpload()">＋ Nouveau partage</button>
     </div>
-
-    <button class="new-btn" onclick="resetApp()">＋ Nouveau partage</button>
   </div>
+
+  <!-- ══════════════ HISTORY VIEW ══════════════ -->
+  <div id="history-view">
+    <div class="history-header">
+      <span class="history-count" id="history-count">0 partage</span>
+      <button class="clear-all-btn" onclick="clearAllHistory()">🗑 Tout effacer</button>
+    </div>
+    <div id="history-list"></div>
+    <div class="history-empty" id="history-empty">
+      <div class="empty-icon">📭</div>
+      <p>Aucun partage pour l'instant</p>
+    </div>
+  </div>
+
 </div>
 
 <script>
-  // ─── State ───────────────────────────────────────────────
-  let selectedFile = null;
-  let currentExpiry = '24h';
-  let provider = 'fileio'; // 'fileio' | 'gofile'
+// ══════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════
+let selectedFile = null;
+let currentExpiry = '24h';
+let provider = 'fileio';
+let currentFileKey = null; // file.io key for manual delete
 
-  // ─── File selection ───────────────────────────────────────
-  const dropZone = document.getElementById('drop-zone');
-  const fileInput = document.getElementById('file-input');
+// ══════════════════════════════════════════════
+//  TABS
+// ══════════════════════════════════════════════
+function switchTab(tab) {
+  document.getElementById('upload-view').style.display = tab === 'upload' ? 'block' : 'none';
+  document.getElementById('history-view').style.display = tab === 'history' ? 'block' : 'none';
+  document.getElementById('tab-upload').classList.toggle('active', tab === 'upload');
+  document.getElementById('tab-history').classList.toggle('active', tab === 'history');
+  if (tab === 'history') renderHistory();
+}
 
-  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
-  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
-  dropZone.addEventListener('drop', e => {
-    e.preventDefault();
-    dropZone.classList.remove('drag-over');
-    if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]);
-  });
-  dropZone.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') fileInput.click(); });
-  fileInput.addEventListener('change', () => { if (fileInput.files[0]) setFile(fileInput.files[0]); });
+// ══════════════════════════════════════════════
+//  FILE SELECTION
+// ══════════════════════════════════════════════
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
 
-  function setFile(f) {
-    selectedFile = f;
-    document.getElementById('file-preview').style.display = 'flex';
-    document.getElementById('file-name').textContent = f.name;
-    document.getElementById('file-size').textContent = formatSize(f.size);
-    document.getElementById('send-btn').disabled = false;
-    document.getElementById('error-msg').style.display = 'none';
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('drag-over');
+  if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]);
+});
+dropZone.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') fileInput.click(); });
+fileInput.addEventListener('change', () => { if (fileInput.files[0]) setFile(fileInput.files[0]); });
 
-    // Detect provider based on size (2 GB threshold)
-    const twoGB = 2 * 1024 * 1024 * 1024;
-    provider = f.size > twoGB ? 'gofile' : 'fileio';
-    updateProviderUI();
-  }
+function setFile(f) {
+  selectedFile = f;
+  document.getElementById('file-preview').style.display = 'flex';
+  document.getElementById('file-name').textContent = f.name;
+  document.getElementById('file-size').textContent = formatSize(f.size);
+  document.getElementById('send-btn').disabled = false;
+  document.getElementById('error-msg').style.display = 'none';
+  const twoGB = 2 * 1024 * 1024 * 1024;
+  provider = f.size > twoGB ? 'gofile' : 'fileio';
+  updateProviderUI();
+}
 
-  function removeFile() {
-    selectedFile = null;
-    fileInput.value = '';
-    document.getElementById('file-preview').style.display = 'none';
-    document.getElementById('badge-fileio').style.display = 'none';
-    document.getElementById('badge-gofile').style.display = 'none';
-    document.getElementById('gofile-warning').style.display = 'none';
-    document.getElementById('send-btn').disabled = true;
-    document.getElementById('error-msg').style.display = 'none';
-  }
+function removeFile() {
+  selectedFile = null; fileInput.value = '';
+  document.getElementById('file-preview').style.display = 'none';
+  document.getElementById('badge-fileio').style.display = 'none';
+  document.getElementById('badge-gofile').style.display = 'none';
+  document.getElementById('gofile-warning').style.display = 'none';
+  document.getElementById('send-btn').disabled = true;
+  document.getElementById('error-msg').style.display = 'none';
+}
 
-  function updateProviderUI() {
-    const isGofile = provider === 'gofile';
-    document.getElementById('badge-fileio').style.display = isGofile ? 'none' : 'flex';
-    document.getElementById('badge-gofile').style.display = isGofile ? 'flex' : 'none';
-    document.getElementById('gofile-warning').style.display = isGofile ? 'flex' : 'none';
-    // auto-destroy only works with file.io
-    document.getElementById('autodestroy-toggle').disabled = isGofile;
-    if (isGofile) document.getElementById('autodestroy-toggle').checked = false;
-  }
+function updateProviderUI() {
+  const isGofile = provider === 'gofile';
+  document.getElementById('badge-fileio').style.display = isGofile ? 'none' : 'flex';
+  document.getElementById('badge-gofile').style.display = isGofile ? 'flex' : 'none';
+  document.getElementById('gofile-warning').style.display = isGofile ? 'flex' : 'none';
+  document.getElementById('autodestroy-toggle').disabled = isGofile;
+  if (isGofile) document.getElementById('autodestroy-toggle').checked = false;
+}
 
-  function formatSize(b) {
-    if (b < 1024) return b + ' B';
-    if (b < 1048576) return Math.round(b / 1024) + ' KB';
-    if (b < 1073741824) return (b / 1048576).toFixed(1) + ' MB';
-    return (b / 1073741824).toFixed(2) + ' GB';
-  }
+// ══════════════════════════════════════════════
+//  EXPIRY
+// ══════════════════════════════════════════════
+function setExpiry(val) {
+  currentExpiry = val;
+  ['1h','24h','7d','30d'].forEach(e =>
+    document.getElementById('exp-'+e).classList.toggle('active', e === val)
+  );
+}
 
-  // ─── Expiry ───────────────────────────────────────────────
-  function setExpiry(val) {
-    currentExpiry = val;
-    ['1h', '24h', '7d', '30d'].forEach(e => {
-      document.getElementById('exp-' + e).classList.toggle('active', e === val);
-    });
-  }
+const expiryLabels = { '1h': '1 heure', '24h': '24 heures', '7d': '7 jours', '30d': '30 jours' };
+function expiryToFileIO(v) { return { '1h':'1d','24h':'1d','7d':'7d','30d':'30d' }[v] || '1d'; }
 
-  // ─── Random filename ──────────────────────────────────────
-  function randomFileName() {
-    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-    let name = '';
-    for (let i = 0; i < 12; i++) name += chars[Math.floor(Math.random() * chars.length)];
-    return name + '.enc';
-  }
+// ══════════════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════════════
+function formatSize(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return Math.round(b/1024) + ' KB';
+  if (b < 1073741824) return (b/1048576).toFixed(1) + ' MB';
+  return (b/1073741824).toFixed(2) + ' GB';
+}
+function randomFileName() {
+  const c = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  return Array.from({length:12}, () => c[Math.floor(Math.random()*c.length)]).join('') + '.enc';
+}
+function getFileEmoji(name) {
+  const ext = name.split('.').pop().toLowerCase();
+  const map = { pdf:'📄', doc:'📝', docx:'📝', xls:'📊', xlsx:'📊', ppt:'📑', pptx:'📑',
+    zip:'🗜', rar:'🗜', '7z':'🗜', jpg:'🖼', jpeg:'🖼', png:'🖼', gif:'🖼', mp4:'🎬',
+    mov:'🎬', mp3:'🎵', wav:'🎵', txt:'📃', csv:'📊', json:'🔧', js:'🔧', py:'🔧' };
+  return map[ext] || '📄';
+}
 
-  // ─── Expiry conversion ────────────────────────────────────
-  function expiryToFileIO(val) {
-    // file.io format: 1d, 7d, 30d, or hours not supported → use days
-    const map = { '1h': '1d', '24h': '1d', '7d': '7d', '30d': '30d' };
-    return map[val] || '1d';
-  }
+// ══════════════════════════════════════════════
+//  UPLOAD FLOW
+// ══════════════════════════════════════════════
+async function startUpload() {
+  if (!selectedFile) return;
+  document.getElementById('send-btn').disabled = true;
+  document.getElementById('error-msg').style.display = 'none';
+  document.getElementById('progress-area').style.display = 'block';
+  document.getElementById('result-view').style.display = 'none';
 
-  function expiryToGoFileTimestamp(val) {
-    const now = Math.floor(Date.now() / 1000);
-    const map = { '1h': 3600, '24h': 86400, '7d': 604800, '30d': 2592000 };
-    return now + (map[val] || 86400);
-  }
+  try {
+    setStatus('Génération clé AES-256…', 8);
+    const key = await crypto.subtle.generateKey({name:'AES-GCM',length:256}, true, ['encrypt','decrypt']);
+    const iv = crypto.getRandomValues(new Uint8Array(12));
 
-  // ─── Main upload flow ─────────────────────────────────────
-  async function startUpload() {
-    if (!selectedFile) return;
+    setStatus('Lecture du fichier…', 22);
+    const fileBuffer = await selectedFile.arrayBuffer();
 
-    document.getElementById('send-btn').disabled = true;
-    document.getElementById('error-msg').style.display = 'none';
-    document.getElementById('progress-area').style.display = 'block';
+    setStatus('Chiffrement AES-256-GCM…', 42);
+    const encrypted = await crypto.subtle.encrypt({name:'AES-GCM',iv}, key, fileBuffer);
+    const exportedKey = await crypto.subtle.exportKey('raw', key);
 
-    try {
-      // 1. Generate AES-256-GCM key
-      setStatus('Génération de la clé AES-256…', 8);
-      const key = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
-      const iv = crypto.getRandomValues(new Uint8Array(12));
+    const combined = new Uint8Array(iv.length + encrypted.byteLength);
+    combined.set(iv, 0);
+    combined.set(new Uint8Array(encrypted), iv.length);
+    const blob = new Blob([combined], {type:'application/octet-stream'});
+    const randName = randomFileName();
 
-      // 2. Read file
-      setStatus('Lecture du fichier…', 20);
-      const fileBuffer = await selectedFile.arrayBuffer();
-
-      // 3. Encrypt
-      setStatus('Chiffrement AES-256-GCM…', 40);
-      const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, fileBuffer);
-      const exportedKey = await crypto.subtle.exportKey('raw', key);
-
-      // Combine iv + encrypted
-      const combined = new Uint8Array(iv.length + encrypted.byteLength);
-      combined.set(iv, 0);
-      combined.set(new Uint8Array(encrypted), iv.length);
-
-      // 4. Random filename
-      const randName = randomFileName();
-      const blob = new Blob([combined], { type: 'application/octet-stream' });
-
-      // 5. Upload
-      setStatus('Envoi chiffré vers ' + (provider === 'gofile' ? 'GoFile' : 'file.io') + '…', 60);
-      let fileLink;
-
-      if (provider === 'fileio') {
-        fileLink = await uploadFileIO(blob, randName);
-      } else {
-        fileLink = await uploadGoFile(blob, randName);
-      }
-
-      // 6. Build magic link
-      setStatus('Génération du lien magique…', 88);
-      const keyHex = Array.from(new Uint8Array(exportedKey)).map(b => b.toString(16).padStart(2, '0')).join('');
-      const ivHex = Array.from(iv).map(b => b.toString(16).padStart(2, '0')).join('');
-      const magicLink = fileLink + '#k=' + keyHex + '&iv=' + ivHex + '&n=' + encodeURIComponent(selectedFile.name) + '&p=' + provider;
-
-      setStatus('Prêt !', 100);
-      setTimeout(() => showResult(magicLink), 350);
-
-    } catch (e) {
-      document.getElementById('progress-area').style.display = 'none';
-      document.getElementById('error-msg').textContent = '❌ Erreur : ' + e.message;
-      document.getElementById('error-msg').style.display = 'block';
-      document.getElementById('send-btn').disabled = false;
+    setStatus('Envoi chiffré vers ' + (provider==='gofile'?'GoFile':'file.io') + '…', 62);
+    let fileLink, fileKey = null;
+    if (provider === 'fileio') {
+      const r = await uploadFileIO(blob, randName);
+      fileLink = r.link; fileKey = r.key;
+    } else {
+      fileLink = await uploadGoFile(blob, randName);
     }
-  }
 
-  // ─── file.io upload ───────────────────────────────────────
-  async function uploadFileIO(blob, randName) {
-    const autoDestroy = document.getElementById('autodestroy-toggle').checked;
-    const expiryParam = expiryToFileIO(currentExpiry);
-    const url = 'https://file.io/?expires=' + expiryParam;
+    setStatus('Génération du lien magique…', 88);
+    const keyHex = Array.from(new Uint8Array(exportedKey)).map(b=>b.toString(16).padStart(2,'0')).join('');
+    const ivHex = Array.from(iv).map(b=>b.toString(16).padStart(2,'0')).join('');
+    const magicLink = fileLink + '#k='+keyHex+'&iv='+ivHex+'&n='+encodeURIComponent(selectedFile.name)+'&p='+provider;
 
-    const formData = new FormData();
-    formData.append('file', blob, randName);
+    currentFileKey = fileKey;
+    setStatus('Prêt !', 100);
 
-    const resp = await fetch(url, { method: 'POST', body: formData });
-    if (!resp.ok) throw new Error('file.io HTTP ' + resp.status);
-    const data = await resp.json();
-    if (!data.success) throw new Error(data.message || 'Échec file.io');
-    return data.link;
-  }
-
-  // ─── GoFile upload ────────────────────────────────────────
-  async function uploadGoFile(blob, randName) {
-    // Step 1: get best server
-    const serverResp = await fetch('https://api.gofile.io/servers');
-    if (!serverResp.ok) throw new Error('GoFile: impossible de contacter le serveur');
-    const serverData = await serverResp.json();
-    if (serverData.status !== 'ok') throw new Error('GoFile: erreur serveur');
-    const server = serverData.data.servers[0].name;
-
-    // Step 2: upload
-    const formData = new FormData();
-    formData.append('file', blob, randName);
-
-    const uploadResp = await fetch('https://' + server + '.gofile.io/contents/uploadfile', {
-      method: 'POST',
-      body: formData
-    });
-    if (!uploadResp.ok) throw new Error('GoFile upload HTTP ' + uploadResp.status);
-    const uploadData = await uploadResp.json();
-    if (uploadData.status !== 'ok') throw new Error(uploadData.status || 'Échec GoFile');
-
-    const fileId = uploadData.data.fileId || uploadData.data.id;
-    const folderId = uploadData.data.parentFolder || uploadData.data.folderId;
-
-    // Step 3: set expiry via content update (best effort, no token needed for anonymous)
-    // GoFile doesn't support expiry without account — we note this in the link
-    return 'https://gofile.io/d/' + (folderId || fileId);
-  }
-
-  function setStatus(txt, pct) {
-    document.getElementById('status-text').textContent = txt;
-    document.getElementById('progress-fill').style.width = pct + '%';
-  }
-
-  // ─── Show result ──────────────────────────────────────────
-  function showResult(link) {
-    document.getElementById('upload-view').style.display = 'none';
-    document.getElementById('result-view').style.display = 'block';
-    document.getElementById('share-link').textContent = link;
-
-    // Meta pills
+    // Save to history
     const autoDestroy = document.getElementById('autodestroy-toggle').checked && provider === 'fileio';
-    const expiryLabel = { '1h': '1 heure', '24h': '24 heures', '7d': '7 jours', '30d': '30 jours' }[currentExpiry];
-    const providerLabel = provider === 'fileio' ? 'file.io' : 'GoFile';
+    const entry = {
+      id: Date.now(),
+      filename: selectedFile.name,
+      size: selectedFile.size,
+      provider,
+      expiry: currentExpiry,
+      autoDestroy,
+      link: magicLink,
+      fileKey,
+      createdAt: new Date().toISOString(),
+      status: 'active' // active | destroyed | expired
+    };
+    saveToHistory(entry);
+    updateBadge();
 
-    const pills = [
-      '🔐 AES-256-GCM',
-      '🎲 Nom randomisé',
-      '📡 ' + providerLabel,
-      autoDestroy ? '💣 Auto-détruit' : '⏱ Expire dans ' + expiryLabel,
-      '🔑 Clé hors serveur'
-    ];
-
-    const metaRow = document.getElementById('meta-row');
-    metaRow.innerHTML = pills.map(p => `<span class="meta-pill">${p}</span>`).join('');
-
-    // QR
-    document.getElementById('qr-canvas').innerHTML = '';
-    try {
-      new QRCode(document.getElementById('qr-canvas'), {
-        text: link,
-        width: 148,
-        height: 148,
-        correctLevel: QRCode.CorrectLevel.M
-      });
-    } catch (e) {}
-  }
-
-  // ─── Copy ─────────────────────────────────────────────────
-  function copyLink() {
-    const link = document.getElementById('share-link').textContent;
-    navigator.clipboard.writeText(link).then(() => {
-      const btn = document.getElementById('copy-btn');
-      btn.textContent = '✅ Copié !';
-      setTimeout(() => { btn.textContent = '📋 Copier'; }, 2000);
-    });
-  }
-
-  // ─── Reset ───────────────────────────────────────────────
-  function resetApp() {
-    selectedFile = null;
-    provider = 'fileio';
-    fileInput.value = '';
-    document.getElementById('upload-view').style.display = 'block';
-    document.getElementById('result-view').style.display = 'none';
+    setTimeout(() => showResult(magicLink, fileKey, autoDestroy), 300);
+  } catch(e) {
     document.getElementById('progress-area').style.display = 'none';
-    document.getElementById('file-preview').style.display = 'none';
-    document.getElementById('badge-fileio').style.display = 'none';
-    document.getElementById('badge-gofile').style.display = 'none';
-    document.getElementById('gofile-warning').style.display = 'none';
-    document.getElementById('send-btn').disabled = true;
-    document.getElementById('progress-fill').style.width = '0%';
-    document.getElementById('error-msg').style.display = 'none';
-    document.getElementById('autodestroy-toggle').checked = true;
-    document.getElementById('autodestroy-toggle').disabled = false;
-    setExpiry('24h');
+    document.getElementById('error-msg').textContent = '❌ ' + e.message;
+    document.getElementById('error-msg').style.display = 'block';
+    document.getElementById('send-btn').disabled = false;
   }
+}
+
+const WORKER_URL = 'https://sharelines-proxy.kurtbob349.workers.dev';
+
+async function uploadFileIO(blob, randName) {
+  const exp = expiryToFileIO(currentExpiry);
+  const fd = new FormData();
+  fd.append('file', blob, randName);
+  const resp = await fetch(WORKER_URL + '/upload?expires=' + exp, {method:'POST', body:fd});
+  if (!resp.ok) throw new Error('Proxy HTTP ' + resp.status);
+  const data = await resp.json();
+  if (!data.success) throw new Error(data.message || 'Échec upload');
+  return { link: data.link, key: data.key };
+}
+
+async function uploadGoFile(blob, randName) {
+  // GoFile : récupère le meilleur serveur via le proxy
+  const sResp = await fetch(WORKER_URL + '/gofile-server');
+  if (!sResp.ok) throw new Error('GoFile: serveur inaccessible');
+  const sData = await sResp.json();
+  if (sData.status !== 'ok') throw new Error('GoFile: erreur API');
+  const server = sData.data.servers[0].name;
+  const fd = new FormData();
+  fd.append('file', blob, randName);
+  const uResp = await fetch(WORKER_URL + '/gofile-upload?server=' + server, {method:'POST', body:fd});
+  if (!uResp.ok) throw new Error('GoFile HTTP ' + uResp.status);
+  const uData = await uResp.json();
+  if (uData.status !== 'ok') throw new Error('Échec GoFile');
+  const folderId = uData.data.parentFolder || uData.data.folderId || uData.data.id;
+  return 'https://gofile.io/d/' + folderId;
+}
+
+async function deleteFileIO(fileKey) {
+  await fetch(WORKER_URL + '/delete?key=' + fileKey, {method:'DELETE'});
+}
+
+function setStatus(txt, pct) {
+  document.getElementById('status-text').textContent = txt;
+  document.getElementById('progress-fill').style.width = pct + '%';
+}
+
+// ══════════════════════════════════════════════
+//  RESULT
+// ══════════════════════════════════════════════
+function showResult(link, fileKey, autoDestroy) {
+  document.getElementById('progress-area').style.display = 'none';
+  document.getElementById('result-view').style.display = 'block';
+  document.getElementById('share-link').textContent = link;
+
+  // Pills
+  const pills = [
+    '🔐 AES-256-GCM',
+    '🎲 Nom randomisé',
+    provider === 'fileio' ? '🟢 file.io' : '🟡 GoFile',
+    autoDestroy ? '💣 Auto-détruit' : '⏱ ' + expiryLabels[currentExpiry],
+    '🔑 Clé hors serveur'
+  ];
+  document.getElementById('meta-pills').innerHTML = pills.map(p=>`<span class="pill">${p}</span>`).join('');
+
+  // Destroy button only for file.io
+  const destroyBtn = document.getElementById('destroy-now-btn');
+  if (fileKey && provider === 'fileio') {
+    destroyBtn.style.display = 'flex';
+    destroyBtn.dataset.key = fileKey;
+  } else {
+    destroyBtn.style.display = 'none';
+  }
+
+  // QR
+  document.getElementById('qr-canvas').innerHTML = '';
+  try { new QRCode(document.getElementById('qr-canvas'), {text:link,width:148,height:148,correctLevel:QRCode.CorrectLevel.M}); } catch(e){}
+}
+
+function copyLink() {
+  navigator.clipboard.writeText(document.getElementById('share-link').textContent).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = '✅ Copié !';
+    setTimeout(() => { btn.textContent = '📋 Copier'; }, 2000);
+  });
+}
+
+async function destroyNow() {
+  const btn = document.getElementById('destroy-now-btn');
+  const key = btn.dataset.key;
+  if (!key) return;
+  if (!confirm('Détruire définitivement ce fichier sur file.io ?')) return;
+  btn.disabled = true;
+  btn.textContent = '⏳ Suppression…';
+  try {
+    await deleteFileIO(key);
+    btn.textContent = '✅ Détruit';
+    btn.style.background = 'var(--red)';
+    btn.style.color = 'white';
+    // Update history
+    markHistoryDestroyed(key);
+    updateBadge();
+  } catch(e) {
+    btn.textContent = '❌ Erreur';
+    btn.disabled = false;
+  }
+}
+
+function resetUpload() {
+  selectedFile = null; provider = 'fileio'; currentFileKey = null;
+  fileInput.value = '';
+  document.getElementById('result-view').style.display = 'none';
+  document.getElementById('progress-area').style.display = 'none';
+  document.getElementById('file-preview').style.display = 'none';
+  document.getElementById('badge-fileio').style.display = 'none';
+  document.getElementById('badge-gofile').style.display = 'none';
+  document.getElementById('gofile-warning').style.display = 'none';
+  document.getElementById('send-btn').disabled = true;
+  document.getElementById('progress-fill').style.width = '0%';
+  document.getElementById('error-msg').style.display = 'none';
+  document.getElementById('autodestroy-toggle').checked = true;
+  document.getElementById('autodestroy-toggle').disabled = false;
+  setExpiry('24h');
+}
+
+// ══════════════════════════════════════════════
+//  HISTORY — STORAGE
+// ══════════════════════════════════════════════
+const STORAGE_KEY = 'sharelines_history';
+
+function loadHistory() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+  catch(e) { return []; }
+}
+function saveHistory(list) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+}
+function saveToHistory(entry) {
+  const list = loadHistory();
+  list.unshift(entry);
+  saveHistory(list);
+}
+function markHistoryDestroyed(fileKey) {
+  const list = loadHistory();
+  const item = list.find(i => i.fileKey === fileKey);
+  if (item) { item.status = 'destroyed'; saveHistory(list); }
+}
+function deleteHistoryItem(id) {
+  const list = loadHistory().filter(i => i.id !== id);
+  saveHistory(list);
+}
+function clearAllHistory() {
+  if (!confirm('Effacer tout l\'historique ?')) return;
+  saveHistory([]);
+  renderHistory();
+  updateBadge();
+}
+
+function updateBadge() {
+  const list = loadHistory();
+  const badge = document.getElementById('history-badge');
+  if (list.length > 0) {
+    badge.style.display = 'inline-block';
+    badge.textContent = list.length;
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+// ══════════════════════════════════════════════
+//  HISTORY — RENDER
+// ══════════════════════════════════════════════
+function renderHistory() {
+  const list = loadHistory();
+  const container = document.getElementById('history-list');
+  const empty = document.getElementById('history-empty');
+  const count = document.getElementById('history-count');
+
+  count.textContent = list.length + (list.length > 1 ? ' partages' : ' partage');
+  empty.style.display = list.length === 0 ? 'block' : 'none';
+  container.innerHTML = '';
+
+  list.forEach(item => {
+    const el = buildHistoryItem(item);
+    container.appendChild(el);
+  });
+}
+
+function buildHistoryItem(item) {
+  const div = document.createElement('div');
+  div.className = 'history-item' + (item.status !== 'active' ? ' destroyed' : '');
+  div.id = 'hist-item-' + item.id;
+
+  const statusLabel = item.status === 'destroyed' ? '🗑 Détruit' : item.status === 'expired' ? '⌛ Expiré' : '🟢 Actif';
+  const statusClass = item.status === 'active' ? 'active' : item.status === 'destroyed' ? 'destroyed' : 'expired';
+  const date = new Date(item.createdAt).toLocaleDateString('fr-FR', {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+  const emoji = getFileEmoji(item.filename);
+
+  div.innerHTML = `
+    <div class="hist-primary" onclick="toggleHistDetail(${item.id})">
+      <div class="hist-file-icon">${emoji}</div>
+      <div class="hist-main">
+        <div class="hist-filename">${escHtml(item.filename)}</div>
+        <div class="hist-meta-row">
+          <span class="hist-size">${formatSize(item.size)}</span>
+          <span class="hist-provider ${item.provider}">${item.provider === 'fileio' ? 'file.io' : 'GoFile'}</span>
+          <span class="hist-size">${date}</span>
+        </div>
+      </div>
+      <div class="hist-right">
+        <span class="hist-status ${statusClass}">${statusLabel}</span>
+        <span class="hist-chevron" id="chev-${item.id}">▾</span>
+      </div>
+    </div>
+
+    <div class="hist-detail" id="detail-${item.id}">
+      <div class="hist-detail-grid">
+        <div class="detail-cell">
+          <div class="detail-label">Expiration</div>
+          <div class="detail-value">⏱ ${expiryLabels[item.expiry] || item.expiry}</div>
+        </div>
+        <div class="detail-cell">
+          <div class="detail-label">Auto-détruit</div>
+          <div class="detail-value">${item.autoDestroy ? '💣 Oui (1 DL)' : '❌ Non'}</div>
+        </div>
+        <div class="detail-cell">
+          <div class="detail-label">Chiffrement</div>
+          <div class="detail-value">🔐 AES-256-GCM</div>
+        </div>
+        <div class="detail-cell">
+          <div class="detail-label">Nom envoyé</div>
+          <div class="detail-value">🎲 Randomisé</div>
+        </div>
+      </div>
+
+      <div class="hist-link-box">
+        <span class="hist-link-text">${escHtml(item.link)}</span>
+        <button class="copy-btn" onclick="copyHistLink('${escHtml(item.link)}', this)">📋</button>
+      </div>
+
+      <div class="hist-actions">
+        <button class="hist-action-btn" onclick="shareHistLink('${escHtml(item.link)}')">📤 Partager</button>
+        <button class="hist-action-btn" onclick="showHistQR(${item.id}, '${escHtml(item.link)}')">📱 QR Code</button>
+        ${item.provider === 'fileio' && item.fileKey && item.status === 'active'
+          ? `<button class="hist-action-btn danger" id="hist-destroy-${item.id}" onclick="destroyHistItem(${item.id}, '${item.fileKey}')">🗑 Détruire</button>`
+          : ''}
+        <button class="hist-action-btn danger" onclick="removeHistItem(${item.id})">✕ Retirer</button>
+      </div>
+
+      <div class="hist-qr" id="hist-qr-${item.id}" style="display:none">
+        <div id="hist-qr-canvas-${item.id}"></div>
+        <div class="hist-qr-label">Scanner pour ouvrir</div>
+      </div>
+    </div>
+  `;
+  return div;
+}
+
+function toggleHistDetail(id) {
+  const detail = document.getElementById('detail-'+id);
+  const chev = document.getElementById('chev-'+id);
+  const open = detail.classList.toggle('open');
+  chev.classList.toggle('open', open);
+}
+
+function copyHistLink(link, btn) {
+  navigator.clipboard.writeText(link).then(() => {
+    btn.textContent = '✅';
+    setTimeout(() => { btn.textContent = '📋'; }, 2000);
+  });
+}
+
+function shareHistLink(link) {
+  if (navigator.share) {
+    navigator.share({ url: link }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(link);
+    alert('Lien copié dans le presse-papier !');
+  }
+}
+
+function showHistQR(id, link) {
+  const qrArea = document.getElementById('hist-qr-'+id);
+  const canvas = document.getElementById('hist-qr-canvas-'+id);
+  if (qrArea.style.display === 'block') {
+    qrArea.style.display = 'none'; return;
+  }
+  qrArea.style.display = 'block';
+  canvas.innerHTML = '';
+  try { new QRCode(canvas, {text:link,width:130,height:130,correctLevel:QRCode.CorrectLevel.M}); } catch(e){}
+}
+
+async function destroyHistItem(id, fileKey) {
+  if (!confirm('Détruire définitivement ce fichier sur file.io ?')) return;
+  const btn = document.getElementById('hist-destroy-'+id);
+  btn.disabled = true; btn.textContent = '⏳…';
+  try {
+    await deleteFileIO(fileKey);
+    // update storage
+    const list = loadHistory();
+    const item = list.find(i => i.id === id);
+    if (item) { item.status = 'destroyed'; saveHistory(list); }
+    renderHistory(); updateBadge();
+  } catch(e) {
+    btn.disabled = false; btn.textContent = '❌ Erreur';
+  }
+}
+
+function removeHistItem(id) {
+  deleteHistoryItem(id);
+  renderHistory(); updateBadge();
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// ══════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════
+updateBadge();
 </script>
 </body>
 </html>
