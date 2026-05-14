@@ -561,7 +561,7 @@
 // ═══════════════════════════════════════
 //  CONFIG
 // ═══════════════════════════════════════
-const WORKER_URL = 'https://sharelines-proxy.kurtbob349.workers.dev';
+const SHARE_BASE = 'https://outils-online.github.io/Acceuil/pages/Share-Lines.html';
 const STORAGE_KEY = 'sharelines_history';
 
 // ═══════════════════════════════════════
@@ -802,8 +802,7 @@ async function startUpload() {
     const ivHex  = Array.from(iv).map(b=>b.toString(16).padStart(2,'0')).join('');
     // Pour B2 : on encode la objectKey dans &bk= pour que le destinataire sache quoi demander
     const b2Param = b2ObjectKey ? '&bk=' + encodeURIComponent(b2ObjectKey) : '';
-    const magicLink = fileLink + '#k=' + keyHex + '&iv=' + ivHex + '&n=' + encodeURIComponent(selectedFile.name) + '&p=' + provider + b2Param;
-
+const magicLink = SHARE_BASE + '#k=' + keyHex + '&iv=' + ivHex + '&n=' + encodeURIComponent(selectedFile.name) + '&p=' + provider + b2Param;
     currentFileKey=fileKey;
     setStatus('Prêt !',100);
 
