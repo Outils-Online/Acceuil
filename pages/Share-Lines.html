@@ -177,6 +177,11 @@
     }
     .provider-badge.fileio { background: var(--green-l); color: var(--green-dd); }
     .provider-badge.gofile { background: var(--amber-l); color: var(--amber-t); }
+    .provider-badge.backblaze { background: #e8f0fe; color: #1a47a0; }
+
+    @media (prefers-color-scheme: dark) {
+      .provider-badge.backblaze { background: #0f1e3a; color: #7eb3ff; }
+    }
     .provider-warning {
       display: none; gap: 8px; padding: 0.6rem 0.75rem;
       background: var(--amber-l); border: 0.5px solid var(--amber-m);
@@ -321,6 +326,7 @@
     .hist-provider { font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 99px; text-transform: uppercase; }
     .hist-provider.fileio { background: var(--green-l); color: var(--green-dd); }
     .hist-provider.gofile { background: var(--amber-l); color: var(--amber-t); }
+    .hist-provider.backblaze { background: #e8f0fe; color: #1a47a0; }
     .hist-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
     .hist-status { font-size: 11px; font-weight: 500; }
     .hist-status.active { color: var(--green); }
@@ -458,11 +464,9 @@
         <span class="file-size" id="file-size">—</span>
         <button class="file-remove" onclick="removeFile()">✕</button>
       </div>
+      <div class="provider-badge backblaze" id="badge-backblaze">☁️ Backblaze B2 · stockage privé chiffré</div>
       <div class="provider-badge fileio" id="badge-fileio">🟢 file.io · jusqu'à 2 GB</div>
       <div class="provider-badge gofile" id="badge-gofile">🟡 GoFile · fichier &gt; 2 GB</div>
-      <div class="provider-warning" id="gofile-warning">
-        ⚠️ Fichier &gt; 2 GB — bascule automatique sur GoFile. Nom randomisé + AES-256.
-      </div>
     </div>
 
     <div class="card">
@@ -475,7 +479,7 @@
       </div>
       <div class="toggle-row">
         <label class="toggle-label" for="autodestroy-toggle">
-          💣 <span>Détruire après 1 téléchargement<span class="toggle-sub">file.io uniquement (&lt; 2 GB)</span></span>
+          💣 <span>Détruire après téléchargement<span class="toggle-sub" id="autodestroy-sub">Backblaze B2 uniquement</span></span>
         </label>
         <label class="toggle">
           <input type="checkbox" id="autodestroy-toggle" checked>
@@ -484,7 +488,7 @@
       </div>
       <div class="security-note">
         <span style="font-size:14px;flex-shrink:0;margin-top:1px">🔐</span>
-        <p><strong>Zéro fuite possible.</strong> AES-256-GCM dans le navigateur. Nom randomisé. Clé cachée dans le <code>#</code> du lien — jamais transmise.</p>
+        <p><strong>Zéro fuite possible.</strong> AES-256-GCM dans le navigateur. Nom randomisé. Clé cachée dans le <code>#</code> du lien — jamais transmise. Upload direct client → B2.</p>
       </div>
     </div>
 
@@ -566,7 +570,7 @@ const STORAGE_KEY = 'sharelines_history';
 let appPassword = '';
 let selectedFile = null;
 let currentExpiry = '24h';
-let provider = 'fileio';
+let provider = 'backblaze';   // provider par défaut
 let currentFileKey = null;
 
 // ═══════════════════════════════════════
@@ -691,26 +695,30 @@ function setFile(f) {
   document.getElementById('file-size').textContent = formatSize(f.size);
   document.getElementById('send-btn').disabled = false;
   document.getElementById('error-msg').style.display = 'none';
-  provider = f.size > 2*1024*1024*1024 ? 'gofile' : 'fileio';
+  provider = 'backblaze'; // toujours B2
   updateProviderUI();
 }
 
 function removeFile() {
   selectedFile = null; fileInput.value = '';
   document.getElementById('file-preview').style.display = 'none';
+  document.getElementById('badge-backblaze').style.display = 'none';
   document.getElementById('badge-fileio').style.display = 'none';
   document.getElementById('badge-gofile').style.display = 'none';
-  document.getElementById('gofile-warning').style.display = 'none';
   document.getElementById('send-btn').disabled = true;
 }
 
 function updateProviderUI() {
-  const g = provider === 'gofile';
-  document.getElementById('badge-fileio').style.display = g ? 'none' : 'flex';
-  document.getElementById('badge-gofile').style.display = g ? 'flex' : 'none';
-  document.getElementById('gofile-warning').style.display = g ? 'flex' : 'none';
-  document.getElementById('autodestroy-toggle').disabled = g;
-  if (g) document.getElementById('autodestroy-toggle').checked = false;
+  document.getElementById('badge-backblaze').style.display = provider === 'backblaze' ? 'flex' : 'none';
+  document.getElementById('badge-fileio').style.display    = provider === 'fileio'    ? 'flex' : 'none';
+  document.getElementById('badge-gofile').style.display    = provider === 'gofile'    ? 'flex' : 'none';
+  // Auto-destroy disponible avec backblaze (on supprime l'objet après DL) et fileio
+  const canDestroy = provider === 'backblaze' || provider === 'fileio';
+  document.getElementById('autodestroy-toggle').disabled = !canDestroy;
+  document.getElementById('autodestroy-sub').textContent =
+    provider === 'backblaze' ? 'Backblaze B2 uniquement' :
+    provider === 'fileio'    ? 'file.io uniquement'      : 'Non disponible';
+  if (!canDestroy) document.getElementById('autodestroy-toggle').checked = false;
 }
 
 // ═══════════════════════════════════════
@@ -771,20 +779,35 @@ async function startUpload() {
     const blob = new Blob([combined], {type:'application/octet-stream'});
     const randName = randomFileName();
 
-    setStatus('Envoi chiffré via Cloudflare…', 62);
-    let fileLink, fileKey=null;
-    if (provider==='fileio') { const r=await uploadFileIO(blob,randName); fileLink=r.link; fileKey=r.key; }
-    else { fileLink=await uploadGoFile(blob,randName); }
+    setStatus('Envoi chiffré direct vers B2…', 62);
+    let fileLink, fileKey=null, b2ObjectKey=null;
+
+    if (provider === 'backblaze') {
+      const r = await uploadBackblaze(blob, randName);
+      // Le lien magique pour B2 pointe vers le Worker (presigned GET générée à la volée)
+      // On encode la object key B2 dans le hash — pas de lien direct (bucket privé)
+      b2ObjectKey = r.objectKey;
+      fileKey = r.objectKey;
+      // Le "lien" dans le hash sera l'URL du worker — le destinataire demandera la presigned GET
+      fileLink = WORKER_URL + '/b2-download?key=' + encodeURIComponent(b2ObjectKey);
+    } else if (provider === 'fileio') {
+      const r = await uploadFileIO(blob, randName);
+      fileLink = r.link; fileKey = r.key;
+    } else {
+      fileLink = await uploadGoFile(blob, randName);
+    }
 
     setStatus('Génération du lien magique…', 88);
-    const keyHex=Array.from(new Uint8Array(exportedKey)).map(b=>b.toString(16).padStart(2,'0')).join('');
-    const ivHex=Array.from(iv).map(b=>b.toString(16).padStart(2,'0')).join('');
-    const magicLink=fileLink+'#k='+keyHex+'&iv='+ivHex+'&n='+encodeURIComponent(selectedFile.name)+'&p='+provider;
+    const keyHex = Array.from(new Uint8Array(exportedKey)).map(b=>b.toString(16).padStart(2,'0')).join('');
+    const ivHex  = Array.from(iv).map(b=>b.toString(16).padStart(2,'0')).join('');
+    // Pour B2 : on encode la objectKey dans &bk= pour que le destinataire sache quoi demander
+    const b2Param = b2ObjectKey ? '&bk=' + encodeURIComponent(b2ObjectKey) : '';
+    const magicLink = fileLink + '#k=' + keyHex + '&iv=' + ivHex + '&n=' + encodeURIComponent(selectedFile.name) + '&p=' + provider + b2Param;
 
     currentFileKey=fileKey;
     setStatus('Prêt !',100);
 
-    const autoDestroy=document.getElementById('autodestroy-toggle').checked&&provider==='fileio';
+    const autoDestroy = document.getElementById('autodestroy-toggle').checked && (provider==='fileio'||provider==='backblaze');
     saveToHistory({id:Date.now(),filename:selectedFile.name,size:selectedFile.size,provider,expiry:currentExpiry,autoDestroy,link:magicLink,fileKey,createdAt:new Date().toISOString(),status:'active'});
     updateBadge();
     setTimeout(()=>showResult(magicLink,fileKey,autoDestroy),300);
@@ -797,34 +820,68 @@ async function startUpload() {
 }
 
 async function uploadFileIO(blob, randName) {
-  // Recharge le mot de passe depuis sessionStorage au cas où
   if (!appPassword) appPassword = sessionStorage.getItem('sl_pwd') || '';
-  const exp=expiryToFileIO(currentExpiry);
-  const fd=new FormData(); fd.append('file',blob,randName);
-  const resp=await fetch(WORKER_URL+'/upload?expires='+exp,{method:'POST',headers:{'X-App-Password':appPassword},body:fd});
-  if(!resp.ok) throw new Error('Proxy HTTP '+resp.status);
-  const data=await resp.json();
-  if(!data.success) throw new Error(data.message||'Échec upload');
-  return {link:data.link,key:data.key};
+  const exp = expiryToFileIO(currentExpiry);
+  const fd  = new FormData(); fd.append('file', blob, randName);
+  const resp = await fetch(WORKER_URL+'/upload?expires='+exp, { method:'POST', headers:{'X-App-Password':appPassword}, body:fd });
+  if (!resp.ok) throw new Error('Proxy HTTP '+resp.status);
+  const data = await resp.json();
+  if (!data.success) throw new Error(data.message||'Échec upload');
+  return { link: data.link, key: data.key };
 }
 
 async function uploadGoFile(blob, randName) {
-  const sResp=await fetch(WORKER_URL+'/gofile-server',{headers:{'X-App-Password':appPassword}});
-  if(!sResp.ok) throw new Error('GoFile serveur inaccessible');
-  const sData=await sResp.json();
-  if(sData.status!=='ok') throw new Error('GoFile: erreur API');
-  const server=sData.data.servers[0].name;
-  const fd=new FormData(); fd.append('file',blob,randName);
-  const uResp=await fetch(WORKER_URL+'/gofile-upload?server='+server,{method:'POST',headers:{'X-App-Password':appPassword},body:fd});
-  if(!uResp.ok) throw new Error('GoFile HTTP '+uResp.status);
-  const uData=await uResp.json();
-  if(uData.status!=='ok') throw new Error('Échec GoFile');
-  const folderId=uData.data.parentFolder||uData.data.folderId||uData.data.id;
+  const sResp = await fetch(WORKER_URL+'/gofile-server', { headers:{'X-App-Password':appPassword} });
+  if (!sResp.ok) throw new Error('GoFile serveur inaccessible');
+  const sData = await sResp.json();
+  if (sData.status !== 'ok') throw new Error('GoFile: erreur API');
+  const server = sData.data.servers[0].name;
+  const fd = new FormData(); fd.append('file', blob, randName);
+  const uResp = await fetch(WORKER_URL+'/gofile-upload?server='+server, { method:'POST', headers:{'X-App-Password':appPassword}, body:fd });
+  if (!uResp.ok) throw new Error('GoFile HTTP '+uResp.status);
+  const uData = await uResp.json();
+  if (uData.status !== 'ok') throw new Error('Échec GoFile');
+  const folderId = uData.data.parentFolder||uData.data.folderId||uData.data.id;
   return 'https://gofile.io/d/'+folderId;
 }
 
+// ─── Backblaze B2 ──────────────────────────────────────────────
+
+async function uploadBackblaze(blob, randName) {
+  if (!appPassword) appPassword = sessionStorage.getItem('sl_pwd') || '';
+
+  // 1. Demander une presigned PUT URL au Worker
+  const expiresUpload = 3600; // 1h pour uploader
+  const presignResp = await fetch(
+    WORKER_URL + '/b2-presign?key=' + encodeURIComponent(randName) + '&expires=' + expiresUpload,
+    { method: 'POST', headers: { 'X-App-Password': appPassword } }
+  );
+  if (!presignResp.ok) throw new Error('Presign HTTP ' + presignResp.status);
+  const presignData = await presignResp.json();
+  if (!presignData.success) throw new Error(presignData.message || 'Presign échoué');
+
+  // 2. Upload direct navigateur → B2 (le Worker ne voit pas le fichier)
+  const uploadResp = await fetch(presignData.presignedPutUrl, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/octet-stream' },
+    body: blob,
+  });
+  if (!uploadResp.ok) throw new Error('Upload B2 HTTP ' + uploadResp.status);
+
+  return { objectKey: randName };
+}
+
+async function deleteBackblaze(objectKey) {
+  if (!appPassword) appPassword = sessionStorage.getItem('sl_pwd') || '';
+  const resp = await fetch(
+    WORKER_URL + '/b2-delete?key=' + encodeURIComponent(objectKey),
+    { method: 'DELETE', headers: { 'X-App-Password': appPassword } }
+  );
+  if (!resp.ok) throw new Error('Delete B2 HTTP ' + resp.status);
+}
+
 async function deleteFileIO(fileKey) {
-  await fetch(WORKER_URL+'/delete?key='+fileKey,{method:'DELETE',headers:{'X-App-Password':appPassword}});
+  await fetch(WORKER_URL+'/delete?key='+fileKey, { method:'DELETE', headers:{'X-App-Password':appPassword} });
 }
 
 function setStatus(txt,pct) {
@@ -839,10 +896,15 @@ function showResult(link, fileKey, autoDestroy) {
   document.getElementById('progress-area').style.display='none';
   document.getElementById('result-view').style.display='block';
   document.getElementById('share-link').textContent=link;
-  const pills=['🔐 AES-256-GCM','🎲 Nom randomisé',provider==='fileio'?'🟢 file.io':'🟡 GoFile',autoDestroy?'💣 Auto-détruit':'⏱ '+expiryLabels[currentExpiry],'🔑 Clé hors serveur'];
+  const pills=['🔐 AES-256-GCM','🎲 Nom randomisé',
+    provider==='fileio' ? '🟢 file.io' : provider==='backblaze' ? '☁️ Backblaze B2' : '🟡 GoFile',
+    autoDestroy ? '💣 Auto-détruit' : '⏱ '+expiryLabels[currentExpiry],
+    '🔑 Clé hors serveur', '⬆️ Upload direct B2'];
   document.getElementById('meta-pills').innerHTML=pills.map(p=>`<span class="pill">${p}</span>`).join('');
   const db=document.getElementById('destroy-now-btn');
-  if(fileKey&&provider==='fileio'){db.style.display='flex';db.dataset.key=fileKey;}else{db.style.display='none';}
+  if(fileKey && (provider==='fileio'||provider==='backblaze')){
+    db.style.display='flex'; db.dataset.key=fileKey; db.dataset.provider=provider;
+  } else { db.style.display='none'; }
   document.getElementById('qr-canvas').innerHTML='';
   try{new QRCode(document.getElementById('qr-canvas'),{text:link,width:148,height:148,correctLevel:QRCode.CorrectLevel.M});}catch(e){}
 }
@@ -856,31 +918,34 @@ function copyLink() {
 }
 
 async function destroyNow() {
-  const btn=document.getElementById('destroy-now-btn');
-  const key=btn.dataset.key;
-  if(!key||!confirm('Détruire définitivement ce fichier ?')) return;
-  btn.disabled=true; btn.textContent='⏳ Suppression…';
+  const btn  = document.getElementById('destroy-now-btn');
+  const key  = btn.dataset.key;
+  const prov = btn.dataset.provider || 'fileio';
+  if (!key || !confirm('Détruire définitivement ce fichier ?')) return;
+  btn.disabled = true; btn.textContent = '⏳ Suppression…';
   try {
-    await deleteFileIO(key);
-    btn.textContent='✅ Détruit';
-    btn.style.background='var(--red)'; btn.style.color='white';
+    if (prov === 'backblaze') await deleteBackblaze(key);
+    else await deleteFileIO(key);
+    btn.textContent = '✅ Détruit';
+    btn.style.background = 'var(--red)'; btn.style.color = 'white';
     markHistoryDestroyed(key); updateBadge();
-  } catch(e) { btn.textContent='❌ Erreur'; btn.disabled=false; }
+  } catch(e) { btn.textContent = '❌ Erreur'; btn.disabled = false; }
 }
 
 function resetUpload() {
-  selectedFile=null; provider='fileio'; currentFileKey=null; fileInput.value='';
+  selectedFile=null; provider='backblaze'; currentFileKey=null; fileInput.value='';
   document.getElementById('result-view').style.display='none';
   document.getElementById('progress-area').style.display='none';
   document.getElementById('file-preview').style.display='none';
+  document.getElementById('badge-backblaze').style.display='none';
   document.getElementById('badge-fileio').style.display='none';
   document.getElementById('badge-gofile').style.display='none';
-  document.getElementById('gofile-warning').style.display='none';
   document.getElementById('send-btn').disabled=true;
   document.getElementById('progress-fill').style.width='0%';
   document.getElementById('error-msg').style.display='none';
   document.getElementById('autodestroy-toggle').checked=true;
   document.getElementById('autodestroy-toggle').disabled=false;
+  document.getElementById('autodestroy-sub').textContent='Backblaze B2 uniquement';
   setExpiry('24h');
 }
 
@@ -913,31 +978,48 @@ async function startDecrypt() {
     const keyHex=params.get('k');
     const ivHex=params.get('iv');
     const filename=decodeURIComponent(params.get('n')||'fichier.bin');
-    const fileUrl=window.location.href.split('#')[0];
+    const fileProvider=params.get('p')||'fileio';
+    const b2Key=params.get('bk'); // object key B2 (bucket privé)
 
     if(!keyHex||!ivHex) throw new Error('Lien invalide — clé manquante');
 
-    setRecvStatus('Téléchargement du fichier chiffré…',30);
-    const resp=await fetch(fileUrl.replace(window.location.origin,'').split('?')[0]);
-    // En réalité on télécharge depuis le lien file.io/gofile
-    // Le lien réel est la partie avant le #
-    const realUrl=window.location.href.split('#')[0];
+    setRecvStatus('Récupération du fichier chiffré…',20);
 
-    // Reconstruit le vrai lien de téléchargement
-    const dlUrl=params.get('dl')||realUrl;
-    const fileResp=await fetch(dlUrl.includes('file.io')||dlUrl.includes('gofile')?dlUrl:realUrl);
-    if(!fileResp.ok) throw new Error('Téléchargement échoué ('+fileResp.status+')');
+    let dlUrl;
 
-    setRecvStatus('Déchiffrement AES-256-GCM…',65);
+    if (fileProvider === 'backblaze' && b2Key) {
+      // Bucket privé : demander une presigned GET URL au Worker
+      setRecvStatus('Génération lien sécurisé B2…', 30);
+      const savedPwd = sessionStorage.getItem('sl_pwd') || appPassword || '';
+      if (!savedPwd) throw new Error('Mot de passe requis pour télécharger depuis Backblaze');
+
+      const presignResp = await fetch(
+        WORKER_URL + '/b2-download?key=' + encodeURIComponent(b2Key) + '&expires=3600',
+        { headers: { 'X-App-Password': savedPwd } }
+      );
+      if (!presignResp.ok) throw new Error('Worker HTTP ' + presignResp.status);
+      const presignData = await presignResp.json();
+      if (!presignData.success) throw new Error(presignData.message || 'Presign GET échoué');
+      dlUrl = presignData.presignedGetUrl;
+    } else {
+      // file.io / GoFile : URL directe dans le lien
+      dlUrl = params.get('dl') || window.location.href.split('#')[0];
+    }
+
+    setRecvStatus('Téléchargement du fichier chiffré…', 50);
+    const fileResp = await fetch(dlUrl);
+    if (!fileResp.ok) throw new Error('Téléchargement échoué ('+fileResp.status+')');
+
+    setRecvStatus('Déchiffrement AES-256-GCM…', 72);
     const encBuffer=await fileResp.arrayBuffer();
     const keyBytes=new Uint8Array(keyHex.match(/.{2}/g).map(h=>parseInt(h,16)));
     const ivBytes=new Uint8Array(ivHex.match(/.{2}/g).map(h=>parseInt(h,16)));
 
-    // Les 12 premiers bytes sont l'IV, le reste est le contenu chiffré
     const cryptoKey=await crypto.subtle.importKey('raw',keyBytes,{name:'AES-GCM'},false,['decrypt']);
+    // Les 12 premiers bytes sont l'IV préfixé, le reste est le contenu chiffré
     const decrypted=await crypto.subtle.decrypt({name:'AES-GCM',iv:ivBytes},cryptoKey,encBuffer.slice(12));
 
-    setRecvStatus('Téléchargement du fichier…',90);
+    setRecvStatus('Enregistrement du fichier…', 92);
     const blob=new Blob([decrypted]);
     const a=document.createElement('a');
     a.href=URL.createObjectURL(blob);
@@ -1004,7 +1086,7 @@ function buildHistoryItem(item) {
         <div class="hist-filename">${escHtml(item.filename)}</div>
         <div class="hist-meta-row">
           <span class="hist-size">${formatSize(item.size)}</span>
-          <span class="hist-provider ${item.provider}">${item.provider==='fileio'?'file.io':'GoFile'}</span>
+          <span class="hist-provider ${item.provider}">${item.provider==='fileio'?'file.io':item.provider==='backblaze'?'B2':'GoFile'}</span>
           <span class="hist-size">${date}</span>
         </div>
       </div>
@@ -1027,7 +1109,7 @@ function buildHistoryItem(item) {
       <div class="hist-actions">
         <button class="hist-action-btn" onclick="shareHistLink('${escHtml(item.link)}')">📤 Partager</button>
         <button class="hist-action-btn" onclick="showHistQR(${item.id},'${escHtml(item.link)}')">📱 QR</button>
-        ${item.provider==='fileio'&&item.fileKey&&item.status==='active'?`<button class="hist-action-btn danger" id="hist-destroy-${item.id}" onclick="destroyHistItem(${item.id},'${item.fileKey}')">🗑 Détruire</button>`:''}
+        ${(item.provider==='fileio'||item.provider==='backblaze')&&item.fileKey&&item.status==='active'?`<button class="hist-action-btn danger" id="hist-destroy-${item.id}" onclick="destroyHistItem(${item.id},'${item.fileKey}','${item.provider}')">🗑 Détruire</button>`:''}
         <button class="hist-action-btn danger" onclick="removeHistItem(${item.id})">✕ Retirer</button>
       </div>
       <div class="hist-qr" id="hist-qr-${item.id}" style="display:none">
@@ -1051,12 +1133,16 @@ function showHistQR(id,link) {
   a.style.display='block'; c.innerHTML='';
   try{new QRCode(c,{text:link,width:130,height:130,correctLevel:QRCode.CorrectLevel.M});}catch(e){}
 }
-async function destroyHistItem(id,fk) {
+async function destroyHistItem(id,fk,prov) {
   if(!confirm('Détruire définitivement ?')) return;
   const btn=document.getElementById('hist-destroy-'+id);
   btn.disabled=true; btn.textContent='⏳…';
-  try { await deleteFileIO(fk); const l=loadHistory(); const i=l.find(x=>x.id===id); if(i){i.status='destroyed';saveHistory(l);} renderHistory(); updateBadge(); }
-  catch(e) { btn.disabled=false; btn.textContent='❌'; }
+  try {
+    if(prov==='backblaze') await deleteBackblaze(fk);
+    else await deleteFileIO(fk);
+    const l=loadHistory(); const i=l.find(x=>x.id===id);
+    if(i){i.status='destroyed';saveHistory(l);} renderHistory(); updateBadge();
+  } catch(e) { btn.disabled=false; btn.textContent='❌'; }
 }
 function removeHistItem(id) { deleteHistoryItem(id); renderHistory(); updateBadge(); }
 </script>
