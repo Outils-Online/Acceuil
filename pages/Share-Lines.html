@@ -1589,6 +1589,7 @@ async function startDecrypt() {
         const { done, value } = await reader.read();
         if (done) break;
         chunks.push(value); received += value.byteLength;
+        await new Promise(r => setTimeout(r, 0)); // yield → let rAF paint
         const now = Date.now(); const dt = (now - lastTime) / 1000;
         if (dt > 0.08) {
           const instant = (received - lastLoaded) / dt;
@@ -1641,10 +1642,9 @@ async function startDecrypt() {
   }
 }
 
-// ══ RECEIVE PROGRESS ENGINE — smooth 60fps + auto-crawl ══
+// ══ RECEIVE PROGRESS ENGINE — rAF 60fps ══
 let _recvPct = 0;
 let _recvPctTarget = 0;
-let _recvTick = null;
 let _recvState = { txt:'', recv:'—', speed:'—', eta:'—' };
 
 function _recvRender() {
@@ -1657,26 +1657,19 @@ function _recvRender() {
   document.getElementById('recv-metric-eta').textContent    = _recvState.eta;
 }
 
+let _recvAnimRunning = false;
 function _recvAnimLoop() {
+  if (!_recvAnimRunning) return;
   const diff = _recvPctTarget - _recvPct;
   if (diff > 0.05) {
-    // Fast easing toward target
-    _recvPct += diff * 0.12 + 0.06;
+    _recvPct += diff * 0.08 + 0.04;
     if (_recvPct > _recvPctTarget) _recvPct = _recvPctTarget;
-  } else {
-    // Auto-crawl: even when stalled, creep slowly toward (target - 1) so it never fully stops
-    const crawlCeil = Math.max(_recvPctTarget - 0.5, _recvPctTarget);
-    if (_recvPct < crawlCeil) {
-      _recvPct += 0.015; // ~1% per second at 60fps — feels alive without lying
-      if (_recvPct > crawlCeil) _recvPct = crawlCeil;
-    }
   }
   _recvRender();
-  _recvTick = setTimeout(_recvAnimLoop, 16);
+  requestAnimationFrame(_recvAnimLoop);
 }
-
-function _startRecvAnim() { clearTimeout(_recvTick); _recvAnimLoop(); }
-function _stopRecvAnim()  { clearTimeout(_recvTick); }
+function _startRecvAnim() { _recvAnimRunning = true; requestAnimationFrame(_recvAnimLoop); }
+function _stopRecvAnim()  { _recvAnimRunning = false; }
 
 function setRecvStatus(txt, pct, recv, speed, eta) {
   _recvState.txt   = txt;
