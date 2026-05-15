@@ -1879,8 +1879,7 @@ function buildHistoryItem(item) {
         <button class="hist-action-btn" onclick="showHistQR(${item.id},'${escHtml(item.link)}')"><i class="fa-solid fa-qrcode"></i> QR</button>
         ${item.status==='active'
           ? item.fileKey
-            ? `<button class="hist-action-btn danger" id="hd-${item.id}" onclick="destroyAndRemoveHistItem(${item.id},'${item.fileKey}')"><i class="fa-solid fa-bomb"></i> Détruire &amp; retirer</button>
-               <button class="hist-action-btn" onclick="removeHistItem(${item.id})"><i class="fa-solid fa-xmark"></i> Retirer</button>`
+            ? `<button class="hist-action-btn danger" id="hd-${item.id}" onclick="destroyAndRemoveHistItem(${item.id},'${item.fileKey}')"><i class="fa-solid fa-bomb"></i> Détruire &amp; retirer</button>`
             : `<button class="hist-action-btn danger" onclick="removeHistItem(${item.id})"><i class="fa-solid fa-xmark"></i> Retirer</button>`
           : `<button class="hist-action-btn" onclick="removeHistItem(${item.id})"><i class="fa-solid fa-xmark"></i> Retirer</button>`
         }
