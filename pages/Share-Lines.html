@@ -745,8 +745,9 @@ async function uploadChunkXHR(url, data) {
     xhr.setRequestHeader('Content-Type','application/octet-stream');
     xhr.onload=()=>{
       if(xhr.status<300){
-        const etag=(xhr.getResponseHeader('ETag')||xhr.getResponseHeader('etag')||'').replace(/"/g,'');
-        res(etag);
+        const etag=(xhr.getResponseHeader('ETag')||xhr.getResponseHeader('etag')||'');
+console.log('Chunk '+' ETag reçu:', JSON.stringify(etag));
+res(etag);
       } else rej(new Error('Chunk HTTP '+xhr.status));
     };
     xhr.onerror=()=>rej(new Error('Erreur réseau chunk'));
