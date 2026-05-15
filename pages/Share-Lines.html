@@ -750,7 +750,6 @@ input[type="file"] { display: none; }
 .progress-bar .recv-fill {
   height: 100%; background: var(--emerald); width: 0%;
   border-radius: 99px; position: relative;
-  transition: width .5s cubic-bezier(0.25, 1, 0.5, 1);
 }
 /* Download stripes */
 .progress-bar .recv-fill::before {
@@ -1557,6 +1556,9 @@ async function startDecrypt() {
   const fillEl = document.getElementById('recv-progress-fill');
   fillEl.className = 'recv-fill';
   fillEl.style.width = '0%';
+  _recvPct = 0; _recvPctTarget = 0;
+  _recvState = { txt:'Génération lien sécurisé…', recv:'—', speed:'—', eta:'—' };
+  _startRecvAnim();
   setRecvStatus('Génération lien sécurisé…', 15, '—', '—', '—');
 
   try {
@@ -1614,27 +1616,66 @@ async function startDecrypt() {
     const blob=new Blob([decrypted]); const a=document.createElement('a');
     a.href=URL.createObjectURL(blob); a.download=filename; a.click(); URL.revokeObjectURL(a.href);
 
-    // Done
-    fillEl.className = 'recv-fill done';
+    // Done — glide bar to 100%, then finalize
     setRecvStatus('Terminé !', 100, '—', '—', '0s');
+    await new Promise(r => setTimeout(r, 550));
+    _stopRecvAnim();
+    _recvPct = 100; _recvRender();
+    fillEl.className = 'recv-fill done';
     document.getElementById('recv-dot').className = 'recv-phase-dot done';
     document.getElementById('receive-success').style.display='flex';
     btn.innerHTML='<i class="fa-solid fa-check"></i> Téléchargé';
   } catch(e) {
+    _stopRecvAnim();
     document.getElementById('receive-error').innerHTML=`<i class="fa-solid fa-circle-xmark"></i> ${escHtml(e.message)}`;
     document.getElementById('receive-error').style.display='flex';
     btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-lock-open"></i> Télécharger &amp; déchiffrer';
   }
 }
 
+// ══ RECEIVE PROGRESS ENGINE — smooth interpolation ══
+let _recvPct = 0;          // current displayed pct
+let _recvPctTarget = 0;    // target pct to glide toward
+let _recvTick = null;      // animation loop handle
+let _recvState = { txt:'', recv:'—', speed:'—', eta:'—' };
+
+function _recvRender() {
+  document.getElementById('recv-phase-label').textContent    = _recvState.txt;
+  document.getElementById('recv-phase-pct').textContent      = Math.round(_recvPct) + '%';
+  document.getElementById('recv-progress-fill').style.width  = _recvPct + '%';
+  document.getElementById('recv-status').textContent         = _recvState.txt;
+  document.getElementById('recv-metric-recv').textContent    = _recvState.recv;
+  document.getElementById('recv-metric-speed').textContent   = _recvState.speed;
+  document.getElementById('recv-metric-eta').textContent     = _recvState.eta;
+}
+
+function _recvAnimLoop() {
+  const diff = _recvPctTarget - _recvPct;
+  if (Math.abs(diff) > 0.05) {
+    // Smooth easing: fast when far, gentle on approach
+    _recvPct += diff * 0.10 + (diff > 0 ? 0.08 : -0.08);
+    if ((diff > 0 && _recvPct > _recvPctTarget) || (diff < 0 && _recvPct < _recvPctTarget))
+      _recvPct = _recvPctTarget;
+    _recvRender();
+  }
+  _recvTick = setTimeout(_recvAnimLoop, 16); // ~60fps
+}
+
+function _startRecvAnim() {
+  clearTimeout(_recvTick);
+  _recvAnimLoop();
+}
+
+function _stopRecvAnim() {
+  clearTimeout(_recvTick);
+}
+
 function setRecvStatus(txt, pct, recv, speed, eta) {
-  document.getElementById('recv-phase-label').textContent = txt;
-  document.getElementById('recv-phase-pct').textContent   = Math.round(pct) + '%';
-  document.getElementById('recv-progress-fill').style.width = pct + '%';
-  document.getElementById('recv-status').textContent = txt;
-  if (recv  !== undefined) document.getElementById('recv-metric-recv').textContent  = recv;
-  if (speed !== undefined) document.getElementById('recv-metric-speed').textContent = speed;
-  if (eta   !== undefined) document.getElementById('recv-metric-eta').textContent   = eta;
+  _recvState.txt   = txt;
+  _recvState.recv  = recv  !== undefined ? recv  : _recvState.recv;
+  _recvState.speed = speed !== undefined ? speed : _recvState.speed;
+  _recvState.eta   = eta   !== undefined ? eta   : _recvState.eta;
+  _recvPctTarget   = Math.min(100, Math.max(_recvPct, pct)); // never go backward
 }
 
 // ══ HISTORY ══
