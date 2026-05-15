@@ -489,7 +489,7 @@ input[type="file"] { display: none; }
   align-items: center;
   justify-content: center;
   gap: 9px;
-  margin-bottom: 20px;
+  margin-top: 20px;
 }
 .send-btn:hover { background: var(--coral-dark); }
 .send-btn:active { transform: translateY(1px); }
@@ -498,12 +498,9 @@ input[type="file"] { display: none; }
 /* ─── PROGRESS ─── */
 .progress-area {
   display: none;
-  margin-bottom: 20px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
+  margin-top: 20px;
+  border-top: 1px solid var(--border);
   overflow: hidden;
-  box-shadow: var(--shadow-sm);
 }
 .progress-phase {
   display: flex;
@@ -603,7 +600,7 @@ input[type="file"] { display: none; }
 }
 
 /* ── METRICS ── */
-.progress-metrics { display: grid; grid-template-columns: 1fr 1fr 1fr; border-top: 1px solid var(--border); }
+.progress-metrics { display: grid; grid-template-columns: 1fr 1fr 1fr; }
 .metric-cell { padding: 12px 16px; display: flex; flex-direction: column; gap: 3px; }
 .metric-cell + .metric-cell { border-left: 1px solid var(--border); }
 .metric-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--text3); }
@@ -631,7 +628,7 @@ input[type="file"] { display: none; }
   font-size: 13px; color: var(--coral-dark); text-align: center;
   display: none; padding: 12px 14px; background: var(--red-l);
   border: 1px solid var(--red-m); border-radius: var(--r-sm);
-  margin-bottom: 20px; align-items: center; gap: 7px;
+  margin-top: 16px; align-items: center; gap: 7px;
 }
 
 /* ─── RESUME BANNER ─── */
@@ -652,11 +649,9 @@ input[type="file"] { display: none; }
 
 /* ─── RESULT ─── */
 .result-card {
-  background: rgba(0,100,102,.04);
-  border: 1px solid rgba(0,100,102,.18);
-  border-radius: var(--r);
-  padding: 28px;
-  margin-bottom: 14px;
+  border-top: 1px solid rgba(0,100,102,.18);
+  padding-top: 20px;
+  margin-top: 20px;
 }
 .result-title {
   font-size: 14px; font-weight: 700; color: var(--emerald); margin-bottom: 20px;
@@ -967,67 +962,68 @@ input[type="file"] { display: none; }
           <span class="toggle-slider"></span>
         </label>
       </div>
-    </div>
-
-    <button class="send-btn" id="send-btn" onclick="startUpload()" disabled>
-      <i class="fa-solid fa-lock"></i> Chiffrer &amp; partager
-    </button>
-
-    <div class="progress-area" id="progress-area">
-      <div class="progress-phase">
-        <div class="progress-phase-dot" id="progress-dot"></div>
-        <span class="progress-phase-label" id="status-text">En attente…</span>
-        <span class="progress-pct" id="progress-pct">0%</span>
-      </div>
-      <div class="progress-track">
-        <div class="progress-fill phase-prep" id="progress-fill"></div>
-      </div>
-      <div class="progress-metrics">
-        <div class="metric-cell">
-          <span class="metric-label">Envoyé</span>
-          <span class="metric-value" id="metric-sent">—</span>
-        </div>
-        <div class="metric-cell">
-          <span class="metric-label">Vitesse</span>
-          <span class="metric-value highlight" id="metric-speed">—</span>
-        </div>
-        <div class="metric-cell">
-          <span class="metric-label">Restant</span>
-          <span class="metric-value highlight-coral" id="metric-eta">—</span>
-        </div>
-      </div>
-      <div class="chunks-section" id="chunks-section">
-        <div class="chunks-label">Chunks AES-256</div>
-        <div class="chunks-grid" id="chunks-grid"></div>
-      </div>
-      <span class="status-text" id="status-text-hidden"></span>
-      <span class="progress-speed" id="progress-speed"></span>
-    </div>
-    <p class="error-msg" id="error-msg"></p>
-
-    <div id="result-view" style="display:none; margin-top:4px">
-      <div class="result-card">
-        <p class="result-title"><i class="fa-solid fa-circle-check"></i> Fichier prêt à partager</p>
-        <div class="link-box">
-          <span class="link-text" id="share-link">—</span>
-          <button class="copy-btn" id="copy-btn" onclick="copyLink()">
-            <i class="fa-solid fa-clipboard"></i> Copier
-          </button>
-        </div>
-        <div class="meta-pills" id="meta-pills"></div>
-        <div class="result-actions">
-          <button class="destroy-btn" id="destroy-now-btn" onclick="destroyNow()" style="display:none">
-            <i class="fa-solid fa-trash"></i> Détruire maintenant
-          </button>
-        </div>
-        <div class="qr-area">
-          <div id="qr-canvas"></div>
-          <p class="qr-label">Scanner pour ouvrir directement</p>
-        </div>
-      </div>
-      <button class="new-btn" onclick="resetUpload()">
-        <i class="fa-solid fa-plus"></i> Nouveau partage
+      <button class="send-btn" id="send-btn" onclick="startUpload()" disabled>
+        <i class="fa-solid fa-lock"></i> Chiffrer &amp; partager
       </button>
+
+      <div class="progress-area" id="progress-area">
+        <div class="progress-phase" style="padding: 16px 0 12px;">
+          <div class="progress-phase-dot" id="progress-dot"></div>
+          <span class="progress-phase-label" id="status-text">En attente…</span>
+          <span class="progress-pct" id="progress-pct">0%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill phase-prep" id="progress-fill"></div>
+        </div>
+        <div class="progress-metrics" style="border: 1px solid var(--border); border-radius: var(--r-sm); margin-top: 12px; overflow: hidden;">
+          <div class="metric-cell">
+            <span class="metric-label">Envoyé</span>
+            <span class="metric-value" id="metric-sent">—</span>
+          </div>
+          <div class="metric-cell">
+            <span class="metric-label">Vitesse</span>
+            <span class="metric-value highlight" id="metric-speed">—</span>
+          </div>
+          <div class="metric-cell">
+            <span class="metric-label">Restant</span>
+            <span class="metric-value highlight-coral" id="metric-eta">—</span>
+          </div>
+        </div>
+        <div class="chunks-section" id="chunks-section">
+          <div class="chunks-label">Chunks AES-256</div>
+          <div class="chunks-grid" id="chunks-grid"></div>
+        </div>
+        <span class="status-text" id="status-text-hidden"></span>
+        <span class="progress-speed" id="progress-speed"></span>
+      </div>
+
+      <p class="error-msg" id="error-msg"></p>
+
+      <div id="result-view" style="display:none;">
+        <div class="result-card">
+          <p class="result-title"><i class="fa-solid fa-circle-check"></i> Fichier prêt à partager</p>
+          <div class="link-box">
+            <span class="link-text" id="share-link">—</span>
+            <button class="copy-btn" id="copy-btn" onclick="copyLink()">
+              <i class="fa-solid fa-clipboard"></i> Copier
+            </button>
+          </div>
+          <div class="meta-pills" id="meta-pills"></div>
+          <div class="result-actions">
+            <button class="destroy-btn" id="destroy-now-btn" onclick="destroyNow()" style="display:none">
+              <i class="fa-solid fa-trash"></i> Détruire maintenant
+            </button>
+          </div>
+          <div class="qr-area">
+            <div id="qr-canvas"></div>
+            <p class="qr-label">Scanner pour ouvrir directement</p>
+          </div>
+        </div>
+        <button class="new-btn" style="margin-top:16px;" onclick="resetUpload()">
+          <i class="fa-solid fa-plus"></i> Nouveau partage
+        </button>
+      </div>
+
     </div>
   </div>
 
@@ -1877,7 +1873,8 @@ function buildHistoryItem(item) {
         <button class="hist-action-btn" onclick="showHistQR(${item.id},'${escHtml(item.link)}')"><i class="fa-solid fa-qrcode"></i> QR</button>
         ${item.status==='active'
           ? item.fileKey
-            ? `<button class="hist-action-btn danger" id="hd-${item.id}" onclick="destroyAndRemoveHistItem(${item.id},'${item.fileKey}')"><i class="fa-solid fa-trash"></i> Détruire &amp; retirer</button>`
+            ? `<button class="hist-action-btn danger" id="hd-${item.id}" onclick="destroyAndRemoveHistItem(${item.id},'${item.fileKey}')"><i class="fa-solid fa-bomb"></i> Détruire &amp; retirer</button>
+               <button class="hist-action-btn" onclick="removeHistItem(${item.id})" title="Retirer de l'historique local uniquement (le fichier reste sur B2)"><i class="fa-solid fa-xmark"></i> Retirer</button>`
             : `<button class="hist-action-btn danger" onclick="removeHistItem(${item.id})"><i class="fa-solid fa-xmark"></i> Retirer</button>`
           : `<button class="hist-action-btn" onclick="removeHistItem(${item.id})"><i class="fa-solid fa-xmark"></i> Retirer</button>`
         }
@@ -1934,9 +1931,9 @@ async function destroyAndRemoveHistItem(id, fk) {
 function removeHistItem(id) {
   const l = loadHistory();
   const item = l.find(x => x.id === id);
-  // Si le fichier est encore actif et a une clé B2, bloquer la suppression locale
+  // Si le fichier est encore actif sur B2, juste confirmer que le fichier reste accessible
   if (item && item.status === 'active' && item.fileKey) {
-    if (!confirm('Ce fichier existe encore sur Backblaze B2.\nRetirer uniquement de l\'historique sans le détruire ?\n\n⚠️ Le fichier restera accessible via son lien.')) return;
+    if (!confirm('Retirer de l\'historique local ?\n\n⚠️ Le fichier reste sur Backblaze B2 et accessible via son lien.')) return;
   }
   deleteHistoryItem(id);
   renderHistory();
