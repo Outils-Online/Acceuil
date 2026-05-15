@@ -1461,10 +1461,23 @@ async function doMultipartUpload(file, objKey, resume, keyBytes) {
       let etag;
       for(let attempt=0;attempt<3;attempt++){
         try {
-          const pr=await fetch(
-            WORKER_URL+`/b2-multipart-upload?key=${encodeURIComponent(objKey)}&uploadId=${encodeURIComponent(uploadId)}&part=${idx+1}`,
-            {method:'POST', headers:{'X-App-Password':appPassword,'Content-Type':'application/octet-stream'}, body:enc});
-          const pd=await pr.json();
+          const pd = await new Promise((res, rej) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', WORKER_URL+`/b2-multipart-upload?key=${encodeURIComponent(objKey)}&uploadId=${encodeURIComponent(uploadId)}&part=${idx+1}`);
+            xhr.setRequestHeader('X-App-Password', appPassword);
+            xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+            xhr.upload.onprogress = e => {
+              if (!e.lengthComputable) return;
+              inFlight[idx] = e.loaded;
+              tick();
+            };
+            xhr.onload = () => {
+              try { res(JSON.parse(xhr.responseText)); }
+              catch(e) { rej(new Error('JSON invalide')); }
+            };
+            xhr.onerror = () => rej(new Error('Erreur réseau chunk ' + idx));
+            xhr.send(enc);
+          });
           if(!pd.success) throw new Error(`Chunk ${idx+1}: ${pd.message}`);
           etag=pd.etag; break;
         } catch(e){ if(attempt===2) throw e; await sleep(1000*(attempt+1)); }
