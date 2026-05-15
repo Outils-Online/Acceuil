@@ -1236,22 +1236,20 @@ async function doMultipartUpload(file, objKey, resume, keyBytes) {
       const dot=document.getElementById('ck-'+idx); if(dot) dot.className='chunk-dot uploading'; inFlight[idx]=0;
       const start=idx*CHUNK_SIZE,end=Math.min(start+CHUNK_SIZE,file.size); const chunkSize=end-start;
       const buf=await file.slice(start,end).arrayBuffer(); const enc=await encryptChunk(keyBytes,idx,buf);
-      const pr=await fetch(WORKER_URL+`/b2-multipart-presign?key=${encodeURIComponent(objKey)}&uploadId=${encodeURIComponent(uploadId)}&part=${idx+1}`,{method:'POST',headers:{'X-App-Password':appPassword}});
-      const pd=await pr.json(); if(!pd.success) throw new Error(`Presign chunk ${idx+1}: ${pd.message}`);
       let etag;
-      for(let attempt=0;attempt<3;attempt++){
-        try{
-          inFlight[idx]=0;
-          etag=await new Promise((res,rej)=>{
-            const xhr=new XMLHttpRequest(); xhr.open('PUT',pd.presignedUrl); xhr.setRequestHeader('Content-Type','application/octet-stream');
-            xhr.upload.onprogress=e=>{if(e.lengthComputable){inFlight[idx]=e.loaded;tick();}};
-            xhr.onload=()=>{if(xhr.status<300){res(xhr.getResponseHeader('ETag')||xhr.getResponseHeader('etag')||'');}else rej(new Error('Chunk HTTP '+xhr.status));};
-            xhr.onerror=()=>rej(new Error('Erreur réseau chunk')); xhr.send(new Blob([enc]));
-          });
-          break;
-        }catch(e){if(attempt===2) throw e; await sleep(1000*(attempt+1));}
-      }
-      completedParts.push({partNumber:idx+1,etag}); bytesConfirmed+=chunkSize; delete inFlight[idx];
+for(let attempt=0;attempt<3;attempt++){
+  try {
+    const pr=await fetch(
+      WORKER_URL+`/b2-multipart-upload?key=${encodeURIComponent(objKey)}&uploadId=${encodeURIComponent(uploadId)}&part=${idx+1}`,
+      {method:'POST', headers:{'X-App-Password':appPassword,'Content-Type':'application/octet-stream'}, body:enc});
+    const pd=await pr.json();
+    if(!pd.success) throw new Error(`Chunk ${idx+1}: ${pd.message}`);
+    etag=pd.etag;
+    break;
+  } catch(e){ if(attempt===2) throw e; await sleep(1000*(attempt+1)); }
+}
+completedParts.push({partNumber:idx+1,etag});
+ bytesConfirmed+=chunkSize; delete inFlight[idx];
       if(dot) dot.className='chunk-dot done';
       saveResume({objectKey:objKey,uploadId,filename:file.name,fileSize:file.size,totalChunks,completedParts,masterKeyBytes:Array.from(keyBytes)}); tick();
     }));
