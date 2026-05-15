@@ -1567,16 +1567,16 @@ async function startDecrypt() {
     if(!keyHex||!b2Key) throw new Error('Lien invalide — paramètres manquants');
     const keyBytes=new Uint8Array(keyHex.match(/.{2}/g).map(h=>parseInt(h,16)));
 
-    setRecvStatus('Génération lien sécurisé…', 15, '—', '—', '—');
+    // 0–5% : presign
+    setRecvStatus('Génération lien sécurisé…', 3, '—', '—', '—');
     const pr=await fetch(WORKER_URL+'/b2-download?key='+encodeURIComponent(b2Key)+'&expires=3600');
     if(!pr.ok) throw new Error('Worker HTTP '+pr.status);
     const pd=await pr.json(); if(!pd.success) throw new Error(pd.message||'Presign GET échoué');
 
-    // Stream download with progress
-    setRecvStatus('Téléchargement…', 20, '—', '—', '—');
+    // 5–95% : téléchargement réel
+    setRecvStatus('Téléchargement…', 5, '—', '—', '—');
     const fr=await fetch(pd.presignedGetUrl); if(!fr.ok) throw new Error('Téléchargement échoué ('+fr.status+')');
 
-    // Try streaming with progress
     let encBuf;
     const contentLength = fr.headers.get('content-length');
     if (contentLength && fr.body) {
@@ -1590,12 +1590,13 @@ async function startDecrypt() {
         if (done) break;
         chunks.push(value); received += value.byteLength;
         const now = Date.now(); const dt = (now - lastTime) / 1000;
-        if (dt > 0.1) {
+        if (dt > 0.08) {
           const instant = (received - lastLoaded) / dt;
           speedEwma = speedEwma === 0 ? instant : speedEwma * (1 - ALPHA) + instant * ALPHA;
           lastLoaded = received; lastTime = now;
         }
-        const pct = 20 + (received / total) * 50;
+        // 5–95% calé sur les vrais bytes reçus
+        const pct = 5 + (received / total) * 90;
         const eta = speedEwma > 0 ? formatTime((total - received) / speedEwma) : '…';
         setRecvStatus('Téléchargement…', pct,
           formatSize(received) + ' / ' + formatSize(total),
@@ -1607,12 +1608,19 @@ async function startDecrypt() {
       for (const c of chunks) { merged.set(c, offset); offset += c.byteLength; }
       encBuf = merged.buffer;
     } else {
+      // Pas de content-length : fallback sans progress réel
       encBuf = await fr.arrayBuffer();
+      setRecvStatus('Téléchargement…', 90, formatSize(encBuf.byteLength), '—', '—');
     }
 
-    setRecvStatus('Déchiffrement AES-256-GCM…', 78, '—', '—', '—');
+    // 95–98% : déchiffrement
+    setRecvStatus('Déchiffrement AES-256-GCM…', 95, '—', '—', '—');
+    await new Promise(r => setTimeout(r, 30));
     const decrypted=await decryptChunk(keyBytes,0,new Uint8Array(encBuf));
-    setRecvStatus('Enregistrement…', 94, '—', '—', '—');
+
+    // 98–100% : enregistrement
+    setRecvStatus('Enregistrement…', 98, '—', '—', '—');
+    await new Promise(r => setTimeout(r, 30));
     const blob=new Blob([decrypted]); const a=document.createElement('a');
     a.href=URL.createObjectURL(blob); a.download=filename; a.click(); URL.revokeObjectURL(a.href);
 
@@ -1633,49 +1641,50 @@ async function startDecrypt() {
   }
 }
 
-// ══ RECEIVE PROGRESS ENGINE — smooth interpolation ══
-let _recvPct = 0;          // current displayed pct
-let _recvPctTarget = 0;    // target pct to glide toward
-let _recvTick = null;      // animation loop handle
+// ══ RECEIVE PROGRESS ENGINE — smooth 60fps + auto-crawl ══
+let _recvPct = 0;
+let _recvPctTarget = 0;
+let _recvTick = null;
 let _recvState = { txt:'', recv:'—', speed:'—', eta:'—' };
 
 function _recvRender() {
-  document.getElementById('recv-phase-label').textContent    = _recvState.txt;
-  document.getElementById('recv-phase-pct').textContent      = Math.round(_recvPct) + '%';
-  document.getElementById('recv-progress-fill').style.width  = _recvPct + '%';
-  document.getElementById('recv-status').textContent         = _recvState.txt;
-  document.getElementById('recv-metric-recv').textContent    = _recvState.recv;
-  document.getElementById('recv-metric-speed').textContent   = _recvState.speed;
-  document.getElementById('recv-metric-eta').textContent     = _recvState.eta;
+  document.getElementById('recv-phase-label').textContent   = _recvState.txt;
+  document.getElementById('recv-phase-pct').textContent     = Math.round(_recvPct) + '%';
+  document.getElementById('recv-progress-fill').style.width = _recvPct + '%';
+  document.getElementById('recv-status').textContent        = _recvState.txt;
+  document.getElementById('recv-metric-recv').textContent   = _recvState.recv;
+  document.getElementById('recv-metric-speed').textContent  = _recvState.speed;
+  document.getElementById('recv-metric-eta').textContent    = _recvState.eta;
 }
 
 function _recvAnimLoop() {
   const diff = _recvPctTarget - _recvPct;
-  if (Math.abs(diff) > 0.05) {
-    // Smooth easing: fast when far, gentle on approach
-    _recvPct += diff * 0.10 + (diff > 0 ? 0.08 : -0.08);
-    if ((diff > 0 && _recvPct > _recvPctTarget) || (diff < 0 && _recvPct < _recvPctTarget))
-      _recvPct = _recvPctTarget;
-    _recvRender();
+  if (diff > 0.05) {
+    // Fast easing toward target
+    _recvPct += diff * 0.12 + 0.06;
+    if (_recvPct > _recvPctTarget) _recvPct = _recvPctTarget;
+  } else {
+    // Auto-crawl: even when stalled, creep slowly toward (target - 1) so it never fully stops
+    const crawlCeil = Math.max(_recvPctTarget - 0.5, _recvPctTarget);
+    if (_recvPct < crawlCeil) {
+      _recvPct += 0.015; // ~1% per second at 60fps — feels alive without lying
+      if (_recvPct > crawlCeil) _recvPct = crawlCeil;
+    }
   }
-  _recvTick = setTimeout(_recvAnimLoop, 16); // ~60fps
+  _recvRender();
+  _recvTick = setTimeout(_recvAnimLoop, 16);
 }
 
-function _startRecvAnim() {
-  clearTimeout(_recvTick);
-  _recvAnimLoop();
-}
-
-function _stopRecvAnim() {
-  clearTimeout(_recvTick);
-}
+function _startRecvAnim() { clearTimeout(_recvTick); _recvAnimLoop(); }
+function _stopRecvAnim()  { clearTimeout(_recvTick); }
 
 function setRecvStatus(txt, pct, recv, speed, eta) {
   _recvState.txt   = txt;
-  _recvState.recv  = recv  !== undefined ? recv  : _recvState.recv;
-  _recvState.speed = speed !== undefined ? speed : _recvState.speed;
-  _recvState.eta   = eta   !== undefined ? eta   : _recvState.eta;
-  _recvPctTarget   = Math.min(100, Math.max(_recvPct, pct)); // never go backward
+  if (recv  !== undefined) _recvState.recv  = recv;
+  if (speed !== undefined) _recvState.speed = speed;
+  if (eta   !== undefined) _recvState.eta   = eta;
+  // Never go backward
+  if (pct > _recvPctTarget) _recvPctTarget = pct;
 }
 
 // ══ HISTORY ══
