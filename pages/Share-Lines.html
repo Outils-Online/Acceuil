@@ -235,6 +235,41 @@ body {
 }
 .logout-btn:hover { background: var(--surface2); color: var(--navy); border-color: var(--border2); }
 
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.storage-widget {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  cursor: default;
+}
+.storage-bar-wrap {
+  width: 80px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.storage-bar-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 99px;
+  background: var(--emerald);
+  transition: width .6s ease, background .4s;
+}
+.storage-bar-fill.warn  { background: #f59e0b; }
+.storage-bar-fill.full  { background: var(--coral); }
+.storage-label {
+  font-size: 10px;
+  color: var(--text3);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
 /* ─── TABS ─── */
 .tabs {
   display: flex;
@@ -857,9 +892,17 @@ input[type="file"] { display: none; }
         <i class="fa-solid fa-circle"></i>Backblaze B2
       </div>
     </div>
-    <button class="logout-btn" onclick="doLogout()">
-      <i class="fa-solid fa-arrow-right-from-bracket"></i> Déco
-    </button>
+    <div class="header-right">
+      <div class="storage-widget" id="storage-widget" title="Stockage Backblaze B2">
+        <div class="storage-bar-wrap">
+          <div class="storage-bar-fill" id="storage-bar-fill"></div>
+        </div>
+        <span class="storage-label" id="storage-label">…</span>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i> Déco
+      </button>
+    </div>
   </div>
 
   <div class="tabs">
@@ -1110,6 +1153,7 @@ function showApp() {
   document.getElementById('login-view').style.display = 'none';
   document.getElementById('app-view').style.display = 'block';
   updateBadge(); checkResumeBanner();
+  fetchStorage();
 }
 function doLogout() {
   sessionStorage.clear(); appPassword = '';
@@ -1117,6 +1161,31 @@ function doLogout() {
   document.getElementById('app-view').style.display = 'none';
   document.getElementById('pwd-input').value = '';
   document.getElementById('pwd-input').focus();
+}
+
+const B2_FREE_BYTES = 10 * 1024 * 1024 * 1024; // 10 GB gratuits B2
+
+async function fetchStorage() {
+  const fill  = document.getElementById('storage-bar-fill');
+  const label = document.getElementById('storage-label');
+  label.textContent = '…';
+  try {
+    const r = await fetch(WORKER_URL + '/b2-storage', {
+      headers: { 'X-App-Password': appPassword }
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const d = await r.json();
+    if (!d.success) throw new Error(d.message);
+    const used  = d.usedBytes;
+    const total = B2_FREE_BYTES;
+    const pct   = Math.min(100, (used / total) * 100);
+    fill.style.width = pct + '%';
+    fill.className = 'storage-bar-fill' + (pct > 90 ? ' full' : pct > 70 ? ' warn' : '');
+    label.textContent = formatSize(used) + ' / ' + formatSize(total);
+    label.title = `${d.fileCount} fichier${d.fileCount > 1 ? 's' : ''} · ${pct.toFixed(1)}% utilisé`;
+  } catch(e) {
+    label.textContent = 'N/A';
+  }
 }
 document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && document.getElementById('login-view').style.display !== 'none') doLogin();
