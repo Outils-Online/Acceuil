@@ -470,24 +470,97 @@ input[type="file"] { display: none; }
   padding: 16px 18px 12px;
   border-bottom: 1px solid var(--border);
 }
+
+/* ── RIPPLE DOT ── */
 .progress-phase-dot {
-  width: 7px; height: 7px;
+  width: 8px; height: 8px;
   border-radius: 50%;
   background: var(--coral);
   flex-shrink: 0;
-  animation: pulse-dot 1.2s ease-in-out infinite;
+  position: relative;
 }
-.progress-phase-dot.done { background: var(--emerald); animation: none; }
-@keyframes pulse-dot {
-  0%,100% { opacity: 1; transform: scale(1); }
-  50%      { opacity: .4; transform: scale(.65); }
+.progress-phase-dot::after {
+  content: '';
+  position: absolute; inset: -4px;
+  border-radius: 50%;
+  background: rgba(244,96,96,0.22);
+  animation: ripple-dot 1.6s ease-out infinite;
 }
+.progress-phase-dot.done { background: var(--emerald); }
+.progress-phase-dot.done::after { background: rgba(0,100,102,0.2); animation: none; opacity: 0; }
+@keyframes ripple-dot {
+  0%   { transform: scale(0.5); opacity: 1; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+
 .progress-phase-label { font-size: 13px; font-weight: 600; color: var(--text); flex: 1; }
 .progress-pct { font-size: 13px; font-weight: 700; color: var(--navy); font-variant-numeric: tabular-nums; min-width: 36px; text-align: right; }
-.progress-track { height: 5px; background: var(--surface2); position: relative; overflow: hidden; }
-.progress-fill { height: 100%; background: var(--navy); width: 0%; transition: width .25s ease-out; }
-.progress-fill.phase-upload { background: var(--coral); }
-.progress-fill.phase-done   { background: var(--emerald); transition: width .4s ease; }
+
+/* ── TRACK ── */
+.progress-track {
+  height: 8px;
+  background: var(--surface2);
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── FILL BASE ── */
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  position: relative;
+  /* JS drives width via style; transition smooths it */
+  transition: width .55s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* Upload = coral + diagonal stripes */
+.progress-fill.phase-upload {
+  background: var(--coral);
+}
+.progress-fill.phase-upload::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(
+    -52deg,
+    transparent 0px,
+    transparent 9px,
+    rgba(255,255,255,0.18) 9px,
+    rgba(255,255,255,0.18) 15px
+  );
+  animation: stripes-move 0.9s linear infinite;
+}
+
+/* Prep = navy */
+.progress-fill.phase-prep {
+  background: var(--navy);
+}
+
+/* Done = emerald, no animation */
+.progress-fill.phase-done {
+  background: var(--emerald);
+  transition: width .35s ease;
+}
+.progress-fill.phase-done::before { display: none; }
+.progress-fill.phase-done::after  { display: none; }
+
+/* Sheen on all active phases */
+.progress-fill:not(.phase-done)::after {
+  content: '';
+  position: absolute; top: 0; left: -70%; width: 55%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.38), transparent);
+  animation: sheen-move 2s ease-in-out infinite;
+}
+
+@keyframes stripes-move {
+  0%   { background-position: 0 0; }
+  100% { background-position: 48px 0; }
+}
+@keyframes sheen-move {
+  0%   { left: -70%; }
+  100% { left: 130%; }
+}
+
+/* ── METRICS ── */
 .progress-metrics { display: grid; grid-template-columns: 1fr 1fr 1fr; border-top: 1px solid var(--border); }
 .metric-cell { padding: 12px 16px; display: flex; flex-direction: column; gap: 3px; }
 .metric-cell + .metric-cell { border-left: 1px solid var(--border); }
@@ -495,14 +568,21 @@ input[type="file"] { display: none; }
 .metric-value { font-size: 13px; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .metric-value.highlight { color: var(--emerald); }
 .metric-value.highlight-coral { color: var(--coral); }
+
+/* ── CHUNKS ── */
 .chunks-section { padding: 10px 16px 14px; border-top: 1px solid var(--border); display: none; }
 .chunks-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--text3); margin-bottom: 8px; }
 .chunks-grid { display: flex; flex-wrap: wrap; gap: 4px; }
-.chunk-dot { width: 9px; height: 9px; border-radius: 2px; background: var(--surface2); border: 1px solid var(--border); transition: background .15s, border-color .15s; }
-.chunk-dot.uploading { background: var(--gold); border-color: #e0b800; }
+.chunk-dot { width: 10px; height: 10px; border-radius: 3px; background: var(--surface2); border: 1px solid var(--border); transition: background .2s, border-color .2s; }
+.chunk-dot.uploading { background: var(--gold); border-color: #c8920a; animation: pulse-chunk .75s ease-in-out infinite alternate; }
 .chunk-dot.done      { background: var(--emerald); border-color: #004f51; }
 .chunk-dot.error     { background: var(--coral); border-color: var(--coral-dark); }
-.status-text { display: none; }
+@keyframes pulse-chunk {
+  from { opacity: .55; transform: scale(0.88); }
+  to   { opacity: 1;   transform: scale(1); }
+}
+
+.status-text { display: block; font-size: 11px; color: var(--text3); margin-top: 4px; }
 .progress-speed { display: none; }
 
 .error-msg {
@@ -659,8 +739,69 @@ input[type="file"] { display: none; }
 }
 .decrypt-btn:hover { background: #004f51; }
 .decrypt-btn:disabled { opacity: .6; cursor: not-allowed; }
-.receive-progress { display: none; margin-top: 16px; }
-.progress-bar { height: 5px; background: var(--surface2); border-radius: 99px; overflow: hidden; margin-bottom: 8px; }
+
+/* ── RECEIVE PROGRESS ── */
+.receive-progress { display: none; margin-top: 20px; }
+.progress-bar {
+  height: 8px; background: var(--surface2);
+  border-radius: 99px; overflow: hidden; margin-bottom: 10px;
+  position: relative;
+}
+.progress-bar .recv-fill {
+  height: 100%; background: var(--emerald); width: 0%;
+  border-radius: 99px; position: relative;
+  transition: width .5s cubic-bezier(0.25, 1, 0.5, 1);
+}
+/* Download stripes */
+.progress-bar .recv-fill::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(
+    -52deg,
+    transparent 0px,
+    transparent 9px,
+    rgba(255,255,255,0.18) 9px,
+    rgba(255,255,255,0.18) 15px
+  );
+  animation: stripes-move 0.9s linear infinite;
+}
+.progress-bar .recv-fill::after {
+  content: '';
+  position: absolute; top: 0; left: -70%; width: 55%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.38), transparent);
+  animation: sheen-move 2s ease-in-out infinite;
+}
+.progress-bar .recv-fill.done::before,
+.progress-bar .recv-fill.done::after { display: none; }
+
+/* ── RECEIVE PHASE DOT ── */
+.recv-phase-row {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+}
+.recv-phase-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--emerald); flex-shrink: 0; position: relative;
+}
+.recv-phase-dot::after {
+  content: '';
+  position: absolute; inset: -4px; border-radius: 50%;
+  background: rgba(0,100,102,0.22);
+  animation: ripple-dot 1.6s ease-out infinite;
+}
+.recv-phase-dot.done::after { display: none; }
+.recv-phase-label { font-size: 13px; font-weight: 600; color: var(--text); flex: 1; }
+.recv-phase-pct { font-size: 13px; font-weight: 700; color: var(--emerald); font-variant-numeric: tabular-nums; }
+
+.recv-metrics {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  border: 1px solid var(--border); border-radius: var(--r-sm);
+  overflow: hidden; margin-bottom: 10px;
+}
+.recv-metric { padding: 8px 10px; display: flex; flex-direction: column; gap: 2px; background: var(--surface); }
+.recv-metric + .recv-metric { border-left: 1px solid var(--border); }
+.recv-metric-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--text3); }
+.recv-metric-value { font-size: 12px; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
+
 .receive-error {
   padding: 11px 14px; background: var(--red-l); border: 1px solid var(--red-m);
   border-radius: var(--r-sm); font-size: 13px; color: var(--coral-dark); margin-top: 16px;
@@ -790,7 +931,7 @@ input[type="file"] { display: none; }
         <span class="progress-pct" id="progress-pct">0%</span>
       </div>
       <div class="progress-track">
-        <div class="progress-fill" id="progress-fill"></div>
+        <div class="progress-fill phase-prep" id="progress-fill"></div>
       </div>
       <div class="progress-metrics">
         <div class="metric-cell">
@@ -807,7 +948,7 @@ input[type="file"] { display: none; }
         </div>
       </div>
       <div class="chunks-section" id="chunks-section">
-        <div class="chunks-label">Chunks</div>
+        <div class="chunks-label">Chunks AES-256</div>
         <div class="chunks-grid" id="chunks-grid"></div>
       </div>
       <span class="status-text" id="status-text-hidden"></span>
@@ -869,7 +1010,20 @@ input[type="file"] { display: none; }
         <i class="fa-solid fa-lock-open"></i> Télécharger &amp; déchiffrer
       </button>
       <div class="receive-progress" id="receive-progress">
-        <div class="progress-bar"><div class="progress-fill" id="recv-progress-fill"></div></div>
+        <!-- Phase row -->
+        <div class="recv-phase-row">
+          <div class="recv-phase-dot" id="recv-dot"></div>
+          <span class="recv-phase-label" id="recv-phase-label">Téléchargement…</span>
+          <span class="recv-phase-pct" id="recv-phase-pct">0%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="recv-fill" id="recv-progress-fill"></div>
+        </div>
+        <div class="recv-metrics">
+          <div class="recv-metric"><span class="recv-metric-label">Reçu</span><span class="recv-metric-value" id="recv-metric-recv">—</span></div>
+          <div class="recv-metric"><span class="recv-metric-label">Vitesse</span><span class="recv-metric-value" id="recv-metric-speed">—</span></div>
+          <div class="recv-metric"><span class="recv-metric-label">Restant</span><span class="recv-metric-value" id="recv-metric-eta">—</span></div>
+        </div>
         <p class="status-text" id="recv-status">Téléchargement…</p>
       </div>
       <div class="receive-error" id="receive-error"></div>
@@ -1030,6 +1184,7 @@ function getFileIcon(n) {
     mp4:'fa-file-video',mp3:'fa-file-audio',txt:'fa-file-lines'}[e]||'fa-file';
 }
 function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
 
 // ══ CRYPTO ══
 async function deriveChunkIV(keyBytes, idx) {
@@ -1086,6 +1241,93 @@ async function resumeUpload() {
   finishUpload(s.objectKey, keyBytes);
 }
 
+// ══ PROGRESS ENGINE ══
+// Smooth JS-driven ticker — updates every 50ms for fluid animation
+let _pState = { phase:'idle', pct:0, bytesSent:0, totalBytes:0, speed:0, eta:Infinity, label:'En attente…' };
+let _progressTick = null;
+
+function _renderProgress() {
+  const s = _pState;
+  const fill = document.getElementById('progress-fill');
+  const dot  = document.getElementById('progress-dot');
+
+  // Width — JS drives it smoothly via tick
+  fill.style.width = Math.min(100, s.pct) + '%';
+
+  // Phase class drives color + stripe animation
+  if (s.phase === 'done') {
+    fill.className = 'progress-fill phase-done';
+    dot.className = 'progress-phase-dot done';
+  } else if (s.phase === 'upload') {
+    fill.className = 'progress-fill phase-upload';
+    dot.className = 'progress-phase-dot';
+  } else {
+    fill.className = 'progress-fill phase-prep';
+    dot.className = 'progress-phase-dot';
+  }
+
+  document.getElementById('status-text').textContent = s.label;
+  document.getElementById('progress-pct').textContent = Math.round(Math.min(100, s.pct)) + '%';
+
+  const sent = s.totalBytes > 0
+    ? `${formatSize(Math.round(s.bytesSent))} / ${formatSize(s.totalBytes)}`
+    : (s.bytesSent > 0 ? formatSize(Math.round(s.bytesSent)) : '—');
+  document.getElementById('metric-sent').textContent  = sent;
+  document.getElementById('metric-speed').textContent = s.speed > 0 ? formatSize(Math.round(s.speed)) + '/s' : '—';
+  document.getElementById('metric-eta').textContent   = s.speed > 0 && s.eta < Infinity ? formatTime(s.eta) : '—';
+}
+
+function initProgress(totalBytes) {
+  _pState = { phase:'prep', pct:0, bytesSent:0, totalBytes, speed:0, eta:Infinity, label:'Préparation…' };
+  _renderProgress();
+  document.getElementById('chunks-section').style.display = 'none';
+  document.getElementById('metric-sent').textContent  = '—';
+  document.getElementById('metric-speed').textContent = '—';
+  document.getElementById('metric-eta').textContent   = '—';
+}
+
+// Smoothly animate pct toward a target (for prep phases)
+let _pctTarget = 0;
+function _animateTick() {
+  if (_pState.phase === 'prep' && _pState.pct < _pctTarget) {
+    _pState.pct += (_pctTarget - _pState.pct) * 0.08 + 0.1;
+    if (_pState.pct >= _pctTarget) _pState.pct = _pctTarget;
+    _renderProgress();
+  }
+  _progressTick = setTimeout(_animateTick, 50);
+}
+function startProgressTick() {
+  clearTimeout(_progressTick);
+  _animateTick();
+}
+function stopProgressTick() {
+  clearTimeout(_progressTick);
+}
+
+function setProgressPrep(label, targetPct) {
+  _pState.phase = 'prep';
+  _pState.label = label;
+  _pctTarget = targetPct;
+}
+
+function setProgressUpload(bytesSent, totalBytes, speed, label) {
+  _pState.phase = 'upload';
+  _pState.bytesSent = bytesSent;
+  _pState.totalBytes = totalBytes;
+  _pState.speed = speed;
+  _pState.eta = speed > 0 ? (totalBytes - bytesSent) / speed : Infinity;
+  _pState.pct = totalBytes > 0 ? Math.min(98, (bytesSent / totalBytes) * 94 + 4) : _pState.pct;
+  _pState.label = label || 'Upload en cours…';
+  _pctTarget = _pState.pct;
+  _renderProgress();
+}
+
+function setStatus(txt, pct) {
+  _pState.label = txt;
+  _pctTarget = pct;
+  _renderProgress();
+}
+
 // ══ UPLOAD ══
 async function startUpload() {
   if (!selectedFile) return;
@@ -1095,19 +1337,20 @@ async function startUpload() {
   document.getElementById('progress-area').style.display = 'block';
   document.getElementById('result-view').style.display = 'none';
   document.getElementById('chunks-grid').innerHTML = '';
+  startProgressTick();
   try {
-    setStatus('Génération clé AES-256…', 2);
+    setProgressPrep('Génération clé AES-256…', 8);
     const masterKey      = await crypto.subtle.generateKey({name:'AES-GCM',length:256}, true, ['encrypt','decrypt']);
     const masterKeyBytes = new Uint8Array(await crypto.subtle.exportKey('raw', masterKey));
     const objKey         = randomKey();
     if (selectedFile.size <= MULTIPART_THRESHOLD) {
       await doSimpleUpload(selectedFile, objKey, masterKeyBytes);
     } else {
-      const totalChunks = Math.ceil(selectedFile.size / CHUNK_SIZE);
-await doMultipartUpload(selectedFile, objKey, null, masterKeyBytes);
+      await doMultipartUpload(selectedFile, objKey, null, masterKeyBytes);
     }
     finishUpload(objKey, masterKeyBytes);
   } catch(e) {
+    stopProgressTick();
     if (!uploadAborted) {
       document.getElementById('error-msg').textContent = e.message;
       document.getElementById('error-msg').style.display = 'block';
@@ -1117,73 +1360,38 @@ await doMultipartUpload(selectedFile, objKey, null, masterKeyBytes);
   }
 }
 
-// ══ PROGRESS ENGINE ══
-let _progressState = { phase:'idle', pct:0, bytesSent:0, totalBytes:0, speed:0, eta:Infinity, label:'En attente…' };
-
-function initProgress(totalBytes) {
-  _progressState = { phase:'prep', pct:0, bytesSent:0, totalBytes, speed:0, eta:Infinity, label:'Préparation…' };
-  const fill = document.getElementById('progress-fill');
-  fill.className = 'progress-fill'; fill.style.width = '0%';
-  document.getElementById('progress-dot').className = 'progress-phase-dot';
-  document.getElementById('chunks-section').style.display = 'none';
-  document.getElementById('metric-sent').textContent  = '—';
-  document.getElementById('metric-speed').textContent = '—';
-  document.getElementById('metric-eta').textContent   = '—';
-}
-
-function _renderProgress() {
-  const s = _progressState;
-  const fill = document.getElementById('progress-fill');
-  const dot  = document.getElementById('progress-dot');
-  fill.style.width = Math.min(100, s.pct) + '%';
-  if (s.phase === 'done') { fill.className = 'progress-fill phase-done'; dot.className = 'progress-phase-dot done'; }
-  else if (s.phase === 'upload') { fill.className = 'progress-fill phase-upload'; }
-  else { fill.className = 'progress-fill'; }
-  document.getElementById('status-text').textContent = s.label;
-  document.getElementById('progress-pct').textContent = Math.round(Math.min(100, s.pct)) + '%';
-  const sent = s.totalBytes > 0 ? `${formatSize(s.bytesSent)} / ${formatSize(s.totalBytes)}` : (s.bytesSent > 0 ? formatSize(s.bytesSent) : '—');
-  document.getElementById('metric-sent').textContent  = sent;
-  document.getElementById('metric-speed').textContent = s.speed > 0 ? formatSize(Math.round(s.speed)) + '/s' : '—';
-  document.getElementById('metric-eta').textContent   = s.speed > 0 && s.eta < Infinity ? formatTime(s.eta) : '—';
-}
-
-function setProgressPrep(label, pct) { _progressState.phase='prep'; _progressState.label=label; _progressState.pct=pct; _renderProgress(); }
-function setProgressUpload(bytesSent, totalBytes, speed, label) {
-  _progressState.phase='upload'; _progressState.bytesSent=bytesSent; _progressState.totalBytes=totalBytes;
-  _progressState.speed=speed; _progressState.eta=speed>0?(totalBytes-bytesSent)/speed:Infinity;
-  _progressState.pct=totalBytes>0?Math.min(98,(bytesSent/totalBytes)*94+4):_progressState.pct;
-  _progressState.label=label||'Upload en cours…'; _renderProgress();
-}
-function setStatus(txt, pct) { _progressState.label=txt; _progressState.pct=pct; _renderProgress(); }
-const sleep = ms => new Promise(r=>setTimeout(r,ms));
-
 function finishUpload(objKey, keyBytes) {
-  const keyHex   = Array.from(keyBytes).map(b=>b.toString(16).padStart(2,'0')).join('');
-const chunkCount = selectedFile.size > MULTIPART_THRESHOLD ? Math.ceil(selectedFile.size / CHUNK_SIZE) : 1;
-const magicLink = SHARE_BASE+'#k='+keyHex+'&n='+encodeURIComponent(selectedFile.name)+'&p=backblaze&bk='+encodeURIComponent(objKey)+'&chunks='+chunkCount;  currentFileKey = objKey;
-  _progressState.phase='done'; _progressState.pct=100; _progressState.label='Terminé !';
-  _progressState.speed=0; _progressState.eta=0; _renderProgress();
+  const keyHex    = Array.from(keyBytes).map(b=>b.toString(16).padStart(2,'0')).join('');
+  const magicLink = SHARE_BASE+'#k='+keyHex+'&n='+encodeURIComponent(selectedFile.name)+'&p=backblaze&bk='+encodeURIComponent(objKey)+'&chunks=1';
+  currentFileKey  = objKey;
+
+  // Snap to done
+  stopProgressTick();
+  _pState.phase = 'done'; _pState.pct = 100; _pState.label = 'Terminé !';
+  _pState.speed = 0; _pState.eta = 0;
+  _renderProgress();
+
   const autoDestroy = document.getElementById('autodestroy-toggle').checked;
   saveToHistory({id:Date.now(),filename:selectedFile.name,size:selectedFile.size,
     provider:'backblaze',expiry:currentExpiry,autoDestroy,link:magicLink,
     fileKey:objKey,createdAt:new Date().toISOString(),status:'active'});
   updateBadge(); clearResume();
-  setTimeout(() => showResult(magicLink, objKey, autoDestroy), 400);
+  setTimeout(() => showResult(magicLink, objKey, autoDestroy), 500);
 }
 
 async function doSimpleUpload(file, objKey, keyBytes) {
   initProgress(file.size);
-  setProgressPrep('Lecture du fichier…', 5);
+  setProgressPrep('Lecture du fichier…', 12);
   const buf = await file.arrayBuffer();
-  setProgressPrep('Chiffrement AES-256-GCM…', 15);
+  setProgressPrep('Chiffrement AES-256-GCM…', 22);
   const enc = await encryptChunk(keyBytes, 0, buf);
-  setProgressPrep('Obtention URL presignée…', 25);
+  setProgressPrep('Obtention URL presignée…', 28);
   const r = await fetch(WORKER_URL+'/b2-presign?key='+encodeURIComponent(objKey)+'&expires=3600',
     {method:'POST',headers:{'X-App-Password':appPassword}});
   const d = await r.json();
   if (!d.success) throw new Error(d.message||'Presign échoué');
-  setProgressPrep('Connexion Backblaze…', 30);
-  let speedEwma=0; const ALPHA=0.3; let lastLoaded=0; let lastTime=Date.now();
+  setProgressPrep('Connexion Backblaze…', 32);
+  let speedEwma=0; const ALPHA=0.25; let lastLoaded=0; let lastTime=Date.now();
   await new Promise((res, rej) => {
     const xhr = new XMLHttpRequest();
     xhr.open('PUT', d.presignedPutUrl);
@@ -1191,7 +1399,11 @@ async function doSimpleUpload(file, objKey, keyBytes) {
     xhr.upload.onprogress = e => {
       if (!e.lengthComputable) return;
       const now=Date.now(); const dt=(now-lastTime)/1000;
-      if (dt>0.08) { const instant=(e.loaded-lastLoaded)/dt; speedEwma=speedEwma===0?instant:speedEwma*(1-ALPHA)+instant*ALPHA; lastLoaded=e.loaded; lastTime=now; }
+      if (dt>0.06) {
+        const instant=(e.loaded-lastLoaded)/dt;
+        speedEwma = speedEwma===0 ? instant : speedEwma*(1-ALPHA)+instant*ALPHA;
+        lastLoaded=e.loaded; lastTime=now;
+      }
       setProgressUpload(e.loaded, e.total, speedEwma, 'Upload vers Backblaze…');
     };
     xhr.onload  = () => { if(xhr.status<300) res(); else rej(new Error('B2 HTTP '+xhr.status)); };
@@ -1210,9 +1422,9 @@ async function doMultipartUpload(file, objKey, resume, keyBytes) {
   if (resume) {
     uploadId=resume.uploadId; completedParts=[...resume.completedParts];
     resume.completedParts.forEach(p=>{const d=document.getElementById('ck-'+(p.partNumber-1));if(d)d.className='chunk-dot done';});
-    setProgressPrep(`Reprise — ${completedParts.length}/${totalChunks} chunks restaurés`, 5);
+    setProgressPrep(`Reprise — ${completedParts.length}/${totalChunks} chunks restaurés`, 8);
   } else {
-    setProgressPrep('Démarrage multipart…', 3);
+    setProgressPrep('Démarrage multipart…', 5);
     const r=await fetch(WORKER_URL+'/b2-multipart-start?key='+encodeURIComponent(objKey),{method:'POST',headers:{'X-App-Password':appPassword}});
     const d=await r.json();
     if(!d.success) throw new Error(d.message||'Multipart start échoué');
@@ -1224,49 +1436,46 @@ async function doMultipartUpload(file, objKey, resume, keyBytes) {
   for (let i=0;i<totalChunks;i++) if(!done.has(i+1)) pending.push(i);
   let bytesConfirmed=completedParts.reduce((acc,p)=>{const idx=p.partNumber-1;return acc+Math.min(CHUNK_SIZE,file.size-idx*CHUNK_SIZE);},0);
   const inFlight={}; let speedEwma=0; const ALPHA=0.25; let lastTotal=bytesConfirmed; let lastTime=Date.now();
+
   function tick() {
     const now=Date.now(); const dt=(now-lastTime)/1000;
-    if(dt>0.1){ const inflight=Object.values(inFlight).reduce((a,b)=>a+b,0); const total=bytesConfirmed+inflight; const delta=total-lastTotal;
+    if(dt>0.08){
+      const inflight=Object.values(inFlight).reduce((a,b)=>a+b,0);
+      const total=bytesConfirmed+inflight; const delta=total-lastTotal;
       if(delta>0){ const instant=delta/dt; speedEwma=speedEwma===0?instant:speedEwma*(1-ALPHA)+instant*ALPHA; lastTotal=total; lastTime=now; }
-      setProgressUpload(bytesConfirmed+inflight,file.size,speedEwma,`${completedParts.length}/${totalChunks} chunks envoyés`); }
+      setProgressUpload(bytesConfirmed+inflight, file.size, speedEwma, `${completedParts.length}/${totalChunks} chunks envoyés`);
+    }
   }
+
   for (let i=0;i<pending.length;i+=PARALLEL_CHUNKS) {
     if(uploadAborted) throw new Error('Upload annulé');
     const batch=pending.slice(i,i+PARALLEL_CHUNKS);
     await Promise.all(batch.map(async idx=>{
       const dot=document.getElementById('ck-'+idx); if(dot) dot.className='chunk-dot uploading'; inFlight[idx]=0;
-      const start=idx*CHUNK_SIZE,end=Math.min(start+CHUNK_SIZE,file.size); const chunkSize=end-start;
+      const start=idx*CHUNK_SIZE, end=Math.min(start+CHUNK_SIZE,file.size); const chunkSize=end-start;
       const buf=await file.slice(start,end).arrayBuffer(); const enc=await encryptChunk(keyBytes,idx,buf);
       let etag;
-for(let attempt=0;attempt<3;attempt++){
-  try {
-    const pr=await fetch(
-      WORKER_URL+`/b2-multipart-upload?key=${encodeURIComponent(objKey)}&uploadId=${encodeURIComponent(uploadId)}&part=${idx+1}`,
-      {method:'POST', headers:{'X-App-Password':appPassword,'Content-Type':'application/octet-stream'}, body:enc});
-    const pd=await pr.json();
-    if(!pd.success) throw new Error(`Chunk ${idx+1}: ${pd.message}`);
-    etag=pd.etag;
-    break;
-  } catch(e){ if(attempt===2) throw e; await sleep(1000*(attempt+1)); }
-}
-completedParts.push({partNumber:idx+1,etag});
- bytesConfirmed+=chunkSize; delete inFlight[idx];
+      for(let attempt=0;attempt<3;attempt++){
+        try {
+          const pr=await fetch(
+            WORKER_URL+`/b2-multipart-upload?key=${encodeURIComponent(objKey)}&uploadId=${encodeURIComponent(uploadId)}&part=${idx+1}`,
+            {method:'POST', headers:{'X-App-Password':appPassword,'Content-Type':'application/octet-stream'}, body:enc});
+          const pd=await pr.json();
+          if(!pd.success) throw new Error(`Chunk ${idx+1}: ${pd.message}`);
+          etag=pd.etag; break;
+        } catch(e){ if(attempt===2) throw e; await sleep(1000*(attempt+1)); }
+      }
+      completedParts.push({partNumber:idx+1,etag});
+      bytesConfirmed+=chunkSize; delete inFlight[idx];
       if(dot) dot.className='chunk-dot done';
-      saveResume({objectKey:objKey,uploadId,filename:file.name,fileSize:file.size,totalChunks,completedParts,masterKeyBytes:Array.from(keyBytes)}); tick();
+      saveResume({objectKey:objKey,uploadId,filename:file.name,fileSize:file.size,totalChunks,completedParts,masterKeyBytes:Array.from(keyBytes)});
+      tick();
     }));
   }
   setProgressPrep('Finalisation multipart…', 98);
   const cr=await fetch(WORKER_URL+`/b2-multipart-complete?key=${encodeURIComponent(objKey)}&uploadId=${encodeURIComponent(uploadId)}`,
     {method:'POST',headers:{'X-App-Password':appPassword,'Content-Type':'application/json'},body:JSON.stringify({parts:completedParts})});
   const cd=await cr.json(); if(!cd.success) throw new Error(cd.message||'Complete échoué');
-}
-
-async function uploadChunkXHR(url, data) {
-  return new Promise((res,rej)=>{
-    const xhr=new XMLHttpRequest(); xhr.open('PUT',url); xhr.setRequestHeader('Content-Type','application/octet-stream');
-    xhr.onload=()=>{if(xhr.status<300){res(xhr.getResponseHeader('ETag')||xhr.getResponseHeader('etag')||'');}else rej(new Error('Chunk HTTP '+xhr.status));};
-    xhr.onerror=()=>rej(new Error('Erreur réseau chunk')); xhr.send(new Blob([data]));
-  });
 }
 
 // ══ DELETE ══
@@ -1314,10 +1523,12 @@ async function destroyNow() {
 }
 function resetUpload() {
   selectedFile=null; currentFileKey=null; fileInput.value=''; uploadAborted=false;
+  stopProgressTick();
   ['result-view','progress-area','file-preview','error-msg'].forEach(id=>document.getElementById(id).style.display='none');
   document.getElementById('badge-backblaze').style.display='none';
   document.getElementById('send-btn').disabled=true;
   document.getElementById('progress-fill').style.width='0%';
+  document.getElementById('progress-fill').className='progress-fill phase-prep';
   document.getElementById('progress-speed').textContent='';
   document.getElementById('chunks-grid').innerHTML='';
   document.getElementById('autodestroy-toggle').checked=true;
@@ -1341,57 +1552,89 @@ async function startDecrypt() {
   document.getElementById('receive-progress').style.display='block';
   document.getElementById('receive-error').style.display='none';
   document.getElementById('receive-success').style.display='none';
+
+  // Reset progress UI
+  const fillEl = document.getElementById('recv-progress-fill');
+  fillEl.className = 'recv-fill';
+  fillEl.style.width = '0%';
+  setRecvStatus('Génération lien sécurisé…', 15, '—', '—', '—');
+
   try {
     const params=new URLSearchParams(window.location.hash.slice(1));
-    const keyHex=params.get('k');
-    const filename=decodeURIComponent(params.get('n')||'fichier.bin');
-    const b2Key=params.get('bk');
-    const chunks=parseInt(params.get('chunks')||'1',10);
+    const keyHex=params.get('k'); const filename=decodeURIComponent(params.get('n')||'fichier.bin'); const b2Key=params.get('bk');
     if(!keyHex||!b2Key) throw new Error('Lien invalide — paramètres manquants');
     const keyBytes=new Uint8Array(keyHex.match(/.{2}/g).map(h=>parseInt(h,16)));
-    setRecvStatus('Génération lien sécurisé…', 10);
+
+    setRecvStatus('Génération lien sécurisé…', 15, '—', '—', '—');
     const pr=await fetch(WORKER_URL+'/b2-download?key='+encodeURIComponent(b2Key)+'&expires=3600');
     if(!pr.ok) throw new Error('Worker HTTP '+pr.status);
-    const pd=await pr.json();
-    if(!pd.success) throw new Error(pd.message||'Presign GET échoué');
-    setRecvStatus('Téléchargement…', 20);
-    const fr=await fetch(pd.presignedGetUrl);
-    if(!fr.ok) throw new Error('Téléchargement échoué ('+fr.status+')');
-    setRecvStatus('Déchiffrement AES-256-GCM…', 60);
-    const encBuf=new Uint8Array(await fr.arrayBuffer());
-    // Déchiffrement chunk par chunk
-    const decryptedParts=[];
-    if(chunks<=1){
-      // Fichier simple — un seul chunk avec idx=0
-      decryptedParts.push(await decryptChunk(keyBytes,0,encBuf));
-    } else {
-      // Fichier multipart — chaque chunk a son propre IV (12 bytes) + données
-      // Taille chiffrée par chunk = CHUNK_SIZE + 16 (GCM tag) + 12 (IV) = CHUNK_SIZE + 28
-      const encChunkSize = CHUNK_SIZE + 12 + 16;
-      for(let i=0;i<chunks;i++){
-        setRecvStatus(`Déchiffrement chunk ${i+1}/${chunks}…`, 60+Math.round((i/chunks)*30));
-        const start=i*encChunkSize;
-        const end=Math.min(start+encChunkSize, encBuf.byteLength);
-        const chunkEnc=encBuf.slice(start,end);
-        decryptedParts.push(new Uint8Array(await decryptChunk(keyBytes,i,chunkEnc)));
+    const pd=await pr.json(); if(!pd.success) throw new Error(pd.message||'Presign GET échoué');
+
+    // Stream download with progress
+    setRecvStatus('Téléchargement…', 20, '—', '—', '—');
+    const fr=await fetch(pd.presignedGetUrl); if(!fr.ok) throw new Error('Téléchargement échoué ('+fr.status+')');
+
+    // Try streaming with progress
+    let encBuf;
+    const contentLength = fr.headers.get('content-length');
+    if (contentLength && fr.body) {
+      const total = parseInt(contentLength);
+      const reader = fr.body.getReader();
+      const chunks = [];
+      let received = 0;
+      let lastLoaded = 0; let lastTime = Date.now(); let speedEwma = 0; const ALPHA = 0.3;
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value); received += value.byteLength;
+        const now = Date.now(); const dt = (now - lastTime) / 1000;
+        if (dt > 0.1) {
+          const instant = (received - lastLoaded) / dt;
+          speedEwma = speedEwma === 0 ? instant : speedEwma * (1 - ALPHA) + instant * ALPHA;
+          lastLoaded = received; lastTime = now;
+        }
+        const pct = 20 + (received / total) * 50;
+        const eta = speedEwma > 0 ? formatTime((total - received) / speedEwma) : '…';
+        setRecvStatus('Téléchargement…', pct,
+          formatSize(received) + ' / ' + formatSize(total),
+          speedEwma > 0 ? formatSize(Math.round(speedEwma)) + '/s' : '—',
+          eta);
       }
+      const merged = new Uint8Array(received);
+      let offset = 0;
+      for (const c of chunks) { merged.set(c, offset); offset += c.byteLength; }
+      encBuf = merged.buffer;
+    } else {
+      encBuf = await fr.arrayBuffer();
     }
-    setRecvStatus('Enregistrement…', 95);
-    const blob=new Blob(decryptedParts);
-    const a=document.createElement('a');
+
+    setRecvStatus('Déchiffrement AES-256-GCM…', 78, '—', '—', '—');
+    const decrypted=await decryptChunk(keyBytes,0,new Uint8Array(encBuf));
+    setRecvStatus('Enregistrement…', 94, '—', '—', '—');
+    const blob=new Blob([decrypted]); const a=document.createElement('a');
     a.href=URL.createObjectURL(blob); a.download=filename; a.click(); URL.revokeObjectURL(a.href);
-    setRecvStatus('Terminé !', 100);
+
+    // Done
+    fillEl.className = 'recv-fill done';
+    setRecvStatus('Terminé !', 100, '—', '—', '0s');
+    document.getElementById('recv-dot').className = 'recv-phase-dot done';
     document.getElementById('receive-success').style.display='flex';
     btn.innerHTML='<i class="fa-solid fa-check"></i> Téléchargé';
   } catch(e) {
     document.getElementById('receive-error').innerHTML=`<i class="fa-solid fa-circle-xmark"></i> ${escHtml(e.message)}`;
     document.getElementById('receive-error').style.display='flex';
-    btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-lock-open"></i> Télécharger & déchiffrer';
+    btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-lock-open"></i> Télécharger &amp; déchiffrer';
   }
 }
-function setRecvStatus(txt,pct) {
-  document.getElementById('recv-status').textContent=txt;
-  document.getElementById('recv-progress-fill').style.width=pct+'%';
+
+function setRecvStatus(txt, pct, recv, speed, eta) {
+  document.getElementById('recv-phase-label').textContent = txt;
+  document.getElementById('recv-phase-pct').textContent   = Math.round(pct) + '%';
+  document.getElementById('recv-progress-fill').style.width = pct + '%';
+  document.getElementById('recv-status').textContent = txt;
+  if (recv  !== undefined) document.getElementById('recv-metric-recv').textContent  = recv;
+  if (speed !== undefined) document.getElementById('recv-metric-speed').textContent = speed;
+  if (eta   !== undefined) document.getElementById('recv-metric-eta').textContent   = eta;
 }
 
 // ══ HISTORY ══
