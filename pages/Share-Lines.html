@@ -1028,9 +1028,14 @@ input[type="file"] { display: none; }
   <div id="history-view">
     <div class="history-header">
       <span class="history-count" id="history-count">0 partage</span>
-      <button class="clear-all-btn" onclick="clearAllHistory()">
-        <i class="fa-solid fa-trash"></i> Tout effacer
-      </button>
+      <div style="display:flex;gap:6px">
+        <button class="clear-all-btn" id="destroy-all-btn" onclick="destroyAllActive()" style="background:var(--red-l);color:var(--coral-dark);border-color:var(--red-m)">
+          <i class="fa-solid fa-bomb"></i> Tout détruire
+        </button>
+        <button class="clear-all-btn" onclick="clearAllHistory()">
+          <i class="fa-solid fa-trash"></i> Tout effacer
+        </button>
+      </div>
     </div>
     <div id="history-list"></div>
     <div class="history-empty" id="history-empty">
@@ -1773,7 +1778,48 @@ function saveHistory(l) { localStorage.setItem(STORAGE_KEY,JSON.stringify(l)); }
 function saveToHistory(e){ const l=loadHistory(); l.unshift(e); saveHistory(l); }
 function markHistoryDestroyed(fk){ const l=loadHistory(); const i=l.find(x=>x.fileKey===fk); if(i){i.status='destroyed';saveHistory(l);} }
 function deleteHistoryItem(id)   { saveHistory(loadHistory().filter(i=>i.id!==id)); }
-function clearAllHistory()       { if(!confirm('Effacer tout ?')) return; saveHistory([]); renderHistory(); updateBadge(); }
+function clearAllHistory() {
+  const l = loadHistory();
+  const actifs = l.filter(i => i.status === 'active' && i.fileKey);
+  if (actifs.length > 0) {
+    if (!confirm(`⚠️ ${actifs.length} fichier(s) encore actif(s) sur Backblaze B2.\nEffacer uniquement l'historique local sans détruire les fichiers ?\n\nPour détruire les fichiers, utilise "Tout détruire".`)) return;
+  } else {
+    if (!confirm('Effacer tout l\'historique local ?')) return;
+  }
+  saveHistory([]); renderHistory(); updateBadge();
+}
+
+async function destroyAllActive() {
+  const l = loadHistory();
+  const actifs = l.filter(i => i.status === 'active' && i.fileKey);
+  if (actifs.length === 0) {
+    alert('Aucun fichier actif à détruire.'); return;
+  }
+  if (!confirm(`Détruire ${actifs.length} fichier(s) sur Backblaze B2 et vider l'historique ?`)) return;
+  const btn = document.getElementById('destroy-all-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Destruction…';
+  let ok = 0, fail = 0;
+  for (const item of actifs) {
+    try {
+      await deleteBackblaze(item.fileKey);
+      item.status = 'destroyed';
+      ok++;
+    } catch(e) {
+      // 404 = déjà supprimé, on considère ça ok
+      if (e.message && (e.message.includes('404') || e.message.includes('NoSuchKey'))) {
+        item.status = 'destroyed'; ok++;
+      } else {
+        fail++;
+      }
+    }
+  }
+  saveHistory([]); // vider tout l'historique après destruction
+  renderHistory(); updateBadge(); fetchStorage();
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fa-solid fa-bomb"></i> Tout détruire';
+  if (fail > 0) alert(`${ok} fichier(s) détruit(s), ${fail} échec(s).`);
+}
 function updateBadge() {
   const l=loadHistory(); const b=document.getElementById('history-badge');
   b.style.display=l.length>0?'inline-block':'none'; b.textContent=l.length;
@@ -1822,8 +1868,12 @@ function buildHistoryItem(item) {
       <div class="hist-actions">
         <button class="hist-action-btn" onclick="shareHistLink('${escHtml(item.link)}')"><i class="fa-solid fa-share-nodes"></i> Partager</button>
         <button class="hist-action-btn" onclick="showHistQR(${item.id},'${escHtml(item.link)}')"><i class="fa-solid fa-qrcode"></i> QR</button>
-        ${item.fileKey&&item.status==='active'?`<button class="hist-action-btn danger" id="hd-${item.id}" onclick="destroyHistItem(${item.id},'${item.fileKey}')"><i class="fa-solid fa-trash"></i> Détruire</button>`:''}
-        <button class="hist-action-btn danger" onclick="removeHistItem(${item.id})"><i class="fa-solid fa-xmark"></i> Retirer</button>
+        ${item.status==='active'
+          ? item.fileKey
+            ? `<button class="hist-action-btn danger" id="hd-${item.id}" onclick="destroyAndRemoveHistItem(${item.id},'${item.fileKey}')"><i class="fa-solid fa-trash"></i> Détruire &amp; retirer</button>`
+            : `<button class="hist-action-btn danger" onclick="removeHistItem(${item.id})"><i class="fa-solid fa-xmark"></i> Retirer</button>`
+          : `<button class="hist-action-btn" onclick="removeHistItem(${item.id})"><i class="fa-solid fa-xmark"></i> Retirer</button>`
+        }
       </div>
       <div class="hist-qr" id="hist-qr-${item.id}" style="display:none">
         <div id="hist-qr-canvas-${item.id}"></div>
@@ -1848,7 +1898,43 @@ async function destroyHistItem(id,fk){
   try{ await deleteBackblaze(fk); const l=loadHistory(); const i=l.find(x=>x.id===id); if(i){i.status='destroyed';saveHistory(l);} renderHistory(); updateBadge(); }
   catch(e){ btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-xmark"></i>'; }
 }
-function removeHistItem(id){ deleteHistoryItem(id); renderHistory(); updateBadge(); }
+
+async function destroyAndRemoveHistItem(id, fk) {
+  if (!confirm('Détruire le fichier sur Backblaze B2 et retirer de l\'historique ?')) return;
+  const btn = document.getElementById('hd-' + id);
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Destruction…';
+  try {
+    await deleteBackblaze(fk);
+    deleteHistoryItem(id);
+    renderHistory();
+    updateBadge();
+    fetchStorage(); // rafraîchir la jauge
+  } catch(e) {
+    // Si le fichier n'existe plus sur B2 (déjà supprimé/expiré), on retire quand même
+    if (e.message && (e.message.includes('404') || e.message.includes('NoSuchKey'))) {
+      deleteHistoryItem(id);
+      renderHistory();
+      updateBadge();
+    } else {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-trash"></i> Détruire &amp; retirer';
+      alert('Erreur : ' + e.message);
+    }
+  }
+}
+
+function removeHistItem(id) {
+  const l = loadHistory();
+  const item = l.find(x => x.id === id);
+  // Si le fichier est encore actif et a une clé B2, bloquer la suppression locale
+  if (item && item.status === 'active' && item.fileKey) {
+    if (!confirm('Ce fichier existe encore sur Backblaze B2.\nRetirer uniquement de l\'historique sans le détruire ?\n\n⚠️ Le fichier restera accessible via son lien.')) return;
+  }
+  deleteHistoryItem(id);
+  renderHistory();
+  updateBadge();
+}
 </script>
 </body>
 </html>
