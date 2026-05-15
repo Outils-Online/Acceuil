@@ -1,290 +1,1044 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ShareLines — Partage chiffré</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --bg: #ffffff; --bg-2: #f6f6f4; --bg-3: #efefed;
-      --text: #1a1a18; --text-2: #6b6b67; --text-3: #9a9a94;
-      --border: rgba(0,0,0,0.09); --border-2: rgba(0,0,0,0.18);
-      --green: #1D9E75; --green-d: #0F6E56; --green-dd: #085041;
-      --green-l: #E1F5EE; --green-m: #9FE1CB; --green-t: #04342C;
-      --amber-l: #FAEEDA; --amber-m: #FAC775; --amber-t: #412402;
-      --red: #C0392B; --red-l: #FCEBEB; --red-m: #F1A8A0;
-      --r-sm: 6px; --r-md: 8px; --r-lg: 12px;
-    }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #1c1c1a; --bg-2: #262624; --bg-3: #1a1a18;
-        --text: #f0f0ec; --text-2: #9a9a94; --text-3: #6b6b67;
-        --border: rgba(255,255,255,0.07); --border-2: rgba(255,255,255,0.16);
-        --green-l: #0a2e22; --green-m: #0F6E56; --green-t: #9FE1CB;
-        --amber-l: #251a06; --amber-m: #7A4A0A; --amber-t: #FAC775;
-        --red-l: #2a1010; --red-m: #7A1A1A;
-      }
-    }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: var(--bg-3); color: var(--text);
-      min-height: 100vh; display: flex; align-items: flex-start;
-      justify-content: center; padding: 1.5rem 1rem 4rem;
-    }
-    .app { width: 100%; max-width: 540px; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ShareLines — Partage chiffré</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root {
+  --color-navy:       #0A2472;
+  --color-navy-deep:  #061852;
+  --color-emerald:    #006466;
+  --color-coral:      #F46060;
+  --color-coral-dark: #d44040;
+  --color-gold:       #FFD972;
+  --bg:               #FDFCF0;
+  --surface:          #FFFFFF;
+  --surface2:         #EEF0F8;
+  --surface3:         #E4E8F4;
+  --border:           #C8CEDF;
+  --border2:          #B0B8D4;
+  --text:             #0A2472;
+  --text2:            #3a4a80;
+  --text3:            #7a88b0;
+  --mondrian: linear-gradient(to right, #0A2472 0% 60%, #006466 60% 75%, #F46060 75% 90%, #FFD972 90% 100%);
+  --glow:             rgba(244,96,96,0.15);
+  --shadow:           0 4px 24px rgba(10,36,114,0.12);
+  --shadow-sm:        0 2px 8px  rgba(10,36,114,0.08);
+  --radius:           10px;
+  --radius-sm:        6px;
+  --radius-lg:        16px;
+  --font:             'DM Sans', sans-serif;
+  --green:            #006466;
+  --green-d:          #004f51;
+  --green-l:          rgba(0,100,102,0.08);
+  --green-m:          rgba(0,100,102,0.25);
+  --green-t:          #003638;
+  --amber-l:          rgba(255,217,114,0.25);
+  --amber-m:          #FFD972;
+  --amber-t:          #5a4200;
+  --red:              #F46060;
+  --red-l:            rgba(244,96,96,0.08);
+  --red-m:            rgba(244,96,96,0.3);
+}
 
-    /* LOGIN */
-    #login-view {
-      min-height: 100vh; display: flex; align-items: center;
-      justify-content: center; position: fixed; inset: 0;
-      background: var(--bg-3); z-index: 100; padding: 1rem;
-    }
-    .login-card {
-      background: var(--bg); border: 0.5px solid var(--border);
-      border-radius: var(--r-lg); padding: 2rem; width: 100%; max-width: 360px;
-    }
-    .login-logo { font-size: 24px; font-weight: 600; letter-spacing: -0.5px; margin-bottom: 4px; }
-    .login-logo span { color: var(--green); }
-    .login-sub { font-size: 13px; color: var(--text-2); margin-bottom: 1.75rem; }
-    .field { margin-bottom: 1rem; }
-    .field-label { font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 5px; }
-    .input-wrap { position: relative; }
-    .input-wrap input {
-      width: 100%; padding: 0.65rem 2.5rem 0.65rem 0.75rem;
-      border: 0.5px solid var(--border-2); border-radius: var(--r-md);
-      background: var(--bg); color: var(--text); font-size: 14px;
-      outline: none; font-family: inherit; transition: border-color 0.15s;
-    }
-    .input-wrap input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(29,158,117,0.1); }
-    .eye-btn { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-3); font-size: 16px; padding: 2px; }
-    .login-error { display: none; align-items: center; gap: 6px; padding: 0.5rem 0.75rem; background: var(--red-l); border: 0.5px solid var(--red-m); border-radius: var(--r-md); font-size: 13px; color: var(--red); margin-bottom: 0.75rem; }
-    .login-error.show { display: flex; }
-    .login-btn { width: 100%; padding: 0.75rem; background: var(--green); color: white; border: none; border-radius: var(--r-md); font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: inherit; transition: background 0.15s; }
-    .login-btn:hover { background: var(--green-d); }
-    .login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-    .login-security { display: flex; align-items: center; justify-content: center; margin-top: 1rem; }
-    .login-security p { font-size: 11px; color: var(--text-3); }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* HEADER */
-    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
-    .logo { font-size: 22px; font-weight: 600; letter-spacing: -0.5px; }
-    .logo span { color: var(--green); }
-    .tagline { font-size: 11px; color: var(--text-3); margin-top: 2px; }
-    .logout-btn { padding: 0.4rem 0.75rem; border: 0.5px solid var(--border-2); border-radius: var(--r-md); background: var(--bg); cursor: pointer; font-size: 12px; color: var(--text-2); font-family: inherit; display: flex; align-items: center; gap: 5px; transition: background 0.1s; }
-    .logout-btn:hover { background: var(--bg-2); }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 48px 16px 80px;
+}
 
-    /* TABS */
-    .tabs { display: flex; gap: 4px; background: var(--bg-2); border: 0.5px solid var(--border-2); border-radius: var(--r-lg); padding: 4px; margin-bottom: 1rem; }
-    .tab { flex: 1; padding: 0.55rem 1rem; border: none; border-radius: var(--r-md); background: transparent; font-size: 13px; font-weight: 500; color: var(--text-2); cursor: pointer; transition: all 0.15s; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 6px; }
-    .tab.active { background: var(--bg); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-    .tab-badge { font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 99px; background: var(--green); color: white; min-width: 18px; text-align: center; }
+.app {
+  width: 100%;
+  max-width: 520px;
+}
 
-    /* CARD */
-    .card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--r-lg); padding: 1.25rem; margin-bottom: 0.75rem; }
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 100px; }
 
-    /* DROP */
-    .drop-zone { border: 1.5px dashed var(--border-2); border-radius: var(--r-md); padding: 2rem 1rem; text-align: center; cursor: pointer; transition: background 0.15s; }
-    .drop-zone:hover, .drop-zone.drag-over { background: var(--bg-2); }
-    .drop-icon { font-size: 26px; margin-bottom: 0.5rem; }
-    .drop-zone p { font-size: 14px; color: var(--text-2); }
-    .drop-zone p strong { color: var(--text); font-weight: 500; }
-    .drop-hint { font-size: 11px; margin-top: 3px; color: var(--text-3); }
-    input[type="file"] { display: none; }
-    .file-preview { display: none; align-items: center; gap: 10px; padding: 0.6rem 0.75rem; background: var(--bg-2); border-radius: var(--r-md); margin-top: 0.75rem; }
-    .file-name { font-size: 13px; font-weight: 500; color: var(--text); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .file-size { font-size: 11px; color: var(--text-3); white-space: nowrap; }
-    .file-remove { font-size: 14px; cursor: pointer; color: var(--text-3); background: none; border: none; padding: 2px 4px; border-radius: 4px; }
-    .file-remove:hover { color: var(--red); background: var(--red-l); }
-    .provider-badge { display: none; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 500; margin-top: 0.5rem; width: fit-content; }
-    .provider-badge.backblaze { background: #e8f0fe; color: #1a47a0; }
-    @media (prefers-color-scheme: dark) { .provider-badge.backblaze { background: #0f1e3a; color: #7eb3ff; } }
+/* ══════════════════════════════════════
+   LOGIN
+   ══════════════════════════════════════ */
+#login-view {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 100;
+  padding: 1rem;
+}
 
-    .section-label { font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 0.6rem; }
-    .expiry-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; }
-    .exp-btn { padding: 0.5rem 0.25rem; border: 0.5px solid var(--border-2); border-radius: var(--r-md); background: var(--bg); cursor: pointer; font-size: 11px; color: var(--text-2); text-align: center; transition: all 0.12s; font-family: inherit; line-height: 1.4; }
-    .exp-btn .dur { font-size: 14px; font-weight: 600; color: var(--text); display: block; }
-    .exp-btn:hover { background: var(--bg-2); }
-    .exp-btn.active { border-color: var(--green); background: var(--green-l); }
-    .exp-btn.active, .exp-btn.active .dur { color: var(--green-d); }
+.login-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 36px 32px;
+  width: 100%;
+  max-width: 380px;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+.login-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--mondrian);
+}
 
-    .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 0; border-top: 0.5px solid var(--border); margin-top: 0.75rem; }
-    .toggle-label { font-size: 13px; color: var(--text); display: flex; align-items: center; gap: 7px; }
-    .toggle-sub { font-size: 11px; color: var(--text-3); display: block; margin-top: 1px; }
-    .toggle { position: relative; width: 34px; height: 19px; flex-shrink: 0; }
-    .toggle input { opacity: 0; width: 0; height: 0; }
-    .toggle-slider { position: absolute; inset: 0; background: var(--border-2); border-radius: 99px; cursor: pointer; transition: background 0.2s; }
-    .toggle-slider::before { content: ''; position: absolute; width: 13px; height: 13px; left: 3px; top: 3px; background: white; border-radius: 50%; transition: transform 0.2s; }
-    .toggle input:checked + .toggle-slider { background: var(--green); }
-    .toggle input:checked + .toggle-slider::before { transform: translateX(15px); }
+.login-logo {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-navy);
+  letter-spacing: -0.5px;
+  margin-bottom: 4px;
+}
+.login-logo span { color: var(--color-coral); }
+.login-sub {
+  font-size: 13px;
+  color: var(--text3);
+  margin-bottom: 32px;
+}
 
-    .security-note { display: flex; align-items: flex-start; gap: 8px; padding: 0.6rem 0.75rem; background: var(--bg-2); border-radius: var(--r-md); margin-top: 0.75rem; }
-    .security-note p { font-size: 12px; color: var(--text-2); line-height: 1.5; }
-    .security-note p strong { color: var(--text); font-weight: 500; }
+.field { margin-bottom: 16px; }
+.field-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  display: block;
+  margin-bottom: 6px;
+}
+.input-wrap { position: relative; }
+.input-wrap input {
+  width: 100%;
+  padding: 10px 36px 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 14px;
+  font-family: var(--font);
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.input-wrap input:focus {
+  border-color: var(--color-navy);
+  box-shadow: 0 0 0 3px rgba(10,36,114,.1);
+}
+.eye-btn {
+  position: absolute;
+  right: 10px; top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text3);
+  font-size: 13px;
+  padding: 2px;
+  transition: color .15s;
+}
+.eye-btn:hover { color: var(--text2); }
 
-    .send-btn { width: 100%; padding: 0.85rem; background: var(--green); color: white; border: none; border-radius: var(--r-md); font-size: 15px; font-weight: 500; cursor: pointer; transition: background 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: inherit; }
-    .send-btn:hover { background: var(--green-d); }
-    .send-btn:disabled { background: var(--bg-2); color: var(--text-3); cursor: not-allowed; }
+.login-error {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--red-l);
+  border: 1px solid var(--red-m);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--color-coral-dark);
+  margin-bottom: 14px;
+}
+.login-error.show { display: flex; }
 
-    /* PROGRESS */
-    .progress-area { display: none; margin-top: 0.75rem; }
-    .progress-bar { height: 6px; background: var(--bg-2); border-radius: 3px; overflow: hidden; margin-bottom: 6px; }
-    .progress-fill { height: 100%; background: var(--green); border-radius: 3px; width: 0%; transition: width 0.3s ease; }
-    .progress-meta { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--text-3); }
-    .progress-speed { font-weight: 600; color: var(--green); }
-    .status-text { font-size: 12px; color: var(--text-3); }
-    .chunks-grid { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 8px; }
-    .chunk-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border-2); transition: background 0.2s; }
-    .chunk-dot.uploading { background: var(--amber-m); }
-    .chunk-dot.done      { background: var(--green); }
-    .chunk-dot.error     { background: var(--red); }
-    .error-msg { font-size: 13px; color: var(--red); text-align: center; margin-top: 0.5rem; display: none; padding: 0.5rem 0.75rem; background: var(--red-l); border-radius: var(--r-md); }
+.login-btn {
+  width: 100%;
+  padding: 11px;
+  background: var(--color-coral);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background .15s;
+}
+.login-btn:hover { background: var(--color-coral-dark); }
+.login-btn:disabled { opacity: .5; cursor: not-allowed; }
 
-    /* RESUME */
-    .resume-banner { display: none; align-items: center; gap: 10px; padding: 0.75rem 1rem; background: var(--amber-l); border: 0.5px solid var(--amber-m); border-radius: var(--r-md); margin-bottom: 0.75rem; font-size: 13px; color: var(--amber-t); }
-    .resume-banner.show { display: flex; }
-    .resume-btn { margin-left: auto; padding: 0.3rem 0.75rem; background: var(--amber-t); color: white; border: none; border-radius: var(--r-sm); font-size: 12px; cursor: pointer; font-family: inherit; white-space: nowrap; }
-    .resume-discard { padding: 0.3rem 0.5rem; background: none; border: none; color: var(--amber-t); font-size: 12px; cursor: pointer; opacity: 0.7; font-family: inherit; }
+.login-security {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 20px;
+  font-size: 11px;
+  color: var(--text3);
+}
+.login-security i { color: var(--color-emerald); }
 
-    /* RESULT */
-    .result-card { background: var(--green-l); border: 0.5px solid var(--green-m); border-radius: var(--r-lg); padding: 1.25rem; margin-bottom: 0.75rem; }
-    .result-title { font-size: 14px; font-weight: 600; color: var(--green-dd); margin-bottom: 1rem; display: flex; align-items: center; gap: 6px; }
-    .link-box { background: var(--bg); border: 0.5px solid var(--border-2); border-radius: var(--r-md); padding: 0.6rem 0.75rem; display: flex; align-items: center; gap: 8px; margin-bottom: 0.75rem; }
-    .link-text { font-size: 11px; color: var(--text-2); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: 'SF Mono','Fira Code',monospace; }
-    .copy-btn { padding: 0.3rem 0.6rem; border: 0.5px solid var(--border-2); border-radius: var(--r-sm); background: var(--bg); cursor: pointer; font-size: 12px; color: var(--text); white-space: nowrap; display: flex; align-items: center; gap: 4px; font-family: inherit; transition: background 0.1s; flex-shrink: 0; }
-    .copy-btn:hover { background: var(--bg-2); }
-    .meta-pills { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 1rem; }
-    .pill { font-size: 11px; padding: 2px 8px; border-radius: 99px; background: var(--green-m); color: var(--green-t); display: flex; align-items: center; gap: 3px; }
-    .result-actions { display: flex; gap: 8px; margin-bottom: 1rem; }
-    .destroy-btn { flex: 1; padding: 0.55rem; border: 0.5px solid var(--red-m); border-radius: var(--r-md); background: var(--red-l); cursor: pointer; font-size: 13px; color: var(--red); font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 5px; transition: all 0.12s; }
-    .destroy-btn:hover { background: var(--red); color: white; border-color: var(--red); }
-    .destroy-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-    .qr-area { text-align: center; padding-top: 1rem; border-top: 0.5px solid var(--green-m); }
-    #qr-canvas { border-radius: var(--r-md); display: inline-block; }
-    .qr-label { font-size: 11px; color: var(--green-d); margin-top: 0.4rem; }
-    .new-btn { width: 100%; padding: 0.7rem; border: 0.5px solid var(--border-2); border-radius: var(--r-md); background: var(--bg); cursor: pointer; font-size: 13px; color: var(--text-2); display: flex; align-items: center; justify-content: center; gap: 6px; font-family: inherit; transition: background 0.1s; }
-    .new-btn:hover { background: var(--bg-2); }
+/* ══════════════════════════════════════
+   HEADER APP
+   ══════════════════════════════════════ */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+.logo {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-navy);
+  letter-spacing: -0.5px;
+}
+.logo span { color: var(--color-coral); }
+.tagline {
+  font-size: 11px;
+  color: var(--text3);
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tagline i { color: var(--color-emerald); font-size: 9px; }
 
-    /* HISTORY */
-    #history-view { display: none; }
-    .history-empty { text-align: center; padding: 3rem 1rem; color: var(--text-3); }
-    .history-empty .ei { font-size: 36px; margin-bottom: 0.75rem; }
-    .history-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
-    .history-count { font-size: 13px; color: var(--text-2); }
-    .clear-all-btn { font-size: 12px; color: var(--red); background: none; border: none; cursor: pointer; padding: 4px 8px; border-radius: var(--r-sm); font-family: inherit; }
-    .clear-all-btn:hover { background: var(--red-l); }
-    .history-item { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--r-lg); margin-bottom: 0.75rem; overflow: hidden; }
-    .history-item.destroyed { opacity: 0.5; }
-    .hist-primary { display: flex; align-items: center; gap: 10px; padding: 0.85rem 1rem; cursor: pointer; }
-    .hist-primary:hover { background: var(--bg-2); }
-    .hist-file-icon { font-size: 22px; flex-shrink: 0; }
-    .hist-main { flex: 1; min-width: 0; }
-    .hist-filename { font-size: 14px; font-weight: 500; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .hist-meta-row { display: flex; align-items: center; gap: 8px; margin-top: 2px; flex-wrap: wrap; }
-    .hist-size { font-size: 11px; color: var(--text-3); }
-    .hist-provider { font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 99px; text-transform: uppercase; }
-    .hist-provider.backblaze { background: #e8f0fe; color: #1a47a0; }
-    @media (prefers-color-scheme: dark) { .hist-provider.backblaze { background: #0f1e3a; color: #7eb3ff; } }
-    .hist-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
-    .hist-status { font-size: 11px; font-weight: 500; }
-    .hist-status.active { color: var(--green); }
-    .hist-status.destroyed { color: var(--red); }
-    .hist-status.expired { color: var(--text-3); }
-    .hist-chevron { font-size: 12px; color: var(--text-3); transition: transform 0.2s; }
-    .hist-chevron.open { transform: rotate(180deg); }
-    .hist-detail { display: none; padding: 0 1rem 1rem; border-top: 0.5px solid var(--border); }
-    .hist-detail.open { display: block; }
-    .hist-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 0.75rem; padding-top: 0.75rem; }
-    .detail-label { font-size: 10px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
-    .detail-value { font-size: 13px; color: var(--text); }
-    .hist-link-box { background: var(--bg-2); border: 0.5px solid var(--border-2); border-radius: var(--r-md); padding: 0.5rem 0.75rem; display: flex; align-items: center; gap: 8px; margin-bottom: 0.75rem; }
-    .hist-link-text { font-size: 10px; color: var(--text-3); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: 'SF Mono','Fira Code',monospace; }
-    .hist-actions { display: flex; gap: 6px; flex-wrap: wrap; }
-    .hist-action-btn { flex: 1; min-width: 80px; padding: 0.45rem 0.5rem; border: 0.5px solid var(--border-2); border-radius: var(--r-md); background: var(--bg); cursor: pointer; font-size: 12px; color: var(--text-2); font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.12s; }
-    .hist-action-btn:hover { background: var(--bg-2); color: var(--text); }
-    .hist-action-btn.danger { border-color: var(--red-m); color: var(--red); }
-    .hist-action-btn.danger:hover { background: var(--red); color: white; border-color: var(--red); }
-    .hist-action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-    .hist-qr { text-align: center; padding: 0.75rem 0 0; border-top: 0.5px solid var(--border); margin-top: 0.75rem; }
-    .hist-qr-label { font-size: 11px; color: var(--text-3); margin-top: 0.4rem; }
+.logout-btn {
+  padding: 7px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text2);
+  font-family: var(--font);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all .12s;
+  box-shadow: var(--shadow-sm);
+}
+.logout-btn:hover {
+  background: var(--surface2);
+  color: var(--color-navy);
+  border-color: var(--border2);
+}
 
-    /* RECEIVE */
-    #receive-view { display: none; }
-    .receive-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--r-lg); padding: 1.5rem; margin-bottom: 0.75rem; text-align: center; }
-    .receive-icon { font-size: 40px; margin-bottom: 1rem; }
-    .receive-title { font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 0.5rem; }
-    .receive-sub { font-size: 13px; color: var(--text-2); margin-bottom: 1.5rem; line-height: 1.5; }
-    .receive-filename { font-size: 14px; font-weight: 500; color: var(--text); background: var(--bg-2); border: 0.5px solid var(--border-2); border-radius: var(--r-md); padding: 0.6rem 1rem; margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
-    .decrypt-btn { width: 100%; padding: 0.85rem; background: var(--green); color: white; border: none; border-radius: var(--r-md); font-size: 15px; font-weight: 500; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.15s; }
-    .decrypt-btn:hover { background: var(--green-d); }
-    .decrypt-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-    .receive-progress { display: none; margin-top: 0.75rem; }
-    .receive-error { display: none; padding: 0.6rem 0.75rem; background: var(--red-l); border: 0.5px solid var(--red-m); border-radius: var(--r-md); font-size: 13px; color: var(--red); margin-top: 0.75rem; text-align: center; }
-    .receive-success { display: none; padding: 0.6rem 0.75rem; background: var(--green-l); border: 0.5px solid var(--green-m); border-radius: var(--r-md); font-size: 13px; color: var(--green-dd); margin-top: 0.75rem; text-align: center; }
-    .back-btn { width: 100%; padding: 0.7rem; border: 0.5px solid var(--border-2); border-radius: var(--r-md); background: var(--bg); cursor: pointer; font-size: 13px; color: var(--text-2); font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 6px; transition: background 0.1s; }
-    .back-btn:hover { background: var(--bg-2); }
-  </style>
+/* ══════════════════════════════════════
+   TABS
+   ══════════════════════════════════════ */
+.tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 4px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-sm);
+}
+.tab {
+  flex: 1;
+  padding: 9px 16px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text3);
+  cursor: pointer;
+  transition: all .15s;
+  font-family: var(--font);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+.tab i { font-size: 12px; }
+.tab.active {
+  background: var(--color-navy);
+  color: #fff;
+  box-shadow: 0 1px 4px rgba(10,36,114,.25);
+}
+.tab-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 99px;
+  background: var(--color-coral);
+  color: #fff;
+  min-width: 18px;
+  text-align: center;
+}
+
+/* ══════════════════════════════════════
+   CARD
+   ══════════════════════════════════════ */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ══════════════════════════════════════
+   DROP ZONE
+   ══════════════════════════════════════ */
+.drop-zone {
+  border: 2px dashed var(--border2);
+  border-radius: var(--radius);
+  padding: 40px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .2s;
+}
+.drop-zone:hover, .drop-zone.drag-over {
+  border-color: var(--color-coral);
+  background: rgba(244,96,96,.03);
+  box-shadow: 0 0 0 4px var(--glow);
+}
+.drop-icon {
+  font-size: 32px;
+  color: var(--text3);
+  margin-bottom: 12px;
+  display: block;
+  transition: color .2s;
+}
+.drop-zone:hover .drop-icon { color: var(--color-coral); }
+.drop-zone p { font-size: 14px; color: var(--text2); }
+.drop-zone p strong { color: var(--text); font-weight: 600; }
+.drop-hint { font-size: 11px; margin-top: 5px; color: var(--text3); }
+
+input[type="file"] { display: none; }
+
+.file-preview {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
+  margin-top: 14px;
+  border: 1px solid var(--border);
+}
+.file-preview i { color: var(--color-coral); font-size: 16px; flex-shrink: 0; }
+.file-name { font-size: 13px; font-weight: 500; color: var(--text); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.file-size { font-size: 11px; color: var(--text3); white-space: nowrap; }
+.file-remove {
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--text3);
+  background: none;
+  border: none;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+  transition: all .12s;
+}
+.file-remove:hover { color: var(--color-coral); background: var(--red-l); }
+
+.provider-badge {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 500;
+  margin-top: 10px;
+  width: fit-content;
+}
+.provider-badge.backblaze {
+  background: rgba(10,36,114,.08);
+  color: var(--color-navy);
+  border: 1px solid rgba(10,36,114,.15);
+}
+.provider-badge i { font-size: 10px; }
+
+/* ══════════════════════════════════════
+   SECTION LABEL
+   ══════════════════════════════════════ */
+.section-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 10px;
+}
+
+/* ══════════════════════════════════════
+   EXPIRY
+   ══════════════════════════════════════ */
+.expiry-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.exp-btn {
+  padding: 10px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  cursor: pointer;
+  font-size: 11px;
+  color: var(--text2);
+  text-align: center;
+  transition: all .12s;
+  font-family: var(--font);
+  line-height: 1.4;
+}
+.exp-btn .dur { font-size: 15px; font-weight: 700; color: var(--text); display: block; }
+.exp-btn:hover { background: var(--surface2); border-color: var(--border2); }
+.exp-btn.active {
+  border-color: var(--color-emerald);
+  background: rgba(0,100,102,.06);
+}
+.exp-btn.active, .exp-btn.active .dur { color: var(--color-emerald); }
+
+/* ══════════════════════════════════════
+   TOGGLE ROW
+   ══════════════════════════════════════ */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0 0;
+  margin-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.toggle-label {
+  font-size: 13px;
+  color: var(--text);
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+}
+.toggle-label i { color: var(--color-coral); margin-top: 2px; font-size: 13px; }
+.toggle-sub { font-size: 11px; color: var(--text3); display: block; margin-top: 2px; }
+.toggle { position: relative; width: 34px; height: 19px; flex-shrink: 0; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: var(--border2);
+  border-radius: 99px;
+  cursor: pointer;
+  transition: background .2s;
+}
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 13px; height: 13px;
+  left: 3px; top: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform .2s;
+}
+.toggle input:checked + .toggle-slider { background: var(--color-emerald); }
+.toggle input:checked + .toggle-slider::before { transform: translateX(15px); }
+
+/* ══════════════════════════════════════
+   SECURITY NOTE
+   ══════════════════════════════════════ */
+.security-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
+  margin-top: 14px;
+  border: 1px solid var(--border);
+}
+.security-note i { color: var(--color-emerald); flex-shrink: 0; margin-top: 1px; font-size: 13px; }
+.security-note p { font-size: 12px; color: var(--text2); line-height: 1.6; }
+.security-note p strong { color: var(--text); font-weight: 600; }
+
+/* ══════════════════════════════════════
+   SEND BUTTON
+   ══════════════════════════════════════ */
+.send-btn {
+  width: 100%;
+  padding: 13px;
+  background: var(--color-coral);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 600;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: background .15s, transform .1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  margin-bottom: 16px;
+}
+.send-btn:hover { background: var(--color-coral-dark); }
+.send-btn:active { transform: translateY(1px); }
+.send-btn:disabled {
+  background: var(--surface2);
+  color: var(--text3);
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ══════════════════════════════════════
+   PROGRESS
+   ══════════════════════════════════════ */
+.progress-area { display: none; margin-bottom: 16px; }
+.progress-bar { height: 5px; background: var(--surface2); border-radius: 100px; overflow: hidden; margin-bottom: 8px; }
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(to right, var(--color-navy), var(--color-coral));
+  border-radius: 100px;
+  width: 0%;
+  transition: width .3s ease;
+}
+.progress-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: var(--text3);
+}
+.progress-speed { font-weight: 600; color: var(--color-emerald); }
+.status-text { font-size: 12px; color: var(--text3); }
+.chunks-grid { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; }
+.chunk-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border2); transition: background .2s; }
+.chunk-dot.uploading { background: var(--color-gold); }
+.chunk-dot.done      { background: var(--color-emerald); }
+.chunk-dot.error     { background: var(--color-coral); }
+.error-msg {
+  font-size: 13px;
+  color: var(--color-coral-dark);
+  text-align: center;
+  display: none;
+  padding: 10px 12px;
+  background: var(--red-l);
+  border: 1px solid var(--red-m);
+  border-radius: var(--radius-sm);
+  margin-bottom: 16px;
+}
+
+/* ══════════════════════════════════════
+   RESUME BANNER
+   ══════════════════════════════════════ */
+.resume-banner {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: var(--amber-l);
+  border: 1px solid rgba(255,217,114,.6);
+  border-radius: var(--radius-sm);
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: var(--amber-t);
+}
+.resume-banner.show { display: flex; }
+.resume-banner i { flex-shrink: 0; color: var(--amber-t); }
+.resume-btn {
+  margin-left: auto;
+  padding: 5px 12px;
+  background: var(--color-navy);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font);
+  white-space: nowrap;
+  transition: background .12s;
+}
+.resume-btn:hover { background: var(--color-navy-deep); }
+.resume-discard {
+  padding: 5px 8px;
+  background: none;
+  border: none;
+  color: var(--amber-t);
+  font-size: 12px;
+  cursor: pointer;
+  opacity: 0.7;
+  font-family: var(--font);
+}
+
+/* ══════════════════════════════════════
+   RESULT
+   ══════════════════════════════════════ */
+.result-card {
+  background: rgba(0,100,102,.05);
+  border: 1px solid rgba(0,100,102,.2);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 12px;
+}
+.result-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-emerald);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.link-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.link-text {
+  font-size: 11px;
+  color: var(--text2);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+}
+.copy-btn {
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font);
+  transition: all .12s;
+  flex-shrink: 0;
+}
+.copy-btn:hover { background: var(--surface2); border-color: var(--border2); }
+
+.meta-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.pill {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 9px;
+  border-radius: 99px;
+  background: rgba(0,100,102,.1);
+  color: var(--color-emerald);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid rgba(0,100,102,.15);
+}
+.pill i { font-size: 9px; }
+
+.result-actions { display: flex; gap: 8px; margin-bottom: 16px; }
+.destroy-btn {
+  flex: 1;
+  padding: 9px;
+  border: 1px solid var(--red-m);
+  border-radius: var(--radius-sm);
+  background: var(--red-l);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-coral-dark);
+  font-family: var(--font);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all .12s;
+}
+.destroy-btn:hover { background: var(--color-coral); color: #fff; border-color: var(--color-coral); }
+.destroy-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+.qr-area {
+  text-align: center;
+  padding-top: 16px;
+  border-top: 1px solid rgba(0,100,102,.15);
+}
+#qr-canvas { border-radius: var(--radius-sm); display: inline-block; }
+.qr-label { font-size: 11px; color: var(--color-emerald); margin-top: 6px; }
+
+.new-btn {
+  width: 100%;
+  padding: 11px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text2);
+  font-family: var(--font);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  transition: all .12s;
+  box-shadow: var(--shadow-sm);
+}
+.new-btn:hover { background: var(--surface2); color: var(--color-navy); border-color: var(--border2); }
+
+/* ══════════════════════════════════════
+   HISTORY
+   ══════════════════════════════════════ */
+#history-view { display: none; }
+
+.history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.history-count { font-size: 13px; color: var(--text2); font-weight: 500; }
+.clear-all-btn {
+  font-size: 12px;
+  color: var(--color-coral);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: background .12s;
+}
+.clear-all-btn:hover { background: var(--red-l); }
+
+.history-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 10px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow .2s;
+}
+.history-item:hover { box-shadow: var(--shadow); }
+.history-item.destroyed { opacity: 0.55; }
+
+.hist-primary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: background .12s;
+}
+.hist-primary:hover { background: var(--surface2); }
+.hist-file-icon { font-size: 20px; color: var(--color-navy); flex-shrink: 0; }
+.hist-main { flex: 1; min-width: 0; }
+.hist-filename { font-size: 14px; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hist-meta-row { display: flex; align-items: center; gap: 8px; margin-top: 3px; flex-wrap: wrap; }
+.hist-size { font-size: 11px; color: var(--text3); }
+.hist-provider { font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 99px; text-transform: uppercase; letter-spacing: .3px; }
+.hist-provider.backblaze { background: rgba(10,36,114,.08); color: var(--color-navy); }
+.hist-right { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex-shrink: 0; }
+.hist-status { font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 4px; }
+.hist-status.active   { color: var(--color-emerald); }
+.hist-status.destroyed{ color: var(--color-coral); }
+.hist-status.expired  { color: var(--text3); }
+.hist-chevron { font-size: 11px; color: var(--text3); transition: transform .2s; }
+.hist-chevron.open { transform: rotate(180deg); }
+
+.hist-detail {
+  display: none;
+  padding: 0 16px 16px;
+  border-top: 1px solid var(--border);
+}
+.hist-detail.open { display: block; }
+.hist-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding-top: 14px;
+}
+.detail-label { font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 3px; }
+.detail-value { font-size: 13px; color: var(--text); display: flex; align-items: center; gap: 5px; }
+.detail-value i { font-size: 11px; color: var(--color-emerald); }
+
+.hist-link-box {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.hist-link-text { font-size: 10px; color: var(--text3); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: 'SF Mono','Fira Code',monospace; }
+
+.hist-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.hist-action-btn {
+  flex: 1;
+  min-width: 80px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text2);
+  font-family: var(--font);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: all .12s;
+}
+.hist-action-btn:hover { background: var(--surface2); color: var(--color-navy); border-color: var(--border2); }
+.hist-action-btn.danger { border-color: var(--red-m); color: var(--color-coral-dark); }
+.hist-action-btn.danger:hover { background: var(--color-coral); color: #fff; border-color: var(--color-coral); }
+.hist-action-btn:disabled { opacity: .4; cursor: not-allowed; }
+.hist-action-btn i { font-size: 11px; }
+
+.hist-qr { text-align: center; padding: 12px 0 0; border-top: 1px solid var(--border); margin-top: 12px; }
+.hist-qr-label { font-size: 11px; color: var(--text3); margin-top: 6px; }
+
+.history-empty {
+  text-align: center;
+  padding: 56px 24px;
+  color: var(--text3);
+}
+.history-empty i { font-size: 36px; display: block; margin-bottom: 12px; opacity: .5; }
+.history-empty p { font-size: 13px; }
+
+/* ══════════════════════════════════════
+   RECEIVE
+   ══════════════════════════════════════ */
+#receive-view { display: none; }
+
+.receive-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 40px 32px;
+  margin-bottom: 12px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+}
+.receive-icon { font-size: 40px; color: var(--color-emerald); margin-bottom: 20px; display: block; }
+.receive-title { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+.receive-sub { font-size: 13px; color: var(--text2); margin-bottom: 24px; line-height: 1.6; }
+.receive-filename {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 16px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.receive-filename i { color: var(--color-coral); }
+
+.decrypt-btn {
+  width: 100%;
+  padding: 13px;
+  background: var(--color-emerald);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 600;
+  font-family: var(--font);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  transition: background .15s;
+}
+.decrypt-btn:hover { background: var(--green-d); }
+.decrypt-btn:disabled { opacity: .6; cursor: not-allowed; }
+
+.receive-progress { display: none; margin-top: 14px; }
+.receive-error {
+  display: none;
+  padding: 10px 14px;
+  background: var(--red-l);
+  border: 1px solid var(--red-m);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--color-coral-dark);
+  margin-top: 14px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+.receive-success {
+  display: none;
+  padding: 10px 14px;
+  background: var(--green-l);
+  border: 1px solid var(--green-m);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--color-emerald);
+  margin-top: 14px;
+  text-align: center;
+  font-weight: 500;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.back-btn {
+  width: 100%;
+  padding: 11px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text2);
+  font-family: var(--font);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  transition: all .12s;
+  box-shadow: var(--shadow-sm);
+}
+.back-btn:hover { background: var(--surface2); color: var(--color-navy); border-color: var(--border2); }
+</style>
 </head>
 <body>
 
-<!-- LOGIN -->
+<!-- ══════════════════════════════════════
+     LOGIN
+     ══════════════════════════════════════ -->
 <div id="login-view">
   <div class="login-card">
     <div class="login-logo">Share<span>Lines</span></div>
     <p class="login-sub">Accès protégé — entrez le mot de passe</p>
-    <div class="login-error" id="login-error">⚠️ Mot de passe incorrect</div>
+    <div class="login-error" id="login-error">
+      <i class="fa-solid fa-triangle-exclamation"></i> Mot de passe incorrect
+    </div>
     <div class="field">
       <label class="field-label" for="pwd-input">Mot de passe</label>
       <div class="input-wrap">
         <input type="password" id="pwd-input" placeholder="••••••••••••••••" autocomplete="current-password" autofocus>
-        <button class="eye-btn" onclick="togglePwd()">👁</button>
+        <button class="eye-btn" onclick="togglePwd()"><i class="fa-solid fa-eye" id="eye-icon"></i></button>
       </div>
     </div>
-    <button class="login-btn" id="login-btn" onclick="doLogin()">🔒 Accéder à ShareLines</button>
-    <div class="login-security"><p>🛡 Vérifié par Cloudflare Workers · AES-256-GCM</p></div>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">
+      <i class="fa-solid fa-lock"></i> Accéder à ShareLines
+    </button>
+    <div class="login-security">
+      <i class="fa-solid fa-shield-halved"></i>
+      <span>Vérifié par Cloudflare Workers · AES-256-GCM</span>
+    </div>
   </div>
 </div>
 
-<!-- APP -->
+<!-- ══════════════════════════════════════
+     APP
+     ══════════════════════════════════════ -->
 <div class="app" id="app-view" style="display:none">
   <div class="header">
     <div>
       <div class="logo">Share<span>Lines</span></div>
-      <div class="tagline">AES-256 · Multipart · Reprise auto · Chunks parallèles</div>
+      <div class="tagline">
+        <i class="fa-solid fa-circle"></i>AES-256
+        <i class="fa-solid fa-circle"></i>Multipart
+        <i class="fa-solid fa-circle"></i>Reprise auto
+      </div>
     </div>
-    <button class="logout-btn" onclick="doLogout()">🔓 Déco</button>
-  </div>
-
-  <div class="tabs">
-    <button class="tab active" id="tab-upload" onclick="switchTab('upload')">⬆️ Envoyer</button>
-    <button class="tab" id="tab-history" onclick="switchTab('history')">
-      🕓 Historique <span class="tab-badge" id="history-badge" style="display:none">0</span>
+    <button class="logout-btn" onclick="doLogout()">
+      <i class="fa-solid fa-arrow-right-from-bracket"></i> Déco
     </button>
   </div>
 
-  <!-- UPLOAD VIEW -->
+  <div class="tabs">
+    <button class="tab active" id="tab-upload" onclick="switchTab('upload')">
+      <i class="fa-solid fa-arrow-up-from-bracket"></i> Envoyer
+    </button>
+    <button class="tab" id="tab-history" onclick="switchTab('history')">
+      <i class="fa-solid fa-clock-rotate-left"></i> Historique
+      <span class="tab-badge" id="history-badge" style="display:none">0</span>
+    </button>
+  </div>
+
+  <!-- ── UPLOAD VIEW ── -->
   <div id="upload-view">
     <div class="resume-banner" id="resume-banner">
-      <span id="resume-text">⚡ Upload interrompu détecté</span>
+      <i class="fa-solid fa-bolt"></i>
+      <span id="resume-text">Upload interrompu détecté</span>
       <button class="resume-discard" onclick="discardResume()">Ignorer</button>
       <button class="resume-btn" onclick="resumeUpload()">Reprendre</button>
     </div>
 
     <div class="card">
       <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()" role="button" tabindex="0">
-        <div class="drop-icon">⬆️</div>
+        <i class="fa-solid fa-cloud-arrow-up drop-icon"></i>
         <p><strong>Clique ou dépose</strong> ton fichier ici</p>
         <p class="drop-hint">AES-256-GCM · Chunks 50 MB · 6 en parallèle · Reprise auto</p>
       </div>
       <input type="file" id="file-input">
       <div class="file-preview" id="file-preview">
-        <span style="font-size:20px">📄</span>
+        <i class="fa-solid fa-file"></i>
         <span class="file-name" id="file-name">—</span>
         <span class="file-size" id="file-size">—</span>
-        <button class="file-remove" onclick="removeFile()">✕</button>
+        <button class="file-remove" onclick="removeFile()"><i class="fa-solid fa-xmark"></i></button>
       </div>
-      <div class="provider-badge backblaze" id="badge-backblaze" style="display:none">☁️ Backblaze B2 · stockage privé chiffré</div>
+      <div class="provider-badge backblaze" id="badge-backblaze" style="display:none">
+        <i class="fa-solid fa-cloud"></i> Backblaze B2 · stockage privé chiffré
+      </div>
     </div>
 
     <div class="card">
@@ -297,7 +1051,8 @@
       </div>
       <div class="toggle-row">
         <label class="toggle-label" for="autodestroy-toggle">
-          💣 <span>Détruire après téléchargement<span class="toggle-sub">Backblaze B2 uniquement</span></span>
+          <i class="fa-solid fa-bomb"></i>
+          <span>Détruire après téléchargement<span class="toggle-sub">Backblaze B2 uniquement</span></span>
         </label>
         <label class="toggle">
           <input type="checkbox" id="autodestroy-toggle" checked>
@@ -305,12 +1060,14 @@
         </label>
       </div>
       <div class="security-note">
-        <span style="font-size:14px;flex-shrink:0;margin-top:1px">🔐</span>
+        <i class="fa-solid fa-lock"></i>
         <p><strong>Zéro fuite.</strong> AES-256-GCM chunk par chunk · IV unique par chunk · Clé dans le <code>#</code> uniquement · Upload direct client → B2 · Worker ne voit jamais le contenu.</p>
       </div>
     </div>
 
-    <button class="send-btn" id="send-btn" onclick="startUpload()" disabled>🔒 Chiffrer &amp; partager</button>
+    <button class="send-btn" id="send-btn" onclick="startUpload()" disabled>
+      <i class="fa-solid fa-lock"></i> Chiffrer &amp; partager
+    </button>
 
     <div class="progress-area" id="progress-area">
       <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
@@ -322,73 +1079,87 @@
     </div>
     <p class="error-msg" id="error-msg"></p>
 
-    <div id="result-view" style="display:none; margin-top:0.75rem">
+    <div id="result-view" style="display:none; margin-top:4px">
       <div class="result-card">
-        <p class="result-title">✅ Fichier prêt à partager</p>
+        <p class="result-title"><i class="fa-solid fa-circle-check"></i> Fichier prêt à partager</p>
         <div class="link-box">
           <span class="link-text" id="share-link">—</span>
-          <button class="copy-btn" id="copy-btn" onclick="copyLink()">📋 Copier</button>
+          <button class="copy-btn" id="copy-btn" onclick="copyLink()">
+            <i class="fa-solid fa-clipboard"></i> Copier
+          </button>
         </div>
         <div class="meta-pills" id="meta-pills"></div>
         <div class="result-actions">
-          <button class="destroy-btn" id="destroy-now-btn" onclick="destroyNow()" style="display:none">🗑 Détruire maintenant</button>
+          <button class="destroy-btn" id="destroy-now-btn" onclick="destroyNow()" style="display:none">
+            <i class="fa-solid fa-trash"></i> Détruire maintenant
+          </button>
         </div>
         <div class="qr-area">
           <div id="qr-canvas"></div>
           <p class="qr-label">Scanner pour ouvrir directement</p>
         </div>
       </div>
-      <button class="new-btn" onclick="resetUpload()">＋ Nouveau partage</button>
+      <button class="new-btn" onclick="resetUpload()">
+        <i class="fa-solid fa-plus"></i> Nouveau partage
+      </button>
     </div>
   </div>
 
-  <!-- HISTORY VIEW -->
+  <!-- ── HISTORY VIEW ── -->
   <div id="history-view">
     <div class="history-header">
       <span class="history-count" id="history-count">0 partage</span>
-      <button class="clear-all-btn" onclick="clearAllHistory()">🗑 Tout effacer</button>
+      <button class="clear-all-btn" onclick="clearAllHistory()">
+        <i class="fa-solid fa-trash"></i> Tout effacer
+      </button>
     </div>
     <div id="history-list"></div>
     <div class="history-empty" id="history-empty">
-      <div class="ei">📭</div>
+      <i class="fa-solid fa-inbox"></i>
       <p>Aucun partage pour l'instant</p>
     </div>
   </div>
 
-  <!-- RECEIVE VIEW -->
+  <!-- ── RECEIVE VIEW ── -->
   <div id="receive-view">
     <div class="receive-card">
-      <div class="receive-icon">🔐</div>
+      <i class="fa-solid fa-lock receive-icon"></i>
       <div class="receive-title">Fichier chiffré reçu</div>
       <p class="receive-sub">Déchiffrement AES-256-GCM local dans ton navigateur.<br>Rien n'est envoyé à un serveur.</p>
-      <div class="receive-filename" id="receive-filename">📄 —</div>
-      <button class="decrypt-btn" id="decrypt-btn" onclick="startDecrypt()">🔓 Télécharger &amp; déchiffrer</button>
+      <div class="receive-filename" id="receive-filename">
+        <i class="fa-solid fa-file"></i> —
+      </div>
+      <button class="decrypt-btn" id="decrypt-btn" onclick="startDecrypt()">
+        <i class="fa-solid fa-lock-open"></i> Télécharger &amp; déchiffrer
+      </button>
       <div class="receive-progress" id="receive-progress">
         <div class="progress-bar"><div class="progress-fill" id="recv-progress-fill"></div></div>
         <p class="status-text" id="recv-status">Téléchargement…</p>
       </div>
       <div class="receive-error" id="receive-error"></div>
-      <div class="receive-success" id="receive-success">✅ Fichier déchiffré et téléchargé !</div>
+      <div class="receive-success" id="receive-success">
+        <i class="fa-solid fa-circle-check"></i> Fichier déchiffré et téléchargé !
+      </div>
     </div>
-    <button class="back-btn" onclick="switchTab('upload')">← Retour à l'envoi</button>
+    <button class="back-btn" onclick="switchTab('upload')">
+      <i class="fa-solid fa-arrow-left"></i> Retour à l'envoi
+    </button>
   </div>
 </div>
 
 <script>
 // ══════════════════════════════════════════
-//  CONFIG — adapte ces deux lignes
+//  CONFIG
 // ══════════════════════════════════════════
 const WORKER_URL  = 'https://sharelines-proxy.kurtbob349.workers.dev';
 const SHARE_BASE  = 'https://outils-online.github.io/Acceuil/pages/Share-Lines.html';
 
-// ── Constantes upload ──
-const CHUNK_SIZE          = 50 * 1024 * 1024;  // 50 MB par chunk
-const PARALLEL_CHUNKS     = 6;                  // chunks simultanés
-const MULTIPART_THRESHOLD = 100 * 1024 * 1024; // seuil multipart (100 MB)
+const CHUNK_SIZE          = 50 * 1024 * 1024;
+const PARALLEL_CHUNKS     = 6;
+const MULTIPART_THRESHOLD = 100 * 1024 * 1024;
 const STORAGE_KEY = 'sharelines_history';
 const RESUME_KEY  = 'sharelines_resume';
 
-// ── State ──
 let appPassword    = '';
 let selectedFile   = null;
 let currentExpiry  = '24h';
@@ -418,13 +1189,20 @@ function checkSession() {
   const p = sessionStorage.getItem('sl_pwd');
   if (s === '1' && p) { appPassword = p; showApp(); }
 }
-function togglePwd() { const i = document.getElementById('pwd-input'); i.type = i.type === 'password' ? 'text' : 'password'; }
+function togglePwd() {
+  const i = document.getElementById('pwd-input');
+  const icon = document.getElementById('eye-icon');
+  i.type = i.type === 'password' ? 'text' : 'password';
+  icon.className = i.type === 'password' ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';
+}
 async function doLogin() {
   const pwd = document.getElementById('pwd-input').value.trim();
   if (!pwd) return;
   const btn = document.getElementById('login-btn');
   const err = document.getElementById('login-error');
-  btn.disabled = true; btn.textContent = '⏳ Vérification…'; err.classList.remove('show');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Vérification…';
+  err.classList.remove('show');
   try {
     const r = await fetch(WORKER_URL + '/auth', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({password:pwd}) });
     const d = await r.json();
@@ -433,12 +1211,17 @@ async function doLogin() {
       sessionStorage.setItem('sl_session','1'); sessionStorage.setItem('sl_pwd',pwd);
       showApp();
     } else {
-      err.classList.add('show'); btn.disabled = false; btn.textContent = '🔒 Accéder à ShareLines';
-      document.getElementById('pwd-input').value = ''; document.getElementById('pwd-input').focus();
+      err.classList.add('show');
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-lock"></i> Accéder à ShareLines';
+      document.getElementById('pwd-input').value = '';
+      document.getElementById('pwd-input').focus();
     }
   } catch(e) {
-    err.textContent = '❌ Erreur réseau — vérifie ta connexion'; err.classList.add('show');
-    btn.disabled = false; btn.textContent = '🔒 Accéder à ShareLines';
+    err.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Erreur réseau — vérifie ta connexion';
+    err.classList.add('show');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-lock"></i> Accéder à ShareLines';
   }
 }
 function showApp() {
@@ -450,7 +1233,8 @@ function doLogout() {
   sessionStorage.clear(); appPassword = '';
   document.getElementById('login-view').style.display = 'flex';
   document.getElementById('app-view').style.display = 'none';
-  document.getElementById('pwd-input').value = ''; document.getElementById('pwd-input').focus();
+  document.getElementById('pwd-input').value = '';
+  document.getElementById('pwd-input').focus();
 }
 document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && document.getElementById('login-view').style.display !== 'none') doLogin();
@@ -518,9 +1302,11 @@ function randomKey() {
   const c='abcdefghijklmnopqrstuvwxyz0123456789';
   return Array.from({length:12},()=>c[Math.floor(Math.random()*c.length)]).join('')+'.enc';
 }
-function getFileEmoji(n) {
+function getFileIcon(n) {
   const e=n.split('.').pop().toLowerCase();
-  return {pdf:'📄',doc:'📝',docx:'📝',xls:'📊',xlsx:'📊',zip:'🗜',rar:'🗜',jpg:'🖼',jpeg:'🖼',png:'🖼',mp4:'🎬',mp3:'🎵',txt:'📃'}[e]||'📄';
+  return {pdf:'fa-file-pdf',doc:'fa-file-word',docx:'fa-file-word',xls:'fa-file-excel',xlsx:'fa-file-excel',
+    zip:'fa-file-zipper',rar:'fa-file-zipper',jpg:'fa-file-image',jpeg:'fa-file-image',png:'fa-file-image',
+    mp4:'fa-file-video',mp3:'fa-file-audio',txt:'fa-file-lines'}[e]||'fa-file';
 }
 function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
@@ -557,7 +1343,7 @@ function checkResumeBanner() {
   const s = loadResume();
   if (s?.uploadId && s?.objectKey) {
     document.getElementById('resume-text').textContent =
-      `⚡ Upload interrompu : ${s.filename} (${formatSize(s.fileSize)}) — ${s.completedParts.length}/${s.totalChunks} chunks`;
+      `Upload interrompu : ${s.filename} (${formatSize(s.fileSize)}) — ${s.completedParts.length}/${s.totalChunks} chunks`;
     document.getElementById('resume-banner').classList.add('show');
   }
 }
@@ -584,7 +1370,7 @@ async function resumeUpload() {
 }
 
 // ══════════════════════════════════════════
-//  UPLOAD PRINCIPAL
+//  UPLOAD
 // ══════════════════════════════════════════
 async function startUpload() {
   if (!selectedFile) return;
@@ -594,13 +1380,11 @@ async function startUpload() {
   document.getElementById('progress-area').style.display = 'block';
   document.getElementById('result-view').style.display = 'none';
   document.getElementById('chunks-grid').innerHTML = '';
-
   try {
     setStatus('Génération clé AES-256…', 2);
     const masterKey      = await crypto.subtle.generateKey({name:'AES-GCM',length:256}, true, ['encrypt','decrypt']);
     const masterKeyBytes = new Uint8Array(await crypto.subtle.exportKey('raw', masterKey));
     const objKey         = randomKey();
-
     if (selectedFile.size <= MULTIPART_THRESHOLD) {
       await doSimpleUpload(selectedFile, objKey, masterKeyBytes);
     } else {
@@ -609,7 +1393,7 @@ async function startUpload() {
     finishUpload(objKey, masterKeyBytes);
   } catch(e) {
     if (!uploadAborted) {
-      document.getElementById('error-msg').textContent = '❌ '+e.message;
+      document.getElementById('error-msg').textContent = e.message;
       document.getElementById('error-msg').style.display = 'block';
       document.getElementById('progress-area').style.display = 'none';
     }
@@ -631,7 +1415,6 @@ function finishUpload(objKey, keyBytes) {
   setTimeout(() => showResult(magicLink, objKey, autoDestroy), 300);
 }
 
-// ── Simple upload (≤ 100 MB) ───────────────────────────────
 async function doSimpleUpload(file, objKey, keyBytes) {
   setStatus('Lecture…', 10);
   const buf = await file.arrayBuffer();
@@ -654,19 +1437,14 @@ async function doSimpleUpload(file, objKey, keyBytes) {
   });
 }
 
-// ── Multipart upload (> 100 MB) ────────────────────────────
 async function doMultipartUpload(file, objKey, resume, keyBytes) {
   const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
-
-  // Dots de progression
   const grid = document.getElementById('chunks-grid');
   grid.innerHTML = '';
   for (let i=0;i<totalChunks;i++) {
     const d=document.createElement('div'); d.className='chunk-dot'; d.id='ck-'+i; grid.appendChild(d);
   }
-
   let uploadId, completedParts;
-
   if (resume) {
     uploadId=resume.uploadId; completedParts=[...resume.completedParts];
     resume.completedParts.forEach(p=>{const d=document.getElementById('ck-'+(p.partNumber-1));if(d)d.className='chunk-dot done';});
@@ -681,32 +1459,25 @@ async function doMultipartUpload(file, objKey, resume, keyBytes) {
     saveResume({objectKey:objKey,uploadId,filename:file.name,fileSize:file.size,
       totalChunks,completedParts,masterKeyBytes:Array.from(keyBytes)});
   }
-
-  const done      = new Set(completedParts.map(p=>p.partNumber));
-  const pending   = [];
+  const done    = new Set(completedParts.map(p=>p.partNumber));
+  const pending = [];
   for (let i=0;i<totalChunks;i++) if(!done.has(i+1)) pending.push(i);
-
   let bytesUploaded = completedParts.length * CHUNK_SIZE;
   let speedSamples  = [];
-
   for (let i=0;i<pending.length;i+=PARALLEL_CHUNKS) {
     if (uploadAborted) throw new Error('Upload annulé');
     const batch     = pending.slice(i, i+PARALLEL_CHUNKS);
     const batchStart= Date.now();
-
     await Promise.all(batch.map(async idx => {
       const dot=document.getElementById('ck-'+idx);
       if(dot) dot.className='chunk-dot uploading';
-
       const start=idx*CHUNK_SIZE, end=Math.min(start+CHUNK_SIZE,file.size);
       const buf  =await file.slice(start,end).arrayBuffer();
       const enc  =await encryptChunk(keyBytes,idx,buf);
-
       const pr=await fetch(WORKER_URL+`/b2-multipart-presign?key=${encodeURIComponent(objKey)}&uploadId=${encodeURIComponent(uploadId)}&part=${idx+1}`,
         {method:'POST',headers:{'X-App-Password':appPassword}});
       const pd=await pr.json();
       if(!pd.success) throw new Error(`Presign chunk ${idx+1}: ${pd.message}`);
-
       let etag;
       for(let attempt=0;attempt<3;attempt++){
         try { etag=await uploadChunkXHR(pd.presignedUrl,enc); break; }
@@ -718,7 +1489,6 @@ async function doMultipartUpload(file, objKey, resume, keyBytes) {
       saveResume({objectKey:objKey,uploadId,filename:file.name,fileSize:file.size,
         totalChunks,completedParts,masterKeyBytes:Array.from(keyBytes)});
     }));
-
     const elapsed   = (Date.now()-batchStart)/1000;
     const batchBytes= batch.reduce((a,idx)=>a+Math.min(CHUNK_SIZE,file.size-idx*CHUNK_SIZE),0);
     speedSamples.push(batchBytes/elapsed);
@@ -729,7 +1499,6 @@ async function doMultipartUpload(file, objKey, resume, keyBytes) {
       Math.round(completedParts.length/totalChunks*90)+5);
     document.getElementById('progress-speed').textContent=formatSize(Math.round(avg))+'/s';
   }
-
   setStatus('Finalisation…', 96);
   const cr=await fetch(WORKER_URL+`/b2-multipart-complete?key=${encodeURIComponent(objKey)}&uploadId=${encodeURIComponent(uploadId)}`,
     {method:'POST',headers:{'X-App-Password':appPassword,'Content-Type':'application/json'},
@@ -743,13 +1512,7 @@ async function uploadChunkXHR(url, data) {
     const xhr=new XMLHttpRequest();
     xhr.open('PUT',url);
     xhr.setRequestHeader('Content-Type','application/octet-stream');
-    xhr.onload=()=>{
-      if(xhr.status<300){
-        const etag=(xhr.getResponseHeader('ETag')||xhr.getResponseHeader('etag')||'');
-console.log('Chunk '+' ETag reçu:', JSON.stringify(etag));
-res(etag);
-      } else rej(new Error('Chunk HTTP '+xhr.status));
-    };
+    xhr.onload=()=>{ if(xhr.status<300){ const etag=(xhr.getResponseHeader('ETag')||xhr.getResponseHeader('etag')||''); res(etag); } else rej(new Error('Chunk HTTP '+xhr.status)); };
     xhr.onerror=()=>rej(new Error('Erreur réseau chunk'));
     xhr.send(new Blob([data]));
   });
@@ -777,9 +1540,15 @@ function showResult(link, fileKey, autoDestroy) {
   document.getElementById('progress-area').style.display='none';
   document.getElementById('result-view').style.display='block';
   document.getElementById('share-link').textContent=link;
-  const pills=['🔐 AES-256-GCM','🎲 Nom randomisé','☁️ Backblaze B2',
-    autoDestroy?'💣 Auto-détruit':'⏱ '+expiryLabels[currentExpiry],'🔑 Clé hors serveur','⚡ Multipart'];
-  document.getElementById('meta-pills').innerHTML=pills.map(p=>`<span class="pill">${p}</span>`).join('');
+  const pills=[
+    {icon:'fa-lock',label:'AES-256-GCM'},
+    {icon:'fa-shuffle',label:'Nom randomisé'},
+    {icon:'fa-cloud',label:'Backblaze B2'},
+    autoDestroy ? {icon:'fa-bomb',label:'Auto-détruit'} : {icon:'fa-clock',label:expiryLabels[currentExpiry]},
+    {icon:'fa-key',label:'Clé hors serveur'},
+    {icon:'fa-bolt',label:'Multipart'}
+  ];
+  document.getElementById('meta-pills').innerHTML=pills.map(p=>`<span class="pill"><i class="fa-solid ${p.icon}"></i>${p.label}</span>`).join('');
   const db=document.getElementById('destroy-now-btn');
   if(fileKey){db.style.display='flex';db.dataset.key=fileKey;}else{db.style.display='none';}
   document.getElementById('qr-canvas').innerHTML='';
@@ -787,20 +1556,23 @@ function showResult(link, fileKey, autoDestroy) {
 }
 function copyLink() {
   navigator.clipboard.writeText(document.getElementById('share-link').textContent).then(()=>{
-    const b=document.getElementById('copy-btn'); b.textContent='✅ Copié !';
-    setTimeout(()=>b.textContent='📋 Copier',2000);
+    const b=document.getElementById('copy-btn');
+    b.innerHTML='<i class="fa-solid fa-check"></i> Copié !';
+    setTimeout(()=>b.innerHTML='<i class="fa-solid fa-clipboard"></i> Copier',2000);
   });
 }
 async function destroyNow() {
   const btn=document.getElementById('destroy-now-btn');
   const key=btn.dataset.key;
   if(!key||!confirm('Détruire définitivement ?')) return;
-  btn.disabled=true; btn.textContent='⏳…';
+  btn.disabled=true;
+  btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i>';
   try {
-    await deleteBackblaze(key); btn.textContent='✅ Détruit';
-    btn.style.background='var(--red)'; btn.style.color='white';
+    await deleteBackblaze(key);
+    btn.innerHTML='<i class="fa-solid fa-check"></i> Détruit';
+    btn.style.background='var(--color-coral)'; btn.style.color='white';
     markHistoryDestroyed(key); updateBadge();
-  } catch(e){ btn.textContent='❌ Erreur'; btn.disabled=false; }
+  } catch(e){ btn.innerHTML='<i class="fa-solid fa-xmark"></i> Erreur'; btn.disabled=false; }
 }
 function resetUpload() {
   selectedFile=null; currentFileKey=null; fileInput.value=''; uploadAborted=false;
@@ -815,7 +1587,7 @@ function resetUpload() {
 }
 
 // ══════════════════════════════════════════
-//  RECEIVE — déchiffrement par chunks
+//  RECEIVE
 // ══════════════════════════════════════════
 function showReceiveView() {
   ['upload-view','history-view'].forEach(id=>document.getElementById(id).style.display='none');
@@ -823,53 +1595,48 @@ function showReceiveView() {
   ['tab-upload','tab-history'].forEach(id=>document.getElementById(id).classList.remove('active'));
   const params   = new URLSearchParams(window.location.hash.slice(1));
   const filename = decodeURIComponent(params.get('n')||'fichier.bin');
-  document.getElementById('receive-filename').textContent=getFileEmoji(filename)+' '+filename;
+  const icon = getFileIcon(filename);
+  document.getElementById('receive-filename').innerHTML=`<i class="fa-solid ${icon}"></i> ${escHtml(filename)}`;
 }
 
 async function startDecrypt() {
   const btn=document.getElementById('decrypt-btn');
-  btn.disabled=true; btn.textContent='⏳ Téléchargement…';
+  btn.disabled=true;
+  btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Téléchargement…';
   document.getElementById('receive-progress').style.display='block';
   document.getElementById('receive-error').style.display='none';
   document.getElementById('receive-success').style.display='none';
-
   try {
     const params   = new URLSearchParams(window.location.hash.slice(1));
     const keyHex   = params.get('k');
     const filename = decodeURIComponent(params.get('n')||'fichier.bin');
     const b2Key    = params.get('bk');
     if (!keyHex||!b2Key) throw new Error('Lien invalide — paramètres manquants');
-
     const keyBytes = new Uint8Array(keyHex.match(/.{2}/g).map(h=>parseInt(h,16)));
-
     setRecvStatus('Génération lien sécurisé…', 20);
     const pr=await fetch(WORKER_URL+'/b2-download?key='+encodeURIComponent(b2Key)+'&expires=3600');
     if(!pr.ok) throw new Error('Worker HTTP '+pr.status);
     const pd=await pr.json();
     if(!pd.success) throw new Error(pd.message||'Presign GET échoué');
-
     setRecvStatus('Téléchargement…', 40);
     const fr=await fetch(pd.presignedGetUrl);
     if(!fr.ok) throw new Error('Téléchargement échoué ('+fr.status+')');
-
     setRecvStatus('Déchiffrement AES-256-GCM…', 70);
     const encBuf  = await fr.arrayBuffer();
     const decrypted = await decryptChunk(keyBytes, 0, new Uint8Array(encBuf));
-
     setRecvStatus('Enregistrement…', 95);
     const blob=new Blob([decrypted]);
     const a=document.createElement('a');
     a.href=URL.createObjectURL(blob); a.download=filename; a.click();
     URL.revokeObjectURL(a.href);
-
     setRecvStatus('Terminé !', 100);
-    document.getElementById('receive-success').style.display='block';
-    btn.textContent='✅ Téléchargé';
-
+    document.getElementById('receive-success').style.display='flex';
+    btn.innerHTML='<i class="fa-solid fa-check"></i> Téléchargé';
   } catch(e) {
-    document.getElementById('receive-error').textContent='❌ '+e.message;
-    document.getElementById('receive-error').style.display='block';
-    btn.disabled=false; btn.textContent='🔓 Télécharger & déchiffrer';
+    document.getElementById('receive-error').innerHTML=`<i class="fa-solid fa-circle-xmark"></i> ${escHtml(e.message)}`;
+    document.getElementById('receive-error').style.display='flex';
+    btn.disabled=false;
+    btn.innerHTML='<i class="fa-solid fa-lock-open"></i> Télécharger & déchiffrer';
   }
 }
 function setRecvStatus(txt,pct) {
@@ -900,12 +1667,14 @@ function renderHistory() {
 function buildHistoryItem(item) {
   const div=document.createElement('div');
   div.className='history-item'+(item.status!=='active'?' destroyed':'');
-  const sl=item.status==='destroyed'?'🗑 Détruit':item.status==='expired'?'⌛ Expiré':'🟢 Actif';
+  const statusIcon = item.status==='destroyed'?'fa-trash':item.status==='expired'?'fa-clock':'fa-circle-check';
+  const statusLabel = item.status==='destroyed'?'Détruit':item.status==='expired'?'Expiré':'Actif';
   const sc=item.status==='active'?'active':item.status==='destroyed'?'destroyed':'expired';
+  const fileIcon = getFileIcon(item.filename);
   const date=new Date(item.createdAt).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
   div.innerHTML=`
     <div class="hist-primary" onclick="toggleHistDetail(${item.id})">
-      <div class="hist-file-icon">${getFileEmoji(item.filename)}</div>
+      <i class="fa-solid ${fileIcon} hist-file-icon"></i>
       <div class="hist-main">
         <div class="hist-filename">${escHtml(item.filename)}</div>
         <div class="hist-meta-row">
@@ -915,26 +1684,26 @@ function buildHistoryItem(item) {
         </div>
       </div>
       <div class="hist-right">
-        <span class="hist-status ${sc}">${sl}</span>
-        <span class="hist-chevron" id="chev-${item.id}">▾</span>
+        <span class="hist-status ${sc}"><i class="fa-solid ${statusIcon}"></i> ${statusLabel}</span>
+        <i class="fa-solid fa-chevron-down hist-chevron" id="chev-${item.id}"></i>
       </div>
     </div>
     <div class="hist-detail" id="detail-${item.id}">
       <div class="hist-detail-grid">
-        <div><div class="detail-label">Expiration</div><div class="detail-value">⏱ ${expiryLabels[item.expiry]||item.expiry}</div></div>
-        <div><div class="detail-label">Auto-détruit</div><div class="detail-value">${item.autoDestroy?'💣 Oui':'❌ Non'}</div></div>
-        <div><div class="detail-label">Chiffrement</div><div class="detail-value">🔐 AES-256-GCM</div></div>
-        <div><div class="detail-label">Stockage</div><div class="detail-value">☁️ Backblaze B2</div></div>
+        <div><div class="detail-label">Expiration</div><div class="detail-value"><i class="fa-solid fa-clock"></i>${expiryLabels[item.expiry]||item.expiry}</div></div>
+        <div><div class="detail-label">Auto-détruit</div><div class="detail-value"><i class="fa-solid ${item.autoDestroy?'fa-bomb':'fa-xmark'}"></i>${item.autoDestroy?'Oui':'Non'}</div></div>
+        <div><div class="detail-label">Chiffrement</div><div class="detail-value"><i class="fa-solid fa-lock"></i>AES-256-GCM</div></div>
+        <div><div class="detail-label">Stockage</div><div class="detail-value"><i class="fa-solid fa-cloud"></i>Backblaze B2</div></div>
       </div>
       <div class="hist-link-box">
         <span class="hist-link-text">${escHtml(item.link)}</span>
-        <button class="copy-btn" onclick="copyHistLink('${escHtml(item.link)}',this)">📋</button>
+        <button class="copy-btn" onclick="copyHistLink('${escHtml(item.link)}',this)"><i class="fa-solid fa-clipboard"></i></button>
       </div>
       <div class="hist-actions">
-        <button class="hist-action-btn" onclick="shareHistLink('${escHtml(item.link)}')">📤 Partager</button>
-        <button class="hist-action-btn" onclick="showHistQR(${item.id},'${escHtml(item.link)}')">📱 QR</button>
-        ${item.fileKey&&item.status==='active'?`<button class="hist-action-btn danger" id="hd-${item.id}" onclick="destroyHistItem(${item.id},'${item.fileKey}')">🗑 Détruire</button>`:''}
-        <button class="hist-action-btn danger" onclick="removeHistItem(${item.id})">✕ Retirer</button>
+        <button class="hist-action-btn" onclick="shareHistLink('${escHtml(item.link)}')"><i class="fa-solid fa-share-nodes"></i> Partager</button>
+        <button class="hist-action-btn" onclick="showHistQR(${item.id},'${escHtml(item.link)}')"><i class="fa-solid fa-qrcode"></i> QR</button>
+        ${item.fileKey&&item.status==='active'?`<button class="hist-action-btn danger" id="hd-${item.id}" onclick="destroyHistItem(${item.id},'${item.fileKey}')"><i class="fa-solid fa-trash"></i> Détruire</button>`:''}
+        <button class="hist-action-btn danger" onclick="removeHistItem(${item.id})"><i class="fa-solid fa-xmark"></i> Retirer</button>
       </div>
       <div class="hist-qr" id="hist-qr-${item.id}" style="display:none">
         <div id="hist-qr-canvas-${item.id}"></div>
@@ -944,7 +1713,7 @@ function buildHistoryItem(item) {
   return div;
 }
 function toggleHistDetail(id){ document.getElementById('detail-'+id).classList.toggle('open'); document.getElementById('chev-'+id).classList.toggle('open'); }
-function copyHistLink(l,b){ navigator.clipboard.writeText(l).then(()=>{b.textContent='✅';setTimeout(()=>b.textContent='📋',2000);}); }
+function copyHistLink(l,b){ navigator.clipboard.writeText(l).then(()=>{b.innerHTML='<i class="fa-solid fa-check"></i>';setTimeout(()=>b.innerHTML='<i class="fa-solid fa-clipboard"></i>',2000);}); }
 function shareHistLink(l){ if(navigator.share){navigator.share({url:l}).catch(()=>{});}else{navigator.clipboard.writeText(l);alert('Lien copié !');} }
 function showHistQR(id,link){
   const a=document.getElementById('hist-qr-'+id); const c=document.getElementById('hist-qr-canvas-'+id);
@@ -954,9 +1723,10 @@ function showHistQR(id,link){
 }
 async function destroyHistItem(id,fk){
   if(!confirm('Détruire définitivement ?')) return;
-  const btn=document.getElementById('hd-'+id); btn.disabled=true; btn.textContent='⏳…';
+  const btn=document.getElementById('hd-'+id);
+  btn.disabled=true; btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i>';
   try{ await deleteBackblaze(fk); const l=loadHistory(); const i=l.find(x=>x.id===id); if(i){i.status='destroyed';saveHistory(l);} renderHistory(); updateBadge(); }
-  catch(e){ btn.disabled=false; btn.textContent='❌'; }
+  catch(e){ btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-xmark"></i>'; }
 }
 function removeHistItem(id){ deleteHistoryItem(id); renderHistory(); updateBadge(); }
 </script>
