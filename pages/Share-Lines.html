@@ -1240,34 +1240,29 @@ async function resumeUpload() {
   finishUpload(s.objectKey, keyBytes);
 }
 
-// ══ PROGRESS ENGINE ══
-// Smooth JS-driven ticker — updates every 50ms for fluid animation
+// ══ PROGRESS ENGINE — rAF smooth interpolation (prep + upload) ══
 let _pState = { phase:'idle', pct:0, bytesSent:0, totalBytes:0, speed:0, eta:Infinity, label:'En attente…' };
-let _progressTick = null;
+let _pctTarget   = 0;   // target the animation glides toward
+let _pctDisplayed = 0;  // current rendered value (interpolated)
+let _rafRunning  = false;
 
 function _renderProgress() {
-  const s = _pState;
   const fill = document.getElementById('progress-fill');
   const dot  = document.getElementById('progress-dot');
-
-  // Width — JS drives it smoothly via tick
-  fill.style.width = Math.min(100, s.pct) + '%';
-
-  // Phase class drives color + stripe animation
-  if (s.phase === 'done') {
+  fill.style.width = Math.min(100, _pctDisplayed) + '%';
+  if (_pState.phase === 'done') {
     fill.className = 'progress-fill phase-done';
-    dot.className = 'progress-phase-dot done';
-  } else if (s.phase === 'upload') {
+    dot.className  = 'progress-phase-dot done';
+  } else if (_pState.phase === 'upload') {
     fill.className = 'progress-fill phase-upload';
-    dot.className = 'progress-phase-dot';
+    dot.className  = 'progress-phase-dot';
   } else {
     fill.className = 'progress-fill phase-prep';
-    dot.className = 'progress-phase-dot';
+    dot.className  = 'progress-phase-dot';
   }
-
-  document.getElementById('status-text').textContent = s.label;
-  document.getElementById('progress-pct').textContent = Math.round(Math.min(100, s.pct)) + '%';
-
+  document.getElementById('status-text').textContent  = _pState.label;
+  document.getElementById('progress-pct').textContent = Math.round(Math.min(100, _pctDisplayed)) + '%';
+  const s = _pState;
   const sent = s.totalBytes > 0
     ? `${formatSize(Math.round(s.bytesSent))} / ${formatSize(s.totalBytes)}`
     : (s.bytesSent > 0 ? formatSize(Math.round(s.bytesSent)) : '—');
@@ -1276,8 +1271,21 @@ function _renderProgress() {
   document.getElementById('metric-eta').textContent   = s.speed > 0 && s.eta < Infinity ? formatTime(s.eta) : '—';
 }
 
+function _rafLoop() {
+  if (!_rafRunning) return;
+  const diff = _pctTarget - _pctDisplayed;
+  if (diff > 0.05) {
+    // Fast but smooth ease-out — closes gap by 9% per frame + small constant
+    _pctDisplayed += diff * 0.09 + 0.05;
+    if (_pctDisplayed > _pctTarget) _pctDisplayed = _pctTarget;
+  }
+  _renderProgress();
+  requestAnimationFrame(_rafLoop);
+}
+
 function initProgress(totalBytes) {
   _pState = { phase:'prep', pct:0, bytesSent:0, totalBytes, speed:0, eta:Infinity, label:'Préparation…' };
+  _pctTarget = 0; _pctDisplayed = 0;
   _renderProgress();
   document.getElementById('chunks-section').style.display = 'none';
   document.getElementById('metric-sent').textContent  = '—';
@@ -1285,46 +1293,43 @@ function initProgress(totalBytes) {
   document.getElementById('metric-eta').textContent   = '—';
 }
 
-// Smoothly animate pct toward a target (for prep phases)
-let _pctTarget = 0;
-function _animateTick() {
-  if (_pState.phase === 'prep' && _pState.pct < _pctTarget) {
-    _pState.pct += (_pctTarget - _pState.pct) * 0.08 + 0.1;
-    if (_pState.pct >= _pctTarget) _pState.pct = _pctTarget;
-    _renderProgress();
-  }
-  _progressTick = setTimeout(_animateTick, 50);
-}
 function startProgressTick() {
-  clearTimeout(_progressTick);
-  _animateTick();
+  _rafRunning = true;
+  requestAnimationFrame(_rafLoop);
 }
 function stopProgressTick() {
-  clearTimeout(_progressTick);
+  _rafRunning = false;
 }
 
 function setProgressPrep(label, targetPct) {
   _pState.phase = 'prep';
   _pState.label = label;
-  _pctTarget = targetPct;
+  // Never go backward
+  if (targetPct > _pctTarget) _pctTarget = targetPct;
 }
 
 function setProgressUpload(bytesSent, totalBytes, speed, label) {
-  _pState.phase = 'upload';
+  _pState.phase     = 'upload';
   _pState.bytesSent = bytesSent;
-  _pState.totalBytes = totalBytes;
-  _pState.speed = speed;
-  _pState.eta = speed > 0 ? (totalBytes - bytesSent) / speed : Infinity;
-  _pState.pct = totalBytes > 0 ? Math.min(98, (bytesSent / totalBytes) * 94 + 4) : _pState.pct;
-  _pState.label = label || 'Upload en cours…';
-  _pctTarget = _pState.pct;
-  _renderProgress();
+  _pState.totalBytes= totalBytes;
+  _pState.speed     = speed;
+  _pState.eta       = speed > 0 ? (totalBytes - bytesSent) / speed : Infinity;
+  _pState.label     = label || 'Upload en cours…';
+  // Map real bytes → 4%–98% range and let rAF interpolate smoothly
+  const realPct = totalBytes > 0 ? Math.min(98, (bytesSent / totalBytes) * 94 + 4) : _pctTarget;
+  if (realPct > _pctTarget) _pctTarget = realPct;
+  // Update metrics immediately (text doesn't need easing)
+  document.getElementById('metric-sent').textContent  =
+    `${formatSize(Math.round(bytesSent))} / ${formatSize(totalBytes)}`;
+  document.getElementById('metric-speed').textContent =
+    speed > 0 ? formatSize(Math.round(speed)) + '/s' : '—';
+  document.getElementById('metric-eta').textContent   =
+    speed > 0 && _pState.eta < Infinity ? formatTime(_pState.eta) : '—';
 }
 
 function setStatus(txt, pct) {
   _pState.label = txt;
-  _pctTarget = pct;
-  _renderProgress();
+  if (pct > _pctTarget) _pctTarget = pct;
 }
 
 // ══ UPLOAD ══
