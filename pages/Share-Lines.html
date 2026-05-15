@@ -1103,7 +1103,8 @@ async function startUpload() {
     if (selectedFile.size <= MULTIPART_THRESHOLD) {
       await doSimpleUpload(selectedFile, objKey, masterKeyBytes);
     } else {
-      await doMultipartUpload(selectedFile, objKey, null, masterKeyBytes);
+      const totalChunks = Math.ceil(selectedFile.size / CHUNK_SIZE);
+await doMultipartUpload(selectedFile, objKey, null, masterKeyBytes);
     }
     finishUpload(objKey, masterKeyBytes);
   } catch(e) {
@@ -1158,8 +1159,8 @@ const sleep = ms => new Promise(r=>setTimeout(r,ms));
 
 function finishUpload(objKey, keyBytes) {
   const keyHex   = Array.from(keyBytes).map(b=>b.toString(16).padStart(2,'0')).join('');
-  const magicLink = SHARE_BASE+'#k='+keyHex+'&n='+encodeURIComponent(selectedFile.name)+'&p=backblaze&bk='+encodeURIComponent(objKey)+'&chunks=1';
-  currentFileKey = objKey;
+const chunkCount = selectedFile.size > MULTIPART_THRESHOLD ? Math.ceil(selectedFile.size / CHUNK_SIZE) : 1;
+const magicLink = SHARE_BASE+'#k='+keyHex+'&n='+encodeURIComponent(selectedFile.name)+'&p=backblaze&bk='+encodeURIComponent(objKey)+'&chunks='+chunkCount;  currentFileKey = objKey;
   _progressState.phase='done'; _progressState.pct=100; _progressState.label='Terminé !';
   _progressState.speed=0; _progressState.eta=0; _renderProgress();
   const autoDestroy = document.getElementById('autodestroy-toggle').checked;
@@ -1342,20 +1343,42 @@ async function startDecrypt() {
   document.getElementById('receive-success').style.display='none';
   try {
     const params=new URLSearchParams(window.location.hash.slice(1));
-    const keyHex=params.get('k'); const filename=decodeURIComponent(params.get('n')||'fichier.bin'); const b2Key=params.get('bk');
+    const keyHex=params.get('k');
+    const filename=decodeURIComponent(params.get('n')||'fichier.bin');
+    const b2Key=params.get('bk');
+    const chunks=parseInt(params.get('chunks')||'1',10);
     if(!keyHex||!b2Key) throw new Error('Lien invalide — paramètres manquants');
     const keyBytes=new Uint8Array(keyHex.match(/.{2}/g).map(h=>parseInt(h,16)));
-    setRecvStatus('Génération lien sécurisé…', 20);
+    setRecvStatus('Génération lien sécurisé…', 10);
     const pr=await fetch(WORKER_URL+'/b2-download?key='+encodeURIComponent(b2Key)+'&expires=3600');
     if(!pr.ok) throw new Error('Worker HTTP '+pr.status);
-    const pd=await pr.json(); if(!pd.success) throw new Error(pd.message||'Presign GET échoué');
-    setRecvStatus('Téléchargement…', 40);
-    const fr=await fetch(pd.presignedGetUrl); if(!fr.ok) throw new Error('Téléchargement échoué ('+fr.status+')');
-    setRecvStatus('Déchiffrement AES-256-GCM…', 70);
-    const encBuf=await fr.arrayBuffer();
-    const decrypted=await decryptChunk(keyBytes,0,new Uint8Array(encBuf));
+    const pd=await pr.json();
+    if(!pd.success) throw new Error(pd.message||'Presign GET échoué');
+    setRecvStatus('Téléchargement…', 20);
+    const fr=await fetch(pd.presignedGetUrl);
+    if(!fr.ok) throw new Error('Téléchargement échoué ('+fr.status+')');
+    setRecvStatus('Déchiffrement AES-256-GCM…', 60);
+    const encBuf=new Uint8Array(await fr.arrayBuffer());
+    // Déchiffrement chunk par chunk
+    const decryptedParts=[];
+    if(chunks<=1){
+      // Fichier simple — un seul chunk avec idx=0
+      decryptedParts.push(await decryptChunk(keyBytes,0,encBuf));
+    } else {
+      // Fichier multipart — chaque chunk a son propre IV (12 bytes) + données
+      // Taille chiffrée par chunk = CHUNK_SIZE + 16 (GCM tag) + 12 (IV) = CHUNK_SIZE + 28
+      const encChunkSize = CHUNK_SIZE + 12 + 16;
+      for(let i=0;i<chunks;i++){
+        setRecvStatus(`Déchiffrement chunk ${i+1}/${chunks}…`, 60+Math.round((i/chunks)*30));
+        const start=i*encChunkSize;
+        const end=Math.min(start+encChunkSize, encBuf.byteLength);
+        const chunkEnc=encBuf.slice(start,end);
+        decryptedParts.push(new Uint8Array(await decryptChunk(keyBytes,i,chunkEnc)));
+      }
+    }
     setRecvStatus('Enregistrement…', 95);
-    const blob=new Blob([decrypted]); const a=document.createElement('a');
+    const blob=new Blob(decryptedParts);
+    const a=document.createElement('a');
     a.href=URL.createObjectURL(blob); a.download=filename; a.click(); URL.revokeObjectURL(a.href);
     setRecvStatus('Terminé !', 100);
     document.getElementById('receive-success').style.display='flex';
