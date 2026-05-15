@@ -9,40 +9,34 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 :root {
-  --color-navy:       #0A2472;
-  --color-navy-deep:  #061852;
-  --color-emerald:    #006466;
-  --color-coral:      #F46060;
-  --color-coral-dark: #d44040;
-  --color-gold:       #FFD972;
-  --bg:               #FDFCF0;
-  --surface:          #FFFFFF;
-  --surface2:         #EEF0F8;
-  --surface3:         #E4E8F4;
-  --border:           #C8CEDF;
-  --border2:          #B0B8D4;
-  --text:             #0A2472;
-  --text2:            #3a4a80;
-  --text3:            #7a88b0;
-  --mondrian: linear-gradient(to right, #0A2472 0% 60%, #006466 60% 75%, #F46060 75% 90%, #FFD972 90% 100%);
-  --glow:             rgba(244,96,96,0.15);
-  --shadow:           0 4px 24px rgba(10,36,114,0.12);
-  --shadow-sm:        0 2px 8px  rgba(10,36,114,0.08);
-  --radius:           10px;
-  --radius-sm:        6px;
-  --radius-lg:        16px;
-  --font:             'DM Sans', sans-serif;
-  --green:            #006466;
-  --green-d:          #004f51;
-  --green-l:          rgba(0,100,102,0.08);
-  --green-m:          rgba(0,100,102,0.25);
-  --green-t:          #003638;
-  --amber-l:          rgba(255,217,114,0.25);
-  --amber-m:          #FFD972;
-  --amber-t:          #5a4200;
-  --red:              #F46060;
-  --red-l:            rgba(244,96,96,0.08);
-  --red-m:            rgba(244,96,96,0.3);
+  --navy:       #0A2472;
+  --navy-deep:  #061852;
+  --emerald:    #006466;
+  --coral:      #F46060;
+  --coral-dark: #d44040;
+  --gold:       #FFD972;
+  --bg:         #FDFCF0;
+  --surface:    #FFFFFF;
+  --surface2:   #EEF0F8;
+  --border:     #D4D8E8;
+  --border2:    #B0B8D4;
+  --text:       #0A2472;
+  --text2:      #3a4a80;
+  --text3:      #8a96bb;
+  --mondrian:   linear-gradient(to right, #0A2472 0% 60%, #006466 60% 75%, #F46060 75% 90%, #FFD972 90% 100%);
+  --glow:       rgba(244,96,96,0.12);
+  --shadow:     0 8px 40px rgba(10,36,114,0.10);
+  --shadow-sm:  0 2px 10px rgba(10,36,114,0.06);
+  --r:          12px;
+  --r-sm:       8px;
+  --r-lg:       20px;
+  --font:       'DM Sans', sans-serif;
+  --green-l:    rgba(0,100,102,0.08);
+  --green-m:    rgba(0,100,102,0.22);
+  --red-l:      rgba(244,96,96,0.07);
+  --red-m:      rgba(244,96,96,0.25);
+  --amber-l:    rgba(255,217,114,0.22);
+  --amber-t:    #5a4200;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -58,22 +52,16 @@ body {
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: 48px 16px 80px;
+  padding: 64px 20px 100px;
 }
 
-.app {
-  width: 100%;
-  max-width: 520px;
-}
+.app { width: 100%; max-width: 480px; }
 
-/* ── Scrollbar ── */
-::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 100px; }
 
-/* ══════════════════════════════════════
-   LOGIN
-   ══════════════════════════════════════ */
+/* ─── LOGIN ─── */
 #login-view {
   min-height: 100vh;
   display: flex;
@@ -83,16 +71,16 @@ body {
   inset: 0;
   background: var(--bg);
   z-index: 100;
-  padding: 1rem;
+  padding: 1.5rem;
 }
 
 .login-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 36px 32px;
+  border-radius: var(--r-lg);
+  padding: 48px 40px;
   width: 100%;
-  max-width: 380px;
+  max-width: 360px;
   box-shadow: var(--shadow);
   position: relative;
   overflow: hidden;
@@ -106,35 +94,35 @@ body {
 }
 
 .login-logo {
-  font-size: 22px;
+  font-size: 26px;
   font-weight: 700;
-  color: var(--color-navy);
-  letter-spacing: -0.5px;
-  margin-bottom: 4px;
+  color: var(--navy);
+  letter-spacing: -0.6px;
+  margin-bottom: 6px;
 }
-.login-logo span { color: var(--color-coral); }
+.login-logo span { color: var(--coral); }
 .login-sub {
   font-size: 13px;
   color: var(--text3);
-  margin-bottom: 32px;
+  margin-bottom: 40px;
 }
 
-.field { margin-bottom: 16px; }
+.field { margin-bottom: 20px; }
 .field-label {
   font-size: 11px;
   font-weight: 700;
   color: var(--text3);
   text-transform: uppercase;
-  letter-spacing: 0.6px;
+  letter-spacing: 0.7px;
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 .input-wrap { position: relative; }
 .input-wrap input {
   width: 100%;
-  padding: 10px 36px 10px 12px;
+  padding: 12px 40px 12px 14px;
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-sm);
   background: var(--surface);
   color: var(--text);
   font-size: 14px;
@@ -143,12 +131,12 @@ body {
   transition: border-color .15s, box-shadow .15s;
 }
 .input-wrap input:focus {
-  border-color: var(--color-navy);
-  box-shadow: 0 0 0 3px rgba(10,36,114,.1);
+  border-color: var(--navy);
+  box-shadow: 0 0 0 3px rgba(10,36,114,.08);
 }
 .eye-btn {
   position: absolute;
-  right: 10px; top: 50%;
+  right: 12px; top: 50%;
   transform: translateY(-50%);
   background: none;
   border: none;
@@ -167,20 +155,20 @@ body {
   padding: 10px 12px;
   background: var(--red-l);
   border: 1px solid var(--red-m);
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-sm);
   font-size: 13px;
-  color: var(--color-coral-dark);
-  margin-bottom: 14px;
+  color: var(--coral-dark);
+  margin-bottom: 16px;
 }
 .login-error.show { display: flex; }
 
 .login-btn {
   width: 100%;
-  padding: 11px;
-  background: var(--color-coral);
+  padding: 13px;
+  background: var(--coral);
   color: #fff;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-sm);
   font-size: 14px;
   font-weight: 600;
   font-family: var(--font);
@@ -190,8 +178,9 @@ body {
   justify-content: center;
   gap: 8px;
   transition: background .15s;
+  margin-bottom: 24px;
 }
-.login-btn:hover { background: var(--color-coral-dark); }
+.login-btn:hover { background: var(--coral-dark); }
 .login-btn:disabled { opacity: .5; cursor: not-allowed; }
 
 .login-security {
@@ -199,42 +188,39 @@ body {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  margin-top: 20px;
   font-size: 11px;
   color: var(--text3);
 }
-.login-security i { color: var(--color-emerald); }
+.login-security i { color: var(--emerald); }
 
-/* ══════════════════════════════════════
-   HEADER APP
-   ══════════════════════════════════════ */
+/* ─── HEADER ─── */
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 28px;
+  margin-bottom: 40px;
 }
 .logo {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 700;
-  color: var(--color-navy);
+  color: var(--navy);
   letter-spacing: -0.5px;
 }
-.logo span { color: var(--color-coral); }
+.logo span { color: var(--coral); }
 .tagline {
   font-size: 11px;
   color: var(--text3);
-  margin-top: 2px;
+  margin-top: 3px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
-.tagline i { color: var(--color-emerald); font-size: 9px; }
+.tagline i { color: var(--emerald); font-size: 7px; }
 
 .logout-btn {
-  padding: 7px 12px;
+  padding: 8px 14px;
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-sm);
   background: var(--surface);
   cursor: pointer;
   font-size: 12px;
@@ -247,30 +233,24 @@ body {
   transition: all .12s;
   box-shadow: var(--shadow-sm);
 }
-.logout-btn:hover {
-  background: var(--surface2);
-  color: var(--color-navy);
-  border-color: var(--border2);
-}
+.logout-btn:hover { background: var(--surface2); color: var(--navy); border-color: var(--border2); }
 
-/* ══════════════════════════════════════
-   TABS
-   ══════════════════════════════════════ */
+/* ─── TABS ─── */
 .tabs {
   display: flex;
   gap: 4px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--r);
   padding: 4px;
-  margin-bottom: 24px;
+  margin-bottom: 32px;
   box-shadow: var(--shadow-sm);
 }
 .tab {
   flex: 1;
-  padding: 9px 16px;
+  padding: 10px 16px;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-sm);
   background: transparent;
   font-size: 13px;
   font-weight: 500;
@@ -284,61 +264,53 @@ body {
   gap: 7px;
 }
 .tab i { font-size: 12px; }
-.tab.active {
-  background: var(--color-navy);
-  color: #fff;
-  box-shadow: 0 1px 4px rgba(10,36,114,.25);
-}
+.tab.active { background: var(--navy); color: #fff; box-shadow: 0 1px 6px rgba(10,36,114,.2); }
 .tab-badge {
   font-size: 10px;
   font-weight: 700;
   padding: 1px 6px;
   border-radius: 99px;
-  background: var(--color-coral);
+  background: var(--coral);
   color: #fff;
   min-width: 18px;
   text-align: center;
 }
 
-/* ══════════════════════════════════════
-   CARD
-   ══════════════════════════════════════ */
+/* ─── CARD ─── */
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 24px;
-  margin-bottom: 16px;
+  border-radius: var(--r);
+  padding: 28px;
+  margin-bottom: 20px;
   box-shadow: var(--shadow-sm);
 }
 
-/* ══════════════════════════════════════
-   DROP ZONE
-   ══════════════════════════════════════ */
+/* ─── DROP ZONE ─── */
 .drop-zone {
   border: 2px dashed var(--border2);
-  border-radius: var(--radius);
-  padding: 40px 24px;
+  border-radius: var(--r);
+  padding: 52px 24px;
   text-align: center;
   cursor: pointer;
   transition: all .2s;
 }
 .drop-zone:hover, .drop-zone.drag-over {
-  border-color: var(--color-coral);
-  background: rgba(244,96,96,.03);
-  box-shadow: 0 0 0 4px var(--glow);
+  border-color: var(--coral);
+  background: rgba(244,96,96,.025);
+  box-shadow: 0 0 0 5px var(--glow);
 }
 .drop-icon {
-  font-size: 32px;
+  font-size: 34px;
   color: var(--text3);
-  margin-bottom: 12px;
+  margin-bottom: 16px;
   display: block;
   transition: color .2s;
 }
-.drop-zone:hover .drop-icon { color: var(--color-coral); }
+.drop-zone:hover .drop-icon { color: var(--coral); }
 .drop-zone p { font-size: 14px; color: var(--text2); }
 .drop-zone p strong { color: var(--text); font-weight: 600; }
-.drop-hint { font-size: 11px; margin-top: 5px; color: var(--text3); }
+.drop-hint { font-size: 11px; margin-top: 6px; color: var(--text3); }
 
 input[type="file"] { display: none; }
 
@@ -346,13 +318,13 @@ input[type="file"] { display: none; }
   display: none;
   align-items: center;
   gap: 10px;
-  padding: 10px 12px;
+  padding: 11px 14px;
   background: var(--surface2);
-  border-radius: var(--radius-sm);
-  margin-top: 14px;
+  border-radius: var(--r-sm);
+  margin-top: 16px;
   border: 1px solid var(--border);
 }
-.file-preview i { color: var(--color-coral); font-size: 16px; flex-shrink: 0; }
+.file-preview i { color: var(--coral); font-size: 16px; flex-shrink: 0; }
 .file-name { font-size: 13px; font-weight: 500; color: var(--text); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .file-size { font-size: 11px; color: var(--text3); white-space: nowrap; }
 .file-remove {
@@ -362,53 +334,47 @@ input[type="file"] { display: none; }
   background: none;
   border: none;
   padding: 4px 6px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-sm);
   transition: all .12s;
 }
-.file-remove:hover { color: var(--color-coral); background: var(--red-l); }
+.file-remove:hover { color: var(--coral); background: var(--red-l); }
 
 .provider-badge {
   display: none;
   align-items: center;
   gap: 6px;
-  padding: 4px 10px;
+  padding: 4px 12px;
   border-radius: 99px;
   font-size: 11px;
   font-weight: 500;
-  margin-top: 10px;
+  margin-top: 12px;
   width: fit-content;
-}
-.provider-badge.backblaze {
-  background: rgba(10,36,114,.08);
-  color: var(--color-navy);
-  border: 1px solid rgba(10,36,114,.15);
+  background: rgba(10,36,114,.07);
+  color: var(--navy);
+  border: 1px solid rgba(10,36,114,.12);
 }
 .provider-badge i { font-size: 10px; }
 
-/* ══════════════════════════════════════
-   SECTION LABEL
-   ══════════════════════════════════════ */
+/* ─── SECTION LABEL ─── */
 .section-label {
   font-size: 11px;
   font-weight: 700;
   color: var(--text3);
   text-transform: uppercase;
-  letter-spacing: 0.6px;
-  margin-bottom: 10px;
+  letter-spacing: 0.7px;
+  margin-bottom: 14px;
 }
 
-/* ══════════════════════════════════════
-   EXPIRY
-   ══════════════════════════════════════ */
+/* ─── EXPIRY ─── */
 .expiry-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 8px;
 }
 .exp-btn {
-  padding: 10px 8px;
+  padding: 12px 8px;
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-sm);
   background: var(--surface);
   cursor: pointer;
   font-size: 11px;
@@ -418,23 +384,18 @@ input[type="file"] { display: none; }
   font-family: var(--font);
   line-height: 1.4;
 }
-.exp-btn .dur { font-size: 15px; font-weight: 700; color: var(--text); display: block; }
+.exp-btn .dur { font-size: 16px; font-weight: 700; color: var(--text); display: block; margin-bottom: 2px; }
 .exp-btn:hover { background: var(--surface2); border-color: var(--border2); }
-.exp-btn.active {
-  border-color: var(--color-emerald);
-  background: rgba(0,100,102,.06);
-}
-.exp-btn.active, .exp-btn.active .dur { color: var(--color-emerald); }
+.exp-btn.active { border-color: var(--emerald); background: rgba(0,100,102,.05); }
+.exp-btn.active, .exp-btn.active .dur { color: var(--emerald); }
 
-/* ══════════════════════════════════════
-   TOGGLE ROW
-   ══════════════════════════════════════ */
+/* ─── TOGGLE ROW ─── */
 .toggle-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 0 0;
-  margin-top: 14px;
+  padding: 18px 0 0;
+  margin-top: 18px;
   border-top: 1px solid var(--border);
 }
 .toggle-label {
@@ -442,11 +403,11 @@ input[type="file"] { display: none; }
   color: var(--text);
   display: flex;
   align-items: flex-start;
-  gap: 9px;
+  gap: 10px;
 }
-.toggle-label i { color: var(--color-coral); margin-top: 2px; font-size: 13px; }
-.toggle-sub { font-size: 11px; color: var(--text3); display: block; margin-top: 2px; }
-.toggle { position: relative; width: 34px; height: 19px; flex-shrink: 0; }
+.toggle-label i { color: var(--coral); margin-top: 2px; font-size: 13px; }
+.toggle-sub { font-size: 11px; color: var(--text3); display: block; margin-top: 3px; }
+.toggle { position: relative; width: 36px; height: 20px; flex-shrink: 0; }
 .toggle input { opacity: 0; width: 0; height: 0; }
 .toggle-slider {
   position: absolute;
@@ -459,42 +420,24 @@ input[type="file"] { display: none; }
 .toggle-slider::before {
   content: '';
   position: absolute;
-  width: 13px; height: 13px;
+  width: 14px; height: 14px;
   left: 3px; top: 3px;
   background: #fff;
   border-radius: 50%;
   transition: transform .2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,.15);
 }
-.toggle input:checked + .toggle-slider { background: var(--color-emerald); }
-.toggle input:checked + .toggle-slider::before { transform: translateX(15px); }
+.toggle input:checked + .toggle-slider { background: var(--emerald); }
+.toggle input:checked + .toggle-slider::before { transform: translateX(16px); }
 
-/* ══════════════════════════════════════
-   SECURITY NOTE
-   ══════════════════════════════════════ */
-.security-note {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 12px 14px;
-  background: var(--surface2);
-  border-radius: var(--radius-sm);
-  margin-top: 14px;
-  border: 1px solid var(--border);
-}
-.security-note i { color: var(--color-emerald); flex-shrink: 0; margin-top: 1px; font-size: 13px; }
-.security-note p { font-size: 12px; color: var(--text2); line-height: 1.6; }
-.security-note p strong { color: var(--text); font-weight: 600; }
-
-/* ══════════════════════════════════════
-   SEND BUTTON
-   ══════════════════════════════════════ */
+/* ─── SEND BUTTON ─── */
 .send-btn {
   width: 100%;
-  padding: 13px;
-  background: var(--color-coral);
+  padding: 15px;
+  background: var(--coral);
   color: #fff;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-sm);
   font-size: 15px;
   font-weight: 600;
   font-family: var(--font);
@@ -504,571 +447,242 @@ input[type="file"] { display: none; }
   align-items: center;
   justify-content: center;
   gap: 9px;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
-.send-btn:hover { background: var(--color-coral-dark); }
+.send-btn:hover { background: var(--coral-dark); }
 .send-btn:active { transform: translateY(1px); }
-.send-btn:disabled {
-  background: var(--surface2);
-  color: var(--text3);
-  cursor: not-allowed;
-  transform: none;
-}
+.send-btn:disabled { background: var(--surface2); color: var(--text3); cursor: not-allowed; transform: none; }
 
-/* ══════════════════════════════════════
-   PROGRESS
-   ══════════════════════════════════════ */
+/* ─── PROGRESS ─── */
 .progress-area {
   display: none;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--r);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
 }
-
-/* ── Phase label (étape courante) ── */
 .progress-phase {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 14px 16px 10px;
+  gap: 10px;
+  padding: 16px 18px 12px;
   border-bottom: 1px solid var(--border);
 }
 .progress-phase-dot {
   width: 7px; height: 7px;
   border-radius: 50%;
-  background: var(--color-coral);
+  background: var(--coral);
   flex-shrink: 0;
   animation: pulse-dot 1.2s ease-in-out infinite;
 }
-.progress-phase-dot.done { background: var(--color-emerald); animation: none; }
+.progress-phase-dot.done { background: var(--emerald); animation: none; }
 @keyframes pulse-dot {
   0%,100% { opacity: 1; transform: scale(1); }
-  50%      { opacity: .5; transform: scale(.7); }
+  50%      { opacity: .4; transform: scale(.65); }
 }
-.progress-phase-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text);
-  flex: 1;
-}
-.progress-pct {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--color-navy);
-  font-variant-numeric: tabular-nums;
-  min-width: 36px;
-  text-align: right;
-}
-
-/* ── Barre principale ── */
-.progress-track {
-  height: 6px;
-  background: var(--surface2);
-  position: relative;
-  overflow: hidden;
-}
-.progress-fill {
-  height: 100%;
-  background: var(--color-navy);
-  width: 0%;
-  transition: width .25s ease-out;
-  position: relative;
-}
-/* Quand en phase "upload" → coral */
-.progress-fill.phase-upload { background: var(--color-coral); }
-/* Quand terminé → emerald */
-.progress-fill.phase-done   { background: var(--color-emerald); transition: width .4s ease; }
-
-/* ── Métriques bas ── */
-.progress-metrics {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  border-top: 1px solid var(--border);
-}
-.metric-cell {
-  padding: 10px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.metric-cell + .metric-cell {
-  border-left: 1px solid var(--border);
-}
-.metric-label {
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .5px;
-  color: var(--text3);
-}
-.metric-value {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.metric-value.highlight { color: var(--color-emerald); }
-.metric-value.highlight-coral { color: var(--color-coral); }
-
-/* ── Chunks grid ── */
-.chunks-section {
-  padding: 10px 16px 12px;
-  border-top: 1px solid var(--border);
-  display: none;
-}
-.chunks-label {
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .5px;
-  color: var(--text3);
-  margin-bottom: 7px;
-}
+.progress-phase-label { font-size: 13px; font-weight: 600; color: var(--text); flex: 1; }
+.progress-pct { font-size: 13px; font-weight: 700; color: var(--navy); font-variant-numeric: tabular-nums; min-width: 36px; text-align: right; }
+.progress-track { height: 5px; background: var(--surface2); position: relative; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--navy); width: 0%; transition: width .25s ease-out; }
+.progress-fill.phase-upload { background: var(--coral); }
+.progress-fill.phase-done   { background: var(--emerald); transition: width .4s ease; }
+.progress-metrics { display: grid; grid-template-columns: 1fr 1fr 1fr; border-top: 1px solid var(--border); }
+.metric-cell { padding: 12px 16px; display: flex; flex-direction: column; gap: 3px; }
+.metric-cell + .metric-cell { border-left: 1px solid var(--border); }
+.metric-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--text3); }
+.metric-value { font-size: 13px; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.metric-value.highlight { color: var(--emerald); }
+.metric-value.highlight-coral { color: var(--coral); }
+.chunks-section { padding: 10px 16px 14px; border-top: 1px solid var(--border); display: none; }
+.chunks-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--text3); margin-bottom: 8px; }
 .chunks-grid { display: flex; flex-wrap: wrap; gap: 4px; }
-.chunk-dot {
-  width: 9px; height: 9px;
-  border-radius: 2px;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  transition: background .15s, border-color .15s;
-}
-.chunk-dot.uploading { background: var(--color-gold); border-color: #e0b800; }
-.chunk-dot.done      { background: var(--color-emerald); border-color: #004f51; }
-.chunk-dot.error     { background: var(--color-coral); border-color: var(--color-coral-dark); }
-
-/* Status (hidden, kept for JS compat) */
+.chunk-dot { width: 9px; height: 9px; border-radius: 2px; background: var(--surface2); border: 1px solid var(--border); transition: background .15s, border-color .15s; }
+.chunk-dot.uploading { background: var(--gold); border-color: #e0b800; }
+.chunk-dot.done      { background: var(--emerald); border-color: #004f51; }
+.chunk-dot.error     { background: var(--coral); border-color: var(--coral-dark); }
 .status-text { display: none; }
 .progress-speed { display: none; }
 
 .error-msg {
-  font-size: 13px;
-  color: var(--color-coral-dark);
-  text-align: center;
-  display: none;
-  padding: 10px 12px;
-  background: var(--red-l);
-  border: 1px solid var(--red-m);
-  border-radius: var(--radius-sm);
-  margin-bottom: 16px;
-  align-items: center;
-  gap: 7px;
+  font-size: 13px; color: var(--coral-dark); text-align: center;
+  display: none; padding: 12px 14px; background: var(--red-l);
+  border: 1px solid var(--red-m); border-radius: var(--r-sm);
+  margin-bottom: 20px; align-items: center; gap: 7px;
 }
 
-/* ══════════════════════════════════════
-   RESUME BANNER
-   ══════════════════════════════════════ */
+/* ─── RESUME BANNER ─── */
 .resume-banner {
-  display: none;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 16px;
-  background: var(--amber-l);
-  border: 1px solid rgba(255,217,114,.6);
-  border-radius: var(--radius-sm);
-  margin-bottom: 16px;
-  font-size: 13px;
-  color: var(--amber-t);
+  display: none; align-items: center; gap: 10px; padding: 13px 16px;
+  background: var(--amber-l); border: 1px solid rgba(255,217,114,.5);
+  border-radius: var(--r-sm); margin-bottom: 20px; font-size: 13px; color: var(--amber-t);
 }
 .resume-banner.show { display: flex; }
-.resume-banner i { flex-shrink: 0; color: var(--amber-t); }
+.resume-banner i { flex-shrink: 0; }
 .resume-btn {
-  margin-left: auto;
-  padding: 5px 12px;
-  background: var(--color-navy);
-  color: #fff;
-  border: none;
-  border-radius: var(--radius-sm);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  font-family: var(--font);
-  white-space: nowrap;
-  transition: background .12s;
+  margin-left: auto; padding: 5px 12px; background: var(--navy); color: #fff;
+  border: none; border-radius: var(--r-sm); font-size: 12px; font-weight: 600;
+  cursor: pointer; font-family: var(--font); white-space: nowrap; transition: background .12s;
 }
-.resume-btn:hover { background: var(--color-navy-deep); }
-.resume-discard {
-  padding: 5px 8px;
-  background: none;
-  border: none;
-  color: var(--amber-t);
-  font-size: 12px;
-  cursor: pointer;
-  opacity: 0.7;
-  font-family: var(--font);
-}
+.resume-btn:hover { background: var(--navy-deep); }
+.resume-discard { padding: 5px 8px; background: none; border: none; color: var(--amber-t); font-size: 12px; cursor: pointer; opacity: 0.7; font-family: var(--font); }
 
-/* ══════════════════════════════════════
-   RESULT
-   ══════════════════════════════════════ */
+/* ─── RESULT ─── */
 .result-card {
-  background: rgba(0,100,102,.05);
-  border: 1px solid rgba(0,100,102,.2);
-  border-radius: var(--radius);
-  padding: 24px;
-  margin-bottom: 12px;
+  background: rgba(0,100,102,.04);
+  border: 1px solid rgba(0,100,102,.18);
+  border-radius: var(--r);
+  padding: 28px;
+  margin-bottom: 14px;
 }
 .result-title {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--color-emerald);
-  margin-bottom: 16px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  font-size: 14px; font-weight: 700; color: var(--emerald); margin-bottom: 20px;
+  display: flex; align-items: center; gap: 8px;
 }
 .link-box {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 10px 12px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 14px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-sm); padding: 11px 14px;
+  display: flex; align-items: center; gap: 10px; margin-bottom: 18px;
 }
-.link-text {
-  font-size: 11px;
-  color: var(--text2);
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-family: 'SF Mono', 'Fira Code', monospace;
-}
+.link-text { font-size: 11px; color: var(--text2); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: 'SF Mono', 'Fira Code', monospace; }
 .copy-btn {
-  padding: 5px 10px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text);
-  white-space: nowrap;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-family: var(--font);
-  transition: all .12s;
-  flex-shrink: 0;
+  padding: 6px 12px; border: 1px solid var(--border); border-radius: var(--r-sm);
+  background: var(--surface); cursor: pointer; font-size: 12px; font-weight: 500;
+  color: var(--text); white-space: nowrap; display: flex; align-items: center;
+  gap: 5px; font-family: var(--font); transition: all .12s; flex-shrink: 0;
 }
 .copy-btn:hover { background: var(--surface2); border-color: var(--border2); }
-
-.meta-pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 16px;
-}
+.meta-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
 .pill {
-  font-size: 11px;
-  font-weight: 500;
-  padding: 3px 9px;
-  border-radius: 99px;
-  background: rgba(0,100,102,.1);
-  color: var(--color-emerald);
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  border: 1px solid rgba(0,100,102,.15);
+  font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 99px;
+  background: rgba(0,100,102,.09); color: var(--emerald);
+  display: flex; align-items: center; gap: 4px; border: 1px solid rgba(0,100,102,.14);
 }
 .pill i { font-size: 9px; }
-
-.result-actions { display: flex; gap: 8px; margin-bottom: 16px; }
+.result-actions { display: flex; gap: 8px; margin-bottom: 20px; }
 .destroy-btn {
-  flex: 1;
-  padding: 9px;
-  border: 1px solid var(--red-m);
-  border-radius: var(--radius-sm);
-  background: var(--red-l);
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--color-coral-dark);
-  font-family: var(--font);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  transition: all .12s;
+  flex: 1; padding: 10px; border: 1px solid var(--red-m); border-radius: var(--r-sm);
+  background: var(--red-l); cursor: pointer; font-size: 13px; font-weight: 500;
+  color: var(--coral-dark); font-family: var(--font); display: flex;
+  align-items: center; justify-content: center; gap: 6px; transition: all .12s;
 }
-.destroy-btn:hover { background: var(--color-coral); color: #fff; border-color: var(--color-coral); }
+.destroy-btn:hover { background: var(--coral); color: #fff; border-color: var(--coral); }
 .destroy-btn:disabled { opacity: .4; cursor: not-allowed; }
-
-.qr-area {
-  text-align: center;
-  padding-top: 16px;
-  border-top: 1px solid rgba(0,100,102,.15);
-}
-#qr-canvas { border-radius: var(--radius-sm); display: inline-block; }
-.qr-label { font-size: 11px; color: var(--color-emerald); margin-top: 6px; }
-
+.qr-area { text-align: center; padding-top: 20px; border-top: 1px solid rgba(0,100,102,.14); }
+#qr-canvas { border-radius: var(--r-sm); display: inline-block; }
+.qr-label { font-size: 11px; color: var(--emerald); margin-top: 8px; }
 .new-btn {
-  width: 100%;
-  padding: 11px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text2);
-  font-family: var(--font);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  transition: all .12s;
-  box-shadow: var(--shadow-sm);
+  width: 100%; padding: 13px; border: 1px solid var(--border); border-radius: var(--r-sm);
+  background: var(--surface); cursor: pointer; font-size: 13px; font-weight: 500; color: var(--text2);
+  font-family: var(--font); display: flex; align-items: center; justify-content: center;
+  gap: 7px; transition: all .12s; box-shadow: var(--shadow-sm);
 }
-.new-btn:hover { background: var(--surface2); color: var(--color-navy); border-color: var(--border2); }
+.new-btn:hover { background: var(--surface2); color: var(--navy); border-color: var(--border2); }
 
-/* ══════════════════════════════════════
-   HISTORY
-   ══════════════════════════════════════ */
+/* ─── HISTORY ─── */
 #history-view { display: none; }
-
-.history-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-}
+.history-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
 .history-count { font-size: 13px; color: var(--text2); font-weight: 500; }
 .clear-all-btn {
-  font-size: 12px;
-  color: var(--color-coral);
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 5px 10px;
-  border-radius: var(--radius-sm);
-  font-family: var(--font);
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  transition: background .12s;
+  font-size: 12px; color: var(--coral); background: none; border: none; cursor: pointer;
+  padding: 5px 10px; border-radius: var(--r-sm); font-family: var(--font);
+  display: flex; align-items: center; gap: 5px; transition: background .12s;
 }
 .clear-all-btn:hover { background: var(--red-l); }
-
 .history-item {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  margin-bottom: 10px;
-  overflow: hidden;
-  box-shadow: var(--shadow-sm);
-  transition: box-shadow .2s;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r);
+  margin-bottom: 12px; overflow: hidden; box-shadow: var(--shadow-sm); transition: box-shadow .2s;
 }
 .history-item:hover { box-shadow: var(--shadow); }
-.history-item.destroyed { opacity: 0.55; }
-
-.hist-primary {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
-  cursor: pointer;
-  transition: background .12s;
-}
+.history-item.destroyed { opacity: 0.5; }
+.hist-primary { display: flex; align-items: center; gap: 12px; padding: 16px 18px; cursor: pointer; transition: background .12s; }
 .hist-primary:hover { background: var(--surface2); }
-.hist-file-icon { font-size: 20px; color: var(--color-navy); flex-shrink: 0; }
+.hist-file-icon { font-size: 20px; color: var(--navy); flex-shrink: 0; }
 .hist-main { flex: 1; min-width: 0; }
 .hist-filename { font-size: 14px; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.hist-meta-row { display: flex; align-items: center; gap: 8px; margin-top: 3px; flex-wrap: wrap; }
+.hist-meta-row { display: flex; align-items: center; gap: 8px; margin-top: 4px; flex-wrap: wrap; }
 .hist-size { font-size: 11px; color: var(--text3); }
 .hist-provider { font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 99px; text-transform: uppercase; letter-spacing: .3px; }
-.hist-provider.backblaze { background: rgba(10,36,114,.08); color: var(--color-navy); }
+.hist-provider.backblaze { background: rgba(10,36,114,.07); color: var(--navy); }
 .hist-right { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex-shrink: 0; }
 .hist-status { font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 4px; }
-.hist-status.active   { color: var(--color-emerald); }
-.hist-status.destroyed{ color: var(--color-coral); }
-.hist-status.expired  { color: var(--text3); }
+.hist-status.active    { color: var(--emerald); }
+.hist-status.destroyed { color: var(--coral); }
+.hist-status.expired   { color: var(--text3); }
 .hist-chevron { font-size: 11px; color: var(--text3); transition: transform .2s; }
 .hist-chevron.open { transform: rotate(180deg); }
-
-.hist-detail {
-  display: none;
-  padding: 0 16px 16px;
-  border-top: 1px solid var(--border);
-}
+.hist-detail { display: none; padding: 0 18px 18px; border-top: 1px solid var(--border); }
 .hist-detail.open { display: block; }
-.hist-detail-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 14px;
-  padding-top: 14px;
-}
-.detail-label { font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 3px; }
+.hist-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; padding-top: 16px; }
+.detail-label { font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
 .detail-value { font-size: 13px; color: var(--text); display: flex; align-items: center; gap: 5px; }
-.detail-value i { font-size: 11px; color: var(--color-emerald); }
-
-.hist-link-box {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 8px 12px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
-}
+.detail-value i { font-size: 11px; color: var(--emerald); }
+.hist-link-box { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-sm); padding: 8px 12px; display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
 .hist-link-text { font-size: 10px; color: var(--text3); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: 'SF Mono','Fira Code',monospace; }
-
 .hist-actions { display: flex; gap: 6px; flex-wrap: wrap; }
 .hist-action-btn {
-  flex: 1;
-  min-width: 80px;
-  padding: 8px 10px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text2);
-  font-family: var(--font);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  transition: all .12s;
+  flex: 1; min-width: 80px; padding: 9px 10px; border: 1px solid var(--border); border-radius: var(--r-sm);
+  background: var(--surface); cursor: pointer; font-size: 12px; font-weight: 500; color: var(--text2);
+  font-family: var(--font); display: flex; align-items: center; justify-content: center; gap: 5px; transition: all .12s;
 }
-.hist-action-btn:hover { background: var(--surface2); color: var(--color-navy); border-color: var(--border2); }
-.hist-action-btn.danger { border-color: var(--red-m); color: var(--color-coral-dark); }
-.hist-action-btn.danger:hover { background: var(--color-coral); color: #fff; border-color: var(--color-coral); }
+.hist-action-btn:hover { background: var(--surface2); color: var(--navy); border-color: var(--border2); }
+.hist-action-btn.danger { border-color: var(--red-m); color: var(--coral-dark); }
+.hist-action-btn.danger:hover { background: var(--coral); color: #fff; border-color: var(--coral); }
 .hist-action-btn:disabled { opacity: .4; cursor: not-allowed; }
 .hist-action-btn i { font-size: 11px; }
-
-.hist-qr { text-align: center; padding: 12px 0 0; border-top: 1px solid var(--border); margin-top: 12px; }
+.hist-qr { text-align: center; padding: 14px 0 0; border-top: 1px solid var(--border); margin-top: 14px; }
 .hist-qr-label { font-size: 11px; color: var(--text3); margin-top: 6px; }
-
-.history-empty {
-  text-align: center;
-  padding: 56px 24px;
-  color: var(--text3);
-}
-.history-empty i { font-size: 36px; display: block; margin-bottom: 12px; opacity: .5; }
+.history-empty { text-align: center; padding: 64px 24px; color: var(--text3); }
+.history-empty i { font-size: 36px; display: block; margin-bottom: 14px; opacity: .4; }
 .history-empty p { font-size: 13px; }
 
-/* ══════════════════════════════════════
-   RECEIVE
-   ══════════════════════════════════════ */
+/* ─── RECEIVE ─── */
 #receive-view { display: none; }
-
 .receive-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 40px 32px;
-  margin-bottom: 12px;
-  text-align: center;
-  box-shadow: var(--shadow-sm);
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r);
+  padding: 52px 36px; margin-bottom: 14px; text-align: center; box-shadow: var(--shadow-sm);
 }
-.receive-icon { font-size: 40px; color: var(--color-emerald); margin-bottom: 20px; display: block; }
-.receive-title { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
-.receive-sub { font-size: 13px; color: var(--text2); margin-bottom: 24px; line-height: 1.6; }
+.receive-icon { font-size: 42px; color: var(--emerald); margin-bottom: 24px; display: block; }
+.receive-title { font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+.receive-sub { font-size: 13px; color: var(--text2); margin-bottom: 28px; line-height: 1.7; }
 .receive-filename {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text);
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 10px 16px;
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
+  font-size: 14px; font-weight: 500; color: var(--text); background: var(--surface2);
+  border: 1px solid var(--border); border-radius: var(--r-sm); padding: 12px 18px;
+  margin-bottom: 24px; display: flex; align-items: center; justify-content: center; gap: 8px;
 }
-.receive-filename i { color: var(--color-coral); }
-
+.receive-filename i { color: var(--coral); }
 .decrypt-btn {
-  width: 100%;
-  padding: 13px;
-  background: var(--color-emerald);
-  color: #fff;
-  border: none;
-  border-radius: var(--radius-sm);
-  font-size: 15px;
-  font-weight: 600;
-  font-family: var(--font);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 9px;
-  transition: background .15s;
+  width: 100%; padding: 14px; background: var(--emerald); color: #fff; border: none;
+  border-radius: var(--r-sm); font-size: 15px; font-weight: 600; font-family: var(--font);
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 9px; transition: background .15s;
 }
-.decrypt-btn:hover { background: var(--green-d); }
+.decrypt-btn:hover { background: #004f51; }
 .decrypt-btn:disabled { opacity: .6; cursor: not-allowed; }
-
-.receive-progress { display: none; margin-top: 14px; }
+.receive-progress { display: none; margin-top: 16px; }
+.progress-bar { height: 5px; background: var(--surface2); border-radius: 99px; overflow: hidden; margin-bottom: 8px; }
 .receive-error {
-  display: none;
-  padding: 10px 14px;
-  background: var(--red-l);
-  border: 1px solid var(--red-m);
-  border-radius: var(--radius-sm);
-  font-size: 13px;
-  color: var(--color-coral-dark);
-  margin-top: 14px;
-  text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
+  padding: 11px 14px; background: var(--red-l); border: 1px solid var(--red-m);
+  border-radius: var(--r-sm); font-size: 13px; color: var(--coral-dark); margin-top: 16px;
+  text-align: center; display: none; align-items: center; justify-content: center; gap: 7px;
 }
 .receive-success {
-  display: none;
-  padding: 10px 14px;
-  background: var(--green-l);
-  border: 1px solid var(--green-m);
-  border-radius: var(--radius-sm);
-  font-size: 13px;
-  color: var(--color-emerald);
-  margin-top: 14px;
-  text-align: center;
-  font-weight: 500;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
+  padding: 11px 14px; background: var(--green-l); border: 1px solid var(--green-m);
+  border-radius: var(--r-sm); font-size: 13px; color: var(--emerald); margin-top: 16px;
+  text-align: center; display: none; font-weight: 500; align-items: center; justify-content: center; gap: 7px;
 }
-
 .back-btn {
-  width: 100%;
-  padding: 11px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text2);
-  font-family: var(--font);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  transition: all .12s;
-  box-shadow: var(--shadow-sm);
+  width: 100%; padding: 13px; border: 1px solid var(--border); border-radius: var(--r-sm);
+  background: var(--surface); cursor: pointer; font-size: 13px; font-weight: 500; color: var(--text2);
+  font-family: var(--font); display: flex; align-items: center; justify-content: center;
+  gap: 7px; transition: all .12s; box-shadow: var(--shadow-sm);
 }
-.back-btn:hover { background: var(--surface2); color: var(--color-navy); border-color: var(--border2); }
+.back-btn:hover { background: var(--surface2); color: var(--navy); border-color: var(--border2); }
 </style>
 </head>
 <body>
 
-<!-- ══════════════════════════════════════
-     LOGIN
-     ══════════════════════════════════════ -->
+<!-- LOGIN -->
 <div id="login-view">
   <div class="login-card">
     <div class="login-logo">Share<span>Lines</span></div>
@@ -1088,22 +702,19 @@ input[type="file"] { display: none; }
     </button>
     <div class="login-security">
       <i class="fa-solid fa-shield-halved"></i>
-      <span>Vérifié par Cloudflare Workers · AES-256-GCM</span>
+      <span>Cloudflare Workers · AES-256</span>
     </div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════
-     APP
-     ══════════════════════════════════════ -->
+<!-- APP -->
 <div class="app" id="app-view" style="display:none">
   <div class="header">
     <div>
       <div class="logo">Share<span>Lines</span></div>
       <div class="tagline">
         <i class="fa-solid fa-circle"></i>AES-256
-        <i class="fa-solid fa-circle"></i>Multipart
-        <i class="fa-solid fa-circle"></i>Reprise auto
+        <i class="fa-solid fa-circle"></i>Backblaze B2
       </div>
     </div>
     <button class="logout-btn" onclick="doLogout()">
@@ -1121,7 +732,7 @@ input[type="file"] { display: none; }
     </button>
   </div>
 
-  <!-- ── UPLOAD VIEW ── -->
+  <!-- UPLOAD VIEW -->
   <div id="upload-view">
     <div class="resume-banner" id="resume-banner">
       <i class="fa-solid fa-bolt"></i>
@@ -1134,7 +745,7 @@ input[type="file"] { display: none; }
       <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()" role="button" tabindex="0">
         <i class="fa-solid fa-cloud-arrow-up drop-icon"></i>
         <p><strong>Clique ou dépose</strong> ton fichier ici</p>
-        <p class="drop-hint">AES-256-GCM · Chunks 50 MB · 6 en parallèle · Reprise auto</p>
+        <p class="drop-hint">Chiffrement AES-256 · Backblaze B2 · stockage privé chiffré</p>
       </div>
       <input type="file" id="file-input">
       <div class="file-preview" id="file-preview">
@@ -1143,8 +754,8 @@ input[type="file"] { display: none; }
         <span class="file-size" id="file-size">—</span>
         <button class="file-remove" onclick="removeFile()"><i class="fa-solid fa-xmark"></i></button>
       </div>
-      <div class="provider-badge backblaze" id="badge-backblaze" style="display:none">
-        <i class="fa-solid fa-cloud"></i> Backblaze B2 · stockage privé chiffré
+      <div class="provider-badge" id="badge-backblaze">
+        <i class="fa-solid fa-lock"></i> Backblaze B2 · stockage privé chiffré · AES-256
       </div>
     </div>
 
@@ -1166,10 +777,6 @@ input[type="file"] { display: none; }
           <span class="toggle-slider"></span>
         </label>
       </div>
-      <div class="security-note">
-        <i class="fa-solid fa-lock"></i>
-        <p><strong>Zéro fuite.</strong> AES-256-GCM chunk par chunk · IV unique par chunk · Clé dans le <code>#</code> uniquement · Upload direct client → B2 · Worker ne voit jamais le contenu.</p>
-      </div>
     </div>
 
     <button class="send-btn" id="send-btn" onclick="startUpload()" disabled>
@@ -1177,17 +784,14 @@ input[type="file"] { display: none; }
     </button>
 
     <div class="progress-area" id="progress-area">
-      <!-- Phase -->
       <div class="progress-phase">
         <div class="progress-phase-dot" id="progress-dot"></div>
         <span class="progress-phase-label" id="status-text">En attente…</span>
         <span class="progress-pct" id="progress-pct">0%</span>
       </div>
-      <!-- Barre -->
       <div class="progress-track">
         <div class="progress-fill" id="progress-fill"></div>
       </div>
-      <!-- Métriques -->
       <div class="progress-metrics">
         <div class="metric-cell">
           <span class="metric-label">Envoyé</span>
@@ -1198,16 +802,14 @@ input[type="file"] { display: none; }
           <span class="metric-value highlight" id="metric-speed">—</span>
         </div>
         <div class="metric-cell">
-          <span class="metric-label">Temps restant</span>
+          <span class="metric-label">Restant</span>
           <span class="metric-value highlight-coral" id="metric-eta">—</span>
         </div>
       </div>
-      <!-- Chunks (multipart only) -->
       <div class="chunks-section" id="chunks-section">
         <div class="chunks-label">Chunks</div>
         <div class="chunks-grid" id="chunks-grid"></div>
       </div>
-      <!-- Hidden spans for JS compat -->
       <span class="status-text" id="status-text-hidden"></span>
       <span class="progress-speed" id="progress-speed"></span>
     </div>
@@ -1239,7 +841,7 @@ input[type="file"] { display: none; }
     </div>
   </div>
 
-  <!-- ── HISTORY VIEW ── -->
+  <!-- HISTORY VIEW -->
   <div id="history-view">
     <div class="history-header">
       <span class="history-count" id="history-count">0 partage</span>
@@ -1254,12 +856,12 @@ input[type="file"] { display: none; }
     </div>
   </div>
 
-  <!-- ── RECEIVE VIEW ── -->
+  <!-- RECEIVE VIEW -->
   <div id="receive-view">
     <div class="receive-card">
       <i class="fa-solid fa-lock receive-icon"></i>
       <div class="receive-title">Fichier chiffré reçu</div>
-      <p class="receive-sub">Déchiffrement AES-256-GCM local dans ton navigateur.<br>Rien n'est envoyé à un serveur.</p>
+      <p class="receive-sub">Déchiffrement AES-256 local dans ton navigateur.<br>Rien n'est envoyé à un serveur.</p>
       <div class="receive-filename" id="receive-filename">
         <i class="fa-solid fa-file"></i> —
       </div>
@@ -1272,22 +874,19 @@ input[type="file"] { display: none; }
       </div>
       <div class="receive-error" id="receive-error"></div>
       <div class="receive-success" id="receive-success">
-        <i class="fa-solid fa-circle-check"></i> Fichier déchiffré et téléchargé !
+        <i class="fa-solid fa-circle-check"></i> Téléchargement &amp; déchiffrement réussis
       </div>
     </div>
-    <button class="back-btn" onclick="switchTab('upload')">
-      <i class="fa-solid fa-arrow-left"></i> Retour à l'envoi
+    <button class="back-btn" onclick="location.hash=''; location.reload()">
+      <i class="fa-solid fa-arrow-left"></i> Retour
     </button>
   </div>
 </div>
 
 <script>
-// ══════════════════════════════════════════
-//  CONFIG
-// ══════════════════════════════════════════
+// ══ CONFIG ══
 const WORKER_URL  = 'https://sharelines-proxy.kurtbob349.workers.dev';
 const SHARE_BASE  = 'https://outils-online.github.io/Acceuil/pages/Share-Lines.html';
-
 const CHUNK_SIZE          = 50 * 1024 * 1024;
 const PARALLEL_CHUNKS     = 6;
 const MULTIPART_THRESHOLD = 100 * 1024 * 1024;
@@ -1301,9 +900,7 @@ let currentFileKey = null;
 let uploadAborted  = false;
 const expiryLabels = {'1h':'1 heure','24h':'24 heures','7d':'7 jours','30d':'30 jours'};
 
-// ══════════════════════════════════════════
-//  INIT
-// ══════════════════════════════════════════
+// ══ INIT ══
 window.addEventListener('load', () => {
   const hash = window.location.hash;
   if (hash && hash.includes('k=') && hash.includes('bk=')) {
@@ -1315,9 +912,7 @@ window.addEventListener('load', () => {
   checkSession();
 });
 
-// ══════════════════════════════════════════
-//  AUTH
-// ══════════════════════════════════════════
+// ══ AUTH ══
 function checkSession() {
   const s = sessionStorage.getItem('sl_session');
   const p = sessionStorage.getItem('sl_pwd');
@@ -1374,9 +969,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && document.getElementById('login-view').style.display !== 'none') doLogin();
 });
 
-// ══════════════════════════════════════════
-//  TABS
-// ══════════════════════════════════════════
+// ══ TABS ══
 function switchTab(tab) {
   ['upload','history','receive'].forEach(t => {
     document.getElementById(t+'-view').style.display = t === tab ? 'block' : 'none';
@@ -1386,9 +979,7 @@ function switchTab(tab) {
   if (tab === 'history') renderHistory();
 }
 
-// ══════════════════════════════════════════
-//  FILE SELECT
-// ══════════════════════════════════════════
+// ══ FILE SELECT ══
 const dropZone  = document.getElementById('drop-zone');
 const fileInput = document.getElementById('file-input');
 dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
@@ -1413,17 +1004,13 @@ function removeFile() {
   document.getElementById('send-btn').disabled = true;
 }
 
-// ══════════════════════════════════════════
-//  EXPIRY
-// ══════════════════════════════════════════
+// ══ EXPIRY ══
 function setExpiry(val) {
   currentExpiry = val;
   ['1h','24h','7d','30d'].forEach(e => document.getElementById('exp-'+e).classList.toggle('active', e===val));
 }
 
-// ══════════════════════════════════════════
-//  UTILS
-// ══════════════════════════════════════════
+// ══ UTILS ══
 function formatSize(b) {
   if (b<1024) return b+' B'; if (b<1048576) return Math.round(b/1024)+' KB';
   if (b<1073741824) return (b/1048576).toFixed(1)+' MB'; return (b/1073741824).toFixed(2)+' GB';
@@ -1444,9 +1031,7 @@ function getFileIcon(n) {
 }
 function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-// ══════════════════════════════════════════
-//  CRYPTO
-// ══════════════════════════════════════════
+// ══ CRYPTO ══
 async function deriveChunkIV(keyBytes, idx) {
   const info = new TextEncoder().encode('sharelines-chunk-'+idx);
   const k = await crypto.subtle.importKey('raw', keyBytes, 'HKDF', false, ['deriveBits']);
@@ -1466,9 +1051,7 @@ async function decryptChunk(keyBytes, idx, encData) {
   return crypto.subtle.decrypt({name:'AES-GCM',iv}, key, encData.slice(12));
 }
 
-// ══════════════════════════════════════════
-//  RESUME
-// ══════════════════════════════════════════
+// ══ RESUME ══
 function saveResume(s) { try { localStorage.setItem(RESUME_KEY, JSON.stringify(s)); } catch(e){} }
 function loadResume()  { try { return JSON.parse(localStorage.getItem(RESUME_KEY)); } catch(e){ return null; } }
 function clearResume() { localStorage.removeItem(RESUME_KEY); }
@@ -1503,9 +1086,7 @@ async function resumeUpload() {
   finishUpload(s.objectKey, keyBytes);
 }
 
-// ══════════════════════════════════════════
-//  UPLOAD
-// ══════════════════════════════════════════
+// ══ UPLOAD ══
 async function startUpload() {
   if (!selectedFile) return;
   uploadAborted = false;
@@ -1535,19 +1116,13 @@ async function startUpload() {
   }
 }
 
-// ══════════════════════════════════════════
-//  PROGRESS ENGINE
-// ══════════════════════════════════════════
-let _progressState = {
-  phase: 'idle', pct: 0, bytesSent: 0, totalBytes: 0,
-  speed: 0, eta: Infinity, label: 'En attente…'
-};
+// ══ PROGRESS ENGINE ══
+let _progressState = { phase:'idle', pct:0, bytesSent:0, totalBytes:0, speed:0, eta:Infinity, label:'En attente…' };
 
 function initProgress(totalBytes) {
   _progressState = { phase:'prep', pct:0, bytesSent:0, totalBytes, speed:0, eta:Infinity, label:'Préparation…' };
   const fill = document.getElementById('progress-fill');
-  fill.className = 'progress-fill';
-  fill.style.width = '0%';
+  fill.className = 'progress-fill'; fill.style.width = '0%';
   document.getElementById('progress-dot').className = 'progress-phase-dot';
   document.getElementById('chunks-section').style.display = 'none';
   document.getElementById('metric-sent').textContent  = '—';
@@ -1560,58 +1135,33 @@ function _renderProgress() {
   const fill = document.getElementById('progress-fill');
   const dot  = document.getElementById('progress-dot');
   fill.style.width = Math.min(100, s.pct) + '%';
-  if (s.phase === 'done') {
-    fill.className = 'progress-fill phase-done';
-    dot.className  = 'progress-phase-dot done';
-  } else if (s.phase === 'upload') {
-    fill.className = 'progress-fill phase-upload';
-  } else {
-    fill.className = 'progress-fill';
-  }
+  if (s.phase === 'done') { fill.className = 'progress-fill phase-done'; dot.className = 'progress-phase-dot done'; }
+  else if (s.phase === 'upload') { fill.className = 'progress-fill phase-upload'; }
+  else { fill.className = 'progress-fill'; }
   document.getElementById('status-text').textContent = s.label;
   document.getElementById('progress-pct').textContent = Math.round(Math.min(100, s.pct)) + '%';
-  const sent = s.totalBytes > 0
-    ? `${formatSize(s.bytesSent)} / ${formatSize(s.totalBytes)}`
-    : (s.bytesSent > 0 ? formatSize(s.bytesSent) : '—');
+  const sent = s.totalBytes > 0 ? `${formatSize(s.bytesSent)} / ${formatSize(s.totalBytes)}` : (s.bytesSent > 0 ? formatSize(s.bytesSent) : '—');
   document.getElementById('metric-sent').textContent  = sent;
   document.getElementById('metric-speed').textContent = s.speed > 0 ? formatSize(Math.round(s.speed)) + '/s' : '—';
   document.getElementById('metric-eta').textContent   = s.speed > 0 && s.eta < Infinity ? formatTime(s.eta) : '—';
 }
 
-function setProgressPrep(label, pct) {
-  _progressState.phase = 'prep';
-  _progressState.label = label;
-  _progressState.pct   = pct;
-  _renderProgress();
-}
-
+function setProgressPrep(label, pct) { _progressState.phase='prep'; _progressState.label=label; _progressState.pct=pct; _renderProgress(); }
 function setProgressUpload(bytesSent, totalBytes, speed, label) {
-  _progressState.phase      = 'upload';
-  _progressState.bytesSent  = bytesSent;
-  _progressState.totalBytes = totalBytes;
-  _progressState.speed      = speed;
-  _progressState.eta        = speed > 0 ? (totalBytes - bytesSent) / speed : Infinity;
-  _progressState.pct        = totalBytes > 0 ? Math.min(98, (bytesSent / totalBytes) * 94 + 4) : _progressState.pct;
-  _progressState.label      = label || 'Upload en cours…';
-  _renderProgress();
+  _progressState.phase='upload'; _progressState.bytesSent=bytesSent; _progressState.totalBytes=totalBytes;
+  _progressState.speed=speed; _progressState.eta=speed>0?(totalBytes-bytesSent)/speed:Infinity;
+  _progressState.pct=totalBytes>0?Math.min(98,(bytesSent/totalBytes)*94+4):_progressState.pct;
+  _progressState.label=label||'Upload en cours…'; _renderProgress();
 }
-
-// setStatus gardé pour compat interne
-function setStatus(txt, pct) {
-  _progressState.label = txt;
-  _progressState.pct   = pct;
-  _renderProgress();
-}
-
+function setStatus(txt, pct) { _progressState.label=txt; _progressState.pct=pct; _renderProgress(); }
 const sleep = ms => new Promise(r=>setTimeout(r,ms));
 
 function finishUpload(objKey, keyBytes) {
   const keyHex   = Array.from(keyBytes).map(b=>b.toString(16).padStart(2,'0')).join('');
   const magicLink = SHARE_BASE+'#k='+keyHex+'&n='+encodeURIComponent(selectedFile.name)+'&p=backblaze&bk='+encodeURIComponent(objKey)+'&chunks=1';
   currentFileKey = objKey;
-  _progressState.phase = 'done'; _progressState.pct = 100; _progressState.label = 'Terminé !';
-  _progressState.speed = 0; _progressState.eta = 0;
-  _renderProgress();
+  _progressState.phase='done'; _progressState.pct=100; _progressState.label='Terminé !';
+  _progressState.speed=0; _progressState.eta=0; _renderProgress();
   const autoDestroy = document.getElementById('autodestroy-toggle').checked;
   saveToHistory({id:Date.now(),filename:selectedFile.name,size:selectedFile.size,
     provider:'backblaze',expiry:currentExpiry,autoDestroy,link:magicLink,
@@ -1622,40 +1172,25 @@ function finishUpload(objKey, keyBytes) {
 
 async function doSimpleUpload(file, objKey, keyBytes) {
   initProgress(file.size);
-
   setProgressPrep('Lecture du fichier…', 5);
   const buf = await file.arrayBuffer();
-
   setProgressPrep('Chiffrement AES-256-GCM…', 15);
   const enc = await encryptChunk(keyBytes, 0, buf);
-
   setProgressPrep('Obtention URL presignée…', 25);
   const r = await fetch(WORKER_URL+'/b2-presign?key='+encodeURIComponent(objKey)+'&expires=3600',
     {method:'POST',headers:{'X-App-Password':appPassword}});
   const d = await r.json();
   if (!d.success) throw new Error(d.message||'Presign échoué');
-
   setProgressPrep('Connexion Backblaze…', 30);
-
-  // EWMA speed tracking
-  let speedEwma = 0;
-  const ALPHA   = 0.3;
-  let lastLoaded= 0;
-  let lastTime  = Date.now();
-
+  let speedEwma=0; const ALPHA=0.3; let lastLoaded=0; let lastTime=Date.now();
   await new Promise((res, rej) => {
     const xhr = new XMLHttpRequest();
     xhr.open('PUT', d.presignedPutUrl);
     xhr.setRequestHeader('Content-Type','application/octet-stream');
     xhr.upload.onprogress = e => {
       if (!e.lengthComputable) return;
-      const now = Date.now();
-      const dt  = (now - lastTime) / 1000;
-      if (dt > 0.08) {
-        const instant = (e.loaded - lastLoaded) / dt;
-        speedEwma = speedEwma === 0 ? instant : speedEwma * (1-ALPHA) + instant * ALPHA;
-        lastLoaded = e.loaded; lastTime = now;
-      }
+      const now=Date.now(); const dt=(now-lastTime)/1000;
+      if (dt>0.08) { const instant=(e.loaded-lastLoaded)/dt; speedEwma=speedEwma===0?instant:speedEwma*(1-ALPHA)+instant*ALPHA; lastLoaded=e.loaded; lastTime=now; }
       setProgressUpload(e.loaded, e.total, speedEwma, 'Upload vers Backblaze…');
     };
     xhr.onload  = () => { if(xhr.status<300) res(); else rej(new Error('B2 HTTP '+xhr.status)); };
@@ -1667,14 +1202,9 @@ async function doSimpleUpload(file, objKey, keyBytes) {
 async function doMultipartUpload(file, objKey, resume, keyBytes) {
   const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
   initProgress(file.size);
-
-  const grid    = document.getElementById('chunks-grid');
-  const section = document.getElementById('chunks-section');
-  grid.innerHTML = ''; section.style.display = 'block';
-  for (let i=0;i<totalChunks;i++) {
-    const d=document.createElement('div'); d.className='chunk-dot'; d.id='ck-'+i; grid.appendChild(d);
-  }
-
+  const grid=document.getElementById('chunks-grid'); const section=document.getElementById('chunks-section');
+  grid.innerHTML=''; section.style.display='block';
+  for (let i=0;i<totalChunks;i++) { const d=document.createElement('div'); d.className='chunk-dot'; d.id='ck-'+i; grid.appendChild(d); }
   let uploadId, completedParts;
   if (resume) {
     uploadId=resume.uploadId; completedParts=[...resume.completedParts];
@@ -1682,140 +1212,81 @@ async function doMultipartUpload(file, objKey, resume, keyBytes) {
     setProgressPrep(`Reprise — ${completedParts.length}/${totalChunks} chunks restaurés`, 5);
   } else {
     setProgressPrep('Démarrage multipart…', 3);
-    const r=await fetch(WORKER_URL+'/b2-multipart-start?key='+encodeURIComponent(objKey),
-      {method:'POST',headers:{'X-App-Password':appPassword}});
+    const r=await fetch(WORKER_URL+'/b2-multipart-start?key='+encodeURIComponent(objKey),{method:'POST',headers:{'X-App-Password':appPassword}});
     const d=await r.json();
     if(!d.success) throw new Error(d.message||'Multipart start échoué');
     uploadId=d.uploadId; completedParts=[];
-    saveResume({objectKey:objKey,uploadId,filename:file.name,fileSize:file.size,
-      totalChunks,completedParts,masterKeyBytes:Array.from(keyBytes)});
+    saveResume({objectKey:objKey,uploadId,filename:file.name,fileSize:file.size,totalChunks,completedParts,masterKeyBytes:Array.from(keyBytes)});
   }
-
-  const done    = new Set(completedParts.map(p=>p.partNumber));
-  const pending = [];
+  const done=new Set(completedParts.map(p=>p.partNumber));
+  const pending=[];
   for (let i=0;i<totalChunks;i++) if(!done.has(i+1)) pending.push(i);
-
-  // Bytes confirmed done (from previously completed chunks)
-  let bytesConfirmed = completedParts.reduce((acc, p) => {
-    const idx = p.partNumber - 1;
-    return acc + Math.min(CHUNK_SIZE, file.size - idx * CHUNK_SIZE);
-  }, 0);
-
-  // Per-chunk in-flight bytes (updated by XHR onprogress)
-  const inFlight = {};
-  let speedEwma  = 0;
-  const ALPHA    = 0.25;
-  let lastTotal  = bytesConfirmed;
-  let lastTime   = Date.now();
-
+  let bytesConfirmed=completedParts.reduce((acc,p)=>{const idx=p.partNumber-1;return acc+Math.min(CHUNK_SIZE,file.size-idx*CHUNK_SIZE);},0);
+  const inFlight={}; let speedEwma=0; const ALPHA=0.25; let lastTotal=bytesConfirmed; let lastTime=Date.now();
   function tick() {
-    const now = Date.now();
-    const dt  = (now - lastTime) / 1000;
-    if (dt > 0.1) {
-      const inflight  = Object.values(inFlight).reduce((a,b)=>a+b, 0);
-      const total     = bytesConfirmed + inflight;
-      const delta     = total - lastTotal;
-      if (delta > 0) {
-        const instant = delta / dt;
-        speedEwma = speedEwma === 0 ? instant : speedEwma * (1-ALPHA) + instant * ALPHA;
-        lastTotal = total; lastTime = now;
-      }
-      const label = `${completedParts.length}/${totalChunks} chunks envoyés`;
-      setProgressUpload(bytesConfirmed + inflight, file.size, speedEwma, label);
-    }
+    const now=Date.now(); const dt=(now-lastTime)/1000;
+    if(dt>0.1){ const inflight=Object.values(inFlight).reduce((a,b)=>a+b,0); const total=bytesConfirmed+inflight; const delta=total-lastTotal;
+      if(delta>0){ const instant=delta/dt; speedEwma=speedEwma===0?instant:speedEwma*(1-ALPHA)+instant*ALPHA; lastTotal=total; lastTime=now; }
+      setProgressUpload(bytesConfirmed+inflight,file.size,speedEwma,`${completedParts.length}/${totalChunks} chunks envoyés`); }
   }
-
   for (let i=0;i<pending.length;i+=PARALLEL_CHUNKS) {
-    if (uploadAborted) throw new Error('Upload annulé');
-    const batch = pending.slice(i, i+PARALLEL_CHUNKS);
-
-    await Promise.all(batch.map(async idx => {
-      const dot=document.getElementById('ck-'+idx);
-      if(dot) dot.className='chunk-dot uploading';
-      inFlight[idx] = 0;
-
-      const start=idx*CHUNK_SIZE, end=Math.min(start+CHUNK_SIZE,file.size);
-      const chunkSize = end - start;
-      const buf  = await file.slice(start,end).arrayBuffer();
-      const enc  = await encryptChunk(keyBytes,idx,buf);
-
-      const pr=await fetch(WORKER_URL+`/b2-multipart-presign?key=${encodeURIComponent(objKey)}&uploadId=${encodeURIComponent(uploadId)}&part=${idx+1}`,
-        {method:'POST',headers:{'X-App-Password':appPassword}});
-      const pd=await pr.json();
-      if(!pd.success) throw new Error(`Presign chunk ${idx+1}: ${pd.message}`);
-
+    if(uploadAborted) throw new Error('Upload annulé');
+    const batch=pending.slice(i,i+PARALLEL_CHUNKS);
+    await Promise.all(batch.map(async idx=>{
+      const dot=document.getElementById('ck-'+idx); if(dot) dot.className='chunk-dot uploading'; inFlight[idx]=0;
+      const start=idx*CHUNK_SIZE,end=Math.min(start+CHUNK_SIZE,file.size); const chunkSize=end-start;
+      const buf=await file.slice(start,end).arrayBuffer(); const enc=await encryptChunk(keyBytes,idx,buf);
+      const pr=await fetch(WORKER_URL+`/b2-multipart-presign?key=${encodeURIComponent(objKey)}&uploadId=${encodeURIComponent(uploadId)}&part=${idx+1}`,{method:'POST',headers:{'X-App-Password':appPassword}});
+      const pd=await pr.json(); if(!pd.success) throw new Error(`Presign chunk ${idx+1}: ${pd.message}`);
       let etag;
       for(let attempt=0;attempt<3;attempt++){
-        try {
-          inFlight[idx] = 0; // reset on retry
-          etag = await new Promise((res,rej) => {
-            const xhr=new XMLHttpRequest();
-            xhr.open('PUT',pd.presignedUrl);
-            xhr.setRequestHeader('Content-Type','application/octet-stream');
-            xhr.upload.onprogress = e => { if(e.lengthComputable){ inFlight[idx]=e.loaded; tick(); } };
-            xhr.onload=()=>{ if(xhr.status<300){ res(xhr.getResponseHeader('ETag')||xhr.getResponseHeader('etag')||''); } else rej(new Error('Chunk HTTP '+xhr.status)); };
-            xhr.onerror=()=>rej(new Error('Erreur réseau chunk'));
-            xhr.send(new Blob([enc]));
+        try{
+          inFlight[idx]=0;
+          etag=await new Promise((res,rej)=>{
+            const xhr=new XMLHttpRequest(); xhr.open('PUT',pd.presignedUrl); xhr.setRequestHeader('Content-Type','application/octet-stream');
+            xhr.upload.onprogress=e=>{if(e.lengthComputable){inFlight[idx]=e.loaded;tick();}};
+            xhr.onload=()=>{if(xhr.status<300){res(xhr.getResponseHeader('ETag')||xhr.getResponseHeader('etag')||'');}else rej(new Error('Chunk HTTP '+xhr.status));};
+            xhr.onerror=()=>rej(new Error('Erreur réseau chunk')); xhr.send(new Blob([enc]));
           });
           break;
-        }
-        catch(e){ if(attempt===2) throw e; await sleep(1000*(attempt+1)); }
+        }catch(e){if(attempt===2) throw e; await sleep(1000*(attempt+1));}
       }
-
-      completedParts.push({partNumber:idx+1,etag});
-      bytesConfirmed += chunkSize;
-      delete inFlight[idx];
+      completedParts.push({partNumber:idx+1,etag}); bytesConfirmed+=chunkSize; delete inFlight[idx];
       if(dot) dot.className='chunk-dot done';
-      saveResume({objectKey:objKey,uploadId,filename:file.name,fileSize:file.size,
-        totalChunks,completedParts,masterKeyBytes:Array.from(keyBytes)});
-      tick();
+      saveResume({objectKey:objKey,uploadId,filename:file.name,fileSize:file.size,totalChunks,completedParts,masterKeyBytes:Array.from(keyBytes)}); tick();
     }));
   }
-
   setProgressPrep('Finalisation multipart…', 98);
   const cr=await fetch(WORKER_URL+`/b2-multipart-complete?key=${encodeURIComponent(objKey)}&uploadId=${encodeURIComponent(uploadId)}`,
-    {method:'POST',headers:{'X-App-Password':appPassword,'Content-Type':'application/json'},
-     body:JSON.stringify({parts:completedParts})});
-  const cd=await cr.json();
-  if(!cd.success) throw new Error(cd.message||'Complete échoué');
+    {method:'POST',headers:{'X-App-Password':appPassword,'Content-Type':'application/json'},body:JSON.stringify({parts:completedParts})});
+  const cd=await cr.json(); if(!cd.success) throw new Error(cd.message||'Complete échoué');
 }
 
-// uploadChunkXHR kept for compat (resume path)
 async function uploadChunkXHR(url, data) {
   return new Promise((res,rej)=>{
-    const xhr=new XMLHttpRequest();
-    xhr.open('PUT',url);
-    xhr.setRequestHeader('Content-Type','application/octet-stream');
-    xhr.onload=()=>{ if(xhr.status<300){ res(xhr.getResponseHeader('ETag')||xhr.getResponseHeader('etag')||''); } else rej(new Error('Chunk HTTP '+xhr.status)); };
-    xhr.onerror=()=>rej(new Error('Erreur réseau chunk'));
-    xhr.send(new Blob([data]));
+    const xhr=new XMLHttpRequest(); xhr.open('PUT',url); xhr.setRequestHeader('Content-Type','application/octet-stream');
+    xhr.onload=()=>{if(xhr.status<300){res(xhr.getResponseHeader('ETag')||xhr.getResponseHeader('etag')||'');}else rej(new Error('Chunk HTTP '+xhr.status));};
+    xhr.onerror=()=>rej(new Error('Erreur réseau chunk')); xhr.send(new Blob([data]));
   });
 }
 
-// ══════════════════════════════════════════
-//  DELETE
-// ══════════════════════════════════════════
+// ══ DELETE ══
 async function deleteBackblaze(k) {
   if(!appPassword) appPassword=sessionStorage.getItem('sl_pwd')||'';
-  const r=await fetch(WORKER_URL+'/b2-delete?key='+encodeURIComponent(k),
-    {method:'DELETE',headers:{'X-App-Password':appPassword}});
+  const r=await fetch(WORKER_URL+'/b2-delete?key='+encodeURIComponent(k),{method:'DELETE',headers:{'X-App-Password':appPassword}});
   if(!r.ok) throw new Error('Delete HTTP '+r.status);
 }
 
-// ══════════════════════════════════════════
-//  RESULT
-// ══════════════════════════════════════════
+// ══ RESULT ══
 function showResult(link, fileKey, autoDestroy) {
   document.getElementById('progress-area').style.display='none';
   document.getElementById('result-view').style.display='block';
   document.getElementById('share-link').textContent=link;
   const pills=[
     {icon:'fa-lock',label:'AES-256-GCM'},
-    {icon:'fa-shuffle',label:'Nom randomisé'},
     {icon:'fa-cloud',label:'Backblaze B2'},
-    autoDestroy ? {icon:'fa-bomb',label:'Auto-détruit'} : {icon:'fa-clock',label:expiryLabels[currentExpiry]},
-    {icon:'fa-key',label:'Clé hors serveur'},
-    {icon:'fa-bolt',label:'Multipart'}
+    autoDestroy?{icon:'fa-bomb',label:'Auto-détruit'}:{icon:'fa-clock',label:expiryLabels[currentExpiry]},
+    {icon:'fa-key',label:'Clé hors serveur'}
   ];
   document.getElementById('meta-pills').innerHTML=pills.map(p=>`<span class="pill"><i class="fa-solid ${p.icon}"></i>${p.label}</span>`).join('');
   const db=document.getElementById('destroy-now-btn');
@@ -1834,12 +1305,11 @@ async function destroyNow() {
   const btn=document.getElementById('destroy-now-btn');
   const key=btn.dataset.key;
   if(!key||!confirm('Détruire définitivement ?')) return;
-  btn.disabled=true;
-  btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i>';
+  btn.disabled=true; btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i>';
   try {
     await deleteBackblaze(key);
     btn.innerHTML='<i class="fa-solid fa-check"></i> Détruit';
-    btn.style.background='var(--color-coral)'; btn.style.color='white';
+    btn.style.background='var(--coral)'; btn.style.color='white';
     markHistoryDestroyed(key); updateBadge();
   } catch(e){ btn.innerHTML='<i class="fa-solid fa-xmark"></i> Erreur'; btn.disabled=false; }
 }
@@ -1855,57 +1325,47 @@ function resetUpload() {
   setExpiry('24h');
 }
 
-// ══════════════════════════════════════════
-//  RECEIVE
-// ══════════════════════════════════════════
+// ══ RECEIVE ══
 function showReceiveView() {
   ['upload-view','history-view'].forEach(id=>document.getElementById(id).style.display='none');
   document.getElementById('receive-view').style.display='block';
   ['tab-upload','tab-history'].forEach(id=>document.getElementById(id).classList.remove('active'));
-  const params   = new URLSearchParams(window.location.hash.slice(1));
-  const filename = decodeURIComponent(params.get('n')||'fichier.bin');
-  const icon = getFileIcon(filename);
+  const params=new URLSearchParams(window.location.hash.slice(1));
+  const filename=decodeURIComponent(params.get('n')||'fichier.bin');
+  const icon=getFileIcon(filename);
   document.getElementById('receive-filename').innerHTML=`<i class="fa-solid ${icon}"></i> ${escHtml(filename)}`;
 }
 
 async function startDecrypt() {
   const btn=document.getElementById('decrypt-btn');
-  btn.disabled=true;
-  btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Téléchargement…';
+  btn.disabled=true; btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Téléchargement…';
   document.getElementById('receive-progress').style.display='block';
   document.getElementById('receive-error').style.display='none';
   document.getElementById('receive-success').style.display='none';
   try {
-    const params   = new URLSearchParams(window.location.hash.slice(1));
-    const keyHex   = params.get('k');
-    const filename = decodeURIComponent(params.get('n')||'fichier.bin');
-    const b2Key    = params.get('bk');
-    if (!keyHex||!b2Key) throw new Error('Lien invalide — paramètres manquants');
-    const keyBytes = new Uint8Array(keyHex.match(/.{2}/g).map(h=>parseInt(h,16)));
+    const params=new URLSearchParams(window.location.hash.slice(1));
+    const keyHex=params.get('k'); const filename=decodeURIComponent(params.get('n')||'fichier.bin'); const b2Key=params.get('bk');
+    if(!keyHex||!b2Key) throw new Error('Lien invalide — paramètres manquants');
+    const keyBytes=new Uint8Array(keyHex.match(/.{2}/g).map(h=>parseInt(h,16)));
     setRecvStatus('Génération lien sécurisé…', 20);
     const pr=await fetch(WORKER_URL+'/b2-download?key='+encodeURIComponent(b2Key)+'&expires=3600');
     if(!pr.ok) throw new Error('Worker HTTP '+pr.status);
-    const pd=await pr.json();
-    if(!pd.success) throw new Error(pd.message||'Presign GET échoué');
+    const pd=await pr.json(); if(!pd.success) throw new Error(pd.message||'Presign GET échoué');
     setRecvStatus('Téléchargement…', 40);
-    const fr=await fetch(pd.presignedGetUrl);
-    if(!fr.ok) throw new Error('Téléchargement échoué ('+fr.status+')');
+    const fr=await fetch(pd.presignedGetUrl); if(!fr.ok) throw new Error('Téléchargement échoué ('+fr.status+')');
     setRecvStatus('Déchiffrement AES-256-GCM…', 70);
-    const encBuf  = await fr.arrayBuffer();
-    const decrypted = await decryptChunk(keyBytes, 0, new Uint8Array(encBuf));
+    const encBuf=await fr.arrayBuffer();
+    const decrypted=await decryptChunk(keyBytes,0,new Uint8Array(encBuf));
     setRecvStatus('Enregistrement…', 95);
-    const blob=new Blob([decrypted]);
-    const a=document.createElement('a');
-    a.href=URL.createObjectURL(blob); a.download=filename; a.click();
-    URL.revokeObjectURL(a.href);
+    const blob=new Blob([decrypted]); const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download=filename; a.click(); URL.revokeObjectURL(a.href);
     setRecvStatus('Terminé !', 100);
     document.getElementById('receive-success').style.display='flex';
     btn.innerHTML='<i class="fa-solid fa-check"></i> Téléchargé';
   } catch(e) {
     document.getElementById('receive-error').innerHTML=`<i class="fa-solid fa-circle-xmark"></i> ${escHtml(e.message)}`;
     document.getElementById('receive-error').style.display='flex';
-    btn.disabled=false;
-    btn.innerHTML='<i class="fa-solid fa-lock-open"></i> Télécharger & déchiffrer';
+    btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-lock-open"></i> Télécharger & déchiffrer';
   }
 }
 function setRecvStatus(txt,pct) {
@@ -1913,9 +1373,7 @@ function setRecvStatus(txt,pct) {
   document.getElementById('recv-progress-fill').style.width=pct+'%';
 }
 
-// ══════════════════════════════════════════
-//  HISTORY
-// ══════════════════════════════════════════
+// ══ HISTORY ══
 function loadHistory()  { try{return JSON.parse(localStorage.getItem(STORAGE_KEY))||[];}catch(e){return[];} }
 function saveHistory(l) { localStorage.setItem(STORAGE_KEY,JSON.stringify(l)); }
 function saveToHistory(e){ const l=loadHistory(); l.unshift(e); saveHistory(l); }
@@ -1927,8 +1385,7 @@ function updateBadge() {
   b.style.display=l.length>0?'inline-block':'none'; b.textContent=l.length;
 }
 function renderHistory() {
-  const list=loadHistory();
-  const c=document.getElementById('history-list');
+  const list=loadHistory(); const c=document.getElementById('history-list');
   document.getElementById('history-empty').style.display=list.length===0?'block':'none';
   document.getElementById('history-count').textContent=list.length+(list.length>1?' partages':' partage');
   c.innerHTML=''; list.forEach(i=>c.appendChild(buildHistoryItem(i)));
@@ -1936,10 +1393,10 @@ function renderHistory() {
 function buildHistoryItem(item) {
   const div=document.createElement('div');
   div.className='history-item'+(item.status!=='active'?' destroyed':'');
-  const statusIcon = item.status==='destroyed'?'fa-trash':item.status==='expired'?'fa-clock':'fa-circle-check';
-  const statusLabel = item.status==='destroyed'?'Détruit':item.status==='expired'?'Expiré':'Actif';
+  const statusIcon=item.status==='destroyed'?'fa-trash':item.status==='expired'?'fa-clock':'fa-circle-check';
+  const statusLabel=item.status==='destroyed'?'Détruit':item.status==='expired'?'Expiré':'Actif';
   const sc=item.status==='active'?'active':item.status==='destroyed'?'destroyed':'expired';
-  const fileIcon = getFileIcon(item.filename);
+  const fileIcon=getFileIcon(item.filename);
   const date=new Date(item.createdAt).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
   div.innerHTML=`
     <div class="hist-primary" onclick="toggleHistDetail(${item.id})">
