@@ -390,6 +390,13 @@ input[type="file"] { display: none; }
 }
 .provider-badge i { font-size: 10px; }
 
+/* ─── CARD DIVIDER ─── */
+.card-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 22px 0;
+}
+
 /* ─── SECTION LABEL ─── */
 .section-label {
   font-size: 11px;
@@ -940,9 +947,9 @@ input[type="file"] { display: none; }
       <div class="provider-badge" id="badge-backblaze">
         <i class="fa-solid fa-lock"></i> Backblaze B2 · stockage privé chiffré · AES-256
       </div>
-    </div>
 
-    <div class="card">
+      <div class="card-divider"></div>
+
       <p class="section-label">Expiration du lien</p>
       <div class="expiry-grid">
         <button class="exp-btn" id="exp-1h" onclick="setExpiry('1h')"><span class="dur">1h</span>Urgent</button>
