@@ -390,13 +390,6 @@ input[type="file"] { display: none; }
 }
 .provider-badge i { font-size: 10px; }
 
-/* ─── CARD DIVIDER ─── */
-.card-divider {
-  border: none;
-  border-top: 1px solid var(--border);
-  margin: 22px 0;
-}
-
 /* ─── SECTION LABEL ─── */
 .section-label {
   font-size: 11px;
@@ -489,7 +482,7 @@ input[type="file"] { display: none; }
   align-items: center;
   justify-content: center;
   gap: 9px;
-  margin-top: 20px;
+  margin-bottom: 20px;
 }
 .send-btn:hover { background: var(--coral-dark); }
 .send-btn:active { transform: translateY(1px); }
@@ -498,9 +491,12 @@ input[type="file"] { display: none; }
 /* ─── PROGRESS ─── */
 .progress-area {
   display: none;
-  margin-top: 20px;
-  border-top: 1px solid var(--border);
+  margin-bottom: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
   overflow: hidden;
+  box-shadow: var(--shadow-sm);
 }
 .progress-phase {
   display: flex;
@@ -600,7 +596,7 @@ input[type="file"] { display: none; }
 }
 
 /* ── METRICS ── */
-.progress-metrics { display: grid; grid-template-columns: 1fr 1fr 1fr; }
+.progress-metrics { display: grid; grid-template-columns: 1fr 1fr 1fr; border-top: 1px solid var(--border); }
 .metric-cell { padding: 12px 16px; display: flex; flex-direction: column; gap: 3px; }
 .metric-cell + .metric-cell { border-left: 1px solid var(--border); }
 .metric-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--text3); }
@@ -628,7 +624,7 @@ input[type="file"] { display: none; }
   font-size: 13px; color: var(--coral-dark); text-align: center;
   display: none; padding: 12px 14px; background: var(--red-l);
   border: 1px solid var(--red-m); border-radius: var(--r-sm);
-  margin-top: 16px; align-items: center; gap: 7px;
+  margin-bottom: 20px; align-items: center; gap: 7px;
 }
 
 /* ─── RESUME BANNER ─── */
@@ -649,9 +645,11 @@ input[type="file"] { display: none; }
 
 /* ─── RESULT ─── */
 .result-card {
-  border-top: 1px solid rgba(0,100,102,.18);
-  padding-top: 20px;
-  margin-top: 20px;
+  background: rgba(0,100,102,.04);
+  border: 1px solid rgba(0,100,102,.18);
+  border-radius: var(--r);
+  padding: 28px;
+  margin-bottom: 14px;
 }
 .result-title {
   font-size: 14px; font-weight: 700; color: var(--emerald); margin-bottom: 20px;
@@ -927,47 +925,51 @@ input[type="file"] { display: none; }
     </div>
 
     <div class="card">
-      <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()" role="button" tabindex="0">
-        <i class="fa-solid fa-cloud-arrow-up drop-icon"></i>
-        <p><strong>Clique ou dépose</strong> ton fichier ici</p>
-        <p class="drop-hint">Chiffrement AES-256 · Backblaze B2 · stockage privé chiffré</p>
-      </div>
-      <input type="file" id="file-input">
-      <div class="file-preview" id="file-preview">
-        <i class="fa-solid fa-file"></i>
-        <span class="file-name" id="file-name">—</span>
-        <span class="file-size" id="file-size">—</span>
-        <button class="file-remove" onclick="removeFile()"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <div class="provider-badge" id="badge-backblaze">
-        <i class="fa-solid fa-lock"></i> Backblaze B2 · stockage privé chiffré · AES-256
+
+      <!-- État 1 : sélection fichier + options -->
+      <div id="upload-form">
+        <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()" role="button" tabindex="0">
+          <i class="fa-solid fa-cloud-arrow-up drop-icon"></i>
+          <p><strong>Clique ou dépose</strong> ton fichier ici</p>
+          <p class="drop-hint">Chiffrement AES-256 · Backblaze B2 · stockage privé chiffré</p>
+        </div>
+        <input type="file" id="file-input">
+        <div class="file-preview" id="file-preview">
+          <i class="fa-solid fa-file"></i>
+          <span class="file-name" id="file-name">—</span>
+          <span class="file-size" id="file-size">—</span>
+          <button class="file-remove" onclick="removeFile()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="provider-badge" id="badge-backblaze">
+          <i class="fa-solid fa-lock"></i> Backblaze B2 · stockage privé chiffré · AES-256
+        </div>
+        <hr style="border:none;border-top:1px solid var(--border);margin:20px 0;">
+        <p class="section-label">Expiration du lien</p>
+        <div class="expiry-grid">
+          <button class="exp-btn" id="exp-1h" onclick="setExpiry('1h')"><span class="dur">1h</span>Urgent</button>
+          <button class="exp-btn active" id="exp-24h" onclick="setExpiry('24h')"><span class="dur">24h</span>Standard</button>
+          <button class="exp-btn" id="exp-7d" onclick="setExpiry('7d')"><span class="dur">7j</span>Étendu</button>
+          <button class="exp-btn" id="exp-30d" onclick="setExpiry('30d')"><span class="dur">30j</span>Long</button>
+        </div>
+        <div class="toggle-row">
+          <label class="toggle-label" for="autodestroy-toggle">
+            <i class="fa-solid fa-bomb"></i>
+            <span>Détruire après téléchargement<span class="toggle-sub">Backblaze B2 uniquement</span></span>
+          </label>
+          <label class="toggle">
+            <input type="checkbox" id="autodestroy-toggle" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <button class="send-btn" id="send-btn" onclick="startUpload()" disabled style="margin-top:20px;">
+          <i class="fa-solid fa-lock"></i> Chiffrer &amp; partager
+        </button>
+        <p class="error-msg" id="error-msg"></p>
       </div>
 
-      <div class="card-divider"></div>
-
-      <p class="section-label">Expiration du lien</p>
-      <div class="expiry-grid">
-        <button class="exp-btn" id="exp-1h" onclick="setExpiry('1h')"><span class="dur">1h</span>Urgent</button>
-        <button class="exp-btn active" id="exp-24h" onclick="setExpiry('24h')"><span class="dur">24h</span>Standard</button>
-        <button class="exp-btn" id="exp-7d" onclick="setExpiry('7d')"><span class="dur">7j</span>Étendu</button>
-        <button class="exp-btn" id="exp-30d" onclick="setExpiry('30d')"><span class="dur">30j</span>Long</button>
-      </div>
-      <div class="toggle-row">
-        <label class="toggle-label" for="autodestroy-toggle">
-          <i class="fa-solid fa-bomb"></i>
-          <span>Détruire après téléchargement<span class="toggle-sub">Backblaze B2 uniquement</span></span>
-        </label>
-        <label class="toggle">
-          <input type="checkbox" id="autodestroy-toggle" checked>
-          <span class="toggle-slider"></span>
-        </label>
-      </div>
-      <button class="send-btn" id="send-btn" onclick="startUpload()" disabled>
-        <i class="fa-solid fa-lock"></i> Chiffrer &amp; partager
-      </button>
-
+      <!-- État 2 : progression -->
       <div class="progress-area" id="progress-area">
-        <div class="progress-phase" style="padding: 16px 0 12px;">
+        <div class="progress-phase">
           <div class="progress-phase-dot" id="progress-dot"></div>
           <span class="progress-phase-label" id="status-text">En attente…</span>
           <span class="progress-pct" id="progress-pct">0%</span>
@@ -975,7 +977,7 @@ input[type="file"] { display: none; }
         <div class="progress-track">
           <div class="progress-fill phase-prep" id="progress-fill"></div>
         </div>
-        <div class="progress-metrics" style="border: 1px solid var(--border); border-radius: var(--r-sm); margin-top: 12px; overflow: hidden;">
+        <div class="progress-metrics">
           <div class="metric-cell">
             <span class="metric-label">Envoyé</span>
             <span class="metric-value" id="metric-sent">—</span>
@@ -997,8 +999,7 @@ input[type="file"] { display: none; }
         <span class="progress-speed" id="progress-speed"></span>
       </div>
 
-      <p class="error-msg" id="error-msg"></p>
-
+      <!-- État 3 : résultat -->
       <div id="result-view" style="display:none;">
         <div class="result-card">
           <p class="result-title"><i class="fa-solid fa-circle-check"></i> Fichier prêt à partager</p>
@@ -1019,7 +1020,7 @@ input[type="file"] { display: none; }
             <p class="qr-label">Scanner pour ouvrir directement</p>
           </div>
         </div>
-        <button class="new-btn" style="margin-top:16px;" onclick="resetUpload()">
+        <button class="new-btn" onclick="resetUpload()" style="margin-top:16px;">
           <i class="fa-solid fa-plus"></i> Nouveau partage
         </button>
       </div>
@@ -1413,7 +1414,7 @@ function setStatus(txt, pct) {
 async function startUpload() {
   if (!selectedFile) return;
   uploadAborted = false;
-  document.getElementById('send-btn').disabled = true;
+  document.getElementById('upload-form').style.display = 'none';
   document.getElementById('error-msg').style.display = 'none';
   document.getElementById('progress-area').style.display = 'block';
   document.getElementById('result-view').style.display = 'none';
@@ -1433,8 +1434,9 @@ async function startUpload() {
   } catch(e) {
     stopProgressTick();
     if (!uploadAborted) {
+      document.getElementById('upload-form').style.display = 'block';
       document.getElementById('error-msg').textContent = e.message;
-      document.getElementById('error-msg').style.display = 'block';
+      document.getElementById('error-msg').style.display = 'flex';
       document.getElementById('progress-area').style.display = 'none';
     }
     document.getElementById('send-btn').disabled = false;
@@ -1618,7 +1620,11 @@ async function destroyNow() {
 function resetUpload() {
   selectedFile=null; currentFileKey=null; fileInput.value=''; uploadAborted=false;
   stopProgressTick();
-  ['result-view','progress-area','file-preview','error-msg'].forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById('upload-form').style.display='block';
+  document.getElementById('progress-area').style.display='none';
+  document.getElementById('result-view').style.display='none';
+  document.getElementById('file-preview').style.display='none';
+  document.getElementById('error-msg').style.display='none';
   document.getElementById('badge-backblaze').style.display='none';
   document.getElementById('send-btn').disabled=true;
   document.getElementById('progress-fill').style.width='0%';
@@ -1874,7 +1880,7 @@ function buildHistoryItem(item) {
         ${item.status==='active'
           ? item.fileKey
             ? `<button class="hist-action-btn danger" id="hd-${item.id}" onclick="destroyAndRemoveHistItem(${item.id},'${item.fileKey}')"><i class="fa-solid fa-bomb"></i> Détruire &amp; retirer</button>
-               <button class="hist-action-btn" onclick="removeHistItem(${item.id})" title="Retirer de l'historique local uniquement (le fichier reste sur B2)"><i class="fa-solid fa-xmark"></i> Retirer</button>`
+               <button class="hist-action-btn" onclick="removeHistItem(${item.id})"><i class="fa-solid fa-xmark"></i> Retirer</button>`
             : `<button class="hist-action-btn danger" onclick="removeHistItem(${item.id})"><i class="fa-solid fa-xmark"></i> Retirer</button>`
           : `<button class="hist-action-btn" onclick="removeHistItem(${item.id})"><i class="fa-solid fa-xmark"></i> Retirer</button>`
         }
@@ -1929,12 +1935,6 @@ async function destroyAndRemoveHistItem(id, fk) {
 }
 
 function removeHistItem(id) {
-  const l = loadHistory();
-  const item = l.find(x => x.id === id);
-  // Si le fichier est encore actif sur B2, juste confirmer que le fichier reste accessible
-  if (item && item.status === 'active' && item.fileKey) {
-    if (!confirm('Retirer de l\'historique local ?\n\n⚠️ Le fichier reste sur Backblaze B2 et accessible via son lien.')) return;
-  }
   deleteHistoryItem(id);
   renderHistory();
   updateBadge();
