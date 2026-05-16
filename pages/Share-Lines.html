@@ -372,7 +372,7 @@ body {
 .drop-zone {
   border: 2px dashed var(--border2);
   border-radius: var(--r);
-  padding: 52px 24px;
+  padding: 28px 24px;
   text-align: center;
   cursor: pointer;
   transition: all .2s;
@@ -454,7 +454,7 @@ input[type="file"] { display: none; }
   gap: 8px;
 }
 .exp-btn {
-  padding: 12px 8px;
+  padding: 8px 8px;
   border: 1px solid var(--border);
   border-radius: var(--r-sm);
   background: var(--surface);
@@ -476,8 +476,8 @@ input[type="file"] { display: none; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 0 0;
-  margin-top: 18px;
+  padding: 12px 0 0;
+  margin-top: 12px;
   border-top: 1px solid var(--border);
 }
 .toggle-label {
@@ -971,8 +971,8 @@ input[type="file"] { display: none; }
       <div id="upload-form">
         <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()" role="button" tabindex="0">
           <i class="fa-solid fa-cloud-arrow-up drop-icon"></i>
-          <p><strong>Clique ou dépose</strong> ton fichier ici</p>
-          <p class="drop-hint">Chiffrement AES-256 · Backblaze B2 · stockage privé chiffré</p>
+          <p><strong>Clique ou dépose</strong> un fichier ici</p>
+          <p class="drop-hint"><i class="fa-solid fa-lock" style="font-size:9px;color:var(--emerald)"></i> AES-256 · Backblaze B2</p>
         </div>
         <input type="file" id="file-input">
         <div class="file-preview" id="file-preview">
@@ -981,11 +981,8 @@ input[type="file"] { display: none; }
           <span class="file-size" id="file-size">—</span>
           <button class="file-remove" onclick="removeFile()"><i class="fa-solid fa-xmark"></i></button>
         </div>
-        <div class="provider-badge" id="badge-backblaze">
-          <i class="fa-solid fa-lock"></i> Backblaze B2 · stockage privé chiffré · AES-256
-        </div>
-        <hr style="border:none;border-top:1px solid var(--border);margin:20px 0;">
-        <p class="section-label">Expiration du lien</p>
+        <hr style="border:none;border-top:1px solid var(--border);margin:16px 0 14px;">
+        <p class="section-label" style="margin-bottom:10px;">Expiration</p>
         <div class="expiry-grid">
           <button class="exp-btn" id="exp-1h" onclick="setExpiry('1h')"><span class="dur">1h</span>Urgent</button>
           <button class="exp-btn active" id="exp-24h" onclick="setExpiry('24h')"><span class="dur">24h</span>Standard</button>
@@ -995,14 +992,14 @@ input[type="file"] { display: none; }
         <div class="toggle-row">
           <label class="toggle-label" for="autodestroy-toggle">
             <i class="fa-solid fa-bomb"></i>
-            <span>Détruire après téléchargement<span class="toggle-sub">Backblaze B2 uniquement</span></span>
+            <span>Détruire après téléchargement</span>
           </label>
           <label class="toggle">
             <input type="checkbox" id="autodestroy-toggle" checked>
             <span class="toggle-slider"></span>
           </label>
         </div>
-        <button class="send-btn" id="send-btn" onclick="startUpload()" disabled style="margin-top:20px;">
+        <button class="send-btn" id="send-btn" onclick="startUpload()" disabled style="margin-top:auto;">
           <i class="fa-solid fa-lock"></i> Chiffrer &amp; partager
         </button>
         <p class="error-msg" id="error-msg"></p>
@@ -1666,7 +1663,6 @@ function resetUpload() {
   document.getElementById('result-view').style.display='none';
   document.getElementById('file-preview').style.display='none';
   document.getElementById('error-msg').style.display='none';
-  document.getElementById('badge-backblaze').style.display='none';
   document.getElementById('send-btn').disabled=true;
   document.getElementById('progress-fill').style.width='0%';
   document.getElementById('progress-fill').className='progress-fill phase-prep';
