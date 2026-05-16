@@ -321,6 +321,30 @@ body {
   box-shadow: var(--shadow-sm);
 }
 
+/* La card upload a une hauteur fixe — les états se remplacent sans la faire grandir */
+#upload-view .card {
+  min-height: 480px;
+  display: flex;
+  flex-direction: column;
+}
+#upload-form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+#progress-area {
+  flex: 1;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+}
+#result-view {
+  flex: 1;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+}
+
 /* ─── DROP ZONE ─── */
 .drop-zone {
   border: 2px dashed var(--border2);
@@ -1410,7 +1434,7 @@ async function startUpload() {
   uploadAborted = false;
   document.getElementById('upload-form').style.display = 'none';
   document.getElementById('error-msg').style.display = 'none';
-  document.getElementById('progress-area').style.display = 'block';
+  document.getElementById('progress-area').style.display = 'flex';
   document.getElementById('result-view').style.display = 'none';
   document.getElementById('chunks-grid').innerHTML = '';
   startProgressTick();
@@ -1783,13 +1807,11 @@ function markHistoryDestroyed(fk){ const l=loadHistory(); const i=l.find(x=>x.fi
 function deleteHistoryItem(id)   { saveHistory(loadHistory().filter(i=>i.id!==id)); }
 function clearAllHistory() {
   const l = loadHistory();
-  const actifs = l.filter(i => i.status === 'active' && i.fileKey);
-  if (actifs.length > 0) {
-    if (!confirm(`⚠️ ${actifs.length} fichier(s) encore actif(s) sur Backblaze B2.\nEffacer uniquement l'historique local sans détruire les fichiers ?\n\nPour détruire les fichiers, utilise "Tout détruire".`)) return;
-  } else {
-    if (!confirm('Effacer tout l\'historique local ?')) return;
-  }
-  saveHistory([]); renderHistory(); updateBadge();
+  const perimés = l.filter(i => i.status !== 'active' || !i.fileKey);
+  if (perimés.length === 0) { alert('Aucun fichier périmé ou détruit à effacer.'); return; }
+  if (!confirm(`Effacer ${perimés.length} entrée(s) périmée(s) / détruites ?\n\nLes fichiers encore actifs sur Backblaze B2 seront conservés dans l'historique.`)) return;
+  saveHistory(l.filter(i => i.status === 'active' && i.fileKey));
+  renderHistory(); updateBadge();
 }
 
 async function destroyAllActive() {
