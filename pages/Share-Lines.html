@@ -491,18 +491,12 @@ input[type="file"] { display: none; }
 /* ─── PROGRESS ─── */
 .progress-area {
   display: none;
-  margin-bottom: 20px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  overflow: hidden;
-  box-shadow: var(--shadow-sm);
 }
 .progress-phase {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 16px 18px 12px;
+  padding: 16px 0 12px;
   border-bottom: 1px solid var(--border);
 }
 
@@ -535,8 +529,10 @@ input[type="file"] { display: none; }
 .progress-track {
   height: 8px;
   background: var(--surface2);
+  border-radius: 99px;
   position: relative;
   overflow: hidden;
+  margin-top: 10px;
 }
 
 /* ── FILL BASE ── */
@@ -596,8 +592,8 @@ input[type="file"] { display: none; }
 }
 
 /* ── METRICS ── */
-.progress-metrics { display: grid; grid-template-columns: 1fr 1fr 1fr; border-top: 1px solid var(--border); }
-.metric-cell { padding: 12px 16px; display: flex; flex-direction: column; gap: 3px; }
+.progress-metrics { display: grid; grid-template-columns: 1fr 1fr 1fr; border: 1px solid var(--border); border-radius: var(--r-sm); margin-top: 12px; overflow: hidden; }
+.metric-cell { padding: 10px 14px; display: flex; flex-direction: column; gap: 3px; }
 .metric-cell + .metric-cell { border-left: 1px solid var(--border); }
 .metric-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--text3); }
 .metric-value { font-size: 13px; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -605,7 +601,7 @@ input[type="file"] { display: none; }
 .metric-value.highlight-coral { color: var(--coral); }
 
 /* ── CHUNKS ── */
-.chunks-section { padding: 10px 16px 14px; border-top: 1px solid var(--border); display: none; }
+.chunks-section { padding: 10px 0 4px; display: none; }
 .chunks-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--text3); margin-bottom: 8px; }
 .chunks-grid { display: flex; flex-wrap: wrap; gap: 4px; }
 .chunk-dot { width: 10px; height: 10px; border-radius: 3px; background: var(--surface2); border: 1px solid var(--border); transition: background .2s, border-color .2s; }
@@ -645,11 +641,9 @@ input[type="file"] { display: none; }
 
 /* ─── RESULT ─── */
 .result-card {
-  background: rgba(0,100,102,.04);
-  border: 1px solid rgba(0,100,102,.18);
-  border-radius: var(--r);
-  padding: 28px;
-  margin-bottom: 14px;
+  border-top: 1px solid var(--border);
+  padding-top: 20px;
+  margin-top: 4px;
 }
 .result-title {
   font-size: 14px; font-weight: 700; color: var(--emerald); margin-bottom: 20px;
