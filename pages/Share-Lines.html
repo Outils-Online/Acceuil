@@ -48,14 +48,21 @@ body {
   font-size: 14px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
-  align-items: flex-start;
+  align-items: stretch;
   justify-content: center;
-  padding: 64px 20px 100px;
+  padding: 20px;
+  overflow: hidden;
 }
 
-.app { width: 100%; max-width: 480px; }
+.app {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
 
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -198,7 +205,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 40px;
+  margin-bottom: 20px;
+  flex-shrink: 0;
 }
 .logo {
   font-size: 22px;
@@ -278,8 +286,9 @@ body {
   border: 1px solid var(--border);
   border-radius: var(--r);
   padding: 4px;
-  margin-bottom: 32px;
+  margin-bottom: 16px;
   box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
 }
 .tab {
   flex: 1;
@@ -321,28 +330,42 @@ body {
   box-shadow: var(--shadow-sm);
 }
 
-/* La card upload a une hauteur fixe — les états se remplacent sans la faire grandir */
-#upload-view .card {
-  min-height: 480px;
+/* La card upload remplit toute la hauteur dispo — les états se remplacent sans scroll */
+#upload-view {
+  flex: 1;
   display: flex;
   flex-direction: column;
+  min-height: 0;
+}
+#upload-view .card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  margin-bottom: 0;
 }
 #upload-form {
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-height: 0;
+}
+#upload-form .send-btn {
+  margin-top: auto;
+  padding-top: 20px;
 }
 #progress-area {
   flex: 1;
   display: none;
   flex-direction: column;
   justify-content: center;
+  min-height: 0;
 }
 #result-view {
   flex: 1;
   display: none;
   flex-direction: column;
-  justify-content: center;
+  min-height: 0;
 }
 
 /* ─── DROP ZONE ─── */
@@ -901,7 +924,7 @@ input[type="file"] { display: none; }
 </div>
 
 <!-- APP -->
-<div class="app" id="app-view" style="display:none">
+<div class="app" id="app-view" style="display:none; flex-direction:column; height:100%">
   <div class="header">
     <div>
       <div class="logo">Share<span>Lines</span></div>
@@ -1178,7 +1201,7 @@ async function doLogin() {
 }
 function showApp() {
   document.getElementById('login-view').style.display = 'none';
-  document.getElementById('app-view').style.display = 'block';
+  document.getElementById('app-view').style.display = 'flex';
   updateBadge(); checkResumeBanner();
   fetchStorage();
 }
@@ -1452,7 +1475,7 @@ async function startUpload() {
   } catch(e) {
     stopProgressTick();
     if (!uploadAborted) {
-      document.getElementById('upload-form').style.display = 'block';
+      document.getElementById('upload-form').style.display = 'flex';
       document.getElementById('error-msg').textContent = e.message;
       document.getElementById('error-msg').style.display = 'flex';
       document.getElementById('progress-area').style.display = 'none';
@@ -1602,7 +1625,7 @@ async function deleteBackblaze(k) {
 // ══ RESULT ══
 function showResult(link, fileKey, autoDestroy) {
   document.getElementById('progress-area').style.display='none';
-  document.getElementById('result-view').style.display='block';
+  document.getElementById('result-view').style.display='flex';
   document.getElementById('share-link').textContent=link;
   const pills=[
     {icon:'fa-lock',label:'AES-256-GCM'},
@@ -1638,7 +1661,7 @@ async function destroyNow() {
 function resetUpload() {
   selectedFile=null; currentFileKey=null; fileInput.value=''; uploadAborted=false;
   stopProgressTick();
-  document.getElementById('upload-form').style.display='block';
+  document.getElementById('upload-form').style.display='flex';
   document.getElementById('progress-area').style.display='none';
   document.getElementById('result-view').style.display='none';
   document.getElementById('file-preview').style.display='none';
