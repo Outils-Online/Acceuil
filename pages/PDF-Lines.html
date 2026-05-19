@@ -120,7 +120,16 @@ input[type=file]{display:none}
 .card-header{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--surface2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;box-shadow:0 2px 8px rgba(10,36,114,.06)}
 .card-drag{color:var(--text3);font-size:12px;cursor:grab;padding:2px 4px;flex-shrink:0}
 .card-drag:hover{color:var(--text2)}
-.card-name{flex:1;font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* ── INLINE RENAME ───────────────────────────────────── */
+.card-name-wrap{display:flex;align-items:center;gap:5px;flex:1;min-width:0;overflow:hidden}
+.card-name{font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:text;border-radius:4px;padding:2px 4px;margin:-2px -4px;transition:background .12s;flex-shrink:1;min-width:0}
+.card-name:hover{background:var(--surface3)}
+.card-name-input{display:none;font:600 13px 'DM Sans',sans-serif;color:var(--ink);background:var(--surface);border:1.5px solid var(--coral);border-radius:4px;padding:2px 6px;outline:none;min-width:0;flex:1;height:24px}
+.card-name-wrap.editing .card-name{display:none}
+.card-name-wrap.editing .card-name-input{display:block}
+.card-name-wrap.editing .card-name-hint{opacity:0;pointer-events:none}
+.card-name-hint{font-size:11px;color:var(--text3);flex-shrink:0;line-height:1;cursor:pointer;opacity:0.5;transition:opacity .15s;padding:2px}
+.card-name-wrap:hover .card-name-hint{opacity:1}
 .card-meta{font-size:11px;color:var(--text3);white-space:nowrap}
 .card-actions{display:flex;gap:2px;align-items:center;flex-shrink:0}
 .card-btn{background:none;border:none;cursor:pointer;color:var(--text3);font-size:12px;padding:3px 5px;border-radius:4px;transition:all .12s;display:flex;align-items:center}
@@ -365,28 +374,40 @@ input[type=file]{display:none}
 /* ── RESPONSIVE ──────────────────────────────────────── */
 @media(max-width:900px){#sidebar{display:none}}
 
+/* Tablet: hide some toolbar labels */
+@media(max-width:860px){
+  .toolbar{gap:4px;padding:6px 12px}
+  .btn-ghost.btn-sm .btn-lbl{display:none}
+  .card-actions .card-btn[data-dir]{display:none}
+}
+
 @media(max-width:768px){
   :root{--tw:96px;--th:128px}
   header{padding:0 12px;height:50px;gap:8px}
   header>span:not(.logo *){display:none}
-  .hactions .btn-ghost .btn-lbl{display:none}
+  /* keep Download button, hide Save/Load */
+  .hactions #btn-save,.hactions #btn-load-proj{display:none}
+  .hactions .hsep:first-of-type{display:none}
   .toolbar{display:none}
   #mobile-toolbar{display:flex}
   #fab-btn{display:flex}
   #bottom-sheet{display:flex}
-  #canvas-area{padding:10px;gap:14px;padding-bottom:56px}
+  #canvas-area{padding:10px;gap:12px;padding-bottom:60px}
   .modal-box{min-width:unset;width:calc(100vw - 20px);padding:18px 14px}
-  #undo-bar{display:none}
   #sel-bar{width:calc(100vw - 24px);border-radius:14px;flex-wrap:wrap;gap:6px;padding:10px 14px;bottom:52px}
-  .card-header{padding:8px 10px}
+  .card-header{padding:8px 10px;gap:6px}
+  .card-name-wrap{min-width:0;flex:1}
+  .card-name{font-size:12px}
+  .card-meta{display:none}
+  .card-actions .card-btn[data-dir]{display:none}
   #fab-btn.open + #fab-menu, #fab-menu.open{display:flex}
 }
 
 @media(max-width:480px){
   :root{--tw:82px;--th:110px}
   header{height:46px}
-  .hactions #btn-save{display:none}
-  #undo-bar{bottom:76px;right:8px}
+  .hactions #btn-print-prep,.hactions #btn-history{display:none}
+  .card-actions .card-btn[data-exportdoc]{display:none}
 }
 </style></head>
 <body>
@@ -401,7 +422,7 @@ input[type=file]{display:none}
     <div class="hsep"></div>
     <button class="btn btn-icon" id="btn-print-prep" title="Preparer pour impression"><i class="fa-solid fa-print"></i></button><button class="btn btn-icon" id="btn-history" title="Historique des exports"><i class="fa-solid fa-clock-rotate-left"></i></button>
     <div class="hsep"></div>
-    <button class="btn btn-primary" id="btn-merge" disabled><i class="fa-solid fa-bolt"></i> Fusionner</button>
+    <button class="btn btn-primary" id="btn-merge" disabled><i class="fa-solid fa-download"></i> Télécharger</button>
   </div>
 </header>
 <!-- Desktop toolbar -->
@@ -415,7 +436,6 @@ input[type=file]{display:none}
   <div class="tsep"></div>
   <div class="tgroup">
     <button class="btn btn-ghost btn-sm" id="btn-extract" title="Extraire les pages selectionnees (ou plage si rien de selectionne)"><i class="fa-solid fa-scissors"></i> Extraire</button>
-    <button class="btn btn-ghost btn-sm" id="btn-split" title="Activer le mode division par coupures visuelles"><i class="fa-solid fa-table-columns"></i> Diviser</button>
     <button class="btn btn-ghost btn-sm" id="btn-compress" title="Reduire la taille du PDF"><i class="fa-solid fa-compress"></i> Compresser</button>
     <button class="btn btn-ghost btn-sm" id="btn-export-img" title="Exporter les pages en images PNG/JPEG"><i class="fa-solid fa-images"></i> Images</button>
   </div>
@@ -458,7 +478,6 @@ input[type=file]{display:none}
 <div id="fab-btn" title="Outils PDF"><i class="fa-solid fa-toolbox"></i></div>
 <div id="fab-menu">
   <div class="fab-item" id="fm-extract"><i class="fa-solid fa-scissors"></i><span>Extraire plage</span></div>
-  <div class="fab-item" id="fm-split"><i class="fa-solid fa-table-columns"></i><span>Diviser</span></div>
   <div class="fab-item" id="fm-compress"><i class="fa-solid fa-compress"></i><span>Compresser</span></div>
   <div class="fab-item" id="fm-export-img"><i class="fa-solid fa-images"></i><span>Export images</span></div>
 </div>
@@ -620,19 +639,6 @@ input[type=file]{display:none}
     <div class="modal-actions">
       <button class="btn btn-ghost btn-sm" id="exportimg-cancel"><i class="fa-solid fa-xmark"></i> Annuler</button>
       <button class="btn btn-primary btn-sm" id="exportimg-ok" style="background:var(--emerald)"><i class="fa-solid fa-download"></i> Exporter</button>
-    </div>
-  </div>
-</div>
-<div class="modal-overlay" id="rename-modal">
-  <div class="modal-box t-coral">
-    <div class="modal-title"><i class="fa-solid fa-file-signature"></i> Nommer le fichier fusionne</div>
-    <div class="modal-row">
-      <label class="modal-label">Nom</label>
-      <input type="text" id="rename-input" class="modal-input" placeholder="fusion" style="flex:1">
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost btn-sm" id="rename-cancel"><i class="fa-solid fa-xmark"></i> Annuler</button>
-      <button class="btn btn-primary btn-sm" id="rename-ok"><i class="fa-solid fa-download"></i> Telecharger</button>
     </div>
   </div>
 </div>
@@ -993,52 +999,15 @@ var DD={
 
 // MERGE
 var Merge={
-  start:function(){
-    var allPages=S.docs.flatMap(function(d){return d.pages;});
-    if(!allPages.length){Toast.show('Aucune page','error');return;}
+  start:async function(){
+    var docs=S.docs.filter(function(d){return !d._ghost&&d.pages.length;});
+    if(!docs.length){Toast.show('Aucune page','error');return;}
     if(!checkLibs())return;
-    var sug=S.docs.map(function(d){return d.name.replace(/\.pdf$/i,'');}).join(' + ');
-    document.getElementById('rename-input').value=sug.length>60?'fusion':sug;
-    showModal('rename-modal');
-    setTimeout(function(){var i=document.getElementById('rename-input');i.select();i.focus();},50);
+    // Télécharger chaque card comme un PDF séparé, avec son propre nom
+    for(var i=0;i<docs.length;i++){
+      await Split.exportDoc(docs[i].id);
+    }
   },
-  doMerge:async function(filename){
-    var allPages=S.docs.flatMap(function(d){return d.pages;});
-    UI.showProgress(true);UI.setProgress(0,'Initialisation...');
-    try{
-      var PDFDocument=window.PDFLib.PDFDocument,degrees=window.PDFLib.degrees;
-      var out=await PDFDocument.create();
-      var ids=[...new Set(allPages.map(function(p){return String(p.docId);}))];
-      var srcs={};
-      for(var i=0;i<ids.length;i++){
-        var id=ids[i],b=S.bytes[id];
-        if(!b||!b.length)throw new Error('Source manquante doc #'+id);
-        UI.setProgress(Math.round((i/ids.length)*10),'Chargement '+(i+1)+'/'+ids.length+'...');
-        await tick();
-        srcs[id]=await PDFDocument.load(b.slice(0),{ignoreEncryption:true});
-      }
-      var total=allPages.length;
-      for(var j=0;j<total;j++){
-        var pg=allPages[j],src=srcs[String(pg.docId)];if(!src)continue;
-        UI.setProgress(Math.round(10+(j/total)*85),'Page '+(j+1)+' / '+total+'...');
-        await tick();
-        if(pg.blank){out.addPage();continue;}
-        if(pg.pi>=src.getPageCount())continue;
-        var copied=(await out.copyPages(src,[pg.pi]))[0];
-        if(pg.rot)copied.setRotation(degrees(((copied.getRotation().angle+pg.rot)%360+360)%360));
-        out.addPage(copied);
-      }
-      UI.setProgress(96,'Enregistrement...');await tick();
-      var bytes=await out.save();
-      UI.setProgress(100,'Telechargement...');await new Promise(function(r){setTimeout(r,200);});
-      var fn=(filename.trim()||'fusion').replace(/\.pdf$/i,'')+'.pdf';
-      download(bytes,fn,'application/pdf');
-      var sizeStr=formatSize(bytes.length);
-      History.add({name:fn,date:formatDate(),pages:outDoc.getPageCount(),size:sizeStr});
-      Toast.show('"'+fn+'" telecharge','success');
-    }catch(e){console.error(e);Toast.show('Erreur: '+(e.message||e),'error');}
-    finally{UI.showProgress(false);}
-  }
 };
 
 // EXTRACT
@@ -1143,6 +1112,7 @@ var Extract={
     finally{UI.showProgress(false);}
   }
 };
+
 
 // SPLIT — couper une card en deux à partir d'une page
 var Split={
@@ -1288,6 +1258,11 @@ var UI={
     var area=document.getElementById('canvas-area'),empty=document.getElementById('empty-state');
     if(!S.docs.length){area.innerHTML='';area.appendChild(empty);document.getElementById('btn-merge').disabled=true;this.updateSidebar();return;}
     document.getElementById('btn-merge').disabled=false;
+    var visCount=S.docs.filter(function(d){return !d._ghost;}).length;
+    var mergeBtn=document.getElementById('btn-merge');
+    mergeBtn.innerHTML=visCount>1
+      ?'<i class="fa-solid fa-download"></i> Télécharger ('+visCount+')'
+      :'<i class="fa-solid fa-download"></i> Télécharger';
     if(area.contains(empty))area.removeChild(empty);
     var existing=new Map();area.querySelectorAll('.doc-card').forEach(function(c){existing.set(parseInt(c.dataset.did),c);});
     var ids=new Set(S.docs.map(function(d){return d.id;}));
@@ -1330,7 +1305,11 @@ var UI={
     var hdr=document.createElement('div');hdr.className='card-header';
     hdr.innerHTML='<span class="card-drag card-dh" title="Glisser pour reordonner"><i class="fa-solid fa-grip-vertical"></i></span>'
       +'<i class="fa-solid fa-file-pdf" style="color:var(--coral);font-size:15px;flex-shrink:0"></i>'
-      +'<span class="card-name" title="'+esc(doc.name)+'">'+esc(doc.name)+'</span>'
+      +'<div class="card-name-wrap" data-namewrap="'+doc.id+'">'
+        +'<span class="card-name" data-rename="'+doc.id+'">'+esc(doc.name)+'</span>'
+        +'<input class="card-name-input" data-rename-input="'+doc.id+'" type="text" spellcheck="false">'
+        +'<span class="card-name-hint" title="Renommer"><i class="fa-solid fa-pen-to-square"></i></span>'
+      +'</div>'
       +'<span class="card-meta" data-meta="'+doc.id+'">0 p.</span>'
       +'<div class="card-actions">'
         +'<button class="card-btn" data-mv="'+doc.id+'" data-dir="-1" title="Monter"><i class="fa-solid fa-arrow-up"></i></button>'
@@ -1340,6 +1319,47 @@ var UI={
         +'<button class="card-btn del" data-rmdoc="'+doc.id+'" title="Supprimer ce document"><i class="fa-solid fa-trash"></i></button>'
       +'</div>';
     card.appendChild(hdr);
+    // Inline rename via real <input>
+    var nameWrap=hdr.querySelector('[data-namewrap]');
+    var nameSpan=hdr.querySelector('[data-rename]');
+    var nameInput=hdr.querySelector('[data-rename-input]');
+    var hintEl=hdr.querySelector('.card-name-hint');
+    function startRename(){
+      var liveDoc=S.docs.find(function(d){return d.id===doc.id;});
+      nameInput.value=(liveDoc?liveDoc.name:'').replace(/\.pdf$/i,'');
+      nameWrap.classList.add('editing');
+      nameInput.focus();
+      nameInput.select();
+    }
+    function commitRename(){
+      nameWrap.classList.remove('editing');
+      var liveDoc=S.docs.find(function(d){return d.id===doc.id;});
+      if(!liveDoc)return;
+      var val=nameInput.value.trim();
+      if(!val){nameSpan.textContent=liveDoc.name;return;}
+      var newName=val.replace(/\.pdf$/i,'')+'.pdf';
+      if(newName!==liveDoc.name){
+        Undo.push();
+        liveDoc.name=newName;
+        UI.updateSidebar();
+        Toast.show('Renommé : "'+newName+'"','success');
+      }
+      nameSpan.textContent=liveDoc.name;
+    }
+    function cancelRename(){
+      nameWrap.classList.remove('editing');
+      var liveDoc=S.docs.find(function(d){return d.id===doc.id;});
+      nameSpan.textContent=liveDoc?liveDoc.name:doc.name;
+    }
+    nameSpan.addEventListener('click',function(e){e.stopPropagation();startRename();});
+    if(hintEl)hintEl.addEventListener('click',function(e){e.stopPropagation();startRename();});
+    nameInput.addEventListener('blur',function(){commitRename();});
+    nameInput.addEventListener('keydown',function(e){
+      if(e.key==='Enter'){e.preventDefault();nameInput.blur();}
+      if(e.key==='Escape'){e.preventDefault();cancelRename();nameInput.blur();}
+      e.stopPropagation();
+    });
+    nameInput.addEventListener('click',function(e){e.stopPropagation();});
     var pc=document.createElement('div');pc.className='pages-container';pc.dataset.did=doc.id;card.appendChild(pc);
     hdr.querySelector('[data-rmdoc]').addEventListener('click',function(e){e.stopPropagation();Files.remove(doc.id);});
     hdr.querySelector('[data-exportdoc]').addEventListener('click',function(e){e.stopPropagation();Split.exportDoc(doc.id);});
@@ -1352,6 +1372,9 @@ var UI={
   },
   syncCard:function(doc,card){
     var meta=card.querySelector('[data-meta="'+doc.id+'"]');if(meta)meta.textContent=doc.pages.length+' p.';
+    var nameWrap=card.querySelector('[data-namewrap="'+doc.id+'"]');
+    var nameSpan=card.querySelector('[data-rename="'+doc.id+'"]');
+    if(nameSpan&&nameWrap&&!nameWrap.classList.contains('editing')&&nameSpan.textContent!==doc.name)nameSpan.textContent=doc.name;
     var pc=card.querySelector('.pages-container');
     var existing=new Map();pc.querySelectorAll('.page-thumb').forEach(function(t){existing.set(parseInt(t.dataset.pid),t);});
     var pids=new Set(doc.pages.map(function(p){return p.id;}));
@@ -1815,10 +1838,6 @@ var BottomSheet={
 
   document.getElementById('btn-merge').addEventListener('click',function(){Merge.start();});
 
-  document.getElementById('rename-cancel').addEventListener('click',function(){hideModal('rename-modal');});
-  document.getElementById('rename-ok').addEventListener('click',function(){var fn=document.getElementById('rename-input').value.trim()||'fusion';hideModal('rename-modal');Merge.doMerge(fn);});
-  document.getElementById('rename-input').addEventListener('keydown',function(e){if(e.key==='Enter'){var fn=document.getElementById('rename-input').value.trim()||'fusion';hideModal('rename-modal');Merge.doMerge(fn);}if(e.key==='Escape')hideModal('rename-modal');});
-
   document.getElementById('btn-zoom-in').addEventListener('click',function(){UI.setZoom(S.zoom+.1);});
   document.getElementById('btn-zoom-out').addEventListener('click',function(){UI.setZoom(S.zoom-.1);});
 
@@ -1848,7 +1867,6 @@ var BottomSheet={
   document.getElementById('range-from').addEventListener('input',function(){Extract.updatePreview();});
   document.getElementById('range-to').addEventListener('input',function(){Extract.updatePreview();});
 
-  document.getElementById('btn-split').addEventListener('click',function(){Toast.show('Survolez entre deux pages et cliquez ✂ Couper ici','success');});
   document.getElementById('split-cancel').addEventListener('click',function(){hideModal('split-modal');});
   document.getElementById('split-ok').addEventListener('click',function(){Split.confirm&&Split.confirm();});
   document.querySelectorAll('.split-opt').forEach(function(opt){opt.addEventListener('click',function(){document.querySelectorAll('.split-opt').forEach(function(o){o.classList.remove('sel');});opt.classList.add('sel');});});
@@ -1916,7 +1934,6 @@ var BottomSheet={
   function closeFab(){document.getElementById('fab-btn').classList.remove('open');document.getElementById('fab-menu').classList.remove('open');}
   document.addEventListener('click',function(e){if(!e.target.closest('#fab-btn')&&!e.target.closest('#fab-menu'))closeFab();});
   document.getElementById('fm-extract').addEventListener('click',function(){closeFab();Extract.open();});
-  document.getElementById('fm-split').addEventListener('click',function(){closeFab();Toast.show('Survolez entre deux pages et cliquez ✂ Couper ici','success');});
   document.getElementById('fm-compress').addEventListener('click',function(){closeFab();Compress.open();});
   document.getElementById('fm-export-img').addEventListener('click',function(){closeFab();ExportImg.open();});
 
@@ -1962,7 +1979,7 @@ var BottomSheet={
     else if((e.key==='Delete'||e.key==='Backspace')&&S.sel.size)Pages.delSel();
   });
 
-  ['rename-modal','range-modal','split-modal','compress-modal','exportimg-modal','print-modal'].forEach(function(id){document.getElementById(id).addEventListener('click',function(e){if(e.target===document.getElementById(id))hideModal(id);});});
+  ['range-modal','split-modal','compress-modal','exportimg-modal','print-modal'].forEach(function(id){document.getElementById(id).addEventListener('click',function(e){if(e.target===document.getElementById(id))hideModal(id);});});
 
   UI.renderAll();
   History.render();
