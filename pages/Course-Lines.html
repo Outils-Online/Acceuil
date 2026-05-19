@@ -170,10 +170,9 @@ header {
   background: linear-gradient(145deg, rgba(253,252,240,0.7) 0%, rgba(253,252,240,0.2) 100%);
   z-index: -1;
 }
-.card:hover, .catalog-card:hover {
-  transform: translateY(-8px);
-  box-shadow: var(--shadow-hover);
-}
+.card:hover { transform: translateY(-8px); box-shadow: var(--shadow-hover); }
+.catalog-card:hover { box-shadow: var(--shadow-hover); }
+.catalog-card.drag-ghost { opacity:0.35; transform: scale(0.97); }
 .card-title {
   font-family: var(--font-display); font-size: 0.75rem; font-weight: 700;
   letter-spacing: 1.2px; text-transform: uppercase;
@@ -611,6 +610,23 @@ select option { background: white; }
 .folder-body.collapsed { display: none; }
 .folder-header .folder-count { font-size: 0.6rem; color: var(--color-secondary); font-weight: 600; opacity: 0.7; }
 .folder-header:hover { color: var(--color-accent); }
+.folder-header.drop-target {
+  background: rgba(255,217,114,0.25);
+  border-radius: 10px;
+  outline: 2px dashed var(--color-highlight);
+  color: var(--color-primary);
+}
+/* Move folder modal options */
+.move-folder-option {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px; border-radius: 12px; cursor: pointer;
+  border: 1px solid var(--border-color); background: var(--surface);
+  font-size: 0.88rem; font-weight: 600; color: var(--text-main);
+  transition: all 0.15s;
+}
+.move-folder-option:hover { border-color: var(--color-accent); background: rgba(244,96,96,0.05); }
+.move-folder-option.active { border-color: var(--color-accent); background: rgba(244,96,96,0.08); }
+
 /* drag-over highlight for folders */
 .folder-header.drag-over-folder {
   background: rgba(255,217,114,0.18); border-radius: 10px;
@@ -2673,27 +2689,32 @@ function renderLabo() {
     return a.localeCompare(b, 'fr');
   });
 
-  const _collapsedFolders = window._collapsedFolders || {};
+  // Initialiser _collapsedFolders : fermer tous les dossiers nommés par défaut
+  if (!window._collapsedFolders) {
+    window._collapsedFolders = {};
+    folderNames.forEach(f => { if (f) window._collapsedFolders[f] = true; });
+  }
+  const _collapsedFolders = window._collapsedFolders;
 
   let html = '';
   folderNames.forEach(folder => {
     const recipes = groups[folder];
-    const isCollapsed = !!_collapsedFolders[folder || '__none__'];
+    const key = folder || '__none__';
+    if (folder && _collapsedFolders[key] === undefined) _collapsedFolders[key] = true;
+    const isCollapsed = !!_collapsedFolders[key];
     const label = folder || 'Sans dossier';
     const iconOpen = folder ? 'fa-folder-open' : 'fa-layer-group';
     const iconClosed = folder ? 'fa-folder' : 'fa-layer-group';
 
     if (folderNames.length > 1 || folder) {
-      html += `<div class="folder-group">
+      html += `<div class="folder-group" data-folder="${escapeAttr(folder)}">
         <div class="folder-header ${isCollapsed ? 'collapsed' : ''}"
-          onclick="toggleFolder('${escapeAttr(folder || '__none__')}')"
-          ondragover="event.preventDefault(); this.classList.add('drag-over-folder')"
-          ondragleave="this.classList.remove('drag-over-folder')"
-          ondrop="dropOnFolder(event, '${escapeAttr(folder)}')"
+          onclick="toggleFolder('${escapeAttr(key)}')"
         >
           <i class="fa-solid ${isCollapsed ? iconClosed : iconOpen}"></i>
           <span>${escapeHtml(label)}</span>
           <span class="folder-count">(${recipes.length})</span>
+          ${folder ? `<button onclick="event.stopPropagation();renameFolderPrompt('${escapeAttr(folder)}')" style="margin-left:6px;background:none;border:none;cursor:pointer;color:var(--color-secondary);font-size:0.7rem;padding:2px 4px;border-radius:6px;transition:color 0.15s;" title="Renommer"><i class="fa-solid fa-pen-to-square"></i></button>` : ''}
           <i class="fa-solid fa-chevron-down folder-chevron"></i>
         </div>
         <div class="folder-body ${isCollapsed ? 'collapsed' : ''}">
@@ -2706,20 +2727,12 @@ function renderLabo() {
   });
   container.innerHTML = html;
 
-  // Activer le drag sur toutes les catalog-cards
-  container.querySelectorAll('.catalog-card[draggable]').forEach(card => {
-    card.addEventListener('dragstart', e => {
-      e.dataTransfer.setData('text/plain', card.dataset.recipeId);
-      card.classList.add('dragging');
-    });
-    card.addEventListener('dragend', () => card.classList.remove('dragging'));
-  });
 }
 
 function _recipeCatalogCard(r) {
   const cost = recipeUnitCost(r);
-  return `<div class="catalog-card" draggable="true" data-recipe-id="${r.id}">
-    <div>
+  return `<div class="catalog-card" data-recipe-id="${r.id}" style="cursor:grab;user-select:none;">
+    <div style="min-width:0;flex:1;pointer-events:none;">
       <div class="catalog-name">${escapeHtml(r.name)}</div>
       <div class="catalog-meta">${r.ingredients.length} ingrédient${r.ingredients.length>1?'s':''}</div>
       ${cost > 0 ? `<div class="catalog-cost"><i class="fa-solid fa-euro-sign" style="font-size:0.7rem"></i> ${cost.toFixed(2)} € / unité</div>` : ''}
@@ -2738,16 +2751,169 @@ function toggleFolder(key) {
   renderLabo();
 }
 
-function dropOnFolder(event, folderName) {
-  event.preventDefault();
-  event.currentTarget.classList.remove('drag-over-folder');
-  const id = parseInt(event.dataTransfer.getData('text/plain'));
-  if (!id) return;
-  const recipe = state.recipes.find(r => r.id === id);
+/* ── Custom pointer-drag for catalog cards ─────────────────────────── */
+(function() {
+  let dragging = null;   // { recipeId, ghost, startX, startY, moved }
+  let lastTarget = null;
+
+  function getPointer(e) {
+    return e.touches ? e.touches[0] : e;
+  }
+
+  function getFolderHeaderAt(x, y) {
+    const el = document.elementFromPoint(x, y);
+    if (!el) return null;
+    return el.closest('.folder-header');
+  }
+
+  function startDrag(e, card) {
+    if (e.target.closest('button')) return; // don't drag when clicking buttons
+    const pt = getPointer(e);
+    const rect = card.getBoundingClientRect();
+    const ghost = card.cloneNode(true);
+    ghost.style.cssText = `position:fixed;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;
+      opacity:0.85;pointer-events:none;z-index:9999;border-radius:var(--radius);
+      box-shadow:0 16px 40px rgba(0,0,0,0.18);transform:rotate(1.5deg) scale(1.03);
+      transition:none;background:var(--surface);border:1px solid var(--border-color);
+      padding:20px;display:flex;align-items:center;justify-content:space-between;`;
+    document.body.appendChild(ghost);
+    card.classList.add('drag-ghost');
+    dragging = {
+      recipeId: parseInt(card.dataset.recipeId),
+      ghost,
+      card,
+      offX: pt.clientX - rect.left,
+      offY: pt.clientY - rect.top,
+      moved: false
+    };
+    e.preventDefault();
+  }
+
+  function onMove(e) {
+    if (!dragging) return;
+    const pt = getPointer(e);
+    dragging.moved = true;
+    dragging.ghost.style.left = (pt.clientX - dragging.offX) + 'px';
+    dragging.ghost.style.top  = (pt.clientY - dragging.offY) + 'px';
+
+    // highlight folder under cursor
+    const header = getFolderHeaderAt(pt.clientX, pt.clientY);
+    if (header !== lastTarget) {
+      if (lastTarget) lastTarget.classList.remove('drop-target');
+      if (header) header.classList.add('drop-target');
+      lastTarget = header;
+    }
+    e.preventDefault();
+  }
+
+  function onEnd(e) {
+    if (!dragging) return;
+    const pt = e.changedTouches ? e.changedTouches[0] : e;
+    dragging.ghost.remove();
+    dragging.card.classList.remove('drag-ghost');
+    if (lastTarget) lastTarget.classList.remove('drop-target');
+
+    if (dragging.moved) {
+      const header = getFolderHeaderAt(pt.clientX, pt.clientY);
+      if (header) {
+        const folderGroup = header.closest('.folder-group');
+        const folderName = folderGroup ? (folderGroup.dataset.folder || '') : '';
+        const recipe = state.recipes.find(r => r.id === dragging.recipeId);
+        if (recipe && recipe.folder !== folderName) {
+          recipe.folder = folderName;
+          saveState();
+          renderLabo();
+          toast('"' + recipe.name + '" → "' + (folderName || 'Sans dossier') + '" ✓');
+        }
+      }
+    }
+    dragging = null;
+    lastTarget = null;
+  }
+
+  // Attach to catalog-display via event delegation
+  document.addEventListener('mousedown', e => {
+    const card = e.target.closest('.catalog-card');
+    if (card) startDrag(e, card);
+  });
+  document.addEventListener('touchstart', e => {
+    const card = e.target.closest('.catalog-card');
+    if (card) startDrag(e, card);
+  }, { passive: false });
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('touchmove', onMove, { passive: false });
+  document.addEventListener('mouseup', onEnd);
+  document.addEventListener('touchend', onEnd);
+})();
+
+function renameFolderPrompt(folderName) {
+  const newName = prompt('Renommer le dossier "' + folderName + '" en :', folderName);
+  if (!newName || newName.trim() === folderName) return;
+  const trimmed = newName.trim();
+  state.recipes.forEach(r => { if (r.folder === folderName) r.folder = trimmed; });
+  if (window._collapsedFolders) {
+    const val = window._collapsedFolders[folderName];
+    delete window._collapsedFolders[folderName];
+    window._collapsedFolders[trimmed] = val;
+  }
+  saveState();
+  renderLabo();
+  toast('Dossier renommé ✓');
+}
+
+function showMoveFolderModal(recipeId) {
+  const recipe = state.recipes.find(r => r.id === recipeId);
+  if (!recipe) return;
+  const folders = [...new Set(state.recipes.map(r => r.folder).filter(Boolean))].sort((a,b) => a.localeCompare(b,'fr'));
+  const existing = document.getElementById('move-folder-modal');
+  if (existing) existing.remove();
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.id = 'move-folder-modal';
+  const currentFolder = recipe.folder || '';
+  const folderOptions = [
+    `<div class="move-folder-option ${currentFolder===''?'active':''}" onclick="applyMoveFolder(${recipeId},'')">
+      <i class="fa-solid fa-layer-group" style="color:var(--color-secondary);width:18px;"></i>
+      <span>Sans dossier</span>
+      ${currentFolder==='' ? '<i class="fa-solid fa-check" style="margin-left:auto;color:var(--color-accent);"></i>' : ''}
+    </div>`,
+    ...folders.map(f => `<div class="move-folder-option ${currentFolder===f?'active':''}" onclick="applyMoveFolder(${recipeId},'${escapeAttr(f)}')">
+      <i class="fa-solid fa-folder" style="color:var(--color-highlight);width:18px;"></i>
+      <span>${escapeHtml(f)}</span>
+      ${currentFolder===f ? '<i class="fa-solid fa-check" style="margin-left:auto;color:var(--color-accent);"></i>' : ''}
+    </div>`)
+  ].join('');
+  modal.innerHTML = `<div class="modal-sheet" style="padding:20px;">
+    <div class="modal-handle"></div>
+    <div class="modal-title"><i class="fa-solid fa-folder-open" style="color:var(--color-highlight);margin-right:8px;"></i>Déplacer "${escapeHtml(recipe.name)}"</div>
+    <div class="modal-sub">Choisir le dossier de destination</div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px;">${folderOptions}</div>
+    <div style="display:flex;gap:8px;">
+      <input type="text" id="move-folder-new-input" placeholder="Nouveau dossier…" style="flex:1;" />
+      <button class="btn btn-success" style="width:auto;padding:12px 16px;" onclick="applyMoveFolderNew(${recipeId})"><i class="fa-solid fa-plus"></i></button>
+    </div>
+    <div class="modal-actions" style="margin-top:12px;">
+      <button class="btn btn-neutral" onclick="document.getElementById('move-folder-modal').remove()">Annuler</button>
+    </div>
+  </div>`;
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  document.body.appendChild(modal);
+}
+
+function applyMoveFolder(recipeId, folderName) {
+  const recipe = state.recipes.find(r => r.id === recipeId);
   if (!recipe) return;
   recipe.folder = folderName;
   saveState();
-  toast(`"${recipe.name}" déplacé vers "${folderName || 'Sans dossier'}" ✓`);
+  document.getElementById('move-folder-modal')?.remove();
+  renderLabo();
+  toast('"' + recipe.name + '" → "' + (folderName || 'Sans dossier') + '" ✓');
+}
+
+function applyMoveFolderNew(recipeId) {
+  const val = (document.getElementById('move-folder-new-input')?.value || '').trim();
+  if (!val) return;
+  applyMoveFolder(recipeId, val);
 }
 
 function updateFolderAC(input) {
