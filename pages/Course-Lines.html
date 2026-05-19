@@ -274,6 +274,17 @@ select option { background: white; }
 .session-banner-top {
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
 }
+.session-panel {
+  overflow: hidden;
+  transition: max-height 0.28s ease, opacity 0.28s ease;
+  max-height: 300px;
+  opacity: 1;
+}
+.session-panel.collapsed {
+  max-height: 0;
+  opacity: 0;
+}
+
 .session-banner-actions {
   display: flex; align-items: center; gap: 6px; flex-shrink: 0;
 }
@@ -408,6 +419,15 @@ select option { background: white; }
 .list-item:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); }
 .list-item.done { opacity: 0.5; }
 .list-item.done .item-name { text-decoration: line-through; }
+/* Swipe-to-mute */
+.swipe-wrapper { position: relative; margin-bottom: 8px; border-radius: var(--radius-sm); }
+.swipe-reveal { position: absolute; right: 0; top: 0; bottom: 0; width: 80px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; background: rgba(0,100,102,0.15); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; opacity: 0; transition: opacity 0.15s; pointer-events: none; }
+.swipe-reveal i { font-size: 1rem; color: var(--color-secondary); }
+.swipe-reveal span { font-size: 0.58rem; font-weight: 700; color: var(--color-secondary); text-transform: uppercase; letter-spacing: 1px; }
+.swipe-wrapper .list-item { margin-bottom: 0; transition: transform 0.25s ease; touch-action: pan-y; user-select: none; }
+.list-item.is-muted { opacity: 0.45; }
+.list-item.is-muted .qty-big { text-decoration: line-through; }
+.muted-tag { font-size: 0.6rem; font-weight: 700; color: var(--color-secondary); background: rgba(0,100,102,0.1); border-radius: 6px; padding: 1px 6px; margin-left: 4px; }
 .item-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .item-name {
   font-weight: 600; font-size: 0.92rem;
@@ -575,6 +595,28 @@ select option { background: white; }
 .catalog-meta { font-size: 0.72rem; color: var(--color-secondary); margin-top: 4px; }
 .catalog-cost { font-size: 0.78rem; color: var(--color-accent); font-weight: 700; margin-top: 6px; display: inline-flex; align-items: center; gap: 5px; }
 .catalog-actions { display: flex; gap: 8px; flex-shrink: 0; align-items: center; }
+
+/* ---------- FOLDERS ---------- */
+.folder-group { margin-bottom: 18px; }
+.folder-header {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 4px 8px; cursor: pointer; user-select: none;
+  font-family: var(--font-display); font-size: 0.62rem; font-weight: 800;
+  letter-spacing: 2px; text-transform: uppercase; color: var(--color-primary);
+}
+.folder-header i.fa-folder, .folder-header i.fa-folder-open { color: var(--color-highlight); font-size: 0.85rem; filter: drop-shadow(0 1px 2px rgba(255,217,114,0.4)); }
+.folder-header .folder-chevron { margin-left: auto; font-size: 0.7rem; color: var(--color-secondary); transition: transform 0.25s var(--ease); }
+.folder-header.collapsed .folder-chevron { transform: rotate(-90deg); }
+.folder-body { }
+.folder-body.collapsed { display: none; }
+.folder-header .folder-count { font-size: 0.6rem; color: var(--color-secondary); font-weight: 600; opacity: 0.7; }
+.folder-header:hover { color: var(--color-accent); }
+/* drag-over highlight for folders */
+.folder-header.drag-over-folder {
+  background: rgba(255,217,114,0.18); border-radius: 10px;
+  outline: 2px dashed var(--color-highlight);
+}
+.catalog-card.dragging { opacity: 0.4; }
 
 /* ---------- SEARCH ---------- */
 .search-field { position: relative; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
@@ -804,7 +846,7 @@ select option { background: white; }
       <div class="session-banner">
         <!-- Ligne 1 : label + actions compactes -->
         <div class="session-banner-top">
-          <span class="session-label" style="margin:0;"><i class="fa-solid fa-list-check" style="margin-right:5px;color:var(--color-accent);"></i><span id="active-session-name"></span></span>
+          <button onclick="toggleSessionPanel()" style="background:none;border:none;cursor:pointer;padding:0;display:flex;align-items:center;gap:6px;" title="Afficher/masquer les filtres"><span class="session-label" style="margin:0;"><i class="fa-solid fa-list-check" style="margin-right:5px;color:var(--color-accent);"></i><span id="active-session-name"></span></span><i class="fa-solid fa-chevron-down" id="session-panel-toggle" style="font-size:0.55rem;color:var(--color-secondary);opacity:0.5;transition:transform 0.25s ease;"></i></button>
           <div class="session-banner-actions">
             <div class="session-cost" id="session-cost-badge" style="display:none;"><i class="fa-solid fa-coins"></i> <span id="session-cost-total"></span></div>
             <button class="btn-export-list" onclick="shareListURL()" title="Partager"><i class="fa-solid fa-share-nodes"></i></button>
@@ -814,12 +856,15 @@ select option { background: white; }
             <button class="btn-reset" onclick="resetSession()"><i class="fa-solid fa-trash-can"></i></button>
           </div>
         </div>
-        <!-- Ligne 2 : tags recettes cliquables (collapsibles) -->
+        <div class="session-panel" id="session-panel">
+        <!-- Ligne 2 : tags recettes cliquables -->
         <div id="session-text" class="session-text" style="margin-top:8px;">—</div>
         <!-- Ligne 3 : chips magasins (si renseignés) -->
         <div id="session-shop-filters" style="display:none; margin-top:8px; flex-wrap:wrap; gap:6px;"></div>
         <!-- Ligne 4 : filtre actif -->
         <div id="active-filter-bar" style="display:none; margin-top:6px; padding-top:6px; border-top:1px solid var(--border-color);"></div>
+
+        </div>
       </div>
       <div id="list-display"></div>
       <div id="list-filter-bar" class="list-filter-bar" style="display:none;"></div>
@@ -836,6 +881,13 @@ select option { background: white; }
           <div class="field-group">
             <div class="field-label">Nom de la recette</div>
             <input type="text" id="recipe-name" placeholder="ex: Burger Signature">
+          </div>
+          <div class="field-group">
+            <div class="field-label">Dossier <span style="font-weight:400;opacity:0.6;">(optionnel)</span></div>
+            <div style="position:relative;">
+              <input type="text" id="recipe-folder" placeholder="ex: Sauces, Desserts…" autocomplete="off" oninput="updateFolderAC(this)">
+              <div id="folder-ac-box" style="position:absolute;top:calc(100% + 4px);left:0;right:0;background:white;border:1px solid var(--border-color);border-radius:var(--radius-sm);z-index:500;display:none;overflow:hidden;box-shadow:var(--shadow);"></div>
+            </div>
           </div>
           <div id="recipe-rows" class="ing-list"></div>
           <div id="recipe-total-cost" class="cost-pill" style="display:none; margin-bottom:14px;"><i class="fa-solid fa-coins"></i> </div>
@@ -888,7 +940,8 @@ let state = {
   sessions: {},
   currentSessionId: null,
   recipes: [], 
-  categoryOrder: [...DEFAULT_CATEGORIES]
+  categoryOrder: [...DEFAULT_CATEGORIES],
+  ingredientDB: {}  // clé: nom.toLowerCase() → { name, unit, price, cat, shop, updatedAt }
 };
 
 function toggleCard(titleElement) {
@@ -1047,6 +1100,8 @@ function addSingleFromModal(name, qty, unit, cat, price, shop) {
   const exist = sess.list.find(i => i.name.toLowerCase() === name.toLowerCase() && i.unit === unit);
   if (exist) { exist.qty = parseFloat((exist.qty + qty).toFixed(4)); exist.done = false; }
   else sess.list.push({ name, qty, unit, cat, price: price || 0, shop: shop || '', done: false });
+  // Mémorise cet ingrédient dans la base de connaissances
+  saveToIngredientDB(name, unit, price, cat, shop);
   // sess.singles est recalculé dynamiquement dans renderListView
   saveState();
   toast(`${name} ajouté à la liste ✓`);
@@ -1060,6 +1115,14 @@ function resetSession() {
   pushUndoState();
   sess.list = []; sess.recipes = {}; sess.singles = 0; sess.totalCost = 0;
   saveState(); toast('Liste réinitialisée', 'info');
+}
+
+function muteItem(name, unit) {
+  const sess = currentSession();
+  const item = sess.list.find(i => i.name === name && i.unit === unit);
+  if (!item) return;
+  item.muted = !item.muted;
+  saveState();
 }
 
 function toggleItem(name, unit) {
@@ -1278,19 +1341,51 @@ function confirmIngModal(editIdx) {
 
   const ing = { id: editIdx !== null ? (_ings[editIdx]?.id || Date.now()) : Date.now(), name, qty, unit, price, cat, shop };
   if (editIdx !== null) { _ings[editIdx] = ing; } else { _ings.push(ing); }
+  // Mémorise cet ingrédient dans la base de connaissances
+  saveToIngredientDB(name, unit, price, cat, shop);
+  saveState();
   closeIngModal();
   renderIngList();
   toast(editIdx !== null ? `${name} mis à jour ✓` : `${name} ajouté ✓`);
 }
 
 // Autocomplete nom dans la modal
+
+// Enregistre un ingrédient dans la base de connaissances
+function saveToIngredientDB(name, unit, price, cat, shop) {
+  if (!name) return;
+  const key = name.toLowerCase().trim();
+  state.ingredientDB[key] = {
+    name: name.trim(),
+    unit: unit || 'kg',
+    price: price || 0,
+    cat: cat || DEFAULT_CATEGORIES[0],
+    shop: shop || '',
+    updatedAt: Date.now()
+  };
+}
+
+// Récupère tous les ingrédients connus (DB + fiches)
+function getAllKnownIngredients() {
+  const map = {};
+  // D'abord les fiches (priorité basse)
+  state.recipes.forEach(r => r.ingredients.forEach(i => {
+    const key = i.name.toLowerCase();
+    if (!map[key]) map[key] = { name: i.name, unit: i.unit, price: i.price || 0, cat: i.cat, shop: i.shop || '' };
+  }));
+  // Ensuite la DB (priorité haute — écrase les fiches)
+  Object.values(state.ingredientDB).forEach(i => {
+    map[i.name.toLowerCase()] = i;
+  });
+  return Object.values(map);
+}
+
 function handleIngModalAC(input) {
   const val = input.value.toLowerCase().trim();
   const box = input.nextElementSibling;
   if (val.length < 1) { box.style.display = 'none'; return; }
-  const known = [];
-  state.recipes.forEach(r => r.ingredients.forEach(i => { if (!known.find(k => k.name.toLowerCase() === i.name.toLowerCase())) known.push(i); }));
-  const matches = known.filter(i => i.name.toLowerCase().includes(val)).slice(0, 5);
+  const known = getAllKnownIngredients();
+  const matches = known.filter(i => i.name.toLowerCase().includes(val)).slice(0, 6);
   if (matches.length) {
     box.innerHTML = matches.map(m => `<div class="ac-item" onclick="selectIngModalAC('${escapeAttr(m.name)}','${escapeAttr(m.unit)}','${escapeAttr(m.cat)}','${m.price||0}','${escapeAttr(m.shop||'')}')">${escapeHtml(m.name)}<span>${m.unit} · ${m.cat}${m.shop?' · '+m.shop:''}</span></div>`).join('');
     box.style.display = 'block';
@@ -1311,7 +1406,8 @@ function selectIngModalAC(name, unit, cat, price, shop) {
 function prefillIngModal(input) {
   const name = input.value.trim().toLowerCase();
   if (!name) return;
-  const known = state.recipes.flatMap(r => r.ingredients).filter(i => i.name.toLowerCase() === name);
+  const allKnown = getAllKnownIngredients();
+  const known = allKnown.filter(i => i.name.toLowerCase() === name);
   if (!known.length) return;
   const last = known[known.length - 1];
   const priceInput = document.getElementById('im-price');
@@ -1326,7 +1422,7 @@ function handleShopACModal(input) {
   if (!box) return;
   if (val.length < 1) { box.style.display = 'none'; return; }
   const allShops = new Set();
-  state.recipes.forEach(r => r.ingredients.forEach(i => { if (i.shop) allShops.add(i.shop); }));
+  getAllKnownIngredients().forEach(i => { if (i.shop) allShops.add(i.shop); });
   const matches = [...allShops].filter(s => s.toLowerCase().includes(val)).slice(0, 5);
   if (matches.length) {
     box.innerHTML = matches.map(s => `<div class="ac-item" onclick="document.getElementById('im-shop').value='${escapeAttr(s)}'; this.closest('.ac-box').style.display='none'">${escapeHtml(s)}</div>`).join('');
@@ -1396,6 +1492,26 @@ function _recomputeSessionCost() {
     if (recipe) total += recipeUnitCost(recipe) * qty;
   }
   sess.totalCost = parseFloat(total.toFixed(2));
+}
+
+function removeRecipeFromSession(name) {
+  const sess = currentSession();
+  pushUndoState();
+  const recipe = state.recipes.find(r => r.name === name);
+  const qty = sess.recipes[name] || 0;
+  if (recipe) {
+    recipe.ingredients.forEach(ing => {
+      const item = sess.list.find(i => i.name === ing.name && i.unit === ing.unit);
+      if (item) {
+        item.qty = parseFloat((item.qty - ing.qty * qty).toFixed(4));
+        if (item.qty <= 0) sess.list = sess.list.filter(i => !(i.name === ing.name && i.unit === ing.unit));
+      }
+    });
+  }
+  delete sess.recipes[name];
+  if (state.activeFilter?.type === 'recipe' && state.activeFilter?.value === name) state.activeFilter = null;
+  saveState();
+  toast(`"${name}" retiré de la liste`, 'info');
 }
 
 function adjustProdQty(name, delta) {
@@ -1875,14 +1991,15 @@ function saveRecipe() {
   if (!_ings.length) return toast('Ajoute au moins un ingrédient', 'error');
   const valid = _ings.every(i => i.name && i.qty > 0);
   if (!valid) return toast('Vérifie les ingrédients (nom & quantité)', 'error');
+  const folder = (document.getElementById('recipe-folder')?.value || '').trim();
   if (state.editingId) {
     const idx = state.recipes.findIndex(r => r.id === state.editingId);
     const oldIngredients = state.recipes[idx].ingredients.map(i => ({...i}));
-    state.recipes[idx] = { id: state.editingId, name, ingredients: [..._ings] };
+    state.recipes[idx] = { id: state.editingId, name, folder, ingredients: [..._ings] };
     syncRecipeToSessions(oldIngredients, _ings);
     toast(`${name} mis à jour ✓`);
   } else {
-    state.recipes.push({ id: Date.now(), name, ingredients: [..._ings] });
+    state.recipes.push({ id: Date.now(), name, folder, ingredients: [..._ings] });
     toast(`${name} créé ✓`);
   }
   cancelEdit(); saveState();
@@ -1893,6 +2010,8 @@ function editRecipe(id) {
   if (!r) return;
   state.editingId = id;
   document.getElementById('recipe-name').value = r.name;
+  const folderEl = document.getElementById('recipe-folder');
+  if (folderEl) folderEl.value = r.folder || '';
   _ings = r.ingredients.map(i => ({ ...i, id: i.id || Date.now() + Math.random() }));
   renderIngList();
   document.getElementById('labo-title').textContent = 'Modifier : ' + r.name;
@@ -1905,6 +2024,7 @@ function cancelEdit() {
   state.editingId = null;
   _ings = [];
   document.getElementById('recipe-name').value = '';
+  const _fe = document.getElementById('recipe-folder'); if (_fe) _fe.value = '';
   renderIngList();
   document.getElementById('recipe-total-cost').style.display = 'none';
   document.getElementById('labo-title').textContent = 'Créer une Fiche';
@@ -2188,7 +2308,7 @@ function exportTXT() {
           const pm = getPriceMode(item.unit);
           priceStr = `  (${item.price.toFixed(2)} ${pm.label})`;
         }
-        const check = item.done ? '✓ ' : '☐ ';
+        const check = item.done || item.muted ? '✓ ' : '☐ ';
         lines.push(`    ${check}${item.name} : ${qtyStr} ${conv.unit}${priceStr}`);
       });
       if (si < shopKeys.length - 1 && shopKey) lines.push('');
@@ -2237,9 +2357,8 @@ function renderListView() {
     const isActive = af?.type === 'recipe' && af?.value === n;
     parts.push(`<span class="tag ${isActive ? 'tag-active' : ''}">
       <span class="tag-qty-controls">
-        <button class="tag-qty-btn" onclick="adjustProdQty('${escapeAttr(n)}',-1)"><i class="fa-solid fa-minus"></i></button>
         <input class="tag-qty-input" type="number" min="1" value="${q}" onchange="setProdQty('${escapeAttr(n)}',this.value)" onclick="this.select()">
-        <button class="tag-qty-btn" onclick="adjustProdQty('${escapeAttr(n)}',1)"><i class="fa-solid fa-plus"></i></button>
+        <button class="tag-qty-btn" onclick="event.stopPropagation();removeRecipeFromSession('${escapeAttr(n)}')" style="color:var(--color-accent);padding:0 5px;" title="Supprimer"><i class="fa-solid fa-xmark"></i></button>
       </span>
       <span class="tag-label tag-clickable ${isActive ? 'tag-active' : ''}" onclick="setActiveFilter('recipe','${escapeAttr(n)}')">
         <span class="recipe-dot" style="background:${color};"></span>${escapeHtml(n)}
@@ -2276,7 +2395,8 @@ function renderListView() {
   const shopBar = document.getElementById('session-shop-filters');
   if (shops.size) {
     shopBar.style.display = 'flex';
-    shopBar.innerHTML = `<span style="font-size:0.6rem;font-weight:700;color:var(--color-secondary);text-transform:uppercase;letter-spacing:1px;align-self:center;white-space:nowrap;"><i class="fa-solid fa-store" style="margin-right:3px;"></i>Magasin :</span>` +
+    const isShopAll = af?.type === 'shopall';
+    shopBar.innerHTML = `<button onclick="setActiveFilter('shopall','__all__')" style="font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;align-self:center;white-space:nowrap;background:none;border:none;cursor:pointer;padding:0;color:${isShopAll ? 'var(--color-accent)' : 'var(--color-secondary)'};"><i class="fa-solid fa-store" style="margin-right:3px;"></i>Magasin</button>` +
       [...shops].map(shop => {
         const isActive = af?.type === 'shop' && af?.value === shop;
         return `<button class="filter-chip ${isActive ? 'active' : ''}" onclick="setActiveFilter('shop','${escapeAttr(shop)}')">${escapeHtml(shop)}</button>`;
@@ -2291,23 +2411,33 @@ function renderListView() {
       ? `<span class="recipe-dot" style="background:${recipeColor(af.value)};width:9px;height:9px;display:inline-block;border-radius:50%;margin-right:5px;"></span>${escapeHtml(af.value)}`
       : af.type === 'manual'
       ? `<span class="recipe-dot" style="background:#545c7a;width:9px;height:9px;display:inline-block;border-radius:50%;margin-right:5px;"></span>Articles manuels`
+      : af.type === 'shopall'
+      ? `<i class="fa-solid fa-store" style="margin-right:5px;"></i>Tri par magasin`
       : `<i class="fa-solid fa-store" style="margin-right:5px;"></i>${escapeHtml(af.value)}`;
     filterBar.innerHTML = `<span style="font-size:0.7rem;color:var(--color-secondary);">Filtre actif :</span> <span style="font-size:0.75rem;font-weight:700;color:var(--color-primary);">${label}</span> <button onclick="clearActiveFilter()" style="background:none;border:none;color:var(--color-accent);cursor:pointer;font-size:0.7rem;font-weight:700;margin-left:6px;"><i class="fa-solid fa-xmark"></i> Effacer</button>`;
   } else { filterBar.style.display = 'none'; filterBar.innerHTML = ''; }
 
+
   const costBadge = document.getElementById('session-cost-badge');
-  // Calcul du coût total = fiches + articles hors-fiche (avec prix)
-  const singleItemsForCost = sess.list.filter(i =>
-    !state.recipes.some(r => r.ingredients.some(ing => ing.name === i.name && ing.unit === i.unit))
-  );
-  const singleCostTotal = singleItemsForCost.reduce((s, i) => s + computeIngCost(i.qty, i.unit, i.price || 0), 0);
-  const totalWithSingles = (sess.totalCost || 0) + singleCostTotal;
-  if (totalWithSingles > 0) { document.getElementById('session-cost-total').textContent = totalWithSingles.toFixed(2) + ' €'; costBadge.style.display = 'flex'; } else { costBadge.style.display = 'none'; }
+  const totalFromList = sess.list.reduce((sum, item) => {
+    if (item.muted) return sum;
+    const ingInfo = state.recipes.flatMap(r => r.ingredients)
+      .find(i => i.name === item.name && i.unit === item.unit);
+    const price = (ingInfo?.price > 0 ? ingInfo.price : item.price) || 0;
+    return sum + computeIngCost(item.qty, item.unit, price);
+  }, 0);
+  if (totalFromList > 0) {
+    document.getElementById('session-cost-total').textContent = totalFromList.toFixed(2) + ' €';
+    costBadge.style.display = 'flex';
+  } else {
+    costBadge.style.display = 'none';
+  }
   document.getElementById('cnt-todo').textContent = sess.list.filter(i => !i.done).length;
   document.getElementById('cnt-done').textContent = sess.list.filter(i => i.done).length;
 
   // --- Filtrage des articles ---
   let items = sess.list.filter(i => i.done === (state.listMode === 'done'));
+  if (af?.type !== 'recipe') window._recipeFilterQtyMap = null;
   if (af) {
     if (af.type === 'manual') {
       const recipeIngKeys = new Set(
@@ -2316,14 +2446,18 @@ function renderListView() {
       items = items.filter(i => !recipeIngKeys.has(i.name.toLowerCase() + '|' + i.unit));
     } else if (af.type === 'recipe') {
       const recipe = state.recipes.find(r => r.name === af.value);
+      const recipeQty = sess.recipes[af.value] || 1;
+      // Construire un map nom|unit -> quantité propre à cette fiche
+      window._recipeFilterQtyMap = {};
+      if (recipe) {
+        recipe.ingredients.forEach(ing => {
+          window._recipeFilterQtyMap[ing.name.toLowerCase() + '|' + ing.unit] = parseFloat((ing.qty * recipeQty).toFixed(4));
+        });
+      }
       const ingNames = recipe ? new Set(recipe.ingredients.map(i => i.name.toLowerCase())) : new Set();
       items = items.filter(i => ingNames.has(i.name.toLowerCase()));
-    } else if (af.type === 'shop') {
-      items = items.filter(item => {
-        const ingInfo = state.recipes.flatMap(r => r.ingredients).find(i => i.name === item.name && i.unit === item.unit);
-        const shop = ingInfo?.shop || item.shop || '';
-        return shop === af.value;
-      });
+    } else {
+      window._recipeFilterQtyMap = null;
     }
   }
 
@@ -2337,6 +2471,78 @@ function renderListView() {
 
   const producedRecipeNames = new Set(Object.keys(sess.recipes));
 
+  // Fonction de rendu d'un item (partagée)
+  // qtyOverride : si fourni, affiche cette quantité à la place de item.qty (utilisé pour le filtre par fiche)
+  const renderItem = (item, dimmed, qtyOverride) => {
+    const relatedRecipes = state.recipes.filter(recipe =>
+      producedRecipeNames.has(recipe.name) &&
+      recipe.ingredients.some(ing => ing.name === item.name && ing.unit === item.unit)
+    );
+    const dotsHtml = relatedRecipes.map(recipe =>
+      `<span class="recipe-dot" style="background:${recipeColor(recipe.name)};" title="${escapeAttr(recipe.name)}"></span>`
+    ).join('');
+    const ingInfo = state.recipes.flatMap(r => r.ingredients).find(i => i.name === item.name && i.unit === item.unit);
+    const shopVal = ingInfo?.shop || item.shop || '';
+    const priceVal = ingInfo?.price || item.price || 0;
+    const priceUnit = ingInfo?.unit || item.unit;
+    const shopTag = shopVal ? `<span class="item-shop"><i class="fa-solid fa-store"></i> ${escapeHtml(shopVal)}</span>` : '';
+    const priceTag = priceVal ? `<span class="item-price-tag">${priceVal.toFixed(2)} ${getPriceMode(priceUnit).label}</span>` : '';
+    const qtyToShow = qtyOverride !== undefined ? qtyOverride : item.qty;
+    const converted = convertToKgAndCeil(qtyToShow, item.unit);
+    const displayQty = converted.isInteger
+      ? String(Math.ceil(converted.value))
+      : converted.value.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(',', '.');
+    const isMuted = !!item.muted;
+    const mutedTag = isMuted ? `<span class="muted-tag"><i class="fa-solid fa-check" style="font-size:0.55rem;margin-right:3px;"></i>en stock</span>` : '';
+    return `<div class="swipe-wrapper" data-swipe-name="${escapeAttr(item.name)}" data-swipe-unit="${escapeAttr(item.unit)}">
+      <div class="swipe-reveal"><i class="fa-solid fa-box-open"></i><span>${isMuted ? 'remettre' : 'en stock'}</span></div>
+      <div class="list-item ${item.done ? 'done' : ''}${dimmed ? ' item-dimmed' : ''}${isMuted ? ' is-muted' : ''}">
+        <button class="btn-icon btn-icon-trash" onclick="delItem('${escapeAttr(item.name)}','${escapeAttr(item.unit)}')"><i class="fa-solid fa-trash"></i></button>
+        <div class="item-info">
+          <span class="item-name" onclick="muteItem('${escapeAttr(item.name)}','${escapeAttr(item.unit)}')" style="cursor:pointer;">${escapeHtml(item.name)}${mutedTag}</span>
+          <div class="item-meta-row">${dotsHtml}${shopTag}${priceTag}</div>
+        </div>
+        <div class="list-qty"><span class="qty-big">${displayQty}</span><span class="qty-unit">${converted.unit}</span></div>
+        <button class="btn-icon btn-icon-check" onclick="toggleItem('${escapeAttr(item.name)}','${escapeAttr(item.unit)}')"><i class="fa-solid fa-${item.done ? 'rotate-left' : 'check'}"></i></button>
+      </div>
+    </div>`;
+  };
+
+  // ── Vue triée par magasin (tous) ─────────────────────────────────────
+  if (af?.type === 'shopall' || af?.type === 'shop') {
+    const selectedShop = af.type === 'shop' ? af.value : null;
+    const shopMap = {};
+    items.forEach(item => {
+      const ingInfo = state.recipes.flatMap(r => r.ingredients).find(i => i.name === item.name && i.unit === item.unit);
+      const shop = ingInfo?.shop || item.shop || '__aucun__';
+      shopMap[shop] = shopMap[shop] || [];
+      shopMap[shop].push(item);
+    });
+    // Magasin sélectionné en premier (si filtre spécifique), puis les autres triés
+    const allShops = Object.keys(shopMap).filter(s => s !== '__aucun__').sort();
+    const shopOrder = selectedShop
+      ? [selectedShop, ...allShops.filter(s => s !== selectedShop)]
+      : allShops;
+    if (shopMap['__aucun__']) shopOrder.push('__aucun__');
+    shopOrder.forEach(shopKey => {
+      if (!shopMap[shopKey]) return;
+      const isSelected = !selectedShop || shopKey === selectedShop;
+      const shopLabel = shopKey === '__aucun__' ? 'Sans magasin' : shopKey;
+      display.innerHTML += `<div class="category-header" style="${shopKey === selectedShop ? 'color:var(--color-accent);border-color:var(--color-accent);' : !selectedShop ? '' : 'opacity:0.5;'}"><i class="fa-solid fa-store" style="margin-right:6px;font-size:0.65rem;"></i>${escapeHtml(shopLabel)}</div>`;
+      // Grouper par rayon dans ce magasin
+      const byCat = {};
+      shopMap[shopKey].forEach(i => { byCat[i.cat] = byCat[i.cat] || []; byCat[i.cat].push(i); });
+      const catOrder = state.categoryOrder.filter(c => byCat[c]).concat(Object.keys(byCat).filter(c => !state.categoryOrder.includes(c)));
+      catOrder.forEach((cat, ci) => {
+        const sepStyle = `display:flex;align-items:center;gap:8px;margin:${ci===0?'2px':'8px'} 12px 2px;opacity:${isSelected?'0.35':'0.2'};`;
+        display.innerHTML += `<div style="${sepStyle}"><span style="font-size:0.55rem;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;white-space:nowrap;color:var(--color-secondary);">${escapeHtml(cat)}</span><div style="flex:1;height:1px;background:var(--color-border);"></div></div>`;
+        byCat[cat].forEach(item => { display.innerHTML += renderItem(item, !isSelected); });
+      });
+    });
+    return;
+  }
+
+  // ── Vue normale par rayon ─────────────────────────────────────────────
   const grouped = {};
   items.forEach(i => { grouped[i.cat] = grouped[i.cat] || []; grouped[i.cat].push(i); });
   const ordered = state.categoryOrder.filter(c => grouped[c]).concat(Object.keys(grouped).filter(c => !state.categoryOrder.includes(c)));
@@ -2349,42 +2555,7 @@ function renderListView() {
     if (!grouped[cat]) return;
     const allDone = grouped[cat].every(i => i.done);
     display.innerHTML += `<div class="category-header${dimmed ? ' cat-done' : ''}">${escapeHtml(cat)}${allDone ? ' <i class="fa-solid fa-check" style="font-size:0.6rem;opacity:0.5;margin-left:4px;"></i>' : ''}</div>`;
-    grouped[cat].forEach(item => {
-      const relatedRecipes = state.recipes.filter(recipe =>
-        producedRecipeNames.has(recipe.name) &&
-        recipe.ingredients.some(ing => ing.name === item.name && ing.unit === item.unit)
-      );
-      const dotsHtml = relatedRecipes.map(recipe =>
-        `<span class="recipe-dot" style="background:${recipeColor(recipe.name)};" title="${escapeAttr(recipe.name)}"></span>`
-      ).join('');
-      const ingInfo = state.recipes.flatMap(r => r.ingredients).find(i => i.name === item.name && i.unit === item.unit);
-      // Pour les articles hors-fiche, utilise les données directes de l'item
-      const shopVal = ingInfo?.shop || item.shop || '';
-      const priceVal = ingInfo?.price || item.price || 0;
-      const priceUnit = ingInfo?.unit || item.unit;
-      const shopTag = shopVal ? `<span class="item-shop"><i class="fa-solid fa-store"></i> ${escapeHtml(shopVal)}</span>` : '';
-      const priceTag = (() => {
-        if (!priceVal) return '';
-        const pm = getPriceMode(priceUnit);
-        return `<span class="item-price-tag">${priceVal.toFixed(2)} ${pm.label}</span>`;
-      })();
-      const converted = convertToKgAndCeil(item.qty, item.unit);
-      const displayQty = converted.isInteger
-        ? String(Math.ceil(converted.value))
-        : converted.value.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(',', '.');
-      display.innerHTML += `<div class="list-item ${item.done ? 'done' : ''}${dimmed ? ' item-dimmed' : ''}">
-        <button class="btn-icon btn-icon-trash" onclick="delItem('${escapeAttr(item.name)}','${escapeAttr(item.unit)}')"><i class="fa-solid fa-trash"></i></button>
-        <div class="item-info">
-          <span class="item-name">${escapeHtml(item.name)}</span>
-          <div class="item-meta-row">${dotsHtml}${shopTag}${priceTag}</div>
-        </div>
-        <div class="list-qty">
-          <span class="qty-big">${displayQty}</span>
-          <span class="qty-unit">${converted.unit}</span>
-        </div>
-        <button class="btn-icon btn-icon-check" onclick="toggleItem('${escapeAttr(item.name)}','${escapeAttr(item.unit)}')"><i class="fa-solid fa-${item.done ? 'rotate-left' : 'check'}"></i></button>
-      </div>`;
-    });
+    grouped[cat].forEach(item => { const _k = item.name.toLowerCase() + '|' + item.unit; const _ovr = (window._recipeFilterQtyMap && window._recipeFilterQtyMap[_k] !== undefined) ? window._recipeFilterQtyMap[_k] : undefined; display.innerHTML += renderItem(item, dimmed, _ovr); });
   };
 
   activeOrdered.forEach(cat => renderCat(cat, false));
@@ -2401,8 +2572,51 @@ function setActiveFilter(type, value) {
   } else {
     state.activeFilter = { type, value };
   }
-  // Bascule sur la vue "À acheter" pour voir les résultats filtrés
   setMode('todo');
+}
+
+function showRecipeDetailModal(recipeName) {
+  document.getElementById('recipe-detail-modal')?.remove();
+  const recipe = state.recipes.find(r => r.name === recipeName);
+  const sess = currentSession();
+  const qty = sess.recipes[recipeName] || 1;
+  const cost = recipe ? recipeUnitCost(recipe) * qty : 0;
+  const color = recipeColor(recipeName);
+
+  const ingsHtml = recipe ? recipe.ingredients.map(ing => {
+    const total = parseFloat((ing.qty * qty).toFixed(4));
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--glass);border:1px solid var(--border-color);border-radius:12px;margin-bottom:7px;">
+      <span style="font-weight:600;font-size:0.88rem;color:var(--text-main);">${escapeHtml(ing.name)}</span>
+      <span style="font-family:var(--font-display);font-size:1.0rem;color:var(--color-accent);font-weight:700;">${total} <span style="font-size:0.65rem;color:var(--color-secondary);font-weight:600;">${escapeHtml(ing.unit)}</span></span>
+    </div>`;
+  }).join('') : '<p style="color:var(--color-secondary);font-size:0.85rem;">Fiche introuvable.</p>';
+
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.id = 'recipe-detail-modal';
+  modal.innerHTML = `
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-sheet-inner">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+          <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${color};flex-shrink:0;box-shadow:0 0 0 2px rgba(0,0,0,0.08);"></span>
+          <div class="modal-title" style="margin-bottom:0;">${escapeHtml(recipeName)}</div>
+        </div>
+        <div class="modal-sub">${qty} unité${qty > 1 ? 's' : ''} en production${cost > 0 ? ` · <b style="color:var(--color-accent);">${cost.toFixed(2)} €</b>` : ''}</div>
+        <div style="font-size:0.6rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--color-secondary);margin-bottom:10px;">Proportions</div>
+        ${ingsHtml}
+        <div class="modal-actions">
+          <button class="btn btn-neutral" style="flex:1;" onclick="document.getElementById('recipe-detail-modal').remove(); state.activeFilter={type:'recipe',value:'${escapeAttr(recipeName)}'}; setMode('todo');">
+            <i class="fa-solid fa-filter"></i> Filtrer les articles
+          </button>
+          <button class="btn btn-danger" style="width:46px;min-width:46px;padding:0;" onclick="document.getElementById('recipe-detail-modal').remove();" title="Fermer">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </div>
+    </div>`;
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  document.body.appendChild(modal);
 }
 
 function deleteAllManuals() {
@@ -2421,6 +2635,15 @@ function deleteAllManuals() {
   toast(`${manualItems.length} article${manualItems.length > 1 ? 's' : ''} supprimé${manualItems.length > 1 ? 's' : ''} ✓`, 'info');
 }
 
+function toggleSessionPanel() {
+  const panel = document.getElementById('session-panel');
+  const icon = document.getElementById('session-panel-toggle');
+  const isOpen = !panel.classList.contains('collapsed');
+  panel.classList.toggle('collapsed', isOpen);
+  if (icon) icon.style.transform = isOpen ? 'rotate(180deg)' : '';
+  try { localStorage.setItem('sessionPanelOpen', String(!isOpen)); } catch(e) {}
+}
+
 function clearActiveFilter() {
   state.activeFilter = null;
   render();
@@ -2431,11 +2654,111 @@ function renderLabo() {
   const filtered = q ? state.recipes.filter(r => r.name.toLowerCase().includes(q)) : state.recipes;
   const container = document.getElementById('catalog-display');
   if (!container) return;
-  if (!filtered.length) { container.innerHTML = `<div class="empty"><i class="fa-solid fa-book-open"></i><p>${q ? 'Aucun résultat' : 'Aucune fiche créée'}</p></div>`; return; }
-  container.innerHTML = filtered.map(r => {
-    const cost = recipeUnitCost(r);
-    return `<div class="catalog-card"><div><div class="catalog-name">${escapeHtml(r.name)}</div><div class="catalog-meta">${r.ingredients.length} ingrédient${r.ingredients.length>1?'s':''}</div>${cost > 0 ? `<div class="catalog-cost"><i class="fa-solid fa-euro-sign" style="font-size:0.7rem"></i> ${cost.toFixed(2)} € / unité</div>` : ''}</div><div class="catalog-actions"><button class="btn-icon btn-icon-edit" onclick="editRecipe(${r.id})"><i class="fa-solid fa-pen"></i></button><button class="btn-icon btn-icon-export" onclick="exportRecipe(${r.id})" title="Exporter la fiche"><i class="fa-solid fa-file-export"></i></button><button class="btn-icon btn-icon-trash" onclick="deleteRecipe(${r.id})"><i class="fa-solid fa-trash"></i></button></div></div>`;
-  }).join('');
+  if (!filtered.length) {
+    container.innerHTML = `<div class="empty"><i class="fa-solid fa-book-open"></i><p>${q ? 'Aucun résultat' : 'Aucune fiche créée'}</p></div>`;
+    return;
+  }
+
+  // Regrouper par dossier
+  const groups = {}; // folderName → [recipe]
+  filtered.forEach(r => {
+    const folder = r.folder || '';
+    if (!groups[folder]) groups[folder] = [];
+    groups[folder].push(r);
+  });
+
+  // Dossiers triés : sans dossier en dernier
+  const folderNames = Object.keys(groups).sort((a, b) => {
+    if (a === '') return 1; if (b === '') return -1;
+    return a.localeCompare(b, 'fr');
+  });
+
+  const _collapsedFolders = window._collapsedFolders || {};
+
+  let html = '';
+  folderNames.forEach(folder => {
+    const recipes = groups[folder];
+    const isCollapsed = !!_collapsedFolders[folder || '__none__'];
+    const label = folder || 'Sans dossier';
+    const iconOpen = folder ? 'fa-folder-open' : 'fa-layer-group';
+    const iconClosed = folder ? 'fa-folder' : 'fa-layer-group';
+
+    if (folderNames.length > 1 || folder) {
+      html += `<div class="folder-group">
+        <div class="folder-header ${isCollapsed ? 'collapsed' : ''}"
+          onclick="toggleFolder('${escapeAttr(folder || '__none__')}')"
+          ondragover="event.preventDefault(); this.classList.add('drag-over-folder')"
+          ondragleave="this.classList.remove('drag-over-folder')"
+          ondrop="dropOnFolder(event, '${escapeAttr(folder)}')"
+        >
+          <i class="fa-solid ${isCollapsed ? iconClosed : iconOpen}"></i>
+          <span>${escapeHtml(label)}</span>
+          <span class="folder-count">(${recipes.length})</span>
+          <i class="fa-solid fa-chevron-down folder-chevron"></i>
+        </div>
+        <div class="folder-body ${isCollapsed ? 'collapsed' : ''}">
+          ${recipes.map(r => _recipeCatalogCard(r)).join('')}
+        </div>
+      </div>`;
+    } else {
+      html += recipes.map(r => _recipeCatalogCard(r)).join('');
+    }
+  });
+  container.innerHTML = html;
+
+  // Activer le drag sur toutes les catalog-cards
+  container.querySelectorAll('.catalog-card[draggable]').forEach(card => {
+    card.addEventListener('dragstart', e => {
+      e.dataTransfer.setData('text/plain', card.dataset.recipeId);
+      card.classList.add('dragging');
+    });
+    card.addEventListener('dragend', () => card.classList.remove('dragging'));
+  });
+}
+
+function _recipeCatalogCard(r) {
+  const cost = recipeUnitCost(r);
+  return `<div class="catalog-card" draggable="true" data-recipe-id="${r.id}">
+    <div>
+      <div class="catalog-name">${escapeHtml(r.name)}</div>
+      <div class="catalog-meta">${r.ingredients.length} ingrédient${r.ingredients.length>1?'s':''}</div>
+      ${cost > 0 ? `<div class="catalog-cost"><i class="fa-solid fa-euro-sign" style="font-size:0.7rem"></i> ${cost.toFixed(2)} € / unité</div>` : ''}
+    </div>
+    <div class="catalog-actions">
+      <button class="btn-icon btn-icon-edit" onclick="editRecipe(${r.id})"><i class="fa-solid fa-pen"></i></button>
+      <button class="btn-icon btn-icon-export" onclick="exportRecipe(${r.id})" title="Exporter la fiche"><i class="fa-solid fa-file-export"></i></button>
+      <button class="btn-icon btn-icon-trash" onclick="deleteRecipe(${r.id})"><i class="fa-solid fa-trash"></i></button>
+    </div>
+  </div>`;
+}
+
+function toggleFolder(key) {
+  window._collapsedFolders = window._collapsedFolders || {};
+  window._collapsedFolders[key] = !window._collapsedFolders[key];
+  renderLabo();
+}
+
+function dropOnFolder(event, folderName) {
+  event.preventDefault();
+  event.currentTarget.classList.remove('drag-over-folder');
+  const id = parseInt(event.dataTransfer.getData('text/plain'));
+  if (!id) return;
+  const recipe = state.recipes.find(r => r.id === id);
+  if (!recipe) return;
+  recipe.folder = folderName;
+  saveState();
+  toast(`"${recipe.name}" déplacé vers "${folderName || 'Sans dossier'}" ✓`);
+}
+
+function updateFolderAC(input) {
+  const val = input.value.trim().toLowerCase();
+  const box = document.getElementById('folder-ac-box');
+  // Collecter tous les dossiers existants
+  const folders = [...new Set(state.recipes.map(r => r.folder).filter(Boolean))].sort((a,b) => a.localeCompare(b,'fr'));
+  const matches = val ? folders.filter(f => f.toLowerCase().includes(val)) : folders;
+  if (!matches.length) { box.style.display = 'none'; return; }
+  box.innerHTML = matches.map(f => `<div class="ac-item" onmousedown="event.preventDefault(); document.getElementById('recipe-folder').value='${escapeAttr(f)}'; document.getElementById('folder-ac-box').style.display='none';">${escapeHtml(f)}</div>`).join('');
+  box.style.display = 'block';
 }
 
 function renderNav() {
@@ -2554,7 +2877,7 @@ function exportTXTSimple() {
     if (!grouped[item.cat]) grouped[item.cat] = [];
     const existing = grouped[item.cat].find(i => i.name === item.name && i.unit === item.unit);
     if (existing) { existing.qty += item.qty; }
-    else grouped[item.cat].push({ name: item.name, qty: item.qty, unit: item.unit, done: item.done });
+    else grouped[item.cat].push({ name: item.name, qty: item.qty, unit: item.unit, done: item.done, muted: item.muted });
   });
   const ordered = state.categoryOrder.filter(c => grouped[c]).concat(Object.keys(grouped).filter(c => !state.categoryOrder.includes(c)));
   ordered.forEach(cat => {
@@ -2564,7 +2887,7 @@ function exportTXTSimple() {
     grouped[cat].forEach(item => {
       const conv = convertToKgAndCeil(item.qty, item.unit);
       const qtyStr = conv.isInteger ? String(Math.ceil(conv.value)) : conv.value.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 2 });
-      const check = item.done ? '✓ ' : '☐ ';
+      const check = item.done || item.muted ? '✓ ' : '☐ ';
       lines.push(`    ${check}${item.name} : ${qtyStr} ${conv.unit}`);
     });
   });
@@ -2588,7 +2911,7 @@ function exportTXTByShop() {
   sess.list.forEach(item => {
     const ingInfo = state.recipes.flatMap(r => r.ingredients).find(i => i.name === item.name && i.unit === item.unit);
     const shop = (ingInfo?.shop || item.shop || '').trim();
-    const entry = { name: item.name, qty: item.qty, unit: item.unit, done: item.done };
+    const entry = { name: item.name, qty: item.qty, unit: item.unit, done: item.done, muted: item.muted };
     if (shop) {
       if (!shopMap[shop]) shopMap[shop] = [];
       const existing = shopMap[shop].find(i => i.name === item.name && i.unit === item.unit);
@@ -2607,7 +2930,7 @@ function exportTXTByShop() {
     shopMap[shop].forEach(item => {
       const conv = convertToKgAndCeil(item.qty, item.unit);
       const qtyStr = conv.isInteger ? String(Math.ceil(conv.value)) : conv.value.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 2 });
-      const check = item.done ? '✓ ' : '☐ ';
+      const check = item.done || item.muted ? '✓ ' : '☐ ';
       lines.push(`    ${check}${item.name} : ${qtyStr} ${conv.unit}`);
     });
   });
@@ -2617,7 +2940,7 @@ function exportTXTByShop() {
     noShop.forEach(item => {
       const conv = convertToKgAndCeil(item.qty, item.unit);
       const qtyStr = conv.isInteger ? String(Math.ceil(conv.value)) : conv.value.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 2 });
-      const check = item.done ? '✓ ' : '☐ ';
+      const check = item.done || item.muted ? '✓ ' : '☐ ';
       lines.push(`    ${check}${item.name} : ${qtyStr} ${conv.unit}`);
     });
   }
@@ -2732,15 +3055,31 @@ function shareListURL() {
     list: sess.list
   };
   try {
-    const json = JSON.stringify(exportData);
-    const b64 = btoa(unescape(encodeURIComponent(json)));
-    const url = window.location.href.split('?')[0].split('#')[0] + '?liste=' + b64;
-    if (navigator.share) {
-      navigator.share({ title: `Liste : ${sess.name}`, url }).then(() => toast('Lien partagé ✓')).catch(() => copyURL(url));
-    } else {
-      copyURL(url);
+    const json = JSON.stringify(exportData, null, 2);
+    const filename = `liste-${sess.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.json`;
+    // Tente le partage natif avec fichier (mobile)
+    if (navigator.share && navigator.canShare) {
+      const file = new File([json], filename, { type: 'application/json' });
+      if (navigator.canShare({ files: [file] })) {
+        navigator.share({ title: `Liste : ${sess.name}`, files: [file] })
+          .then(() => toast('Liste partagée ✓'))
+          .catch(() => _downloadListJSON(json, filename));
+        return;
+      }
     }
-  } catch(e) { toast('Erreur lors de la génération du lien', 'error'); }
+    // Fallback : téléchargement direct
+    _downloadListJSON(json, filename);
+  } catch(e) { toast('Erreur lors du partage', 'error'); }
+}
+
+function _downloadListJSON(json, filename) {
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Liste téléchargée ✓');
 }
 
 function copyURL(url) {
@@ -2774,6 +3113,17 @@ function loadSharedList() {
 
 function init() {
   loadState();
+  // Restaure l'état ouvert/fermé du panneau
+  try {
+    const panelOpen = localStorage.getItem('sessionPanelOpen');
+    if (panelOpen === 'false') {
+      const panel = document.getElementById('session-panel');
+      const btn = document.getElementById('session-panel-toggle');
+      if (panel) panel.classList.add('collapsed');
+      const icon = document.getElementById('session-panel-toggle');
+      if (icon) icon.style.transform = 'rotate(180deg)';
+    }
+  } catch(e) {}
   // Synchronise le DOM avec state.view (le HTML hard-code sec-prod comme actif)
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   const activeSec = document.getElementById('sec-' + state.view);
@@ -2792,6 +3142,67 @@ function init() {
 
 // Lance init après que le DOM soit prêt
 if (document.readyState === 'loading') {
+
+
+// ── Swipe-to-mute ─────────────────────────────────────────────────────
+(function() {
+  let wrapper = null, listItem = null, reveal = null;
+  let startX = 0, startY = 0, curX = 0, tracking = false, axisLocked = false, isHoriz = false;
+  const TRIGGER = 65;
+
+  document.addEventListener('touchstart', function(e) {
+    const w = e.target.closest('.swipe-wrapper');
+    if (!w || e.target.closest('button')) return;
+    wrapper = w;
+    listItem = w.querySelector('.list-item');
+    reveal = w.querySelector('.swipe-reveal');
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    curX = 0; tracking = true; axisLocked = false; isHoriz = false;
+    listItem.style.transition = 'none';
+  }, { passive: true });
+
+  document.addEventListener('touchmove', function(e) {
+    if (!tracking || !listItem) return;
+    const dx = e.touches[0].clientX - startX;
+    const dy = e.touches[0].clientY - startY;
+    if (!axisLocked) {
+      if (Math.abs(dx) < 5 && Math.abs(dy) < 5) return;
+      isHoriz = Math.abs(dx) > Math.abs(dy);
+      axisLocked = true;
+    }
+    if (!isHoriz) return;
+    e.preventDefault();
+    curX = Math.max(-80, Math.min(0, dx));
+    listItem.style.transform = 'translateX(' + curX + 'px)';
+    reveal.style.opacity = Math.min(1, Math.abs(curX) / TRIGGER);
+  }, { passive: false });
+
+  document.addEventListener('touchend', function() {
+    if (!tracking || !listItem) return;
+    tracking = false;
+    listItem.style.transition = 'transform 0.25s ease';
+    reveal.style.transition = 'opacity 0.25s';
+    if (curX < -TRIGGER) {
+      listItem.style.transform = 'translateX(-80px)';
+      reveal.style.opacity = '1';
+      const name = wrapper.dataset.swipeName;
+      const unit = wrapper.dataset.swipeUnit;
+      setTimeout(function() {
+        listItem.style.transition = 'none';
+        listItem.style.transform = '';
+        reveal.style.opacity = '0';
+        reveal.style.transition = 'none';
+        muteItem(name, unit);
+      }, 260);
+    } else {
+      listItem.style.transform = '';
+      reveal.style.opacity = '0';
+    }
+    wrapper = null; listItem = null; reveal = null;
+  });
+})();
+
   document.addEventListener('DOMContentLoaded', init);
 } else {
   init();
