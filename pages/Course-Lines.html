@@ -274,12 +274,13 @@ select option { background: white; }
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
 }
 .session-panel {
-  overflow: hidden;
+  overflow: visible;
   transition: max-height 0.28s ease, opacity 0.28s ease;
-  max-height: 300px;
+  max-height: 600px;
   opacity: 1;
 }
 .session-panel.collapsed {
+  overflow: hidden !important;
   max-height: 0;
   opacity: 0;
 }
@@ -328,6 +329,7 @@ select option { background: white; }
 }
 .scroll-section-wrap {
   position: relative;
+  overflow: hidden;
 }
 .scroll-inner {
   display: flex; flex-wrap: nowrap; gap: 6px;
@@ -341,15 +343,17 @@ select option { background: white; }
 .session-text.scroll-inner { flex-wrap: nowrap; }
 .scroll-fade-arrow {
   position: absolute; right: 0; top: 0; bottom: 2px;
-  width: 44px; pointer-events: none;
+  width: 44px; pointer-events: auto; cursor: pointer;
   background: linear-gradient(to right, transparent, var(--bg-main) 60%);
   display: flex; align-items: center; justify-content: flex-end;
   padding-right: 4px;
   transition: opacity 0.2s;
 }
+.scroll-fade-arrow:hover i { opacity: 1; color: var(--color-primary); }
 .scroll-fade-arrow i {
   font-size: 0.7rem; color: var(--color-secondary); opacity: 0.6;
   animation: scroll-nudge 1.6s ease-in-out infinite;
+  transition: opacity 0.15s, color 0.15s;
 }
 @keyframes scroll-nudge {
   0%,100% { transform: translateX(0); }
@@ -414,12 +418,13 @@ select option { background: white; }
 }
 .btn-drawer-close:hover { border-color: var(--color-accent); color: var(--color-accent); }
 .session-label { font-family: var(--font-display); font-size: 0.65rem; font-weight: 700; letter-spacing: 1.5px; color: var(--color-secondary); text-transform: uppercase; margin-bottom: 8px; }
-.session-text { font-size: 0.82rem; font-weight: 600; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; color: var(--text-main); }
+.session-text { font-size: 0.82rem; font-weight: 600; display: flex; flex-wrap: nowrap; gap: 6px; align-items: center; color: var(--text-main); }
 .session-text .tag {
   display: inline-flex; align-items: center; gap: 0;
   background: rgba(10,36,114,0.08); border: 1px solid rgba(10,36,114,0.2);
   color: var(--color-primary); border-radius: 20px;
   font-size: 0.72rem; overflow: hidden; backdrop-filter: blur(8px);
+  flex-shrink: 0; white-space: nowrap;
 }
 .tag-qty-controls {
   display: inline-flex; align-items: center;
@@ -558,7 +563,9 @@ select option { background: white; }
   font-weight: 600; font-size: 0.92rem;
   color: var(--text-main);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  transition: color 0.18s;
 }
+.item-name:hover { color: var(--color-secondary); }
 .item-meta-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .item-shop {
   font-size: 0.65rem; color: var(--color-secondary); font-weight: 600;
@@ -574,7 +581,9 @@ select option { background: white; }
 .field-sub label { font-size: 0.62rem; font-weight: 700; color: var(--color-secondary); letter-spacing: 0.8px; text-transform: uppercase; display: block; margin-bottom: 5px; }
 .in-price-label { font-size: 0.62rem; font-weight: 700; color: var(--color-secondary); letter-spacing: 0.8px; text-transform: uppercase; display: block; margin-bottom: 5px; }
 .recipe-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 0 1.5px rgba(0,0,0,0.1); flex-shrink: 0; }
-.list-qty { text-align: center; white-space: nowrap; flex-shrink: 0; }
+.list-qty { text-align: center; white-space: nowrap; flex-shrink: 0; cursor: pointer; border-radius: 10px; padding: 4px 6px; transition: background 0.18s; }
+.list-qty:hover { background: rgba(10,36,114,0.08); }
+.list-qty:hover .qty-big { color: var(--color-primary); }
 .qty-big { font-family: var(--font-display); font-size: 1.6rem; color: var(--color-accent); }
 .qty-unit { font-size: 0.6rem; color: var(--color-secondary); display: block; margin-top: 2px; }
 
@@ -999,16 +1008,16 @@ select option { background: white; }
         </div>
         <div class="session-panel" id="session-panel">
 
-          <!-- Coûts : total toujours visible, filtré conditionnel -->
+          <!-- Coûts : Total + vue contextuelle -->
           <div class="session-costs-row" id="session-costs-row" style="margin-top:8px;">
             <div class="cost-block-total">
               <span class="cost-block-label">Total</span>
               <span class="cost-block-val" id="session-cost-total">—</span>
             </div>
-            <span class="cost-arrow" id="cost-arrow" style="display:none;">→</span>
-            <div class="cost-block-filtered" id="cost-block-filtered" style="display:none;">
-              <span class="cost-block-label" id="cost-filtered-label">—</span>
-              <span class="cost-block-val" id="cost-filtered-val">—</span>
+            <span class="cost-arrow" id="cost-arrow-ctx" style="display:none;">→</span>
+            <div class="cost-block-filtered" id="cost-block-ctx" style="display:none;">
+              <span class="cost-block-label" id="cost-ctx-label">—</span>
+              <span class="cost-block-val" id="cost-ctx-val">—</span>
             </div>
           </div>
 
@@ -1057,7 +1066,6 @@ select option { background: white; }
           <div id="session-drawer-recipes" class="session-drawer-tags"></div>
         </div>
         <button class="btn-drawer-close" onclick="closeSessionDrawer()"><i class="fa-solid fa-xmark"></i> Fermer</button>
-      </div>
       </div>
       <div id="list-display"></div>
       <div id="list-filter-bar" class="list-filter-bar" style="display:none;"></div>
@@ -2611,13 +2619,14 @@ function renderListView() {
   } else { filterBar.style.display = 'none'; filterBar.innerHTML = ''; }
 
   // --- Coûts ---
-  // Coût total de toute la liste
-  const totalFromList = sess.list.reduce((sum, item) => {
-    if (item.muted) return sum;
+  const _itemPrice = (item) => {
     const ingInfo = state.recipes.flatMap(r => r.ingredients).find(i => i.name === item.name && i.unit === item.unit);
-    const price = (ingInfo?.price > 0 ? ingInfo.price : item.price) || 0;
-    return sum + computeIngCost(item.qty, item.unit, price);
-  }, 0);
+    return (ingInfo?.price > 0 ? ingInfo.price : item.price) || 0;
+  };
+  const _costOf = (list) => list.reduce((s, i) => s + computeIngCost(i.qty, i.unit, _itemPrice(i)), 0);
+
+  // Bloc rouge : Total = toute la liste, tous onglets, non mutés
+  const totalFromList = _costOf(sess.list.filter(i => !i.muted));
   const costTotalEl = document.getElementById('session-cost-total');
   if (totalFromList > 0) {
     costTotalEl.textContent = totalFromList.toFixed(2) + ' €';
@@ -2627,56 +2636,42 @@ function renderListView() {
     document.getElementById('session-costs-row').style.display = 'none';
   }
 
-  // Coût contextuel : priorité magasin, puis fiche, sinon total fiches sélectionnées
-  const filteredCostEl = document.getElementById('cost-block-filtered');
-  const filteredValEl = document.getElementById('cost-filtered-val');
-  const filteredLabelEl = document.getElementById('cost-filtered-label');
-  const costArrowEl = document.getElementById('cost-arrow');
+  // Bloc bleu : onglet actif + filtre(s) cumulés
+  // Étape 1 : filtrer par onglet (À acheter ou Panier)
+  let _ctxItems = sess.list.filter(i => !i.muted && i.done === (state.listMode === 'done'));
+  const _tabLabel = state.listMode === 'done' ? 'Panier' : 'À acheter';
+  let _ctxParts = [_tabLabel]; // Labels cumulés pour affichage
 
-  let filteredCost = null;
-  let filteredLabel = null;
-
+  // Étape 2 : appliquer le filtre actif par-dessus
   if (af?.type === 'shop' && af?.value) {
-    // Coût des articles du magasin filtré
-    filteredCost = sess.list.reduce((sum, item) => {
-      if (item.muted) return sum;
+    _ctxItems = _ctxItems.filter(item => {
       const ingInfo = state.recipes.flatMap(r => r.ingredients).find(i => i.name === item.name && i.unit === item.unit);
-      const itemShop = ingInfo?.shop || item.shop || '';
-      if (itemShop !== af.value) return sum;
-      const price = (ingInfo?.price > 0 ? ingInfo.price : item.price) || 0;
-      return sum + computeIngCost(item.qty, item.unit, price);
-    }, 0);
-    filteredLabel = af.value;
+      return (ingInfo?.shop || item.shop || '') === af.value;
+    });
+    _ctxParts.push(af.value);
   } else if (af?.type === 'recipe' && af?.value) {
-    // Coût de la fiche filtrée
     const recipe = state.recipes.find(r => r.name === af.value);
-    const qty = sess.recipes[af.value] || 1;
-    if (recipe) {
-      filteredCost = recipe.ingredients.reduce((sum, ing) => sum + computeIngCost(ing.qty * qty, ing.unit, ing.price || 0), 0);
-    }
-    filteredLabel = af.value;
-  } else if (!af) {
-    // Pas de filtre → total des fiches sélectionnées (sans les articles manuels)
-    const recipeKeys = new Set(state.recipes.flatMap(r => r.ingredients).map(i => i.name.toLowerCase() + '|' + i.unit));
-    const recipesCost = Object.entries(sess.recipes).reduce((sum, [name, qty]) => {
-      const recipe = state.recipes.find(r => r.name === name);
-      if (!recipe) return sum;
-      return sum + recipe.ingredients.reduce((s, ing) => s + computeIngCost(ing.qty * qty, ing.unit, ing.price || 0), 0);
-    }, 0);
-    if (recipesCost > 0 && Object.keys(sess.recipes).length > 0) {
-      filteredCost = recipesCost;
-      filteredLabel = 'Fiches';
-    }
+    const ingNames = recipe ? new Set(recipe.ingredients.map(i => i.name.toLowerCase())) : new Set();
+    _ctxItems = _ctxItems.filter(i => ingNames.has(i.name.toLowerCase()));
+    _ctxParts.push(af.value);
+  } else if (af?.type === 'manual') {
+    const recipeIngKeys = new Set(state.recipes.flatMap(r => r.ingredients).map(i => i.name.toLowerCase() + '|' + i.unit));
+    _ctxItems = _ctxItems.filter(i => !recipeIngKeys.has(i.name.toLowerCase() + '|' + i.unit));
+    _ctxParts.push('Manuels');
   }
 
-  if (filteredCost !== null && filteredCost > 0 && totalFromList > 0) {
-    filteredCostEl.style.display = 'inline-flex';
-    costArrowEl.style.display = 'block';
-    filteredLabelEl.textContent = filteredLabel;
-    filteredValEl.textContent = filteredCost.toFixed(2) + ' €';
+  const _ctxCost = _costOf(_ctxItems);
+  const elCtx = document.getElementById('cost-block-ctx');
+  const elCtxArrow = document.getElementById('cost-arrow-ctx');
+  // Afficher si le coût contextuel est différent du total (sinon redondant)
+  if (_ctxCost > 0 && Math.abs(_ctxCost - totalFromList) > 0.005) {
+    elCtx.style.display = 'inline-flex';
+    elCtxArrow.style.display = 'block';
+    document.getElementById('cost-ctx-label').textContent = _ctxParts.join(' · ');
+    document.getElementById('cost-ctx-val').textContent = _ctxCost.toFixed(2) + ' €';
   } else {
-    filteredCostEl.style.display = 'none';
-    costArrowEl.style.display = 'none';
+    elCtx.style.display = 'none';
+    elCtxArrow.style.display = 'none';
   }
 
   // --- Bouton Voir tout ---
@@ -2698,13 +2693,30 @@ function renderListView() {
       const inner = wrap.querySelector('.scroll-inner');
       const arrow = wrap.querySelector('.scroll-fade-arrow');
       if (!inner || !arrow) return;
+      // Mise à jour visibilité flèche
       const update = () => {
         const atEnd = inner.scrollLeft + inner.clientWidth >= inner.scrollWidth - 4;
         arrow.style.opacity = atEnd ? '0' : '1';
+        arrow.style.pointerEvents = atEnd ? 'none' : 'auto';
       };
       inner.removeEventListener('scroll', inner._arrowListener);
       inner._arrowListener = update;
       inner.addEventListener('scroll', update);
+      // Scroll au wheel sur desktop
+      inner.removeEventListener('wheel', inner._wheelListener);
+      inner._wheelListener = (e) => {
+        if (Math.abs(e.deltaX) < Math.abs(e.deltaY)) {
+          e.preventDefault();
+          inner.scrollLeft += e.deltaY * 1.2;
+        }
+      };
+      inner.addEventListener('wheel', inner._wheelListener, { passive: false });
+      // Flèche cliquable → scroll d'un pas
+      arrow.removeEventListener('click', arrow._clickListener);
+      arrow._clickListener = () => {
+        inner.scrollBy({ left: 120, behavior: 'smooth' });
+      };
+      arrow.addEventListener('click', arrow._clickListener);
       update();
     });
   }, 50);
@@ -2779,7 +2791,9 @@ function renderListView() {
           <span class="item-name" onclick="muteItem('${escapeAttr(item.name)}','${escapeAttr(item.unit)}')" style="cursor:pointer;">${escapeHtml(item.name)}${mutedTag}</span>
           <div class="item-meta-row">${dotsHtml}${shopTag}${priceTag}</div>
         </div>
-        <div class="list-qty"><span class="qty-big">${displayQty}</span><span class="qty-unit">${converted.unit}</span></div>
+        <div class="list-qty" onclick="openQtyEditModal('${escapeAttr(item.name)}','${escapeAttr(item.unit)}')" title="Modifier la quantité">
+          <span class="qty-big">${displayQty}</span><span class="qty-unit">${converted.unit}</span>
+        </div>
         <button class="btn-icon btn-icon-check" onclick="toggleItem('${escapeAttr(item.name)}','${escapeAttr(item.unit)}')"><i class="fa-solid fa-${item.done ? 'rotate-left' : 'check'}"></i></button>
       </div>
     </div>`;
@@ -3539,6 +3553,57 @@ function loadSharedList() {
 }
 
 
+/* ---------- QTY EDIT MODAL ---------- */
+function openQtyEditModal(name, unit) {
+  document.getElementById('qty-edit-modal')?.remove();
+  const sess = currentSession();
+  const item = sess.list.find(i => i.name === name && i.unit === unit);
+  if (!item) return;
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.id = 'qty-edit-modal';
+  modal.innerHTML = `
+    <div class="modal-sheet" style="max-width:340px;margin:auto;">
+      <div class="modal-handle"></div>
+      <div class="modal-sheet-inner">
+        <div class="modal-title" style="font-size:1rem;">${escapeHtml(name)}</div>
+        <div class="modal-sub" style="margin-bottom:16px;">Modifier la quantité</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+          <button onclick="
+            const inp=document.getElementById('qty-edit-input');
+            const v=Math.max(0.01,parseFloat(inp.value||0)-1);
+            inp.value=v%1===0?v:v.toFixed(2);
+          " class="btn-icon btn-icon-edit" style="flex-shrink:0;"><i class="fa-solid fa-minus"></i></button>
+          <input id="qty-edit-input" type="number" step="0.01" min="0.01"
+            value="${item.qty}"
+            style="text-align:center;font-size:1.4rem;font-weight:700;font-family:var(--font-display);color:var(--color-accent);"
+          >
+          <button onclick="
+            const inp=document.getElementById('qty-edit-input');
+            const v=parseFloat(inp.value||0)+1;
+            inp.value=v%1===0?v:v.toFixed(2);
+          " class="btn-icon btn-icon-edit" style="flex-shrink:0;"><i class="fa-solid fa-plus"></i></button>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-primary" style="flex:1;" onclick="
+            const v=parseFloat(document.getElementById('qty-edit-input').value);
+            if(!v||v<=0){return;}
+            const sess=currentSession();
+            const it=sess.list.find(i=>i.name==='${escapeAttr(name)}'&&i.unit==='${escapeAttr(unit)}');
+            if(it){pushUndoState();it.qty=parseFloat(v.toFixed(4));saveState();}
+            document.getElementById('qty-edit-modal').remove();
+          "><i class="fa-solid fa-check"></i> Valider</button>
+          <button class="btn btn-danger" style="width:46px;min-width:46px;padding:0;" onclick="document.getElementById('qty-edit-modal').remove()">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </div>
+    </div>`;
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  document.body.appendChild(modal);
+  setTimeout(() => { const inp=document.getElementById('qty-edit-input'); if(inp){inp.focus();inp.select();} }, 80);
+}
+
 /* ---------- DRAWER SESSION ---------- */
 function openSessionDrawer() {
   const sess = currentSession();
@@ -3559,12 +3624,17 @@ function openSessionDrawer() {
   if (totalFromList > 0) {
     costsHtml += `<div class="cost-block-total"><span class="cost-block-label">Total</span><span class="cost-block-val">${totalFromList.toFixed(2)} €</span></div>`;
   }
-  // Coût fiches sélectionnées
-  const recipesCost = Object.entries(sess.recipes).reduce((sum, [name, qty]) => {
-    const recipe = state.recipes.find(r => r.name === name);
-    if (!recipe) return sum;
-    return sum + recipe.ingredients.reduce((s, ing) => s + computeIngCost(ing.qty * qty, ing.unit, ing.price || 0), 0);
-  }, 0);
+  // Coût fiches sélectionnées — depuis la liste réelle pour éviter le double-compte
+  const recipeIngKeysForCost = new Set(state.recipes.flatMap(r => r.ingredients).map(i => i.name.toLowerCase() + '|' + i.unit));
+  const recipesCost = Object.keys(sess.recipes).length > 0
+    ? sess.list.reduce((sum, item) => {
+        if (item.muted) return sum;
+        if (!recipeIngKeysForCost.has(item.name.toLowerCase() + '|' + item.unit)) return sum;
+        const ingInfo = state.recipes.flatMap(r => r.ingredients).find(i => i.name === item.name && i.unit === item.unit);
+        const price = (ingInfo?.price > 0 ? ingInfo.price : item.price) || 0;
+        return sum + computeIngCost(item.qty, item.unit, price);
+      }, 0)
+    : 0;
   if (recipesCost > 0 && Object.keys(sess.recipes).length > 0) {
     costsHtml += `<div class="cost-block-filtered"><span class="cost-block-label">Fiches</span><span class="cost-block-val">${recipesCost.toFixed(2)} €</span></div>`;
   }
