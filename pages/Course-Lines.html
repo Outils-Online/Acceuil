@@ -287,6 +287,132 @@ select option { background: white; }
 .session-banner-actions {
   display: flex; align-items: center; gap: 6px; flex-shrink: 0;
 }
+
+/* --- Coûts dans le panel --- */
+.session-costs-row {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.cost-block-total, .cost-block-filtered {
+  display: inline-flex; align-items: baseline; gap: 5px;
+  padding: 4px 10px; border-radius: 8px;
+}
+.cost-block-total {
+  border: 1px solid rgba(244,96,96,0.3);
+  background: rgba(244,96,96,0.07);
+}
+.cost-block-filtered {
+  border: 1px solid rgba(10,36,114,0.2);
+  background: rgba(10,36,114,0.06);
+}
+.cost-block-label {
+  font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.cost-block-total .cost-block-label { color: rgba(244,96,96,0.8); }
+.cost-block-filtered .cost-block-label { color: var(--color-secondary); }
+.cost-block-val {
+  font-size: 0.85rem; font-weight: 700;
+}
+.cost-block-total .cost-block-val { color: var(--color-accent); }
+.cost-block-filtered .cost-block-val { color: var(--color-primary); }
+.cost-arrow {
+  font-size: 0.75rem; color: var(--color-secondary); opacity: 0.5;
+}
+
+/* --- Scroll rows --- */
+.scroll-section { position: relative; }
+.scroll-section-label {
+  font-size: 0.58rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1.2px; color: var(--color-secondary); margin-bottom: 5px;
+  display: flex; align-items: center; gap: 5px;
+}
+.scroll-section-wrap {
+  position: relative;
+}
+.scroll-inner {
+  display: flex; flex-wrap: nowrap; gap: 6px;
+  overflow-x: auto; scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 2px; padding-right: 36px;
+  align-items: center;
+}
+.scroll-inner::-webkit-scrollbar { display: none; }
+/* Override session-text wrap */
+.session-text.scroll-inner { flex-wrap: nowrap; }
+.scroll-fade-arrow {
+  position: absolute; right: 0; top: 0; bottom: 2px;
+  width: 44px; pointer-events: none;
+  background: linear-gradient(to right, transparent, var(--bg-main) 60%);
+  display: flex; align-items: center; justify-content: flex-end;
+  padding-right: 4px;
+  transition: opacity 0.2s;
+}
+.scroll-fade-arrow i {
+  font-size: 0.7rem; color: var(--color-secondary); opacity: 0.6;
+  animation: scroll-nudge 1.6s ease-in-out infinite;
+}
+@keyframes scroll-nudge {
+  0%,100% { transform: translateX(0); }
+  50%      { transform: translateX(4px); }
+}
+
+/* --- Bouton Voir tout --- */
+.btn-see-all {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; margin-top: 10px; padding: 6px 10px;
+  border: 1px solid var(--border-color); border-radius: 8px;
+  background: transparent; font-size: 0.68rem; font-weight: 600;
+  color: var(--color-secondary); cursor: pointer;
+  font-family: var(--font-body); letter-spacing: 0.3px;
+  transition: all 0.2s;
+}
+.btn-see-all:hover { background: rgba(10,36,114,0.04); border-color: var(--color-primary); color: var(--color-primary); }
+
+/* --- Drawer session --- */
+.session-drawer-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0);
+  z-index: 900; pointer-events: none;
+  transition: background 0.22s;
+}
+.session-drawer-overlay.open {
+  background: rgba(0,0,0,0.35); pointer-events: all;
+}
+.session-drawer {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--bg-main); border-radius: 18px 18px 0 0;
+  padding: 0 0 32px; z-index: 901;
+  transform: translateY(100%);
+  transition: transform 0.26s cubic-bezier(0.4,0,0.2,1);
+  max-height: 80vh; overflow-y: auto;
+}
+.session-drawer.open { transform: translateY(0); }
+.session-drawer-handle {
+  width: 36px; height: 4px; background: var(--border-color);
+  border-radius: 2px; margin: 10px auto 14px;
+}
+.session-drawer-title {
+  font-family: var(--font-display); font-size: 0.75rem; font-weight: 700;
+  letter-spacing: 1px; text-transform: uppercase;
+  color: var(--color-secondary); padding: 0 16px; margin-bottom: 12px;
+}
+.session-drawer-costs {
+  display: flex; gap: 8px; padding: 0 16px; margin-bottom: 16px; flex-wrap: wrap;
+}
+.session-drawer-section { padding: 0 16px; margin-bottom: 16px; }
+.session-drawer-section-label {
+  font-size: 0.58rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1.2px; color: var(--color-secondary);
+  margin-bottom: 10px; display: flex; align-items: center; gap: 5px;
+}
+.session-drawer-tags { display: flex; flex-wrap: wrap; gap: 7px; }
+.btn-drawer-close {
+  margin: 4px 16px 0; display: flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 10px; border: 1px solid var(--border-color); border-radius: 10px;
+  background: transparent; font-size: 0.75rem; font-weight: 600;
+  color: var(--color-secondary); cursor: pointer; font-family: var(--font-body);
+  width: calc(100% - 32px); transition: all 0.2s;
+}
+.btn-drawer-close:hover { border-color: var(--color-accent); color: var(--color-accent); }
 .session-label { font-family: var(--font-display); font-size: 0.65rem; font-weight: 700; letter-spacing: 1.5px; color: var(--color-secondary); text-transform: uppercase; margin-bottom: 8px; }
 .session-text { font-size: 0.82rem; font-weight: 600; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; color: var(--text-main); }
 .session-text .tag {
@@ -864,7 +990,6 @@ select option { background: white; }
         <div class="session-banner-top">
           <button onclick="toggleSessionPanel()" style="background:none;border:none;cursor:pointer;padding:0;display:flex;align-items:center;gap:6px;" title="Afficher/masquer les filtres"><span class="session-label" style="margin:0;"><i class="fa-solid fa-list-check" style="margin-right:5px;color:var(--color-accent);"></i><span id="active-session-name"></span></span><i class="fa-solid fa-chevron-down" id="session-panel-toggle" style="font-size:0.55rem;color:var(--color-secondary);opacity:0.5;transition:transform 0.25s ease;"></i></button>
           <div class="session-banner-actions">
-            <div class="session-cost" id="session-cost-badge" style="display:none;"><i class="fa-solid fa-coins"></i> <span id="session-cost-total"></span></div>
             <button class="btn-export-list" onclick="shareListURL()" title="Partager"><i class="fa-solid fa-share-nodes"></i></button>
             <button class="btn-export-list" onclick="exportListJSON()" title="Exporter"><i class="fa-solid fa-arrow-up-from-bracket"></i></button>
             <button class="btn-export-list" onclick="document.getElementById('import-list-file').click()" title="Importer"><i class="fa-solid fa-download"></i></button>
@@ -873,14 +998,66 @@ select option { background: white; }
           </div>
         </div>
         <div class="session-panel" id="session-panel">
-        <!-- Ligne 2 : tags recettes cliquables -->
-        <div id="session-text" class="session-text" style="margin-top:8px;">—</div>
-        <!-- Ligne 3 : chips magasins (si renseignés) -->
-        <div id="session-shop-filters" style="display:none; margin-top:8px; flex-wrap:wrap; gap:6px;"></div>
-        <!-- Ligne 4 : filtre actif -->
-        <div id="active-filter-bar" style="display:none; margin-top:6px; padding-top:6px; border-top:1px solid var(--border-color);"></div>
+
+          <!-- Coûts : total toujours visible, filtré conditionnel -->
+          <div class="session-costs-row" id="session-costs-row" style="margin-top:8px;">
+            <div class="cost-block-total">
+              <span class="cost-block-label">Total</span>
+              <span class="cost-block-val" id="session-cost-total">—</span>
+            </div>
+            <span class="cost-arrow" id="cost-arrow" style="display:none;">→</span>
+            <div class="cost-block-filtered" id="cost-block-filtered" style="display:none;">
+              <span class="cost-block-label" id="cost-filtered-label">—</span>
+              <span class="cost-block-val" id="cost-filtered-val">—</span>
+            </div>
+          </div>
+
+          <!-- Ligne magasins (en premier) -->
+          <div class="scroll-section" style="margin-top:10px;">
+            <div class="scroll-section-label"><i class="fa-solid fa-store"></i> Magasins</div>
+            <div class="scroll-section-wrap" id="shop-scroll-wrap">
+              <div id="session-shop-filters" class="scroll-inner" style="display:flex; gap:6px;"></div>
+              <div class="scroll-fade-arrow" id="shop-scroll-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+            </div>
+          </div>
+
+          <!-- Ligne fiches -->
+          <div class="scroll-section" style="margin-top:8px;">
+            <div class="scroll-section-label"><i class="fa-solid fa-book"></i> Fiches</div>
+            <div class="scroll-section-wrap" id="recipe-scroll-wrap">
+              <div id="session-text" class="scroll-inner session-text">—</div>
+              <div class="scroll-fade-arrow" id="recipe-scroll-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+            </div>
+          </div>
+
+          <!-- Filtre actif -->
+          <div id="active-filter-bar" style="display:none; margin-top:6px; padding-top:6px; border-top:1px solid var(--border-color);"></div>
+
+          <!-- Voir tout -->
+          <button class="btn-see-all" id="btn-see-all" onclick="openSessionDrawer()">
+            <i class="fa-solid fa-table-cells"></i>
+            <span id="btn-see-all-label">Tout voir</span>
+          </button>
 
         </div>
+      </div>
+
+      <!-- Drawer session -->
+      <div class="session-drawer-overlay" id="session-drawer-overlay" onclick="closeSessionDrawer()"></div>
+      <div class="session-drawer" id="session-drawer">
+        <div class="session-drawer-handle"></div>
+        <div class="session-drawer-title" id="session-drawer-title">Session</div>
+        <div class="session-drawer-costs" id="session-drawer-costs"></div>
+        <div class="session-drawer-section">
+          <div class="session-drawer-section-label"><i class="fa-solid fa-store"></i> Magasins</div>
+          <div id="session-drawer-shops" class="session-drawer-tags"></div>
+        </div>
+        <div class="session-drawer-section" style="border-top:1px solid var(--border-color);padding-top:14px;">
+          <div class="session-drawer-section-label"><i class="fa-solid fa-book"></i> Fiches</div>
+          <div id="session-drawer-recipes" class="session-drawer-tags"></div>
+        </div>
+        <button class="btn-drawer-close" onclick="closeSessionDrawer()"><i class="fa-solid fa-xmark"></i> Fermer</button>
+      </div>
       </div>
       <div id="list-display"></div>
       <div id="list-filter-bar" class="list-filter-bar" style="display:none;"></div>
@@ -2381,14 +2558,12 @@ function renderListView() {
       </span>
     </span>`);
   }
-  // Compte réel des articles hors-fiche (pas le compteur sess.singles qui peut être désynchronisé)
+  // Compte réel des articles hors-fiche
   const recipeIngKeysForCount = new Set(
     state.recipes.flatMap(r => r.ingredients).map(i => i.name.toLowerCase() + '|' + i.unit)
   );
   const realManualCount = sess.list.filter(i => !recipeIngKeysForCount.has(i.name.toLowerCase() + '|' + i.unit)).length;
-  // Resynchronise sess.singles avec la réalité
   if (sess.singles !== realManualCount) { sess.singles = realManualCount; }
-
   if (realManualCount > 0) {
     const isManActive = af?.type === 'manual';
     parts.push(`<span class="tag ${isManActive ? 'tag-active' : ''}">
@@ -2398,26 +2573,28 @@ function renderListView() {
       ${isManActive ? `<button class="tag-qty-btn" onclick="event.stopPropagation();deleteAllManuals()" title="Supprimer tous les articles manuels" style="color:var(--color-accent);border-left:1px solid rgba(10,36,114,0.15);padding:0 6px;"><i class="fa-solid fa-minus"></i></button>` : ''}
     </span>`);
   }
-  document.getElementById('session-text').innerHTML = parts.length ? parts.join('') : '<span style="color:var(--color-secondary);font-size:0.75rem;">Aucune production lancée</span>';
+  const recipeEl = document.getElementById('session-text');
+  recipeEl.innerHTML = parts.length ? parts.join('') : '<span style="color:var(--color-secondary);font-size:0.75rem;white-space:nowrap;">Aucune production lancée</span>';
 
-  // --- Chips magasins sous les tags ---
+  // --- Chips magasins ---
   const shops = new Set();
-  // Shops depuis les fiches des ingrédients de la liste
   sess.list.forEach(item => {
     const ingInfo = state.recipes.flatMap(r => r.ingredients).find(i => i.name === item.name && i.unit === item.unit);
     const shop = ingInfo?.shop || item.shop || '';
     if (shop) shops.add(shop);
   });
   const shopBar = document.getElementById('session-shop-filters');
+  shopBar.style.display = 'flex';
   if (shops.size) {
-    shopBar.style.display = 'flex';
     const isShopAll = af?.type === 'shopall';
-    shopBar.innerHTML = `<button onclick="setActiveFilter('shopall','__all__')" style="font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;align-self:center;white-space:nowrap;background:none;border:none;cursor:pointer;padding:0;color:${isShopAll ? 'var(--color-accent)' : 'var(--color-secondary)'};"><i class="fa-solid fa-store" style="margin-right:3px;"></i>Magasin</button>` +
+    shopBar.innerHTML = `<button class="filter-chip${isShopAll?' active':''}" onclick="setActiveFilter('shopall','__all__')" style="white-space:nowrap;flex-shrink:0;"><i class="fa-solid fa-store" style="margin-right:3px;"></i>Tous</button>` +
       [...shops].map(shop => {
         const isActive = af?.type === 'shop' && af?.value === shop;
-        return `<button class="filter-chip ${isActive ? 'active' : ''}" onclick="setActiveFilter('shop','${escapeAttr(shop)}')">${escapeHtml(shop)}</button>`;
+        return `<button class="filter-chip${isActive?' active':''}" style="flex-shrink:0;" onclick="setActiveFilter('shop','${escapeAttr(shop)}')">${escapeHtml(shop)}</button>`;
       }).join('');
-  } else { shopBar.style.display = 'none'; shopBar.innerHTML = ''; }
+  } else {
+    shopBar.innerHTML = `<span style="font-size:0.72rem;color:var(--color-secondary);opacity:0.55;white-space:nowrap;font-style:italic;">Aucun magasin</span>`;
+  }
 
   // --- Barre filtre actif ---
   const filterBar = document.getElementById('active-filter-bar');
@@ -2433,21 +2610,105 @@ function renderListView() {
     filterBar.innerHTML = `<span style="font-size:0.7rem;color:var(--color-secondary);">Filtre actif :</span> <span style="font-size:0.75rem;font-weight:700;color:var(--color-primary);">${label}</span> <button onclick="clearActiveFilter()" style="background:none;border:none;color:var(--color-accent);cursor:pointer;font-size:0.7rem;font-weight:700;margin-left:6px;"><i class="fa-solid fa-xmark"></i> Effacer</button>`;
   } else { filterBar.style.display = 'none'; filterBar.innerHTML = ''; }
 
-
-  const costBadge = document.getElementById('session-cost-badge');
+  // --- Coûts ---
+  // Coût total de toute la liste
   const totalFromList = sess.list.reduce((sum, item) => {
     if (item.muted) return sum;
-    const ingInfo = state.recipes.flatMap(r => r.ingredients)
-      .find(i => i.name === item.name && i.unit === item.unit);
+    const ingInfo = state.recipes.flatMap(r => r.ingredients).find(i => i.name === item.name && i.unit === item.unit);
     const price = (ingInfo?.price > 0 ? ingInfo.price : item.price) || 0;
     return sum + computeIngCost(item.qty, item.unit, price);
   }, 0);
+  const costTotalEl = document.getElementById('session-cost-total');
   if (totalFromList > 0) {
-    document.getElementById('session-cost-total').textContent = totalFromList.toFixed(2) + ' €';
-    costBadge.style.display = 'flex';
+    costTotalEl.textContent = totalFromList.toFixed(2) + ' €';
+    document.getElementById('session-costs-row').style.display = 'flex';
   } else {
-    costBadge.style.display = 'none';
+    costTotalEl.textContent = '—';
+    document.getElementById('session-costs-row').style.display = 'none';
   }
+
+  // Coût contextuel : priorité magasin, puis fiche, sinon total fiches sélectionnées
+  const filteredCostEl = document.getElementById('cost-block-filtered');
+  const filteredValEl = document.getElementById('cost-filtered-val');
+  const filteredLabelEl = document.getElementById('cost-filtered-label');
+  const costArrowEl = document.getElementById('cost-arrow');
+
+  let filteredCost = null;
+  let filteredLabel = null;
+
+  if (af?.type === 'shop' && af?.value) {
+    // Coût des articles du magasin filtré
+    filteredCost = sess.list.reduce((sum, item) => {
+      if (item.muted) return sum;
+      const ingInfo = state.recipes.flatMap(r => r.ingredients).find(i => i.name === item.name && i.unit === item.unit);
+      const itemShop = ingInfo?.shop || item.shop || '';
+      if (itemShop !== af.value) return sum;
+      const price = (ingInfo?.price > 0 ? ingInfo.price : item.price) || 0;
+      return sum + computeIngCost(item.qty, item.unit, price);
+    }, 0);
+    filteredLabel = af.value;
+  } else if (af?.type === 'recipe' && af?.value) {
+    // Coût de la fiche filtrée
+    const recipe = state.recipes.find(r => r.name === af.value);
+    const qty = sess.recipes[af.value] || 1;
+    if (recipe) {
+      filteredCost = recipe.ingredients.reduce((sum, ing) => sum + computeIngCost(ing.qty * qty, ing.unit, ing.price || 0), 0);
+    }
+    filteredLabel = af.value;
+  } else if (!af) {
+    // Pas de filtre → total des fiches sélectionnées (sans les articles manuels)
+    const recipeKeys = new Set(state.recipes.flatMap(r => r.ingredients).map(i => i.name.toLowerCase() + '|' + i.unit));
+    const recipesCost = Object.entries(sess.recipes).reduce((sum, [name, qty]) => {
+      const recipe = state.recipes.find(r => r.name === name);
+      if (!recipe) return sum;
+      return sum + recipe.ingredients.reduce((s, ing) => s + computeIngCost(ing.qty * qty, ing.unit, ing.price || 0), 0);
+    }, 0);
+    if (recipesCost > 0 && Object.keys(sess.recipes).length > 0) {
+      filteredCost = recipesCost;
+      filteredLabel = 'Fiches';
+    }
+  }
+
+  if (filteredCost !== null && filteredCost > 0 && totalFromList > 0) {
+    filteredCostEl.style.display = 'inline-flex';
+    costArrowEl.style.display = 'block';
+    filteredLabelEl.textContent = filteredLabel;
+    filteredValEl.textContent = filteredCost.toFixed(2) + ' €';
+  } else {
+    filteredCostEl.style.display = 'none';
+    costArrowEl.style.display = 'none';
+  }
+
+  // --- Bouton Voir tout ---
+  const recipeCount = Object.keys(sess.recipes).length;
+  const shopCount = shops.size;
+  const seeAllBtn = document.getElementById('btn-see-all-label');
+  if (seeAllBtn) {
+    const parts2 = [];
+    if (recipeCount) parts2.push(`${recipeCount} fiche${recipeCount>1?'s':''}`);
+    if (shopCount) parts2.push(`${shopCount} magasin${shopCount>1?'s':''}`);
+    seeAllBtn.textContent = parts2.length ? 'Tout voir · ' + parts2.join(' · ') : 'Tout voir';
+  }
+
+  // --- Scroll arrows (masquer quand au bout) ---
+  setTimeout(() => {
+    ['recipe-scroll-wrap','shop-scroll-wrap'].forEach(wrapId => {
+      const wrap = document.getElementById(wrapId);
+      if (!wrap) return;
+      const inner = wrap.querySelector('.scroll-inner');
+      const arrow = wrap.querySelector('.scroll-fade-arrow');
+      if (!inner || !arrow) return;
+      const update = () => {
+        const atEnd = inner.scrollLeft + inner.clientWidth >= inner.scrollWidth - 4;
+        arrow.style.opacity = atEnd ? '0' : '1';
+      };
+      inner.removeEventListener('scroll', inner._arrowListener);
+      inner._arrowListener = update;
+      inner.addEventListener('scroll', update);
+      update();
+    });
+  }, 50);
+
   document.getElementById('cnt-todo').textContent = sess.list.filter(i => !i.done).length;
   document.getElementById('cnt-done').textContent = sess.list.filter(i => i.done).length;
 
@@ -2955,7 +3216,7 @@ function parseImportedRecipes(data) {
   if (data && Array.isArray(data.recipes)) candidates = data.recipes;
   else if (Array.isArray(data)) candidates = data;
   else if (data && typeof data === 'object' && data.name && Array.isArray(data.ingredients)) candidates = [data];
-  return candidates.filter(r => r && typeof r.name === 'string' && r.name.trim() && Array.isArray(r.ingredients) && r.ingredients.length > 0).map(r => ({ id: r.id || Date.now() + Math.random(), name: r.name.trim(), ingredients: r.ingredients.map(i => ({ name: i.name || '', qty: parseFloat(i.qty) || 0, unit: i.unit || 'pièce', cat: i.cat || 'Autre', price: parseFloat(i.price) || 0 })).filter(i => i.name && i.qty > 0) })).filter(r => r.ingredients.length > 0);
+  return candidates.filter(r => r && typeof r.name === 'string' && r.name.trim() && Array.isArray(r.ingredients) && r.ingredients.length > 0).map(r => ({ id: r.id || Date.now() + Math.random(), name: r.name.trim(), folder: r.folder || '', ingredients: r.ingredients.map(i => ({ name: i.name || '', qty: parseFloat(i.qty) || 0, unit: i.unit || 'pièce', cat: i.cat || 'Autre', price: parseFloat(i.price) || 0, shop: i.shop || '' })).filter(i => i.name && i.qty > 0) })).filter(r => r.ingredients.length > 0);
 }
 function showImportModal(recipes) {
   const existingNames = new Set(state.recipes.map(r => r.name.toLowerCase()));
@@ -3127,8 +3388,8 @@ function exportListJSON() {
     singles: sess.singles,
     totalCost: sess.totalCost,
     list: sess.list,
-    // Toutes les fiches produit, même celles hors liste
-    recipeCatalog: state.recipes
+    // Toutes les fiches produit avec dossier
+    recipeCatalog: state.recipes.map(r => ({ ...r }))
   };
   const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
@@ -3218,7 +3479,8 @@ function shareListURL() {
     recipes: sess.recipes,
     singles: sess.singles,
     totalCost: sess.totalCost,
-    list: sess.list
+    list: sess.list,
+    recipeCatalog: state.recipes.map(r => ({ ...r }))
   };
   try {
     const json = JSON.stringify(exportData, null, 2);
@@ -3276,6 +3538,98 @@ function loadSharedList() {
   } catch(e) { /* pas de liste dans l'URL, on ignore */ }
 }
 
+
+/* ---------- DRAWER SESSION ---------- */
+function openSessionDrawer() {
+  const sess = currentSession();
+  const af = state.activeFilter;
+
+  // Titre
+  document.getElementById('session-drawer-title').textContent = sess.name;
+
+  // Coûts
+  const totalFromList = sess.list.reduce((sum, item) => {
+    if (item.muted) return sum;
+    const ingInfo = state.recipes.flatMap(r => r.ingredients).find(i => i.name === item.name && i.unit === item.unit);
+    const price = (ingInfo?.price > 0 ? ingInfo.price : item.price) || 0;
+    return sum + computeIngCost(item.qty, item.unit, price);
+  }, 0);
+
+  let costsHtml = '';
+  if (totalFromList > 0) {
+    costsHtml += `<div class="cost-block-total"><span class="cost-block-label">Total</span><span class="cost-block-val">${totalFromList.toFixed(2)} €</span></div>`;
+  }
+  // Coût fiches sélectionnées
+  const recipesCost = Object.entries(sess.recipes).reduce((sum, [name, qty]) => {
+    const recipe = state.recipes.find(r => r.name === name);
+    if (!recipe) return sum;
+    return sum + recipe.ingredients.reduce((s, ing) => s + computeIngCost(ing.qty * qty, ing.unit, ing.price || 0), 0);
+  }, 0);
+  if (recipesCost > 0 && Object.keys(sess.recipes).length > 0) {
+    costsHtml += `<div class="cost-block-filtered"><span class="cost-block-label">Fiches</span><span class="cost-block-val">${recipesCost.toFixed(2)} €</span></div>`;
+  }
+  document.getElementById('session-drawer-costs').innerHTML = costsHtml;
+
+  // Magasins
+  const shops = new Set();
+  sess.list.forEach(item => {
+    const ingInfo = state.recipes.flatMap(r => r.ingredients).find(i => i.name === item.name && i.unit === item.unit);
+    const shop = ingInfo?.shop || item.shop || '';
+    if (shop) shops.add(shop);
+  });
+  const shopCosts = {};
+  [...shops].forEach(shop => {
+    shopCosts[shop] = sess.list.reduce((sum, item) => {
+      if (item.muted) return sum;
+      const ingInfo = state.recipes.flatMap(r => r.ingredients).find(i => i.name === item.name && i.unit === item.unit);
+      if ((ingInfo?.shop || item.shop || '') !== shop) return sum;
+      const price = (ingInfo?.price > 0 ? ingInfo.price : item.price) || 0;
+      return sum + computeIngCost(item.qty, item.unit, price);
+    }, 0);
+  });
+
+  const isShopAll = af?.type === 'shopall';
+  let shopsHtml = shops.size
+    ? `<button class="filter-chip${isShopAll?' active':''}" onclick="setActiveFilter('shopall','__all__');closeSessionDrawer()" style="flex-shrink:0;"><i class="fa-solid fa-store" style="margin-right:3px;"></i>Tous</button>` +
+      [...shops].map(shop => {
+        const isActive = af?.type === 'shop' && af?.value === shop;
+        const cost = shopCosts[shop];
+        return `<button class="filter-chip${isActive?' active':''}" style="flex-shrink:0;flex-direction:column;padding:6px 10px;gap:1px;height:auto;align-items:flex-start;" onclick="setActiveFilter('shop','${escapeAttr(shop)}');closeSessionDrawer()">
+          <span>${escapeHtml(shop)}</span>
+          ${cost > 0 ? `<span style="font-size:0.6rem;font-weight:700;color:var(--color-accent);opacity:0.8;">${cost.toFixed(2)} €</span>` : ''}
+        </button>`;
+      }).join('')
+    : `<span style="font-size:0.75rem;color:var(--color-secondary);font-style:italic;">Aucun magasin renseigné</span>`;
+  document.getElementById('session-drawer-shops').innerHTML = shopsHtml;
+
+  // Fiches
+  let recipesHtml = '';
+  for (const [n, q] of Object.entries(sess.recipes)) {
+    const color = recipeColor(n);
+    const isActive = af?.type === 'recipe' && af?.value === n;
+    const recipe = state.recipes.find(r => r.name === n);
+    const cost = recipe ? recipe.ingredients.reduce((s, ing) => s + computeIngCost(ing.qty * q, ing.unit, ing.price || 0), 0) : 0;
+    recipesHtml += `<span class="tag ${isActive ? 'tag-active' : ''}" style="flex-shrink:0;">
+      <span class="tag-qty-controls">
+        <input class="tag-qty-input" type="number" min="1" value="${q}" onchange="setProdQty('${escapeAttr(n)}',this.value)" onclick="this.select()">
+        <button class="tag-qty-btn" onclick="event.stopPropagation();removeRecipeFromSession('${escapeAttr(n)}');closeSessionDrawer()" style="color:var(--color-accent);padding:0 5px;" title="Supprimer"><i class="fa-solid fa-xmark"></i></button>
+      </span>
+      <span class="tag-label tag-clickable ${isActive ? 'tag-active' : ''}" onclick="setActiveFilter('recipe','${escapeAttr(n)}');closeSessionDrawer()">
+        <span class="recipe-dot" style="background:${color};"></span>${escapeHtml(n)}${cost > 0 ? ` <span style="font-size:0.6rem;opacity:0.7;font-weight:700;color:var(--color-accent);">${cost.toFixed(2)} €</span>` : ''}
+      </span>
+    </span>`;
+  }
+  if (!recipesHtml) recipesHtml = `<span style="font-size:0.75rem;color:var(--color-secondary);font-style:italic;">Aucune fiche lancée</span>`;
+  document.getElementById('session-drawer-recipes').innerHTML = recipesHtml;
+
+  document.getElementById('session-drawer').classList.add('open');
+  document.getElementById('session-drawer-overlay').classList.add('open');
+}
+
+function closeSessionDrawer() {
+  document.getElementById('session-drawer').classList.remove('open');
+  document.getElementById('session-drawer-overlay').classList.remove('open');
+}
 
 function init() {
   loadState();
