@@ -395,6 +395,16 @@ select option { background: white; }
   max-height: 80vh; overflow-y: auto;
 }
 .session-drawer.open { transform: translateY(0); }
+@media (min-width: 641px) {
+  .session-drawer {
+    left: 50%; right: auto;
+    transform: translateX(-50%) translateY(100%);
+    width: 420px;
+    border-radius: 18px 18px 0 0;
+    bottom: 0;
+  }
+  .session-drawer.open { transform: translateX(-50%) translateY(0); }
+}
 .session-drawer-handle {
   width: 36px; height: 4px; background: var(--border-color);
   border-radius: 2px; margin: 10px auto 14px;
@@ -407,13 +417,20 @@ select option { background: white; }
 .session-drawer-costs {
   display: flex; gap: 8px; padding: 0 16px; margin-bottom: 16px; flex-wrap: wrap;
 }
-.session-drawer-section { padding: 0 16px; margin-bottom: 16px; }
+.session-drawer-section { padding: 0 16px; margin-bottom: 12px; }
 .session-drawer-section-label {
   font-size: 0.58rem; font-weight: 700; text-transform: uppercase;
   letter-spacing: 1.2px; color: var(--color-secondary);
   margin-bottom: 10px; display: flex; align-items: center; gap: 5px;
 }
-.session-drawer-tags { display: flex; flex-wrap: wrap; gap: 7px; }
+.session-drawer-tags {
+  display: flex; flex-wrap: wrap; gap: 7px;
+}
+.session-drawer-tags.scroll {
+  flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none;
+  padding-bottom: 4px; -webkit-overflow-scrolling: touch;
+}
+.session-drawer-tags.scroll::-webkit-scrollbar { display: none; }
 .btn-drawer-close {
   margin: 4px 16px 0; display: flex; align-items: center; justify-content: center; gap: 6px;
   padding: 10px; border: 1px solid var(--border-color); border-radius: 10px;
@@ -442,7 +459,18 @@ select option { background: white; }
 }
 .tag-label.tag-clickable { cursor: pointer; transition: background 0.15s; }
 .tag-label.tag-clickable:hover { background: rgba(10,36,114,0.12); }
-.tag-label.tag-active { background: var(--color-primary); color: white; }
+.tag-label.tag-active { color: white; }
+/* Quand actif : tout le tag passe en bleu */
+.session-text .tag.tag-active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: white;
+}
+.session-text .tag.tag-active .tag-qty-controls { border-color: rgba(255,255,255,0.25); }
+.session-text .tag.tag-active .tag-qty-input { color: white; background: transparent; }
+.session-text .tag.tag-active .tag-qty-btn { color: rgba(255,255,255,0.7); }
+.session-text .tag.tag-active .tag-qty-btn:hover { color: white; background: rgba(255,255,255,0.15); }
+.session-text .tag.tag-active .recipe-dot { box-shadow: 0 0 0 1.5px rgba(255,255,255,0.5); }
 /* Boutons +/- dans le tag */
 .tag-qty-btn {
   background: none; border: none; cursor: pointer;
@@ -1068,11 +1096,14 @@ select option { background: white; }
         <div class="session-drawer-costs" id="session-drawer-costs"></div>
         <div class="session-drawer-section">
           <div class="session-drawer-section-label"><i class="fa-solid fa-store"></i> Magasins</div>
-          <div id="session-drawer-shops" class="session-drawer-tags"></div>
+          <div class="scroll-section-wrap" id="drawer-shop-scroll-wrap" style="margin-bottom:2px;">
+            <div id="session-drawer-shops" class="session-drawer-tags scroll" style="padding-right:36px;"></div>
+            <div class="scroll-fade-arrow" id="drawer-shop-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+          </div>
         </div>
         <div class="session-drawer-section" style="border-top:1px solid var(--border-color);padding-top:14px;">
           <div class="session-drawer-section-label"><i class="fa-solid fa-book"></i> Fiches</div>
-          <div id="session-drawer-recipes" class="session-drawer-tags"></div>
+          <div id="session-drawer-recipes" class="session-drawer-tags" style="gap:5px;"></div>
         </div>
         <button class="btn-drawer-close" onclick="closeSessionDrawer()"><i class="fa-solid fa-xmark"></i> Fermer</button>
       </div>
@@ -3837,6 +3868,27 @@ function openSessionDrawer() {
 
   document.getElementById('session-drawer').classList.add('open');
   document.getElementById('session-drawer-overlay').classList.add('open');
+  // Bind flèche scroll shops dans le drawer
+  setTimeout(() => {
+    const wrap = document.getElementById('drawer-shop-scroll-wrap');
+    if (!wrap) return;
+    const inner = wrap.querySelector('.session-drawer-tags');
+    const arrow = wrap.querySelector('.scroll-fade-arrow');
+    if (!inner || !arrow) return;
+    const update = () => {
+      const atEnd = inner.scrollLeft + inner.clientWidth >= inner.scrollWidth - 4;
+      arrow.style.opacity = atEnd ? '0' : '1';
+      arrow.style.pointerEvents = atEnd ? 'none' : 'auto';
+    };
+    inner.removeEventListener('scroll', inner._drawerArrow);
+    inner._drawerArrow = update;
+    inner.addEventListener('scroll', update);
+    inner.removeEventListener('wheel', inner._drawerWheel);
+    inner._drawerWheel = (e) => { if (Math.abs(e.deltaX) < Math.abs(e.deltaY)) { e.preventDefault(); inner.scrollLeft += e.deltaY * 1.2; } };
+    inner.addEventListener('wheel', inner._drawerWheel, { passive: false });
+    arrow.onclick = () => inner.scrollBy({ left: 120, behavior: 'smooth' });
+    update();
+  }, 60);
 }
 
 function closeSessionDrawer() {
