@@ -291,7 +291,7 @@ select option { background: white; }
 
 /* --- Coûts dans le panel --- */
 .session-costs-row {
-  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; overflow: hidden;
 }
 .cost-block-total, .cost-block-filtered {
   display: inline-flex; align-items: baseline; gap: 5px;
@@ -307,7 +307,7 @@ select option { background: white; }
 }
 .cost-block-label {
   font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px;
 }
 .cost-block-total .cost-block-label { color: rgba(244,96,96,0.8); }
 .cost-block-filtered .cost-block-label { color: var(--color-secondary); }
@@ -571,12 +571,16 @@ select option { background: white; }
   font-size: 0.65rem; color: var(--color-secondary); font-weight: 600;
   display: inline-flex; align-items: center; gap: 3px;
   background: rgba(0,100,102,0.08); border-radius: 6px; padding: 2px 6px;
+  cursor: pointer; transition: background 0.15s, color 0.15s;
 }
+.item-shop:hover { background: rgba(0,100,102,0.18); color: var(--color-secondary); }
 .item-shop i { font-size: 0.6rem; }
 .item-price-tag {
   font-size: 0.63rem; color: var(--color-accent); font-weight: 700;
   background: rgba(244,96,96,0.08); border-radius: 6px; padding: 2px 6px;
+  cursor: pointer; transition: background 0.15s;
 }
+.item-price-tag:hover { background: rgba(244,96,96,0.18); }
 .recipe-dots { display: inline-flex; gap: 4px; align-items: center; }
 .field-sub label { font-size: 0.62rem; font-weight: 700; color: var(--color-secondary); letter-spacing: 0.8px; text-transform: uppercase; display: block; margin-bottom: 5px; }
 .in-price-label { font-size: 0.62rem; font-weight: 700; color: var(--color-secondary); letter-spacing: 0.8px; text-transform: uppercase; display: block; margin-bottom: 5px; }
@@ -2638,6 +2642,7 @@ function renderListView() {
 
   // Bloc bleu : onglet actif + filtre(s) cumulés
   // Étape 1 : filtrer par onglet (À acheter ou Panier)
+  // Exclut les items en stock (muted) du coût bleu
   let _ctxItems = sess.list.filter(i => !i.muted && i.done === (state.listMode === 'done'));
   const _tabLabel = state.listMode === 'done' ? 'Panier' : 'À acheter';
   let _ctxParts = [_tabLabel]; // Labels cumulés pour affichage
@@ -2774,8 +2779,8 @@ function renderListView() {
     const shopVal = ingInfo?.shop || item.shop || '';
     const priceVal = ingInfo?.price || item.price || 0;
     const priceUnit = ingInfo?.unit || item.unit;
-    const shopTag = shopVal ? `<span class="item-shop"><i class="fa-solid fa-store"></i> ${escapeHtml(shopVal)}</span>` : '';
-    const priceTag = priceVal ? `<span class="item-price-tag">${priceVal.toFixed(2)} ${getPriceMode(priceUnit).label}</span>` : '';
+    const shopTag = shopVal ? `<span class="item-shop" onclick="event.stopPropagation();openIngEditFromList('${escapeAttr(item.name)}','${escapeAttr(item.unit)}')" title="Modifier magasin / prix"><i class="fa-solid fa-store"></i> ${escapeHtml(shopVal)}</span>` : '';
+    const priceTag = priceVal ? `<span class="item-price-tag" onclick="event.stopPropagation();openIngEditFromList('${escapeAttr(item.name)}','${escapeAttr(item.unit)}')" title="Modifier magasin / prix">${priceVal.toFixed(2)} ${getPriceMode(priceUnit).label}</span>` : '';
     const qtyToShow = qtyOverride !== undefined ? qtyOverride : item.qty;
     const converted = convertToKgAndCeil(qtyToShow, item.unit);
     const displayQty = converted.isInteger
@@ -2785,7 +2790,7 @@ function renderListView() {
     const mutedTag = isMuted ? `<span class="muted-tag"><i class="fa-solid fa-check" style="font-size:0.55rem;margin-right:3px;"></i>en stock</span>` : '';
     return `<div class="swipe-wrapper" data-swipe-name="${escapeAttr(item.name)}" data-swipe-unit="${escapeAttr(item.unit)}">
       <div class="swipe-reveal"><i class="fa-solid fa-box-open"></i><span>${isMuted ? 'remettre' : 'en stock'}</span></div>
-      <div class="list-item ${item.done ? 'done' : ''}${dimmed ? ' item-dimmed' : ''}${isMuted ? ' is-muted' : ''}">
+      <div class="list-item ${item.done ? 'done' : ''}${dimmed ? ' item-dimmed' : ''}${isMuted ? ' is-muted' : ''}" data-lpname="${escapeAttr(item.name)}" data-lpunit="${escapeAttr(item.unit)}">
         <button class="btn-icon btn-icon-trash" onclick="delItem('${escapeAttr(item.name)}','${escapeAttr(item.unit)}')"><i class="fa-solid fa-trash"></i></button>
         <div class="item-info">
           <span class="item-name" onclick="muteItem('${escapeAttr(item.name)}','${escapeAttr(item.unit)}')" style="cursor:pointer;">${escapeHtml(item.name)}${mutedTag}</span>
@@ -3553,6 +3558,137 @@ function loadSharedList() {
 }
 
 
+/* ---------- EDIT INGREDIENT FROM LIST — ouvre le modal ingrédient complet ---------- */
+function openIngEditFromList(name, unit) {
+  // Trouver la définition de cet ingrédient dans les fiches
+  let ingDef = null;
+  for (const r of state.recipes) {
+    const found = r.ingredients.find(i => i.name === name && i.unit === unit);
+    if (found) { ingDef = { ...found }; break; }
+  }
+  if (!ingDef) return;
+
+  // Ouvrir le modal ingrédient standard en mode "depuis liste"
+  window._fromListIng = { origName: name, origUnit: unit };
+
+  const units = ['kg','g','L','cl','ml','pièce','paquet','boîte','sachet','botte','tranche','portion','dose'];
+  const cats  = DEFAULT_CATEGORIES;
+  const ing   = ingDef;
+  const pm    = getPriceMode(ing.unit || 'kg');
+  const isPiece = pm.mode === 'piece';
+  const unitOpts = units.map(u => `<option value="${u}" ${(ing.unit||'kg')===u?'selected':''}>${u}</option>`).join('');
+  const catOpts  = cats.map(c => `<option value="${c}" ${(ing.cat||cats[0])===c?'selected':''}>${c}</option>`).join('');
+
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay'; modal.id = 'ing-modal';
+  modal.innerHTML = `<div class="modal-sheet" style="padding:20px;max-height:92vh;overflow-y:auto;">
+    <div class="modal-handle"></div>
+    <div class="modal-title" style="margin-bottom:16px;">
+      <i class="fa-solid fa-pen" style="color:var(--color-primary);margin-right:8px;"></i>
+      Modifier l'ingrédient
+      <span style="font-size:0.6rem;font-weight:600;color:var(--color-secondary);margin-left:8px;text-transform:uppercase;letter-spacing:0.8px;">· toutes les fiches</span>
+    </div>
+    <div class="ing-modal-full ing-modal-field">
+      <label><i class="fa-solid fa-tag"></i> Nom de l'ingrédient</label>
+      <div class="ac-wrapper">
+        <input type="text" id="im-name" placeholder="ex: Farine T65" value="${escapeHtml(ing.name||'')}"
+          oninput="handleIngModalAC(this)" onblur="prefillIngModal(this)">
+        <div class="ac-box"></div>
+      </div>
+    </div>
+    <div class="ing-modal-row3">
+      <div class="ing-modal-field">
+        <label><i class="fa-solid fa-scale-balanced"></i> Qté</label>
+        <input type="number" id="im-qty" placeholder="0" step="0.001" min="0" value="${ing.qty||''}" oninput="updateIngModalCost()">
+      </div>
+      <div class="ing-modal-field">
+        <label><i class="fa-solid fa-ruler"></i> Unité</label>
+        <select id="im-unit" onchange="onIngModalUnitChange(this)">${unitOpts}</select>
+      </div>
+      <div class="ing-modal-field">
+        <label><i class="fa-solid fa-euro-sign"></i> <span id="im-price-label">${pm.label}</span></label>
+        <div class="price-input-wrapper">
+          <input type="number" id="im-price" placeholder="0.00" step="0.01" min="0" value="${ing.price||''}" oninput="updateIngModalCost()">
+          <button class="btn-lot" id="im-lot-btn" title="Prix au lot" onclick="openLotCalcModal()" style="${!isPiece?'display:none;':''}"><i class="fa-solid fa-calculator"></i></button>
+        </div>
+        <div id="im-cost-val" class="ing-price-subtext">—</div>
+      </div>
+    </div>
+    <div class="ing-modal-grid" style="margin-top:10px;">
+      <div class="ing-modal-field">
+        <label><i class="fa-solid fa-layer-group"></i> Rayon</label>
+        <select id="im-cat">${catOpts}</select>
+      </div>
+      <div class="ing-modal-field">
+        <label><i class="fa-solid fa-store"></i> Magasin</label>
+        <div class="ac-wrapper">
+          <input type="text" id="im-shop" placeholder="ex: Lidl…" value="${escapeHtml(ing.shop||'')}" oninput="handleShopACModal(this)">
+          <div class="ac-box"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-neutral" onclick="closeIngModal(); window._fromListIng=null;">Annuler</button>
+      <button class="btn btn-success" onclick="confirmIngModalFromList()">
+        <i class="fa-solid fa-check"></i> Appliquer partout
+      </button>
+    </div>
+  </div>`;
+  modal.addEventListener('click', e => { if (e.target === modal) { closeIngModal(); window._fromListIng = null; } });
+  document.body.appendChild(modal);
+  updateIngModalCost();
+  setTimeout(() => document.getElementById('im-name')?.focus(), 100);
+}
+
+function confirmIngModalFromList() {
+  const origName = window._fromListIng?.origName;
+  const origUnit = window._fromListIng?.origUnit;
+  if (!origName || !origUnit) return;
+
+  const name  = document.getElementById('im-name').value.trim();
+  const qty   = parseFloat(document.getElementById('im-qty').value);
+  const unit  = document.getElementById('im-unit').value;
+  const price = parseFloat(document.getElementById('im-price').value) || 0;
+  const cat   = document.getElementById('im-cat').value;
+  const shop  = document.getElementById('im-shop').value.trim();
+
+  if (!name) return toast('Nom requis', 'error');
+  if (!qty || qty <= 0) return toast('Quantité invalide', 'error');
+
+  pushUndoState();
+  let count = 0;
+  // Mettre à jour dans TOUTES les fiches qui contiennent cet ingrédient (origName + origUnit)
+  state.recipes.forEach(r => {
+    r.ingredients.forEach(ing => {
+      if (ing.name === origName && ing.unit === origUnit) {
+        ing.name  = name;
+        ing.qty   = qty;
+        ing.unit  = unit;
+        ing.price = price;
+        ing.cat   = cat;
+        ing.shop  = shop;
+        count++;
+      }
+    });
+  });
+  // Mettre à jour le cache session
+  const sess = currentSession();
+  sess.list.forEach(item => {
+    if (item.name === origName && item.unit === origUnit) {
+      item.name  = name;
+      item.unit  = unit;
+      item.price = price;
+      item.cat   = cat;
+      item.shop  = shop;
+    }
+  });
+  saveToIngredientDB(name, unit, price, cat, shop);
+  saveState();
+  closeIngModal();
+  window._fromListIng = null;
+  toast(`${name} mis à jour dans ${count} fiche${count > 1 ? 's' : ''} ✓`, 'success');
+}
+
 /* ---------- QTY EDIT MODAL ---------- */
 function openQtyEditModal(name, unit) {
   document.getElementById('qty-edit-modal')?.remove();
@@ -3792,6 +3928,34 @@ if (document.readyState === 'loading') {
     wrapper = null; listItem = null; reveal = null;
   });
 })();
+
+
+  // Long-press sur list-item (mobile) → edit ingrédient global
+  (function() {
+    let _lpTimer = null;
+    let _lpMoved = false;
+    document.addEventListener('touchstart', function(e) {
+      const item = e.target.closest('.list-item[data-lpname]');
+      if (!item || e.target.closest('button') || e.target.closest('.list-qty')) return;
+      _lpMoved = false;
+      _lpTimer = setTimeout(function() {
+        if (_lpMoved) return;
+        const name = item.dataset.lpname;
+        const unit = item.dataset.lpunit;
+        if (name && unit) {
+          navigator.vibrate && navigator.vibrate(30);
+          openIngEditFromList(name, unit);
+        }
+      }, 500);
+    }, { passive: true });
+    document.addEventListener('touchmove', function() {
+      _lpMoved = true;
+      if (_lpTimer) { clearTimeout(_lpTimer); _lpTimer = null; }
+    }, { passive: true });
+    document.addEventListener('touchend', function() {
+      if (_lpTimer) { clearTimeout(_lpTimer); _lpTimer = null; }
+    }, { passive: true });
+  })();
 
   document.addEventListener('DOMContentLoaded', init);
 } else {
