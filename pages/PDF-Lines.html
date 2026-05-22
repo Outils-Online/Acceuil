@@ -353,23 +353,28 @@ input[type=file]{display:none}
 .doc-card.collapsed{flex:0 0 auto;min-height:unset;max-height:unset}
 .merge-strip{
   flex:0 0 auto;
-  height:0;position:relative;z-index:20;
-  margin:0;
+  height:28px;position:relative;z-index:20;
+  margin:0;display:flex;align-items:center;justify-content:center;
+}
+.merge-strip::before{
+  content:'';position:absolute;left:0;right:0;top:50%;
+  height:1px;background:var(--border);
 }
 .merge-strip-btn{
-  position:absolute;right:50%;top:50%;transform:translate(50%,-50%);
-  display:flex;align-items:center;justify-content:center;
-  width:24px;height:24px;border-radius:50%;
+  position:relative;
+  display:flex;align-items:center;gap:5px;
+  padding:4px 12px;border-radius:100px;
   background:var(--surface);border:1.5px solid var(--border);
-  color:var(--text3);
+  color:var(--text3);font-size:11px;font-weight:500;
+  font-family:'DM Sans',sans-serif;
   transition:all .15s;box-shadow:0 1px 4px rgba(10,36,114,.1);
-  cursor:pointer;font-size:12px;
+  cursor:pointer;white-space:nowrap;
 }
 .merge-strip:hover .merge-strip-btn,
 .merge-strip-btn:hover{
   background:var(--emerald);border-color:var(--emerald);
   color:#fff;box-shadow:0 2px 8px rgba(0,100,102,.25);
-  transform:translate(50%,-50%) scale(1.15);
+  transform:scale(1.05);
 }
 /* ── RESPONSIVE ──────────────────────────────────────── */
 @media(max-width:900px){#sidebar{display:none}}
@@ -436,6 +441,7 @@ input[type=file]{display:none}
   <div class="tsep"></div>
   <div class="tgroup">
     <button class="btn btn-ghost btn-sm" id="btn-extract" title="Extraire les pages selectionnees (ou plage si rien de selectionne)"><i class="fa-solid fa-scissors"></i> Extraire</button>
+    <button class="btn btn-ghost btn-sm" id="btn-merge-all" title="Fusionner tous les documents en un seul PDF" style="color:var(--emerald);border-color:var(--emerald)"><i class="fa-solid fa-layer-group"></i> <span class="btn-lbl">Tout fusionner</span></button>
     <button class="btn btn-ghost btn-sm" id="btn-compress" title="Reduire la taille du PDF"><i class="fa-solid fa-compress"></i> Compresser</button>
     <button class="btn btn-ghost btn-sm" id="btn-export-img" title="Exporter les pages en images PNG/JPEG"><i class="fa-solid fa-images"></i> Images</button>
   </div>
@@ -477,6 +483,7 @@ input[type=file]{display:none}
 <!-- FAB: PDF tools only -->
 <div id="fab-btn" title="Outils PDF"><i class="fa-solid fa-toolbox"></i></div>
 <div id="fab-menu">
+  <div class="fab-item" id="fm-merge-all"><i class="fa-solid fa-layer-group"></i><span>Tout fusionner</span></div>
   <div class="fab-item" id="fm-extract"><i class="fa-solid fa-scissors"></i><span>Extraire plage</span></div>
   <div class="fab-item" id="fm-compress"><i class="fa-solid fa-compress"></i><span>Compresser</span></div>
   <div class="fab-item" id="fm-export-img"><i class="fa-solid fa-images"></i><span>Export images</span></div>
@@ -735,7 +742,7 @@ input[type=file]{display:none}
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-var S={docs:[],sel:new Set(),zoom:1,sortables:{},docListSort:null,docCardsSort:null,ndi:1,npi:1,bytes:{},cache:{},q:[],rendering:false};
+var S={docs:[],sel:new Set(),zoom:1,sortables:{},docListSort:null,docCardsSort:null,ndi:1,npi:1,bytes:{},pdfDocs:{},cache:{},q:[],rendering:false};
 
 // UNDO
 var Undo={stack:[],future:[],MAX:25,
@@ -745,11 +752,8 @@ var Undo={stack:[],future:[],MAX:25,
   redo:async function(){if(!this.future.length)return;this.stack.push(this.snap());await this.restore(this.future.pop());this.upd();Toast.show('Retabli');},
   restore:async function(snap){
     var data=JSON.parse(snap);
-    // Preserve pdfDoc refs, restore exact order from snapshot
-    var prevDocs=S.docs.slice();
     S.docs=data.map(function(d){
-      var ex=prevDocs.find(function(x){return x.id===d.id;});
-      return{id:d.id,name:d.name,cnt:d.cnt,pdfDoc:ex?ex.pdfDoc:null,pages:d.pages.map(function(p){return{id:p.id,docId:p.docId,pi:p.pi,rot:p.rot,blank:p.blank||false};})};
+      return{id:d.id,name:d.name,cnt:d.cnt,pdfDoc:S.pdfDocs[d.id]||null,pages:d.pages.map(function(p){return{id:p.id,docId:p.docId,pi:p.pi,rot:p.rot,blank:p.blank||false};})};
     });
     S.sel.clear();
     S.cache={};
@@ -801,6 +805,7 @@ var Files={
       var pages=[];
       for(var i=0;i<pdfDoc.numPages;i++)pages.push({id:S.npi++,docId:docId,pi:i,rot:0});
       S.bytes[docId]=bytes;
+      S.pdfDocs[docId]=pdfDoc;
       S.docs.push({id:docId,name:file.name,cnt:pdfDoc.numPages,pdfDoc:pdfDoc,pages:pages});
       Toast.show('"'+file.name+'" charge ('+pdfDoc.numPages+' pages)','success');
     }catch(e){Toast.show('Erreur: '+file.name,'error');console.error(e);}
@@ -825,6 +830,7 @@ var Files={
       var tmpId=S.ndi++;
       var pdfDoc=await pdfjsLib.getDocument({data:pdfBytes.slice(0)}).promise;
       S.bytes[tmpId]=pdfBytes;
+      S.pdfDocs[tmpId]=pdfDoc;
       S.docs.push({id:tmpId,name:file.name,cnt:1,pdfDoc:pdfDoc,pages:[],_ghost:true});
       targetDoc.pages.push({id:S.npi++,docId:tmpId,pi:0,rot:0});
       Toast.show('"'+file.name+'" ajouté','success');
@@ -868,8 +874,9 @@ var Pages={
     for(var i=0;i<S.docs.length;i++){
       var p=S.docs[i].pages.find(function(x){return x.id===pid;});
       if(p){
-        // Résoudre le doc source réel via p.docId (peut être un doc fantôme)
-        var srcDoc=S.docs.find(function(d){return d.id===p.docId;})||S.docs[i];
+        // Résoudre le pdfDoc source via le registre global S.pdfDocs (résiste aux fusions)
+        var pdfDoc=S.pdfDocs[p.docId]||S.pdfDocs[S.docs[i].id]||S.docs[i].pdfDoc;
+        var srcDoc={id:p.docId,pdfDoc:pdfDoc,pages:S.docs[i].pages};
         return{doc:srcDoc,page:p,ownerDoc:S.docs[i]};
       }
     }
@@ -979,15 +986,19 @@ var DD={
     if(S.sortables[docId])S.sortables[docId].destroy();
     S.sortables[docId]=Sortable.create(el,{
       group:'pages',animation:150,ghostClass:'sortable-ghost',chosenClass:'sortable-chosen',
-      handle:'.thumb-canvas-wrap',filter:'.thumb-btn,.cut-zone',
+      handle:'.thumb-canvas-wrap',filter:'.thumb-btn,.cut-zone,.thumb-add-img',
+      draggable:'.page-thumb',
       onStart:function(){},
       onEnd:function(evt){
-        
         Undo.push();
-        var fid=parseInt(evt.from.dataset.did),tid=parseInt(evt.to.dataset.did),pid=parseInt(evt.item.dataset.pid),ni=evt.newDraggableIndex;
+        var fid=parseInt(evt.from.dataset.did),tid=parseInt(evt.to.dataset.did),pid=parseInt(evt.item.dataset.pid);
         var fd=S.docs.find(function(d){return d.id===fid;}),td=S.docs.find(function(d){return d.id===tid;});
         if(!fd||!td)return;
         var fi=fd.pages.findIndex(function(p){return p.id===pid;});if(fi<0)return;
+        // Calculer le vrai index dans le tableau pages via le DOM (ignore cut-zones et add-img)
+        var allThumbs=Array.from(evt.to.querySelectorAll('.page-thumb'));
+        var newDomIdx=allThumbs.indexOf(evt.item);
+        var ni=newDomIdx<0?td.pages.length:newDomIdx;
         var pg=fd.pages.splice(fi,1)[0];pg.docId=tid;td.pages.splice(ni,0,pg);
         if(!fd.pages.length&&fid!==tid){Files.remove(fid);return;}
         UI.syncNums(fid);if(fid!==tid)UI.syncNums(tid);UI.updateSidebar();UI.updateDocOrderBtns();
@@ -1144,20 +1155,68 @@ var Split={
   mergeWith:function(docId){
     var idx=S.docs.findIndex(function(d){return d.id===docId;});
     if(idx<0||idx>=S.docs.length-1)return;
+    // Trouver le prochain doc visible (non ghost)
+    var nextIdx=-1;
+    for(var i=idx+1;i<S.docs.length;i++){if(!S.docs[i]._ghost){nextIdx=i;break;}}
+    if(nextIdx<0)return;
     Undo.push();
-    var docA=S.docs[idx],docB=S.docs[idx+1];
-    // Les pages de B gardent leur docId source (pour l'export bytes)
+    var docA=S.docs[idx],docB=S.docs[nextIdx];
+    // Copier les pages comme nouveaux objets pour éviter les références partagées
+    var pagesA=docA.pages.map(function(p){return{id:p.id,docId:p.docId,pi:p.pi,rot:p.rot,blank:p.blank||false};});
+    var pagesB=docB.pages.map(function(p){return{id:p.id,docId:p.docId,pi:p.pi,rot:p.rot,blank:p.blank||false};});
     var merged={
       id:docA.id,
       name:docA.name.replace(/_\d+\.pdf$/i,'.pdf').replace(/\.pdf$/i,'')+'_fusionné.pdf',
-      cnt:docA.pages.length+docB.pages.length,
+      cnt:pagesA.length+pagesB.length,
       pdfDoc:docA.pdfDoc,
-      pages:docA.pages.concat(docB.pages)
+      pages:pagesA.concat(pagesB)
     };
-    S.docs.splice(idx,2,merged);
+    // Retirer docA et docB, insérer merged à la place de docA
+    S.docs.splice(nextIdx,1);
+    S.docs.splice(idx,1,merged);
     S.sel.clear();S.cache={};
     UI.renderAll();
     Toast.show('Documents fusionnés','success');
+  },
+  // Fusionne tous les documents en un seul
+  mergeAll:function(){
+    var visibleDocs=S.docs.filter(function(d){return !d._ghost&&d.pages.length;});
+    if(visibleDocs.length<2){Toast.show('Il faut au moins 2 documents','error');return;}
+    Undo.push();
+    // Copier toutes les pages (objets neufs pour éviter les références partagées)
+    // Chaque page garde son docId SOURCE original pour que exportDoc puisse trouver S.bytes
+    var allPages=[];
+    visibleDocs.forEach(function(d){
+      d.pages.forEach(function(p){
+        allPages.push({id:p.id,docId:p.docId,pi:p.pi,rot:p.rot,blank:p.blank||false});
+      });
+    });
+    var base=visibleDocs[0];
+    var merged={
+      id:base.id,
+      name:'fusion_'+visibleDocs.length+'_docs.pdf',
+      cnt:allPages.length,
+      pdfDoc:base.pdfDoc,
+      pages:allPages
+    };
+    // Remplacer UNIQUEMENT les docs visibles par le doc fusionné, conserver les ghosts
+    // Construire le nouveau tableau en préservant l'ordre et les ghosts
+    var newDocs=[];
+    var fusionInserted=false;
+    S.docs.forEach(function(d){
+      if(d._ghost){
+        newDocs.push(d); // garder les ghosts intacts
+      } else if(!fusionInserted){
+        newDocs.push(merged); // insérer le fusionné à la place du premier doc visible
+        fusionInserted=true;
+        // les autres docs visibles sont ignorés (leurs pages sont dans merged)
+      }
+      // les docs visibles suivants sont sautés
+    });
+    S.docs=newDocs;
+    S.sel.clear();S.cache={};
+    UI.renderAll();
+    Toast.show('Tous les documents fusionnés ('+allPages.length+' pages)','success');
   },
 
   // Export direct d'un doc (depuis le bouton dans le card header)
@@ -1236,12 +1295,13 @@ var Project={
     try{
       var data=JSON.parse(await file.text());
       if(data.v!==1)throw new Error('Version incompatible');
-      S.docs=[];S.sel.clear();S.bytes={};S.cache={};DD.destroyAll();Undo.clear();
+      S.docs=[];S.sel.clear();S.bytes={};S.pdfDocs={};S.cache={};DD.destroyAll();Undo.clear();
       for(var i=0;i<data.docs.length;i++){
         var d=data.docs[i];
         var bytes=Uint8Array.from(atob(d.b64),function(c){return c.charCodeAt(0);});
         var pdfDoc=await pdfjsLib.getDocument({data:bytes.slice(0)}).promise;
         S.bytes[d.id]=bytes;
+        S.pdfDocs[d.id]=pdfDoc;
         S.docs.push({id:d.id,name:d.name,cnt:d.cnt,pdfDoc:pdfDoc,pages:d.pages});
       }
       S.ndi=data.ndi;S.npi=data.npi;UI.renderAll();Toast.show('Projet charge','success');
@@ -1270,28 +1330,18 @@ var UI={
     // Supprimer les anciennes merge-strips
     area.querySelectorAll('.merge-strip').forEach(function(s){s.remove();});
     S.docs.forEach(function(doc,docIdx){
-      if(doc._ghost)return; // doc source fantôme, pas de card
+      if(doc._ghost)return;
       var card=area.querySelector('.doc-card[data-did="'+doc.id+'"]');
       if(!card){card=UI.buildCard(doc);area.appendChild(card);}
       UI.syncCard(doc,card);DD.initDoc(doc.id);
     });
-    // Réinsérer dans le bon ordre avec merge-strips entre chaque card
-    var area2=document.getElementById('canvas-area');
+    // Réinsérer dans le bon ordre puis créer les merge-strips via rebuildMergeStrips
     var visibleDocs=S.docs.filter(function(d){return !d._ghost;});
-    visibleDocs.forEach(function(doc,i){
-      var card=area2.querySelector('.doc-card[data-did="'+doc.id+'"]');
-      if(card)area2.appendChild(card);
-      if(i<visibleDocs.length-1){
-        var strip=document.createElement('div');
-        strip.className='merge-strip';
-        strip.dataset.mergeDoc=doc.id;
-        strip.innerHTML='<button class="merge-strip-btn" title="Fusionner avec le suivant"><i class="fa-solid fa-link"></i></button>';
-        (function(capturedDocId){
-          strip.addEventListener('click',function(){Split.mergeWith(capturedDocId);});
-        })(doc.id);
-        area2.appendChild(strip);
-      }
+    visibleDocs.forEach(function(doc){
+      var card=area.querySelector('.doc-card[data-did="'+doc.id+'"]');
+      if(card)area.appendChild(card);
     });
+    UI.rebuildMergeStrips();
     var toRender=[];
     S.docs.forEach(function(d){d.pages.forEach(function(p){var w=document.querySelector('.thumb-canvas-wrap[data-pid="'+p.id+'"]');if(w&&!w.querySelector('canvas'))toRender.push(p.id);});});
     if(toRender.length)Render.queue(toRender);
@@ -1486,7 +1536,19 @@ var UI={
       list.appendChild(item);
     });
     if(S.docListSort)S.docListSort.destroy();
-    if(S.docs.length>1){S.docListSort=Sortable.create(list,{animation:150,handle:'.doc-sgrip',onEnd:function(evt){if(evt.oldIndex===evt.newIndex)return;Undo.push();var mv=S.docs.splice(evt.oldIndex,1)[0];S.docs.splice(evt.newIndex,0,mv);UI.reorderCards();UI.updateSidebar();UI.updateDocOrderBtns();}});}
+    if(visibleDocs.length>1){S.docListSort=Sortable.create(list,{animation:150,handle:'.doc-sgrip',draggable:'.doc-item',onEnd:function(evt){
+      if(evt.oldIndex===evt.newIndex)return;
+      Undo.push();
+      // Mapper les indices visibles vers S.docs (en sautant les ghosts)
+      var fromDoc=visibleDocs[evt.oldIndex];
+      var toDoc=visibleDocs[evt.newIndex];
+      if(!fromDoc||!toDoc)return;
+      var fi=S.docs.findIndex(function(d){return d.id===fromDoc.id;});
+      var ti=S.docs.findIndex(function(d){return d.id===toDoc.id;});
+      if(fi<0||ti<0)return;
+      var mv=S.docs.splice(fi,1)[0];S.docs.splice(ti,0,mv);
+      UI.reorderCards();UI.updateSidebar();UI.updateDocOrderBtns();
+    }});}
     this.updateBottomSheet();
   },
   updateBottomSheet:function(){
@@ -1518,11 +1580,56 @@ var UI={
       bsList.appendChild(item);
     });
   },
-  reorderCards:function(){var area=document.getElementById('canvas-area');S.docs.forEach(function(doc){var card=area.querySelector('.doc-card[data-did="'+doc.id+'"]');if(card)area.appendChild(card);});},
+  reorderCards:function(){
+    var area=document.getElementById('canvas-area');
+    S.docs.forEach(function(doc){var card=area.querySelector('.doc-card[data-did="'+doc.id+'"]');if(card)area.appendChild(card);});
+    this.rebuildMergeStrips();
+  },
+  rebuildMergeStrips:function(){
+    var area=document.getElementById('canvas-area');
+    // Supprimer les anciennes strips
+    area.querySelectorAll('.merge-strip').forEach(function(s){s.remove();});
+    var visibleDocs=S.docs.filter(function(d){return !d._ghost;});
+    visibleDocs.forEach(function(doc,i){
+      if(i>=visibleDocs.length-1)return;
+      var card=area.querySelector('.doc-card[data-did="'+doc.id+'"]');
+      if(!card)return;
+      var strip=document.createElement('div');
+      strip.className='merge-strip';
+      strip.dataset.mergeDoc=doc.id;
+      strip.innerHTML='<button class="merge-strip-btn" title="Fusionner avec le suivant"><i class="fa-solid fa-link"></i> Fusionner</button>';
+      (function(capturedDocId){
+        strip.addEventListener('click',function(){Split.mergeWith(capturedDocId);});
+      })(doc.id);
+      card.insertAdjacentElement('afterend',strip);
+    });
+  },
   initCardSort:function(){
     var area=document.getElementById('canvas-area');
     if(S.docCardsSort)S.docCardsSort.destroy();
-    S.docCardsSort=Sortable.create(area,{animation:200,handle:'.card-dh',ghostClass:'sortable-ghost',filter:'.pages-container,.thumb-btn,.card-actions',preventOnFilter:false,onEnd:function(evt){if(evt.oldIndex===evt.newIndex)return;Undo.push();var mv=S.docs.splice(evt.oldIndex,1)[0];S.docs.splice(evt.newIndex,0,mv);UI.updateSidebar();UI.updateDocOrderBtns();}});
+    S.docCardsSort=Sortable.create(area,{
+      animation:200,handle:'.card-dh',ghostClass:'sortable-ghost',
+      draggable:'.doc-card',
+      filter:'.pages-container,.thumb-btn,.card-actions,.merge-strip',
+      preventOnFilter:false,
+      onEnd:function(evt){
+        if(evt.item.classList.contains('merge-strip'))return;
+        // Calculer le vrai index en ne comptant que les .doc-card (pas les .merge-strip)
+        var allCards=Array.from(area.querySelectorAll('.doc-card'));
+        var newIdx=allCards.indexOf(evt.item);
+        if(newIdx<0)return;
+        // Trouver l'ancienne position dans S.docs via data-did
+        var did=parseInt(evt.item.dataset.did);
+        var oldIdx=S.docs.findIndex(function(d){return d.id===did;});
+        if(oldIdx<0||oldIdx===newIdx)return;
+        Undo.push();
+        var mv=S.docs.splice(oldIdx,1)[0];
+        S.docs.splice(newIdx,0,mv);
+        UI.rebuildMergeStrips();
+        UI.updateSidebar();
+        UI.updateDocOrderBtns();
+      }
+    });
   },
   updateDocOrderBtns:function(){S.docs.forEach(function(doc,i){var card=document.querySelector('.doc-card[data-did="'+doc.id+'"]');if(!card)return;card.querySelectorAll('[data-mv]').forEach(function(btn){var d=parseInt(btn.dataset.dir);btn.disabled=(d===-1&&i===0)||(d===1&&i===S.docs.length-1);});});},
   updateSel:function(){
@@ -1860,6 +1967,7 @@ var BottomSheet={
   document.getElementById('btn-redo-m').addEventListener('click',function(){Undo.redo();});
   // Mobile selection actions
 
+  document.getElementById('btn-merge-all').addEventListener('click',function(){Split.mergeAll();});
   document.getElementById('btn-extract').addEventListener('click',function(){Extract.open();});
   document.getElementById('range-cancel').addEventListener('click',function(){hideModal('range-modal');});
   document.getElementById('range-ok').addEventListener('click',function(){Extract.confirm();});
@@ -1933,6 +2041,7 @@ var BottomSheet={
   });
   function closeFab(){document.getElementById('fab-btn').classList.remove('open');document.getElementById('fab-menu').classList.remove('open');}
   document.addEventListener('click',function(e){if(!e.target.closest('#fab-btn')&&!e.target.closest('#fab-menu'))closeFab();});
+  document.getElementById('fm-merge-all').addEventListener('click',function(){closeFab();Split.mergeAll();});
   document.getElementById('fm-extract').addEventListener('click',function(){closeFab();Extract.open();});
   document.getElementById('fm-compress').addEventListener('click',function(){closeFab();Compress.open();});
   document.getElementById('fm-export-img').addEventListener('click',function(){closeFab();ExportImg.open();});
