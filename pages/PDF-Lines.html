@@ -742,7 +742,7 @@ input[type=file]{display:none}
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-var S={docs:[],sel:new Set(),zoom:1,sortables:{},docListSort:null,docCardsSort:null,ndi:1,npi:1,bytes:{},pdfDocs:{},cache:{},q:[],rendering:false};
+var S={docs:[],sel:new Set(),zoom:1,sortables:{},docListSort:null,docCardsSort:null,ndi:1,npi:1,bytes:{},pdfDocs:{},cache:{},q:[],rendering:false,lastSelPid:null};
 
 // UNDO
 var Undo={stack:[],future:[],MAX:25,
@@ -886,15 +886,52 @@ var Pages={
     if(!skipUndo)Undo.push();
     for(var i=0;i<S.docs.length;i++){var idx=S.docs[i].pages.findIndex(function(p){return p.id===pid;});if(idx>=0){delete S.cache[pid];S.sel.delete(pid);S.docs[i].pages.splice(idx,1);if(!S.docs[i].pages.length)Files.remove(S.docs[i].id);return;}}
   },
-  delSel:function(){Undo.push();var ids=[...S.sel];ids.forEach(function(id){Pages.del(id,true);});S.sel.clear();UI.renderAll();},
+  delSel:function(){Undo.push();var ids=[...S.sel];ids.forEach(function(id){Pages.del(id,true);});S.sel.clear();S.lastSelPid=null;UI.renderAll();},
   dup:function(pid){var f=this.find(pid);if(!f)return;var i=f.doc.pages.indexOf(f.page);f.doc.pages.splice(i+1,0,{id:S.npi++,docId:f.doc.id,pi:f.page.pi,rot:f.page.rot});UI.renderAll();},
   dupSel:function(){Undo.push();var ids=[...S.sel];ids.forEach(function(id){var f=Pages.find(id);if(!f)return;var i=f.doc.pages.indexOf(f.page);f.doc.pages.splice(i+1,0,{id:S.npi++,docId:f.doc.id,pi:f.page.pi,rot:f.page.rot});});S.sel.clear();UI.renderAll();},
   rot:function(pid,deg){var f=this.find(pid);if(!f)return;Undo.push();f.page.rot=((f.page.rot+deg)%360+360)%360;delete S.cache[pid];Render.renderThumb(pid);UI.updateRotLabel(pid);},
   rotSel:function(deg){Undo.push();S.sel.forEach(function(id){var f=Pages.find(id);if(!f)return;f.page.rot=((f.page.rot+deg)%360+360)%360;delete S.cache[id];Render.renderThumb(id);UI.updateRotLabel(id);});},
   first:function(pid){var f=this.find(pid);if(!f)return;Undo.push();var i=f.doc.pages.indexOf(f.page);f.doc.pages.splice(i,1);f.doc.pages.unshift(f.page);UI.renderAll();},
   last:function(pid){var f=this.find(pid);if(!f)return;Undo.push();var i=f.doc.pages.indexOf(f.page);f.doc.pages.splice(i,1);f.doc.pages.push(f.page);UI.renderAll();},
-  toggleSel:function(pid,multi){if(!multi){if(S.sel.has(pid)&&S.sel.size===1)S.sel.clear();else{S.sel.clear();S.sel.add(pid);}}else{if(S.sel.has(pid))S.sel.delete(pid);else S.sel.add(pid);}UI.updateSel();},
-  clearSel:function(){S.sel.clear();UI.updateSel();},
+  toggleSel:function(pid,mode){
+    // mode: 'single' | 'multi' (Ctrl/Meta) | 'range' (Shift)
+    if(mode==='range'&&S.lastSelPid!==null){
+      // Trouver le doc contenant les deux pages
+      var allPages=S.docs.flatMap(function(d){return d.pages;});
+      var idxA=allPages.findIndex(function(p){return p.id===S.lastSelPid;});
+      var idxB=allPages.findIndex(function(p){return p.id===pid;});
+      if(idxA>=0&&idxB>=0){
+        var lo=Math.min(idxA,idxB),hi=Math.max(idxA,idxB);
+        // Récupérer le doc de la page pivot pour rester dans le même doc
+        var pivotDoc=null;
+        S.docs.forEach(function(d){if(d.pages.some(function(p){return p.id===S.lastSelPid;}))pivotDoc=d;});
+        var targetDoc=null;
+        S.docs.forEach(function(d){if(d.pages.some(function(p){return p.id===pid;}))targetDoc=d;});
+        if(pivotDoc&&targetDoc&&pivotDoc.id===targetDoc.id){
+          // Même document : sélectionner la plage dans ce doc
+          var docPages=pivotDoc.pages;
+          var dIdxA=docPages.findIndex(function(p){return p.id===S.lastSelPid;});
+          var dIdxB=docPages.findIndex(function(p){return p.id===pid;});
+          var dLo=Math.min(dIdxA,dIdxB),dHi=Math.max(dIdxA,dIdxB);
+          docPages.slice(dLo,dHi+1).forEach(function(p){S.sel.add(p.id);});
+        } else {
+          // Docs différents : sélectionner toute la plage globale
+          allPages.slice(lo,hi+1).forEach(function(p){S.sel.add(p.id);});
+        }
+        S.lastSelPid=pid;
+        UI.updateSel();return;
+      }
+    }
+    if(mode==='multi'){
+      if(S.sel.has(pid))S.sel.delete(pid);else S.sel.add(pid);
+      S.lastSelPid=pid;
+    } else {
+      if(S.sel.has(pid)&&S.sel.size===1){S.sel.clear();S.lastSelPid=null;}
+      else{S.sel.clear();S.sel.add(pid);S.lastSelPid=pid;}
+    }
+    UI.updateSel();
+  },
+  clearSel:function(){S.sel.clear();S.lastSelPid=null;UI.updateSel();},
   clipboard:[],
   copy:function(){
     if(!S.sel.size)return;
@@ -1483,7 +1520,7 @@ var UI={
           '<div class="thumb-actions">'+
             '<button class="thumb-btn del" title="Supprimer" data-a="del" data-pid="'+pg.id+'"><i class="fa-solid fa-trash"></i></button>'+
           '</div></div>';
-      el.addEventListener('click',function(e){if(e.target.closest('.thumb-btn'))return;Pages.toggleSel(pg.id,e.shiftKey||e.metaKey||e.ctrlKey);});
+      el.addEventListener('click',function(e){if(e.target.closest('.thumb-btn'))return;var mode=e.shiftKey?'range':(e.metaKey||e.ctrlKey)?'multi':'single';Pages.toggleSel(pg.id,mode);});
       el.addEventListener('click',function(e){var btn=e.target.closest('[data-a]');if(!btn)return;e.stopPropagation();if(btn.dataset.a==='del'){Pages.del(parseInt(btn.dataset.pid));UI.renderAll();}});
       el.addEventListener('contextmenu',function(e){e.preventDefault();Ctx.show(e.clientX,e.clientY,pg.id);});
       return el;
@@ -1500,7 +1537,7 @@ var UI={
           '<button class="thumb-btn del" title="Supprimer" data-a="del" data-pid="'+pg.id+'"><i class="fa-solid fa-trash"></i></button>'+
         '</div></div>';
     el.addEventListener('dblclick',function(e){if(e.target.closest('.thumb-btn'))return;Preview.open(pg.id);});
-    el.addEventListener('click',function(e){if(e.target.closest('.thumb-btn'))return;Pages.toggleSel(pg.id,e.shiftKey||e.metaKey||e.ctrlKey);});
+    el.addEventListener('click',function(e){if(e.target.closest('.thumb-btn'))return;var mode=e.shiftKey?'range':(e.metaKey||e.ctrlKey)?'multi':'single';Pages.toggleSel(pg.id,mode);});
     el.addEventListener('click',function(e){
       var btn=e.target.closest('[data-a]');if(!btn)return;e.stopPropagation();
       var id=parseInt(btn.dataset.pid),a=btn.dataset.a;
