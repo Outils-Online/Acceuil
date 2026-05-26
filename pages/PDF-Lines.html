@@ -1036,7 +1036,14 @@ var DD={
         var allThumbs=Array.from(evt.to.querySelectorAll('.page-thumb'));
         var newDomIdx=allThumbs.indexOf(evt.item);
         var ni=newDomIdx<0?td.pages.length:newDomIdx;
-        var pg=fd.pages.splice(fi,1)[0];pg.docId=tid;td.pages.splice(ni,0,pg);
+        var pg=fd.pages.splice(fi,1)[0];
+        if(fid!==tid){
+          // Conserver la référence source pour l'export
+          if(!pg._srcDocId)pg._srcDocId=pg.docId;
+          // S'assurer que les bytes source sont disponibles dans le doc cible
+          if(!S.bytes[tid]&&S.bytes[pg.docId])S.bytes[tid]=S.bytes[pg.docId];
+        }
+        pg.docId=tid;td.pages.splice(ni,0,pg);
         if(!fd.pages.length&&fid!==tid){Files.remove(fid);return;}
         UI.syncNums(fid);if(fid!==tid)UI.syncNums(tid);UI.updateSidebar();UI.updateDocOrderBtns();
       }
@@ -1079,14 +1086,16 @@ var Extract={
     var allPages=S.docs.flatMap(function(d){return d.pages;});
     var pages=allPages.filter(function(p){return S.sel.has(p.id)&&!p.blank;});
     if(!pages.length){Toast.show('Aucune page valide selectionnee','error');return;}
-    // On groupe par doc source pour minimiser les PDFDocument.load
-    var docIds=[...new Set(pages.map(function(p){return p.docId;}))];
+    // On groupe par doc source — avec fallback _srcDocId si bytes[docId] absent
+    function resolveId(p){return (S.bytes[p.docId]?p.docId:(p._srcDocId&&S.bytes[p._srcDocId]?p._srcDocId:p.docId));}
+    var docIds=[...new Set(pages.map(function(p){return resolveId(p);}))];
     UI.showProgress(true);UI.setProgress(0,'Extraction de la selection...');
     try{
       var PDFDocument=window.PDFLib.PDFDocument,degrees=window.PDFLib.degrees;
       var srcs={};
       for(var i=0;i<docIds.length;i++){
         var id=docIds[i];
+        if(!S.bytes[id]){Toast.show('Données source manquantes pour une page (docId '+id+')','error');UI.showProgress(false);return;}
         srcs[id]=await PDFDocument.load(S.bytes[id].slice(0),{ignoreEncryption:true});
         UI.setProgress(Math.round((i/docIds.length)*20),'Chargement...');await tick();
       }
@@ -1094,7 +1103,7 @@ var Extract={
       for(var j=0;j<pages.length;j++){
         var pg=pages[j];
         UI.setProgress(Math.round(20+(j/pages.length)*75),'Page '+(j+1)+'/'+pages.length);await tick();
-        var src=srcs[pg.docId];if(!src||pg.pi>=src.getPageCount())continue;
+        var src=srcs[resolveId(pg)];if(!src||pg.pi>=src.getPageCount())continue;
         var cp=(await out.copyPages(src,[pg.pi]))[0];
         if(pg.rot)cp.setRotation(degrees(((cp.getRotation().angle+pg.rot)%360+360)%360));
         out.addPage(cp);
@@ -1144,6 +1153,7 @@ var Extract={
     UI.showProgress(true);UI.setProgress(0,'Extraction...');
     try{
       var PDFDocument=window.PDFLib.PDFDocument,degrees=window.PDFLib.degrees;
+      if(!S.bytes[doc.id]){Toast.show('Données source manquantes pour ce document','error');UI.showProgress(false);return;}
       var src=await PDFDocument.load(S.bytes[doc.id].slice(0),{ignoreEncryption:true});
       var out=await PDFDocument.create();
       for(var i=0;i<pages.length;i++){
@@ -1266,16 +1276,18 @@ var Split={
     UI.showProgress(true);UI.setProgress(0,'Export...');
     try{
       var PDFDocument=window.PDFLib.PDFDocument,degrees=window.PDFLib.degrees;
-      // Grouper par docId source
-      var srcIds=[...new Set(pages.map(function(p){return p.docId;}))];
+      // Grouper par docId source — avec fallback _srcDocId si bytes[docId] absent
+      function resolveIdExport(p){return (S.bytes[p.docId]?p.docId:(p._srcDocId&&S.bytes[p._srcDocId]?p._srcDocId:p.docId));}
+      var srcIds=[...new Set(pages.map(function(p){return resolveIdExport(p);}))];
       var srcs={};
       for(var i=0;i<srcIds.length;i++){
+        if(!S.bytes[srcIds[i]]){Toast.show('Données source manquantes (docId '+srcIds[i]+')','error');UI.showProgress(false);return;}
         srcs[srcIds[i]]=await PDFDocument.load(S.bytes[srcIds[i]].slice(0),{ignoreEncryption:true});
       }
       var out=await PDFDocument.create();
       for(var j=0;j<pages.length;j++){
         var pg=pages[j];UI.setProgress(Math.round((j/pages.length)*90),'Page '+(j+1));await tick();
-        var src=srcs[pg.docId];if(!src||pg.pi>=src.getPageCount())continue;
+        var src=srcs[resolveIdExport(pg)];if(!src||pg.pi>=src.getPageCount())continue;
         var cp=(await out.copyPages(src,[pg.pi]))[0];
         if(pg.rot)cp.setRotation(degrees(((cp.getRotation().angle+pg.rot)%360+360)%360));
         out.addPage(cp);
@@ -1792,6 +1804,7 @@ var PrintPrep={
         var id=ids[i];
         UI.setProgress(Math.round((i/ids.length)*15),'Chargement '+(i+1)+'/'+ids.length+'...');
         await tick();
+        if(!S.bytes[id])continue;
         srcs[id]=await PDFDocument.load(S.bytes[id].slice(0),{ignoreEncryption:true});
       }
       var runningPage=0;
