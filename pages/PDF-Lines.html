@@ -172,10 +172,19 @@ input[type=file]{display:none}
 .progress-track{width:100%;height:6px;background:var(--surface3);border-radius:3px;overflow:hidden}
 .progress-fill{height:100%;background:var(--mondrian);background-size:300px 100%;border-radius:3px;transition:width .3s ease;width:0}
 .progress-pct{margin-top:8px;font-size:12px;color:var(--text2);font-family:'DM Mono',monospace}
-#preview-modal{position:fixed;inset:0;z-index:3000;background:rgba(10,36,114,.85);display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px}
+#preview-modal{position:fixed;inset:0;z-index:3000;background:rgba(10,36,114,.85);display:none;align-items:center;justify-content:center;flex-direction:column;gap:10px}
 #preview-modal.visible{display:flex}
-#preview-canvas{max-width:90vw;max-height:80vh;border-radius:var(--radius);box-shadow:var(--shadow)}
+#preview-canvas{max-width:90vw;max-height:78vh;border-radius:var(--radius);box-shadow:var(--shadow)}
 .preview-controls{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);padding:7px 14px;border-radius:100px}
+/* ── PREVIEW RENAME ── */
+#prev-name-wrap{display:flex;align-items:center;justify-content:center;gap:7px;margin-bottom:2px}
+#prev-name-span{font-size:15px;font-weight:600;color:#fff;cursor:text;border-radius:5px;padding:3px 8px;transition:background .15s;max-width:500px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#prev-name-span:hover{background:rgba(255,255,255,.14)}
+#prev-name-hint{color:rgba(255,255,255,.45);cursor:pointer;font-size:12px;transition:color .15s;padding:2px}
+#prev-name-hint:hover{color:rgba(255,255,255,.9)}
+#prev-name-input{display:none;font:600 15px 'DM Sans',sans-serif;color:var(--ink);background:#fff;border:2px solid var(--coral);border-radius:5px;padding:3px 10px;outline:none;width:320px;max-width:80vw;text-align:center}
+#prev-name-wrap.editing #prev-name-span,#prev-name-wrap.editing #prev-name-hint{display:none}
+#prev-name-wrap.editing #prev-name-input{display:block}
 .prev-num{font-size:12px;color:var(--text2);font-family:'DM Mono',monospace;min-width:56px;text-align:center}
 #ctx-menu{position:fixed;z-index:4000;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:5px;box-shadow:var(--shadow);min-width:175px;display:none}
 .ctx-item{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:4px;cursor:pointer;font-size:13px;color:var(--text);transition:background .1s}
@@ -549,6 +558,11 @@ input[type=file]{display:none}
   </div>
 </div>
 <div id="preview-modal">
+  <div id="prev-name-wrap">
+    <span id="prev-name-span" title="Cliquer pour renommer"></span>
+    <span id="prev-name-hint" title="Renommer"><i class="fa-solid fa-pen-to-square"></i></span>
+    <input id="prev-name-input" type="text" spellcheck="false" placeholder="Nom du document">
+  </div>
   <canvas id="preview-canvas"></canvas>
   <div class="preview-controls">
     <button class="btn btn-icon" id="prev-close" style="border:1px solid var(--border)"><i class="fa-solid fa-xmark"></i> Fermer</button>
@@ -1320,13 +1334,64 @@ var Split={
 
 // PREVIEW
 var Preview={pages:[],idx:0,scale:1,
+  getDoc:function(){var pg=this.pages[this.idx];if(!pg)return null;return S.docs.find(function(d){return d.id===pg.docId;})||null;},
   open:function(pid){this.pages=S.docs.flatMap(function(d){return d.pages;});this.idx=this.pages.findIndex(function(p){return p.id===pid;});if(this.idx<0)return;this.scale=1;showModal('preview-modal');this.render();},
-  close:function(){hideModal('preview-modal');},
-  render:async function(){var pg=this.pages[this.idx];if(!pg)return;document.getElementById('prev-num').textContent=(this.idx+1)+' / '+this.pages.length;await Render.preview(pg,this.scale);},
+  close:function(){Preview._cancelRename();hideModal('preview-modal');},
+  render:async function(){
+    var pg=this.pages[this.idx];if(!pg)return;
+    document.getElementById('prev-num').textContent=(this.idx+1)+' / '+this.pages.length;
+    // Update doc name display
+    var doc=this.getDoc();
+    var nameSpan=document.getElementById('prev-name-span');
+    if(nameSpan)nameSpan.textContent=doc?doc.name:'';
+    Preview._cancelRename();
+    await Render.preview(pg,this.scale);
+  },
   prev:function(){if(this.idx>0){this.idx--;this.render();}},
   next:function(){if(this.idx<this.pages.length-1){this.idx++;this.render();}},
   zin:function(){this.scale=Math.min(this.scale+.25,4);this.render();},
-  zout:function(){this.scale=Math.max(this.scale-.25,.25);this.render();}
+  zout:function(){this.scale=Math.max(this.scale-.25,.25);this.render();},
+  _startRename:function(){
+    var doc=this.getDoc();if(!doc)return;
+    var wrap=document.getElementById('prev-name-wrap');
+    var inp=document.getElementById('prev-name-input');
+    wrap.classList.add('editing');
+    inp.value=doc.name.replace(/\.pdf$/i,'');
+    inp.focus();inp.select();
+  },
+  _commitRename:function(){
+    var wrap=document.getElementById('prev-name-wrap');
+    var inp=document.getElementById('prev-name-input');
+    var nameSpan=document.getElementById('prev-name-span');
+    if(!wrap.classList.contains('editing'))return;
+    var doc=this.getDoc();
+    var val=(inp.value||'').trim();
+    wrap.classList.remove('editing');
+    if(doc&&val){
+      var newName=val.replace(/\.pdf$/i,'')+'.pdf';
+      if(newName!==doc.name){
+        Undo.push();
+        doc.name=newName;
+        // Sync card in main UI
+        var ns=document.querySelector('[data-rename="'+doc.id+'"]');
+        if(ns)ns.textContent=doc.name;
+        var di=document.querySelector('.doc-item-name[title]');
+        // Update sidebar too
+        UI.renderSidebar&&UI.renderSidebar();
+        Toast.show('Renommé : '+newName,'success');
+      }
+      nameSpan.textContent=doc.name;
+    } else if(doc){
+      nameSpan.textContent=doc.name;
+    }
+  },
+  _cancelRename:function(){
+    var wrap=document.getElementById('prev-name-wrap');
+    var nameSpan=document.getElementById('prev-name-span');
+    var doc=this.getDoc();
+    if(wrap)wrap.classList.remove('editing');
+    if(nameSpan&&doc)nameSpan.textContent=doc.name;
+  }
 };
 
 // CTX MENU
@@ -2058,6 +2123,14 @@ var BottomSheet={
   document.getElementById('prev-next').addEventListener('click',function(){Preview.next();});
   document.getElementById('prev-zin').addEventListener('click',function(){Preview.zin();});
   document.getElementById('prev-zout').addEventListener('click',function(){Preview.zout();});
+  // Preview rename
+  document.getElementById('prev-name-span').addEventListener('click',function(){Preview._startRename();});
+  document.getElementById('prev-name-hint').addEventListener('click',function(){Preview._startRename();});
+  document.getElementById('prev-name-input').addEventListener('blur',function(){Preview._commitRename();});
+  document.getElementById('prev-name-input').addEventListener('keydown',function(e){
+    if(e.key==='Enter'){e.preventDefault();this.blur();}
+    else if(e.key==='Escape'){e.preventDefault();Preview._cancelRename();}
+  });
   document.getElementById('preview-modal').addEventListener('click',function(e){if(e.target===document.getElementById('preview-modal'))Preview.close();});
 
   document.getElementById('ctx-menu').addEventListener('click',function(e){var item=e.target.closest('[data-a]');if(item)Ctx.handle(item.dataset.a);});
