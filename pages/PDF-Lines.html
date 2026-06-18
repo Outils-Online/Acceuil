@@ -2220,9 +2220,11 @@ var BottomSheet={
     if(imgs.length)Files.loadImages(imgs);
     if(!pdfs.length&&!imgs.length)Toast.show('PDF, JPG ou PNG uniquement','error');
   }
-  wrap.addEventListener('drop',function(e){e.preventDefault();dz.classList.remove('visible');if(e.dataTransfer.files.length)handleDrop(e.dataTransfer.files);});
+  // stopPropagation évite la remontée vers window → plus de doublon sur certains OS
+  wrap.addEventListener('drop',function(e){e.preventDefault();e.stopPropagation();dz.classList.remove('visible');if(e.dataTransfer.files.length)handleDrop(e.dataTransfer.files);});
   window.addEventListener('dragover',function(e){if(isFileDrag(e))e.preventDefault();});
-  window.addEventListener('drop',function(e){e.preventDefault();dz.classList.remove('visible');if(e.dataTransfer.files.length)handleDrop(e.dataTransfer.files);});
+  // window : bloque juste l'ouverture navigateur si drop hors zone, sans charger
+  window.addEventListener('drop',function(e){e.preventDefault();dz.classList.remove('visible');});
 
   document.addEventListener('keydown',function(e){
     if(document.getElementById('preview-modal').classList.contains('visible')){if(e.key==='Escape')Preview.close();else if(e.key==='ArrowLeft')Preview.prev();else if(e.key==='ArrowRight')Preview.next();return;}
