@@ -1074,7 +1074,11 @@ var DD={
         }
         pg.docId=tid;td.pages.splice(ni,0,pg);
         if(!fd.pages.length&&fid!==tid){Files.remove(fid);return;}
-        UI.syncNums(fid);if(fid!==tid)UI.syncNums(tid);UI.updateSidebar();UI.updateDocOrderBtns();
+        // Reconstruire les cut-zones (pas juste les numéros) pour les docs affectés
+        var cardF=document.querySelector('.doc-card[data-did="'+fid+'"]');
+        if(cardF)UI.syncCard(fd,cardF);DD.initDoc(fid);
+        if(fid!==tid){var cardT=document.querySelector('.doc-card[data-did="'+tid+'"]');if(cardT)UI.syncCard(td,cardT);DD.initDoc(tid);}
+        UI.updateSidebar();UI.updateDocOrderBtns();
       }
     });
   },
