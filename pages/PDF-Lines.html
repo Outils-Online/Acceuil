@@ -103,7 +103,7 @@ input[type=file]{display:none}
 .doc-item-info{flex:1;min-width:0}
 .doc-item-name{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
 .doc-item-pages{font-size:11px;color:var(--text3)}
-.doc-item-del{opacity:0;background:none;border:none;color:var(--coral);cursor:pointer;padding:2px 4px;border-radius:3px;font-size:12px;transition:opacity .12s}
+.doc-item-del{opacity:0.4;background:none;border:none;color:var(--coral);cursor:pointer;padding:2px 4px;border-radius:3px;font-size:12px;transition:opacity .12s;position:relative;z-index:10;pointer-events:auto!important}
 .doc-item:hover .doc-item-del{opacity:1}
 .sb-foot{padding:10px 14px;border-top:1px solid var(--border);font-size:11px;color:var(--text3);display:flex;align-items:center;gap:6px}
 .status-dot{width:7px;height:7px;border-radius:50%;background:var(--emerald);box-shadow:0 0 5px var(--emerald);flex-shrink:0}
@@ -864,7 +864,12 @@ var Files={
     S.docs[idx].pages.forEach(function(p){delete S.cache[p.id];S.sel.delete(p.id);});
     delete S.bytes[docId];
     if(S.sortables[docId]){S.sortables[docId].destroy();delete S.sortables[docId];}
-    S.docs.splice(idx,1);UI.renderAll();
+    S.docs.splice(idx,1);
+    // Nettoyer les ghosts orphelins (plus référencés par aucune page d'un doc réel)
+    var usedDocIds=new Set();
+    S.docs.forEach(function(d){d.pages.forEach(function(p){usedDocIds.add(p.docId);});});
+    S.docs=S.docs.filter(function(d){return !d._ghost||usedDocIds.has(d.id);});
+    UI.renderAll();
   }
 };
 
@@ -1018,15 +1023,25 @@ var Render={
 
 // DRAG DROP
 var DD={
+  _dragging:false,
   initDoc:function(docId){
     var el=document.querySelector('.pages-container[data-did="'+docId+'"]');if(!el)return;
-    if(S.sortables[docId])S.sortables[docId].destroy();
+    // Ne recrée pas Sortable si le même élément DOM est déjà lié — évite le double-fire de onEnd
+    if(S.sortables[docId]){
+      var existing=S.sortables[docId];
+      if(existing.el===el)return; // même élément : rien à faire
+      existing.destroy();
+    }
+    var self=this;
     S.sortables[docId]=Sortable.create(el,{
       group:'pages',animation:150,ghostClass:'sortable-ghost',chosenClass:'sortable-chosen',
       handle:'.thumb-canvas-wrap',filter:'.thumb-btn,.cut-zone,.thumb-add-img',
       draggable:'.page-thumb',
-      onStart:function(){},
+      onStart:function(){self._dragging=true;},
       onEnd:function(evt){
+        // Verrou anti-double-fire (certains navigateurs déclenchent onEnd deux fois)
+        if(!self._dragging)return;
+        self._dragging=false;
         Undo.push();
         var fid=parseInt(evt.from.dataset.did),tid=parseInt(evt.to.dataset.did),pid=parseInt(evt.item.dataset.pid);
         var fd=S.docs.find(function(d){return d.id===fid;}),td=S.docs.find(function(d){return d.id===tid;});
@@ -1049,7 +1064,7 @@ var DD={
       }
     });
   },
-  destroyAll:function(){Object.values(S.sortables).forEach(function(s){s.destroy();});S.sortables={};}
+  destroyAll:function(){Object.values(S.sortables).forEach(function(s){try{s.destroy();}catch(e){}});S.sortables={};}
 };
 
 // MERGE
@@ -1365,7 +1380,8 @@ var Toast={t:null,show:function(msg,type){var el=document.getElementById('toast'
 var UI={
   renderAll:function(){
     var area=document.getElementById('canvas-area'),empty=document.getElementById('empty-state');
-    if(!S.docs.length){area.innerHTML='';area.appendChild(empty);document.getElementById('btn-merge').disabled=true;this.updateSidebar();return;}
+    var visCount=S.docs.filter(function(d){return !d._ghost;}).length;
+    if(!visCount){area.innerHTML='';area.appendChild(empty);document.getElementById('btn-merge').disabled=true;this.updateSidebar();return;}
     document.getElementById('btn-merge').disabled=false;
     var visCount=S.docs.filter(function(d){return !d._ghost;}).length;
     var mergeBtn=document.getElementById('btn-merge');
@@ -1566,9 +1582,12 @@ var UI={
   updateRotLabel:function(pid){var f=Pages.find(pid);if(!f)return;var t=document.querySelector('.page-thumb[data-pid="'+pid+'"]');if(t){t.dataset.rot=f.page.rot;var l=t.querySelector('[data-rotlabel]');if(l)l.textContent=f.page.rot;}},
   updateSidebar:function(){
     var list=document.getElementById('doc-list');
+    // Détruire le Sortable AVANT de vider la liste — sinon Sortable réinjecte ses anciens noeuds en cache
+    if(S.docListSort){try{S.docListSort.destroy();}catch(e){}S.docListSort=null;}
     var visibleDocs=S.docs.filter(function(d){return !d._ghost;});
     document.getElementById('sb-count').textContent='Documents ('+visibleDocs.length+')';
-    list.innerHTML='';
+    // Supprimer les enfants un par un — innerHTML='' peut être ignoré si Sortable a des animations en cours
+    while(list.firstChild)list.removeChild(list.firstChild);
     visibleDocs.forEach(function(doc){
       var item=document.createElement('div');item.className='doc-item';item.dataset.sid=doc.id;
       item.innerHTML='<span class="doc-grip doc-sgrip"><i class="fa-solid fa-grip-vertical"></i></span>'+
@@ -1576,28 +1595,33 @@ var UI={
         '<div class="doc-item-info"><div class="doc-item-name" title="'+esc(doc.name)+'">'+esc(doc.name)+'</div>'+
         '<div class="doc-item-pages">'+doc.pages.length+' page'+(doc.pages.length>1?'s':'')+'</div></div>'+
         '<button class="doc-item-del" data-deldoc="'+doc.id+'"><i class="fa-solid fa-xmark"></i></button>';
+      var delBtn=item.querySelector('[data-deldoc]');
+      delBtn.addEventListener('mousedown',function(e){e.stopPropagation();e.preventDefault();});
+      delBtn.addEventListener('click',function(e){e.stopPropagation();e.preventDefault();Files.remove(doc.id);});
       item.addEventListener('click',function(e){
-        if(e.target.closest('[data-deldoc]')){Files.remove(doc.id);return;}
-        if(e.target.closest('.doc-sgrip'))return;
+        if(e.target.closest('.doc-sgrip')||e.target.closest('[data-deldoc]'))return;
         var card=document.querySelector('.doc-card[data-did="'+doc.id+'"]');
         if(card)card.scrollIntoView({behavior:'smooth',block:'nearest'});
       });
       list.appendChild(item);
     });
-    if(S.docListSort)S.docListSort.destroy();
-    if(visibleDocs.length>1){S.docListSort=Sortable.create(list,{animation:150,handle:'.doc-sgrip',draggable:'.doc-item',onEnd:function(evt){
-      if(evt.oldIndex===evt.newIndex)return;
-      Undo.push();
-      // Mapper les indices visibles vers S.docs (en sautant les ghosts)
-      var fromDoc=visibleDocs[evt.oldIndex];
-      var toDoc=visibleDocs[evt.newIndex];
-      if(!fromDoc||!toDoc)return;
-      var fi=S.docs.findIndex(function(d){return d.id===fromDoc.id;});
-      var ti=S.docs.findIndex(function(d){return d.id===toDoc.id;});
-      if(fi<0||ti<0)return;
-      var mv=S.docs.splice(fi,1)[0];S.docs.splice(ti,0,mv);
-      UI.reorderCards();UI.updateSidebar();UI.updateDocOrderBtns();
-    }});}
+    if(list._delCapture){list.removeEventListener('mousedown',list._delCapture,true);list._delCapture=null;}
+    if(visibleDocs.length>1){S.docListSort=Sortable.create(list,{animation:150,handle:'.doc-sgrip',draggable:'.doc-item',
+      filter:'.doc-item-del',preventOnFilter:true,
+      onEnd:function(evt){
+        if(evt.oldIndex===evt.newIndex)return;
+        Undo.push();
+        var currentVisible=S.docs.filter(function(d){return !d._ghost;});
+        var fromDoc=currentVisible[evt.oldIndex];
+        var toDoc=currentVisible[evt.newIndex];
+        if(!fromDoc||!toDoc)return;
+        var fi=S.docs.findIndex(function(d){return d.id===fromDoc.id;});
+        var ti=S.docs.findIndex(function(d){return d.id===toDoc.id;});
+        if(fi<0||ti<0)return;
+        var mv=S.docs.splice(fi,1)[0];S.docs.splice(ti,0,mv);
+        UI.reorderCards();UI.updateSidebar();UI.updateDocOrderBtns();
+      }
+    });}
     this.updateBottomSheet();
   },
   updateBottomSheet:function(){
@@ -2142,6 +2166,8 @@ var BottomSheet={
 
   UI.renderAll();
   History.render();
+
+
 })();
 </script>
 </body>
