@@ -172,12 +172,57 @@ input[type=file]{display:none}
 .progress-track{width:100%;height:6px;background:var(--surface3);border-radius:3px;overflow:hidden}
 .progress-fill{height:100%;background:var(--mondrian);background-size:300px 100%;border-radius:3px;transition:width .3s ease;width:0}
 .progress-pct{margin-top:8px;font-size:12px;color:var(--text2);font-family:'DM Mono',monospace}
-#preview-modal{position:fixed;inset:0;z-index:3000;background:rgba(10,36,114,.85);display:none;align-items:center;justify-content:center;flex-direction:column;gap:10px}
+#preview-modal{position:fixed;inset:0;z-index:3000;background:rgba(10,36,114,.88);display:none;flex-direction:column;align-items:center;justify-content:center;gap:0}
 #preview-modal.visible{display:flex}
-#preview-canvas{max-width:90vw;max-height:78vh;border-radius:var(--radius);box-shadow:var(--shadow)}
-.preview-controls{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);padding:7px 14px;border-radius:100px}
+#prev-canvas-row{flex:1;display:flex;align-items:center;justify-content:center;gap:16px;padding:16px 20px;min-height:0;overflow:hidden}
+#preview-canvas{max-width:100%;max-height:100%;border-radius:var(--radius);box-shadow:0 8px 40px rgba(0,0,0,.45);display:block}
+.prev-doc-arrow{
+  display:flex;flex-direction:column;align-items:center;gap:5px;flex-shrink:0;
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);
+  color:#fff;border-radius:12px;cursor:pointer;
+  padding:16px 12px;transition:background .15s,opacity .15s;
+  font-size:20px;min-width:52px;
+}
+.prev-doc-arrow:hover:not(:disabled){background:rgba(255,255,255,.22);}
+.prev-doc-arrow:disabled{opacity:.18;cursor:not-allowed;}
+.prev-doc-arrow-label{font-size:10px;font-family:'DM Sans',sans-serif;font-weight:500;opacity:.7;white-space:nowrap;}
+/* ── PREVIEW BOTTOM BAR ── */
+.preview-controls{
+  flex-shrink:0;width:100%;
+  display:flex;align-items:center;justify-content:center;gap:0;
+  background:rgba(10,22,60,.72);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border-top:1px solid rgba(255,255,255,.1);
+  padding:0 24px;height:56px;
+}
+.prev-ctrl-group{display:flex;align-items:center;gap:2px;}
+.prev-ctrl-sep{width:1px;height:24px;background:rgba(255,255,255,.15);margin:0 12px;flex-shrink:0;}
+.prev-ctrl-btn{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:7px 14px;border-radius:8px;
+  font:500 13px 'DM Sans',sans-serif;cursor:pointer;
+  border:none;transition:background .15s,color .15s;
+  color:rgba(255,255,255,.75);background:transparent;white-space:nowrap;
+}
+.prev-ctrl-btn:hover{background:rgba(255,255,255,.1);color:#fff;}
+.prev-ctrl-btn:disabled{opacity:.3;cursor:not-allowed;}
+.prev-ctrl-btn.icon-only{padding:7px 10px;gap:0;}
+.prev-ctrl-btn.danger:hover{background:rgba(244,96,96,.2);color:var(--coral);}
+.prev-ctrl-btn.close-btn{
+  color:#fff;background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.2);
+}
+.prev-ctrl-btn.close-btn:hover{background:rgba(255,255,255,.2);}
+.prev-page-num{
+  font:500 13px 'DM Mono',monospace;color:rgba(255,255,255,.6);
+  min-width:60px;text-align:center;
+}
+.prev-zoom-val{
+  font:500 12px 'DM Mono',monospace;color:rgba(255,255,255,.5);
+  min-width:38px;text-align:center;
+}
 /* ── PREVIEW RENAME ── */
-#prev-name-wrap{display:flex;align-items:center;justify-content:center;gap:7px;margin-bottom:2px}
+#prev-name-wrap{position:absolute;top:16px;left:50%;transform:translateX(-50%);display:flex;align-items:center;justify-content:center;gap:7px;z-index:10;}
 #prev-name-span{font-size:15px;font-weight:600;color:#fff;cursor:text;border-radius:5px;padding:3px 8px;transition:background .15s;max-width:500px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #prev-name-span:hover{background:rgba(255,255,255,.14)}
 #prev-name-hint{color:rgba(255,255,255,.45);cursor:pointer;font-size:12px;transition:color .15s;padding:2px}
@@ -563,14 +608,29 @@ input[type=file]{display:none}
     <span id="prev-name-hint" title="Renommer"><i class="fa-solid fa-pen-to-square"></i></span>
     <input id="prev-name-input" type="text" spellcheck="false" placeholder="Nom du document">
   </div>
-  <canvas id="preview-canvas"></canvas>
+  <div id="prev-canvas-row">
+    <button class="prev-doc-arrow" id="prev-doc-prev" title="PDF précédent (Ctrl+←)"><i class="fa-solid fa-angles-left"></i><span class="prev-doc-arrow-label">PDF préc.</span></button>
+    <canvas id="preview-canvas"></canvas>
+    <button class="prev-doc-arrow" id="prev-doc-next" title="PDF suivant (Ctrl+→)"><i class="fa-solid fa-angles-right"></i><span class="prev-doc-arrow-label">PDF suiv.</span></button>
+  </div>
   <div class="preview-controls">
-    <button class="btn btn-icon" id="prev-close" style="border:1px solid var(--border)"><i class="fa-solid fa-xmark"></i> Fermer</button>
-    <button class="btn btn-icon" id="prev-prev"><i class="fa-solid fa-chevron-left"></i></button>
-    <span class="prev-num" id="prev-num">1 / 1</span>
-    <button class="btn btn-icon" id="prev-next"><i class="fa-solid fa-chevron-right"></i></button>
-    <button class="btn btn-icon" id="prev-zin"><i class="fa-solid fa-plus"></i></button>
-    <button class="btn btn-icon" id="prev-zout"><i class="fa-solid fa-minus"></i></button>
+    <div class="prev-ctrl-group">
+      <button class="prev-ctrl-btn close-btn" id="prev-close"><i class="fa-solid fa-xmark"></i> Fermer</button>
+    </div>
+    <div class="prev-ctrl-sep"></div>
+    <div class="prev-ctrl-group">
+      <button class="prev-ctrl-btn icon-only" id="prev-prev" title="Page précédente (←)"><i class="fa-solid fa-chevron-left"></i></button>
+      <span class="prev-page-num" id="prev-num">1 / 1</span>
+      <button class="prev-ctrl-btn icon-only" id="prev-next" title="Page suivante (→)"><i class="fa-solid fa-chevron-right"></i></button>
+    </div>
+    <div class="prev-ctrl-sep"></div>
+    <div class="prev-ctrl-group">
+      <button class="prev-ctrl-btn icon-only" id="prev-zout" title="Dézoomer (-)"><i class="fa-solid fa-minus"></i></button>
+      <span class="prev-zoom-val" id="prev-zoom-val">100%</span>
+      <button class="prev-ctrl-btn icon-only" id="prev-zin" title="Zoomer (+)"><i class="fa-solid fa-plus"></i></button>
+    </div>
+    <div class="prev-ctrl-sep"></div>
+    <span id="prev-doc-num" style="font-size:11px;color:rgba(255,255,255,.4);font-family:'DM Mono',monospace;min-height:16px"></span>
   </div>
 </div>
 <div id="ctx-menu">
@@ -1074,7 +1134,7 @@ var DD={
         }
         pg.docId=tid;td.pages.splice(ni,0,pg);
         if(!fd.pages.length&&fid!==tid){Files.remove(fid);return;}
-        // Reconstruire les cut-zones (pas juste les numéros) pour les docs affectés
+        // syncCard reconstruit les cut-zones (pas seulement les numéros)
         var cardF=document.querySelector('.doc-card[data-did="'+fid+'"]');
         if(cardF)UI.syncCard(fd,cardF);DD.initDoc(fid);
         if(fid!==tid){var cardT=document.querySelector('.doc-card[data-did="'+tid+'"]');if(cardT)UI.syncCard(td,cardT);DD.initDoc(tid);}
@@ -1339,7 +1399,7 @@ var Split={
 // PREVIEW
 var Preview={pages:[],idx:0,scale:1,
   getDoc:function(){var pg=this.pages[this.idx];if(!pg)return null;return S.docs.find(function(d){return d.id===pg.docId;})||null;},
-  open:function(pid){this.pages=S.docs.flatMap(function(d){return d.pages;});this.idx=this.pages.findIndex(function(p){return p.id===pid;});if(this.idx<0)return;this.scale=1;showModal('preview-modal');this.render();},
+  open:function(pid){this.pages=S.docs.flatMap(function(d){return d.pages;});this.idx=this.pages.findIndex(function(p){return p.id===pid;});if(this.idx<0)return;this.scale=1;this._updateZoomLabel();showModal('preview-modal');this.render();},
   close:function(){Preview._cancelRename();hideModal('preview-modal');},
   render:async function(){
     var pg=this.pages[this.idx];if(!pg)return;
@@ -1348,13 +1408,44 @@ var Preview={pages:[],idx:0,scale:1,
     var doc=this.getDoc();
     var nameSpan=document.getElementById('prev-name-span');
     if(nameSpan)nameSpan.textContent=doc?doc.name:'';
+    // Update doc nav buttons
+    var visibleDocs=S.docs.filter(function(d){return !d._ghost&&d.pages.length;});
+    var di=doc?visibleDocs.findIndex(function(d){return d.id===doc.id;}):-1;
+    var pdBtn=document.getElementById('prev-doc-prev');
+    var ndBtn=document.getElementById('prev-doc-next');
+    var docLbl=document.getElementById('prev-doc-num');
+    if(pdBtn)pdBtn.disabled=(di<=0);
+    if(ndBtn)ndBtn.disabled=(di<0||di>=visibleDocs.length-1);
+    if(docLbl)docLbl.textContent=visibleDocs.length>1?'PDF '+(di+1)+'/'+visibleDocs.length:'';
     Preview._cancelRename();
     await Render.preview(pg,this.scale);
   },
   prev:function(){if(this.idx>0){this.idx--;this.render();}},
   next:function(){if(this.idx<this.pages.length-1){this.idx++;this.render();}},
-  zin:function(){this.scale=Math.min(this.scale+.25,4);this.render();},
-  zout:function(){this.scale=Math.max(this.scale-.25,.25);this.render();},
+  prevDoc:function(){
+    var visibleDocs=S.docs.filter(function(d){return !d._ghost&&d.pages.length;});
+    var doc=this.getDoc();if(!doc)return;
+    var di=visibleDocs.findIndex(function(d){return d.id===doc.id;});
+    if(di<=0)return;
+    var prevD=visibleDocs[di-1];
+    var self=this;
+    this.idx=this.pages.findIndex(function(p){return p.id===prevD.pages[0].id;});
+    if(this.idx<0)this.idx=0;
+    this.render();
+  },
+  nextDoc:function(){
+    var visibleDocs=S.docs.filter(function(d){return !d._ghost&&d.pages.length;});
+    var doc=this.getDoc();if(!doc)return;
+    var di=visibleDocs.findIndex(function(d){return d.id===doc.id;});
+    if(di<0||di>=visibleDocs.length-1)return;
+    var nextD=visibleDocs[di+1];
+    this.idx=this.pages.findIndex(function(p){return p.id===nextD.pages[0].id;});
+    if(this.idx<0)this.idx=0;
+    this.render();
+  },
+  zin:function(){this.scale=Math.min(this.scale+.25,4);this._updateZoomLabel();this.render();},
+  zout:function(){this.scale=Math.max(this.scale-.25,.25);this._updateZoomLabel();this.render();},
+  _updateZoomLabel:function(){var el=document.getElementById('prev-zoom-val');if(el)el.textContent=Math.round(this.scale*100)+'%';},
   _startRename:function(){
     var doc=this.getDoc();if(!doc)return;
     var wrap=document.getElementById('prev-name-wrap');
@@ -1379,9 +1470,8 @@ var Preview={pages:[],idx:0,scale:1,
         // Sync card in main UI
         var ns=document.querySelector('[data-rename="'+doc.id+'"]');
         if(ns)ns.textContent=doc.name;
-        var di=document.querySelector('.doc-item-name[title]');
-        // Update sidebar too
-        UI.renderSidebar&&UI.renderSidebar();
+        // Update sidebar
+        UI.updateSidebar();
         Toast.show('Renommé : '+newName,'success');
       }
       nameSpan.textContent=doc.name;
@@ -2125,6 +2215,8 @@ var BottomSheet={
   document.getElementById('prev-close').addEventListener('click',function(){Preview.close();});
   document.getElementById('prev-prev').addEventListener('click',function(){Preview.prev();});
   document.getElementById('prev-next').addEventListener('click',function(){Preview.next();});
+  document.getElementById('prev-doc-prev').addEventListener('click',function(){Preview.prevDoc();});
+  document.getElementById('prev-doc-next').addEventListener('click',function(){Preview.nextDoc();});
   document.getElementById('prev-zin').addEventListener('click',function(){Preview.zin();});
   document.getElementById('prev-zout').addEventListener('click',function(){Preview.zout();});
   // Preview rename
@@ -2231,7 +2323,7 @@ var BottomSheet={
   window.addEventListener('drop',function(e){e.preventDefault();dz.classList.remove('visible');});
 
   document.addEventListener('keydown',function(e){
-    if(document.getElementById('preview-modal').classList.contains('visible')){if(e.key==='Escape')Preview.close();else if(e.key==='ArrowLeft')Preview.prev();else if(e.key==='ArrowRight')Preview.next();return;}
+    if(document.getElementById('preview-modal').classList.contains('visible')){if(e.key==='Escape')Preview.close();else if(e.key==='ArrowLeft'&&(e.ctrlKey||e.metaKey))Preview.prevDoc();else if(e.key==='ArrowRight'&&(e.ctrlKey||e.metaKey))Preview.nextDoc();else if(e.key==='ArrowLeft')Preview.prev();else if(e.key==='ArrowRight')Preview.next();return;}
     var inInput=['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName);if(inInput)return;
     if((e.ctrlKey||e.metaKey)&&e.key==='z'&&!e.shiftKey){e.preventDefault();Undo.undo();}
     else if((e.ctrlKey||e.metaKey)&&(e.key==='y'||(e.key==='z'&&e.shiftKey))){e.preventDefault();Undo.redo();}
