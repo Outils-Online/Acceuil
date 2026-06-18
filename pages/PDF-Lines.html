@@ -222,13 +222,13 @@ input[type=file]{display:none}
   min-width:38px;text-align:center;
 }
 /* ── PREVIEW RENAME ── */
-#prev-name-wrap{display:flex;align-items:center;gap:6px;flex:1;justify-content:center;min-width:0;overflow:hidden;}
-#prev-name-span{font-size:13px;font-weight:600;color:rgba(255,255,255,.9);cursor:text;border-radius:6px;padding:4px 10px;transition:background .15s;max-width:340px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:1px solid transparent;}
-#prev-name-span:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.15);}
-#prev-name-hint{color:rgba(255,255,255,.35);cursor:pointer;font-size:11px;transition:color .15s;padding:2px;flex-shrink:0;}
-#prev-name-hint:hover{color:rgba(255,255,255,.8);}
-#prev-name-wrap:hover #prev-name-hint{color:rgba(255,255,255,.6);}
-#prev-name-input{display:none;font:600 13px 'DM Sans',sans-serif;color:var(--ink);background:#fff;border:2px solid var(--coral);border-radius:6px;padding:4px 10px;outline:none;width:280px;max-width:60vw;text-align:center;}
+#prev-name-wrap{display:flex;align-items:center;justify-content:center;gap:8px;padding:14px 20px 4px;}
+#prev-name-span{font-size:15px;font-weight:600;color:#fff;cursor:text;border-radius:6px;padding:4px 10px;transition:background .15s;max-width:500px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:1px solid transparent;}
+#prev-name-span:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.18);}
+#prev-name-hint{color:rgba(255,255,255,.4);cursor:pointer;font-size:12px;transition:color .15s;padding:2px;flex-shrink:0;}
+#prev-name-hint:hover{color:rgba(255,255,255,.9);}
+#prev-name-wrap:hover #prev-name-hint{color:rgba(255,255,255,.65);}
+#prev-name-input{display:none;font:600 15px 'DM Sans',sans-serif;color:var(--ink);background:#fff;border:2px solid var(--coral);border-radius:6px;padding:4px 12px;outline:none;width:340px;max-width:80vw;text-align:center;}
 #prev-name-wrap.editing #prev-name-span,#prev-name-wrap.editing #prev-name-hint{display:none}
 #prev-name-wrap.editing #prev-name-input{display:block}
 .prev-num{font-size:12px;color:var(--text2);font-family:'DM Mono',monospace;min-width:56px;text-align:center}
@@ -604,6 +604,11 @@ input[type=file]{display:none}
   </div>
 </div>
 <div id="preview-modal">
+  <div id="prev-name-wrap">
+    <span id="prev-name-span" title="Cliquer pour renommer"></span>
+    <span id="prev-name-hint" title="Renommer"><i class="fa-solid fa-pen-to-square"></i></span>
+    <input id="prev-name-input" type="text" spellcheck="false" placeholder="Nom du document">
+  </div>
   <div id="prev-canvas-row">
     <button class="prev-doc-arrow" id="prev-doc-prev" title="PDF précédent (Ctrl+←)"><i class="fa-solid fa-angles-left"></i><span class="prev-doc-arrow-label">PDF préc.</span></button>
     <canvas id="preview-canvas"></canvas>
@@ -612,12 +617,6 @@ input[type=file]{display:none}
   <div class="preview-controls">
     <div class="prev-ctrl-group">
       <button class="prev-ctrl-btn close-btn" id="prev-close"><i class="fa-solid fa-xmark"></i> Fermer</button>
-    </div>
-    <div class="prev-ctrl-sep"></div>
-    <div id="prev-name-wrap">
-      <span id="prev-name-span" title="Cliquer pour renommer"></span>
-      <span id="prev-name-hint" title="Renommer"><i class="fa-solid fa-pen-to-square"></i></span>
-      <input id="prev-name-input" type="text" spellcheck="false" placeholder="Nom du document">
     </div>
     <div class="prev-ctrl-sep"></div>
     <div class="prev-ctrl-group">
