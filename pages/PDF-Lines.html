@@ -491,7 +491,7 @@ input[type=file]{display:none}
     <button class="btn btn-ghost btn-sm" id="btn-add" title="Ajouter des fichiers PDF"><i class="fa-solid fa-plus"></i> Ajouter PDF</button>
     <button class="btn btn-ghost btn-sm" id="btn-add-img" title="Importer des images JPG/PNG comme pages PDF"><i class="fa-solid fa-image"></i> Importer image</button>
     <input type="file" id="file-input" accept=".pdf" multiple>
-    <input type="file" id="img-input" accept=".jpg,.jpeg,.png" multiple>
+    <input type="file" id="img-input" accept=".jpg,.jpeg,.jfif,.png" multiple>
   </div>
   <div class="tsep"></div>
   <div class="tgroup">
@@ -865,7 +865,7 @@ var Files={
     UI.setStatus('Pret');UI.renderAll();
   },
   loadImages:async function(files){
-    var imgs=Array.from(files).filter(function(f){return /\.(jpe?g|png)$/i.test(f.name);});
+    var imgs=Array.from(files).filter(function(f){return /\.(jpe?g|jfif|png)$/i.test(f.name);});
     if(!imgs.length){Toast.show('Aucune image valide','error');return;}
     UI.setStatus('Conversion...');
     for(var j=0;j<imgs.length;j++)await this.loadImage(imgs[j]);
@@ -892,7 +892,7 @@ var Files={
       var bytes=new Uint8Array(ab);
       var PDFDocument=window.PDFLib.PDFDocument;
       var out=await PDFDocument.create();
-      var isJpg=/\.jpe?g$/i.test(file.name);
+      var isJpg=/\.(jpe?g|jfif)$/i.test(file.name);
       var img=isJpg?await out.embedJpg(bytes):await out.embedPng(bytes);
       // Format A4 en points (595 x 842)
       var A4W=595,A4H=842;
@@ -918,7 +918,7 @@ var Files={
       var bytes=new Uint8Array(ab);
       var PDFDocument=window.PDFLib.PDFDocument;
       var out=await PDFDocument.create();
-      var isJpg=/\.jpe?g$/i.test(file.name);
+      var isJpg=/\.(jpe?g|jfif)$/i.test(file.name);
       var img=isJpg?await out.embedJpg(bytes):await out.embedPng(bytes);
       var A4W=595,A4H=842;
       var scale=Math.min(A4W/img.width,A4H/img.height);
@@ -928,7 +928,7 @@ var Files={
       page.drawImage(img,{x:dx,y:dy,width:dw,height:dh});
       var pdfBytes=await out.save();
       var blob=new Blob([pdfBytes],{type:'application/pdf'});
-      var pdfName=file.name.replace(/\.(jpe?g|png)$/i,'.pdf');
+      var pdfName=file.name.replace(/\.(jpe?g|jfif|png)$/i,'.pdf');
       var pdfFile=new File([blob],pdfName,{type:'application/pdf'});
       await this.loadOne(pdfFile);
     }catch(e){Toast.show('Erreur image: '+file.name,'error');console.error(e);}
@@ -1680,7 +1680,7 @@ var UI={
     addImg.addEventListener('click',function(e){
       e.stopPropagation();
       var inp=document.createElement('input');
-      inp.type='file';inp.accept='.jpg,.jpeg,.png';inp.multiple=true;inp.style.display='none';
+      inp.type='file';inp.accept='.jpg,.jpeg,.jfif,.png';inp.multiple=true;inp.style.display='none';
       document.body.appendChild(inp);
       inp.addEventListener('change',async function(){
         if(!inp.files.length)return;
@@ -2269,7 +2269,7 @@ var BottomSheet={
 
   // Mobile toolbar
   var fileInputM=document.createElement('input');fileInputM.type='file';fileInputM.accept='.pdf';fileInputM.multiple=true;fileInputM.style.display='none';document.body.appendChild(fileInputM);
-  var imgInputM=document.createElement('input');imgInputM.type='file';imgInputM.accept='.jpg,.jpeg,.png';imgInputM.multiple=true;imgInputM.style.display='none';document.body.appendChild(imgInputM);
+  var imgInputM=document.createElement('input');imgInputM.type='file';imgInputM.accept='.jpg,.jpeg,.jfif,.png';imgInputM.multiple=true;imgInputM.style.display='none';document.body.appendChild(imgInputM);
   fileInputM.addEventListener('change',function(e){Files.load(e.target.files);fileInputM.value='';});
   imgInputM.addEventListener('change',function(e){Files.loadImages(e.target.files);imgInputM.value='';});
   document.getElementById('btn-add-m').addEventListener('click',function(){fileInputM.click();});
@@ -2312,10 +2312,10 @@ var BottomSheet={
   wrap.addEventListener('dragleave',function(e){if(!wrap.contains(e.relatedTarget))dz.classList.remove('visible');});
   function handleDrop(files){
     var pdfs=Array.from(files).filter(function(f){return f.name.toLowerCase().endsWith('.pdf');});
-    var imgs=Array.from(files).filter(function(f){return /\.(jpe?g|png)$/i.test(f.name);});
+    var imgs=Array.from(files).filter(function(f){return /\.(jpe?g|jfif|png)$/i.test(f.name);});
     if(pdfs.length)Files.load(pdfs);
     if(imgs.length)Files.loadImages(imgs);
-    if(!pdfs.length&&!imgs.length)Toast.show('PDF, JPG ou PNG uniquement','error');
+    if(!pdfs.length&&!imgs.length)Toast.show('PDF, JPG, JFIF ou PNG uniquement','error');
   }
   // stopPropagation évite la remontée vers window → plus de doublon sur certains OS
   wrap.addEventListener('drop',function(e){e.preventDefault();e.stopPropagation();dz.classList.remove('visible');if(e.dataTransfer.files.length)handleDrop(e.dataTransfer.files);});
