@@ -1,0 +1,3247 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reçus — Bureau</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root {
+  --bg: #FDFCF0;
+  --surface: #FFFFFF;
+  --primary: #0A2472;
+  --secondary: #006466;
+  --accent: #F46060;
+  --highlight: #FFD972;
+  --text: #0A2472;
+  --muted: rgba(10,36,114,0.45);
+  --border: rgba(0,100,102,0.22);
+  --panel-bg: #F5F4E8;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Space Grotesk', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── TOPBAR ─────────────────────────────────────────────── */
+.topbar {
+  height: 54px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 14px;
+  flex-shrink: 0;
+  z-index: 100;
+}
+.logo { display: flex; align-items: center; gap: 9px; cursor: pointer; user-select: none; }
+.mosaic-core { width: 32px; height: 32px; border-radius: 8px; overflow: hidden; background: var(--primary); flex-shrink: 0; }
+#mosaic-svg { width: 100%; height: 100%; display: block; }
+.logo-text { display: flex; flex-direction: column; line-height: 1; }
+.logo-title { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: -0.3px; color: var(--primary); }
+.logo-sub { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; color: var(--muted); }
+.letter { color: var(--primary); transition: color 0.4s; }
+.topbar-sep { flex: 1; }
+.topbar-badge {
+  display: flex; align-items: center; gap: 7px;
+  background: var(--panel-bg); border: 1px solid var(--border);
+  border-radius: 20px; padding: 5px 12px 5px 8px;
+  font-size: 12px; font-weight: 700; cursor: pointer; transition: background 0.15s;
+}
+.topbar-badge:hover { background: rgba(244,96,96,0.08); border-color: var(--accent); }
+.topbar-badge .count {
+  background: var(--accent); color: white;
+  border-radius: 10px; padding: 1px 7px;
+  font-size: 11px; font-weight: 800; min-width: 22px; text-align: center;
+}
+.tb-btn {
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--text); border-radius: 10px; padding: 0 14px; height: 34px;
+  font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.15s;
+  display: flex; align-items: center; gap: 7px;
+  font-family: 'Space Grotesk', sans-serif;
+}
+.tb-btn:hover { border-color: var(--secondary); background: rgba(0,100,102,0.06); }
+.tb-btn.primary { background: var(--accent); border-color: var(--accent); color: white; }
+.tb-btn.primary:hover { background: #d94f4f; }
+
+/* ─── MAIN SPLIT ─────────────────────────────────────────── */
+.workspace { display: grid; grid-template-columns: 380px 1fr; flex: 1; overflow: hidden; }
+
+/* ─── LEFT PANEL ──────────────────────────────── */
+.left-panel {
+  background: var(--surface); border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.panel-header {
+  padding: 16px 20px 12px; border-bottom: 1px solid rgba(255,217,114,0.5); flex-shrink: 0;
+}
+.panel-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 2px; }
+.panel-headline { font-size: 18px; font-weight: 800; color: var(--primary); line-height: 1.1; }
+
+.form-scroll { flex: 1; overflow-y: auto; padding: 16px 20px; min-height: 0; }
+.form-scroll::-webkit-scrollbar { width: 4px; }
+.form-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* ── Queue indicator ── */
+.queue-bar {
+  display: none; align-items: center; gap: 8px;
+  background: rgba(255,217,114,0.2); border: 1px solid var(--highlight);
+  border-radius: 10px; padding: 8px 12px; margin-bottom: 14px;
+  font-size: 12px; font-weight: 700;
+}
+.queue-bar.visible { display: flex; }
+.queue-dots { display: flex; gap: 4px; }
+.queue-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--border); transition: background 0.2s; cursor: pointer; }
+.queue-dot.active { background: var(--accent); }
+.queue-dot.done { background: #009553; }
+.queue-dot.active.done { background: var(--accent); }
+.queue-nav { display: flex; gap: 4px; margin-left: auto; }
+.queue-nav button {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 6px; width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 11px; color: var(--text); transition: 0.15s;
+}
+.queue-nav button:hover { border-color: var(--secondary); }
+.queue-nav button:disabled { opacity: 0.3; cursor: default; }
+
+/* ── Labels & inputs ── */
+.field-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-bottom: 5px; }
+.field-group { margin-bottom: 13px; }
+
+/* ─── DATE CHIPS v2 ─────────────────────────────────────── */
+.date-chips-row {
+  display: flex; gap: 6px; margin-bottom: 7px; flex-wrap: wrap;
+}
+
+.date-chip {
+  padding: 7px 10px;
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--text); border-radius: 8px;
+  font-size: 11px; font-weight: 700; text-align: center;
+  cursor: pointer; transition: 0.15s;
+  font-family: 'Space Grotesk', sans-serif;
+  white-space: nowrap;
+}
+.date-chip:hover { border-color: var(--secondary); }
+.date-chip.active { background: var(--accent); border-color: var(--accent); color: white; }
+
+.date-hist-chip {
+  display: flex; align-items: center; gap: 0;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; overflow: hidden;
+  font-size: 11px; font-weight: 700;
+  transition: border-color 0.15s;
+  flex-shrink: 0;
+}
+.date-hist-chip.active { border-color: var(--accent); }
+.date-hist-chip.active .dhc-label { background: var(--accent); color: white; }
+
+.dhc-arrow {
+  background: none; border: none; cursor: pointer;
+  padding: 7px 7px; font-size: 10px; color: var(--muted);
+  transition: background 0.1s, color 0.1s;
+  font-family: 'Space Grotesk', sans-serif;
+  display: flex; align-items: center; justify-content: center;
+  line-height: 1;
+}
+.dhc-arrow:hover { background: rgba(10,36,114,0.07); color: var(--primary); }
+.dhc-arrow:disabled { opacity: 0.25; cursor: default; }
+.dhc-arrow:disabled:hover { background: none; }
+
+.dhc-label {
+  padding: 7px 8px; cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap; min-width: 58px; text-align: center;
+  font-size: 11px; font-weight: 700; color: var(--text);
+  border-left: 1px solid var(--border); border-right: 1px solid var(--border);
+}
+.dhc-label:hover { background: rgba(10,36,114,0.05); }
+.date-hist-chip.active .dhc-arrow { color: var(--secondary); }
+
+/* Mini-calendrier inline */
+.mini-cal {
+  display: none;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; overflow: hidden; margin-bottom: 7px;
+  box-shadow: 0 4px 20px rgba(10,36,114,0.1);
+}
+.mini-cal.open { display: block; }
+
+.cal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 12px 8px;
+  background: var(--primary); color: white;
+}
+.cal-month-label { font-size: 13px; font-weight: 800; }
+.cal-nav-btn {
+  background: rgba(255,255,255,0.15); border: none; color: white;
+  border-radius: 6px; width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 12px; transition: background 0.15s;
+}
+.cal-nav-btn:hover { background: rgba(255,255,255,0.25); }
+
+.cal-weekdays {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  padding: 6px 8px 2px;
+}
+.cal-wd {
+  font-size: 9px; font-weight: 800; text-transform: uppercase;
+  text-align: center; color: var(--muted); padding: 2px 0;
+}
+
+.cal-days {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  padding: 2px 8px 10px; gap: 2px;
+}
+.cal-day {
+  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 600; border-radius: 6px;
+  cursor: pointer; transition: background 0.1s, color 0.1s;
+  position: relative;
+}
+.cal-day:hover { background: rgba(10,36,114,0.08); }
+.cal-day.empty { cursor: default; }
+.cal-day.today { font-weight: 800; color: var(--secondary); }
+.cal-day.today::after {
+  content: ''; position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%);
+  width: 4px; height: 4px; border-radius: 50%; background: var(--secondary);
+}
+.cal-day.has-receipt { background: rgba(0,100,102,0.1); font-weight: 800; }
+.cal-day.has-receipt::after {
+  content: ''; position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%);
+  width: 4px; height: 4px; border-radius: 50%; background: var(--secondary);
+}
+.cal-day.selected { background: var(--accent) !important; color: white !important; font-weight: 800; }
+.cal-day.selected::after { background: white !important; }
+.cal-day.other-month { color: var(--muted); opacity: 0.4; }
+.cal-day.future { opacity: 0.3; cursor: default; pointer-events: none; }
+
+/* Date display bar */
+.date-display {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(255,217,114,0.2); border: 1px solid rgba(255,217,114,0.6);
+  border-radius: 9px; padding: 8px 12px; font-size: 14px; font-weight: 700;
+}
+.date-display-label { font-size: 11px; color: var(--muted); }
+.date-display-val { margin-left: auto; font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500; }
+
+.input-pro {
+  width: 100%; padding: 10px 12px;
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--text); border-radius: 9px;
+  font-size: 14px; font-family: 'Space Grotesk', sans-serif;
+  transition: border-color 0.15s; outline: none;
+}
+.input-pro:focus { border-color: var(--secondary); }
+.input-pro::placeholder { color: var(--muted); }
+
+.shop-wrap { position: relative; }
+.autocomplete-list {
+  position: absolute; top: 100%; left: 0; right: 0;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; margin-top: 4px;
+  overflow: hidden; z-index: 50; display: none;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+.autocomplete-item {
+  padding: 10px 12px; font-size: 13px; cursor: pointer;
+  border-bottom: 1px solid rgba(255,217,114,0.4);
+  display: flex; align-items: center; gap: 8px; color: var(--text);
+  transition: background 0.1s;
+}
+.autocomplete-item:last-child { border-bottom: none; }
+.autocomplete-item:hover, .autocomplete-item.selected { background: rgba(10,36,114,0.06); }
+.ac-freq { font-size: 10px; color: var(--secondary); margin-left: auto; }
+
+/* HT accordion */
+.ht-trigger {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 7px 11px; margin-bottom: 6px;
+  background: rgba(0,100,102,0.05); border: 1px dashed var(--border);
+  border-radius: 9px; cursor: pointer; font-size: 12px; font-weight: 700; color: var(--secondary);
+}
+.ht-result-bar {
+  display: none; align-items: center; gap: 8px;
+  background: rgba(0,100,102,0.08); border: 1px solid var(--border);
+  border-radius: 9px; padding: 7px 11px; margin-bottom: 6px;
+  cursor: pointer; font-size: 12px; font-weight: 700; color: var(--secondary);
+}
+.ht-result-val { font-size: 14px; font-weight: 800; margin-left: auto; }
+.tva-chips { display: flex; gap: 5px; margin-bottom: 6px; }
+.tva-chip {
+  flex: 1; padding: 7px 2px;
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--text); border-radius: 8px;
+  font-size: 11px; font-weight: 700; text-align: center;
+  cursor: pointer; transition: 0.15s; font-family: 'Space Grotesk', sans-serif;
+}
+.tva-chip:hover { border-color: var(--secondary); }
+.tva-chip.active { background: var(--secondary); border-color: var(--secondary); color: white; }
+.ht-computed {
+  display: none; align-items: center; gap: 8px;
+  background: rgba(0,100,102,0.06); border: 1px solid var(--border);
+  border-radius: 9px; padding: 7px 11px; font-size: 12px;
+}
+.ht-computed-val { font-size: 14px; font-weight: 700; color: var(--secondary); margin-left: auto; }
+
+/* ── Save btn hint ── */
+.save-hint {
+  font-size: 10px; color: var(--accent); font-weight: 700;
+  display: flex; align-items: center; gap: 4px;
+  margin-top: 4px; min-height: 14px;
+}
+
+/* ── Actions panel bottom ── */
+.form-actions {
+  padding: 12px 20px; border-top: 1px solid var(--border); flex-shrink: 0; display: flex; gap: 8px;
+}
+.btn-action {
+  flex: 1; padding: 12px; border: none; border-radius: 10px;
+  font-size: 14px; font-weight: 800; cursor: pointer; transition: 0.15s;
+  font-family: 'Space Grotesk', sans-serif;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+}
+.btn-cancel { background: var(--panel-bg); color: var(--text); border: 1px solid var(--border); }
+.btn-cancel:hover { border-color: var(--accent); color: var(--accent); }
+.btn-save { background: var(--accent); color: white; }
+.btn-save:hover { background: #d94f4f; }
+.btn-save:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-save:disabled:hover { background: var(--accent); }
+
+/* ─── RIGHT PANEL : PHOTO ──────────────────────────────────── */
+.right-panel { display: flex; flex-direction: column; overflow: hidden; background: var(--panel-bg); }
+.photo-header {
+  padding: 12px 20px; background: var(--surface); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+}
+.photo-header-title { font-size: 13px; font-weight: 800; color: var(--primary); }
+.photo-header-sub { font-size: 11px; color: var(--muted); margin-left: 4px; }
+.photo-header-actions { display: flex; gap: 7px; margin-left: auto; }
+
+.filename-display {
+  display: none; align-items: center; gap: 8px;
+  padding: 8px 20px; background: var(--surface); border-bottom: 1px solid var(--border);
+  font-size: 12px; flex-shrink: 0;
+}
+.filename-display.visible { display: flex; }
+.filename-chip {
+  background: rgba(10,36,114,0.07); border: 1px solid var(--border);
+  border-radius: 6px; padding: 3px 9px;
+  font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; color: var(--primary);
+  flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.filename-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); flex-shrink: 0; }
+
+.drop-zone {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 14px; cursor: pointer; border: 2px dashed transparent;
+  transition: border-color 0.2s, background 0.2s; position: relative; overflow: hidden;
+}
+.drop-zone.drag-over { border-color: var(--accent); background: rgba(244,96,96,0.05); }
+.drop-zone-inner { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; pointer-events: none; }
+.drop-icon { width: 72px; height: 72px; border-radius: 20px; background: rgba(10,36,114,0.07); display: flex; align-items: center; justify-content: center; font-size: 28px; color: var(--muted); }
+.drop-title { font-size: 16px; font-weight: 800; color: var(--primary); }
+.drop-sub { font-size: 12px; color: var(--muted); }
+.drop-kbd { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 3px 8px; font-size: 11px; font-weight: 700; color: var(--secondary); }
+#file-input { display: none; }
+
+.photo-preview { flex: 1; display: none; flex-direction: column; overflow: hidden; position: relative; }
+.photo-preview.visible { display: flex; }
+.photo-img-wrap {
+  flex: 1; overflow: hidden; display: flex; align-items: center; justify-content: center;
+  padding: 16px; background: var(--panel-bg); position: relative;
+}
+.photo-img-wrap img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); }
+
+.photo-strip {
+  display: flex; gap: 6px; padding: 10px 16px;
+  background: var(--surface); border-top: 1px solid var(--border);
+  overflow-x: auto; flex-shrink: 0;
+}
+.photo-strip::-webkit-scrollbar { height: 4px; }
+.photo-strip::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.strip-thumb {
+  width: 52px; height: 52px; flex-shrink: 0; border-radius: 8px; overflow: hidden;
+  border: 2px solid transparent; cursor: pointer; transition: border-color 0.15s; position: relative;
+}
+.strip-thumb:hover { border-color: var(--secondary); }
+.strip-thumb.active { border-color: #F3A30A; }
+.strip-thumb.done:not(.active) { opacity: 1; border-color: rgba(0,149,83,0.45); background: rgba(0,149,83,0.1); }
+.strip-thumb.done:not(.active)::after {
+  content: '✓'; position: absolute; inset: 0; background: rgba(0,149,83,0.25);
+  display: flex; align-items: center; justify-content: center;
+  color: #006466; font-size: 18px; font-weight: 900; border-radius: 6px;
+}
+.strip-thumb.active.done::after {
+  content: '✓'; position: absolute; inset: 0; background: rgba(0,149,83,0.15);
+  display: flex; align-items: center; justify-content: center;
+  color: #006466; font-size: 18px; font-weight: 900; border-radius: 6px;
+}
+.strip-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.strip-add {
+  width: 52px; height: 52px; flex-shrink: 0; border-radius: 8px;
+  border: 2px dashed var(--border);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 18px; color: var(--muted); transition: 0.15s;
+}
+.strip-add:hover { border-color: var(--secondary); color: var(--secondary); }
+
+/* ─── TOAST ──────────────────────────────────────────────── */
+.toast {
+  position: fixed; top: 18px; left: 50%; transform: translateX(-50%);
+  background: var(--primary); color: white; padding: 9px 20px; border-radius: 20px;
+  font-size: 13px; font-weight: 700; display: none; white-space: nowrap; z-index: 999;
+  box-shadow: 0 4px 16px rgba(10,36,114,0.25);
+}
+
+/* ─── CONFIRM MODAL ─────────── */
+.confirm-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+  z-index: 600; display: none; align-items: center; justify-content: center; padding: 20px;
+}
+.confirm-overlay.open { display: flex; }
+.confirm-box {
+  background: var(--surface); border-radius: 16px; padding: 24px;
+  text-align: center; max-width: 300px; width: 100%;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.2);
+}
+.confirm-box .confirm-icon { font-size: 32px; margin-bottom: 10px; }
+.confirm-box h4 { font-size: 16px; font-weight: 800; margin-bottom: 6px; }
+.confirm-box p { font-size: 12px; color: var(--muted); margin-bottom: 18px; }
+.confirm-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.confirm-actions button { padding: 10px; border-radius: 10px; font-size: 13px; font-weight: 800; cursor: pointer; border: none; font-family: 'Space Grotesk', sans-serif; transition: 0.15s; }
+.confirm-cancel { background: var(--panel-bg); color: var(--text); border: 1px solid var(--border) !important; }
+.confirm-cancel:hover { border-color: var(--accent) !important; }
+.confirm-ok { background: var(--accent); color: white; }
+.confirm-ok:hover { background: #d94f4f; }
+
+/* ─── HISTORY PANEL — DRAWER ─────────────────────────────── */
+.history-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0);
+  z-index: 200; display: none; pointer-events: none;
+  transition: background 0.25s ease;
+}
+.history-overlay.open {
+  display: block; background: rgba(0,0,0,0.45); pointer-events: all;
+}
+.history-box {
+  position: fixed; top: 0; right: 0; bottom: 0;
+  width: 760px; max-width: 100%;
+  background: var(--surface); border-radius: 18px 0 0 18px;
+  display: flex; flex-direction: column; overflow: hidden;
+  box-shadow: -8px 0 48px rgba(0,0,0,0.18);
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+.history-overlay.open .history-box {
+  transform: translateX(0);
+}
+.history-topbar { display: flex; align-items: center; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+.history-topbar h2 { font-size: 18px; font-weight: 800; }
+.history-close {
+  margin-left: auto; background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text);
+  width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+  border-radius: 8px; transition: background 0.15s;
+}
+.history-close:hover { background: rgba(244,96,96,0.1); }
+.history-tabs { display: flex; gap: 6px; padding: 10px 20px 0; border-bottom: 1px solid var(--border); }
+.h-tab {
+  padding: 7px 14px; font-size: 12px; font-weight: 800; border-radius: 8px 8px 0 0;
+  cursor: pointer; border: 1px solid transparent; border-bottom: none; color: var(--muted); transition: 0.15s;
+}
+.h-tab.active { background: var(--surface); border-color: var(--border); border-bottom-color: var(--surface); color: var(--primary); }
+.history-body { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+
+#view-list { flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 14px 20px; gap: 8px; }
+.h-list-scroll { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+.h-item {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--panel-bg); border: 1px solid var(--border);
+  border-radius: 10px; padding: 10px 14px; cursor: pointer; transition: border-color 0.15s;
+}
+.h-item:hover { border-color: var(--secondary); }
+.h-item.selected { border-color: var(--accent); background: rgba(244,96,96,0.06); }
+.h-check { width: 18px; height: 18px; border-radius: 5px; border: 2px solid var(--border); flex-shrink: 0; transition: 0.15s; position: relative; }
+.h-item.selected .h-check { background: var(--accent); border-color: var(--accent); }
+.h-item.selected .h-check::after { content: '✓'; position: absolute; color: white; font-size: 11px; top: -1px; left: 2px; }
+.h-name { font-size: 12px; font-family: 'DM Mono', monospace; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.h-edit-btn {
+  background: none; border: 1px solid var(--border); border-radius: 7px;
+  color: var(--secondary); font-size: 11px; font-weight: 700; cursor: pointer;
+  padding: 4px 9px; flex-shrink: 0; transition: 0.15s;
+  font-family: 'Space Grotesk', sans-serif; white-space: nowrap;
+}
+.h-edit-btn:hover { border-color: var(--secondary); background: rgba(0,100,102,0.08); }
+.h-list-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+#view-table { flex: 1; overflow: hidden; display: none; flex-direction: column; padding: 14px 20px; gap: 8px; }
+.tbl-wrap { flex: 1; overflow-y: auto; border: 1px solid var(--border); border-radius: 10px; }
+.receipts-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.receipts-table th {
+  background: var(--primary); color: white; padding: 9px 10px; text-align: left;
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; position: sticky; top: 0; z-index: 1;
+}
+.receipts-table td { padding: 9px 10px; border-bottom: 1px solid rgba(0,100,102,0.1); color: var(--text); vertical-align: middle; }
+.receipts-table tr:nth-child(even) td { background: rgba(255,217,114,0.06); }
+.tbl-total td { background: rgba(10,36,114,0.06) !important; font-weight: 800; color: var(--primary); border-top: 2px solid var(--primary); }
+.tbl-del-btn { background: none; border: none; cursor: pointer; color: var(--accent); font-size: 13px; padding: 3px 6px; border-radius: 5px; transition: background 0.1s; }
+.tbl-del-btn:hover { background: rgba(244,96,96,0.12); }
+
+.export-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 400; display: none; align-items: center; justify-content: center; padding: 20px; }
+.export-overlay.open { display: flex; }
+.export-box { background: var(--surface); border-radius: 18px; padding: 28px; width: 420px; max-width: 100%; box-shadow: 0 24px 64px rgba(0,0,0,0.2); }
+.export-box h3 { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+.export-box p { font-size: 12px; color: var(--muted); margin-bottom: 18px; }
+.pdf-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 18px; }
+.pdf-opt { cursor: pointer; }
+.pdf-opt input[type="radio"] { display: none; }
+.pdf-opt-card { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px; border: 1.5px solid var(--border); border-radius: 12px; background: var(--surface); transition: 0.15s; text-align: center; }
+.pdf-opt input:checked + .pdf-opt-card { border-color: var(--accent); background: rgba(244,96,96,0.07); }
+.pdf-opt-icon { font-size: 20px; }
+.pdf-opt-title { font-size: 12px; font-weight: 800; color: var(--primary); }
+.pdf-opt-sub { font-size: 10px; color: var(--muted); }
+.export-divider { height: 1px; background: var(--border); margin: 0 0 16px; }
+.export-methods { display: flex; flex-direction: column; gap: 8px; }
+.exp-btn { display: flex; align-items: center; gap: 12px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; cursor: pointer; transition: 0.15s; width: 100%; text-align: left; font-family: 'Space Grotesk', sans-serif; }
+.exp-btn:hover { border-color: var(--secondary); background: rgba(0,100,102,0.06); }
+.exp-btn-icon { font-size: 18px; width: 36px; height: 36px; background: rgba(255,217,114,0.3); border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.exp-btn-title { font-size: 13px; font-weight: 800; color: var(--primary); display: block; }
+.exp-btn-sub { font-size: 10px; color: var(--muted); display: block; margin-top: 1px; }
+.exp-btn-arrow { margin-left: auto; color: var(--muted); }
+.export-cancel-btn { display: block; width: 100%; margin-top: 12px; padding: 11px; background: none; border: none; border-top: 1px solid var(--border); font-size: 13px; font-weight: 700; color: var(--muted); cursor: pointer; font-family: 'Space Grotesk', sans-serif; }
+
+.alert-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.alert-actions .btn-action { padding: 11px; font-size: 13px; }
+.alert-actions .btn-later { background: var(--panel-bg); color: var(--text); border: 1px solid var(--border); }
+
+/* Aperçu nom fichier */
+#name-preview-group { display: none; }
+
+/* ─── ZOOM OVERLAY ──────────────────────────────────────────── */
+.zoom-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.92);
+  z-index: 800; display: none; align-items: center; justify-content: center;
+  cursor: zoom-out;
+}
+.zoom-overlay.open { display: flex; }
+.zoom-container {
+  position: relative; width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.zoom-img {
+  max-width: 95vw; max-height: 95vh; object-fit: contain; border-radius: 6px;
+  transform-origin: center center; transition: transform 0.08s ease;
+  cursor: grab; user-select: none; will-change: transform;
+}
+.zoom-img.grabbing { cursor: grabbing; }
+.zoom-controls {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(10,36,114,0.88); border-radius: 30px; padding: 8px 14px;
+  backdrop-filter: blur(10px); z-index: 802;
+}
+.zoom-btn {
+  background: rgba(255,255,255,0.15); border: none; color: white;
+  border-radius: 8px; width: 34px; height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 15px; transition: background 0.15s;
+}
+.zoom-btn:hover { background: rgba(255,255,255,0.3); }
+.zoom-level { color: white; font-size: 12px; font-weight: 800; min-width: 44px; text-align: center; font-family: 'DM Mono', monospace; }
+.zoom-close-btn {
+  position: fixed; top: 16px; right: 16px;
+  background: rgba(244,96,96,0.9); border: none; color: white;
+  border-radius: 10px; width: 38px; height: 38px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 16px; z-index: 803;
+}
+.zoom-hint {
+  position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+  background: rgba(10,36,114,0.75); color: white; border-radius: 20px;
+  padding: 6px 14px; font-size: 11px; font-weight: 700; z-index: 803;
+  backdrop-filter: blur(6px); pointer-events: none;
+  opacity: 1; transition: opacity 1.5s ease;
+}
+.zoom-hint.fade { opacity: 0; }
+.zoom-trigger-btn {
+  position: absolute; top: 10px; right: 10px;
+  background: rgba(10,36,114,0.72); border: none; color: white;
+  border-radius: 8px; padding: 6px 11px; font-size: 12px; font-weight: 700;
+  cursor: pointer; display: flex; align-items: center; gap: 5px;
+  backdrop-filter: blur(6px); transition: background 0.15s; z-index: 10;
+  font-family: 'Space Grotesk', sans-serif;
+}
+.zoom-trigger-btn:hover { background: rgba(10,36,114,0.95); }
+
+/* ─── PDF TEXT VIEWER ────────────────────────────────── */
+#pdf-text-viewer {
+  display: none;
+  flex: 1;
+  overflow: auto;
+  padding: 16px;
+  background: var(--panel-bg);
+  align-items: flex-start;
+  justify-content: center;
+  position: relative;
+}
+#pdf-text-viewer.visible { display: flex; }
+#pdf-zoom-bar {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.pdf-page-container {
+  position: relative;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  border-radius: 4px;
+  line-height: 1;
+}
+.pdf-page-container canvas {
+  display: block;
+  border-radius: 4px;
+}
+.pdf-page-container .textLayer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  line-height: 1;
+  pointer-events: all;
+}
+.pdf-page-container .textLayer > span {
+  color: transparent;
+  position: absolute;
+  white-space: pre;
+  cursor: text;
+  transform-origin: 0% 0%;
+}
+.pdf-page-container .textLayer ::selection {
+  background: rgba(0, 100, 200, 0.3);
+}
+
+/* ─── ZOOM INLINE ─────────────────────────────────────────── */
+.inline-zoom-bar {
+  position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+  display: none; align-items: center; gap: 6px;
+  background: rgba(10,36,114,0.78); border-radius: 24px; padding: 5px 10px;
+  backdrop-filter: blur(8px); z-index: 10; white-space: nowrap;
+}
+.inline-zoom-bar.visible { display: flex; }
+.iz-btn {
+  background: rgba(255,255,255,0.15); border: none; color: white;
+  border-radius: 7px; width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 13px; transition: background 0.15s;
+}
+.iz-btn:hover { background: rgba(255,255,255,0.3); }
+.iz-level { color: white; font-size: 11px; font-weight: 800; min-width: 38px; text-align: center; font-family: 'DM Mono', monospace; }
+
+/* ─── TRI ARCHIVES ──────────────────────────────────────────── */
+.sort-bar {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  flex-shrink: 0; padding: 6px 0 2px;
+}
+.sort-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); flex-shrink: 0; }
+.sort-btn {
+  display: flex; align-items: center; gap: 4px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 5px 10px;
+  font-size: 11px; font-weight: 700; cursor: pointer; color: var(--text);
+  transition: 0.15s; font-family: 'Space Grotesk', sans-serif; white-space: nowrap;
+}
+.sort-btn:hover { border-color: var(--secondary); }
+.sort-btn.active { background: var(--primary); border-color: var(--primary); color: white; }
+.sort-arrow { font-size: 10px; display: inline-block; transition: transform 0.2s; }
+.sort-btn.asc .sort-arrow { transform: rotate(0deg); }
+.sort-btn.desc .sort-arrow { transform: rotate(180deg); }
+.sort-count { margin-left: auto; font-size: 11px; font-weight: 700; color: var(--muted); flex-shrink: 0; }
+
+/* ─── ONGLET STATS ──────────────────────────────────────────── */
+#view-stats {
+  flex: 1; overflow-y: auto; display: none; flex-direction: column;
+  padding: 14px 20px; gap: 12px;
+}
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; flex-shrink: 0; }
+.stat-card {
+  background: var(--panel-bg); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px 16px;
+}
+.stat-card-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); margin-bottom: 4px; }
+.stat-card-val { font-size: 22px; font-weight: 800; color: var(--primary); line-height: 1.1; }
+.stat-card-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.stat-card.accent { border-color: rgba(244,96,96,0.3); background: rgba(244,96,96,0.05); }
+.stat-card.accent .stat-card-val { color: var(--accent); }
+.stat-card.green { border-color: rgba(0,100,102,0.3); background: rgba(0,100,102,0.05); }
+.stat-card.green .stat-card-val { color: var(--secondary); }
+.stats-section-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-bottom: 6px; flex-shrink: 0; }
+.shop-rank-item {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 9px; padding: 9px 12px; margin-bottom: 6px;
+}
+.shop-rank-pos { font-size: 14px; font-weight: 800; color: var(--muted); width: 22px; text-align: center; flex-shrink: 0; }
+.shop-rank-name { font-size: 13px; font-weight: 700; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.shop-rank-col { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; }
+.shop-rank-total { font-size: 13px; font-weight: 800; color: var(--primary); }
+.shop-rank-count { font-size: 10px; color: var(--muted); }
+.shop-rank-bar-wrap { width: 100%; height: 3px; background: var(--border); border-radius: 2px; margin-top: 5px; }
+.shop-rank-bar { height: 3px; background: var(--accent); border-radius: 2px; }
+.month-item {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 9px; padding: 9px 12px; margin-bottom: 6px;
+}
+.month-label { font-size: 12px; font-weight: 700; width: 68px; flex-shrink: 0; font-family: 'DM Mono', monospace; }
+.month-bar-wrap { flex: 1; height: 6px; background: var(--border); border-radius: 3px; }
+.month-bar { height: 6px; background: var(--secondary); border-radius: 3px; transition: width 0.6s ease; }
+.month-amount { font-size: 12px; font-weight: 800; color: var(--primary); flex-shrink: 0; min-width: 68px; text-align: right; font-family: 'DM Mono', monospace; }
+
+/* ─── COULEURS PAR JOUR — ARCHIVES ──────────────────── */
+/* Les couleurs sont injectées via JS : setDayColor(el, colorIndex) */
+.h-item[data-day-color] { border-left: 3px solid var(--day-color, #006466); background: rgba(0,0,0,0.02); }
+.receipts-table tr[data-day-color] td { border-left: 3px solid var(--day-color, rgba(0,100,102,0.5)); background: rgba(0,0,0,0.01); }
+.compress-badge {
+  display: none; align-items: center; gap: 5px;
+  font-size: 10px; font-weight: 700; color: var(--secondary);
+  background: rgba(0,100,102,0.08); border: 1px solid rgba(0,100,102,0.2);
+  border-radius: 6px; padding: 3px 8px;
+}
+.compress-badge.visible { display: flex; }
+
+/* Badge exporté dans la liste */
+.exported-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10px; font-weight: 700;
+  background: rgba(0,100,102,0.1); border: 1px solid rgba(0,100,102,0.3);
+  border-radius: 5px; padding: 2px 7px; color: var(--secondary);
+  white-space: nowrap; flex-shrink: 0;
+}
+.not-exported-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10px; font-weight: 700;
+  background: rgba(244,96,96,0.08); border: 1px solid rgba(244,96,96,0.3);
+  border-radius: 5px; padding: 2px 7px; color: var(--accent);
+  white-space: nowrap; flex-shrink: 0;
+}
+</style>
+</head>
+<body>
+
+<!-- ZOOM OVERLAY -->
+<div id="zoom-overlay" class="zoom-overlay" onclick="zoomOverlayClick(event)">
+  <button class="zoom-close-btn" onclick="closeZoom()"><i class="fas fa-times"></i></button>
+  <div class="zoom-hint" id="zoom-hint">🔍 Molette pour zoomer &nbsp;·&nbsp; Glisser pour déplacer</div>
+  <div class="zoom-container" id="zoom-container">
+    <img id="zoom-img" class="zoom-img" src="" alt="Zoom" draggable="false">
+  </div>
+  <div class="zoom-controls" onclick="event.stopPropagation()">
+    <button class="zoom-btn" onclick="zoomStep(-0.25)"><i class="fas fa-search-minus"></i></button>
+    <span class="zoom-level" id="zoom-level">100%</span>
+    <button class="zoom-btn" onclick="zoomStep(0.25)"><i class="fas fa-search-plus"></i></button>
+    <button class="zoom-btn" onclick="zoomReset()" style="font-size:11px;font-weight:800;margin-left:4px;">1:1</button>
+    <button class="zoom-btn" onclick="zoomFit()" style="font-size:11px;font-weight:800;">FIT</button>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<!-- CONFIRM MODAL -->
+<div id="confirm-overlay" class="confirm-overlay">
+  <div class="confirm-box">
+    <div class="confirm-icon" id="confirm-icon">⚠️</div>
+    <h4 id="confirm-title">Confirmer</h4>
+    <p id="confirm-msg"></p>
+    <div class="confirm-actions">
+      <button class="confirm-cancel" id="confirm-cancel-btn">Annuler</button>
+      <button class="confirm-ok" id="confirm-ok-btn">Confirmer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ALERT MODAL -->
+
+<!-- HISTORY PANEL -->
+<div id="history-overlay" class="history-overlay" onclick="historyOverlayClick(event)">
+  <div class="history-box">
+    <div class="history-topbar">
+      <i class="fas fa-scroll" style="color:var(--secondary);"></i>
+      <h2>Mes Archives</h2>
+      <button class="history-close" onclick="closeHistory()"><i class="fas fa-times"></i></button>
+    </div>
+
+    <!-- Jauge stockage -->
+    <div id="storage-indicator" style="
+      display:flex; align-items:center; gap:10px;
+      border-bottom: 1px solid var(--border);
+      padding:8px 20px; font-size:12px; flex-shrink:0;
+    ">
+      <i class="fas fa-database" style="color:var(--secondary);font-size:13px;flex-shrink:0;"></i>
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+          <span style="font-weight:800;font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);">Stockage IndexedDB</span>
+          <span id="storage-label" style="font-family:'DM Mono',monospace;font-size:11px;font-weight:700;color:var(--primary);">—</span>
+        </div>
+        <div style="height:4px;background:var(--border);border-radius:3px;overflow:hidden;">
+          <div id="storage-bar" style="height:100%;border-radius:3px;background:var(--secondary);width:0%;transition:width 0.4s ease;"></div>
+        </div>
+        <div id="storage-sub" style="font-size:10px;color:var(--muted);margin-top:3px;">Calcul en cours…</div>
+      </div>
+    </div>
+
+    <div class="history-tabs">
+      <div class="h-tab active" id="htab-list" onclick="switchHView('list')"><i class="fas fa-list"></i> Liste</div>
+      <div class="h-tab" id="htab-table" onclick="switchHView('table')"><i class="fas fa-table"></i> Tableau</div>
+      <div class="h-tab" id="htab-stats" onclick="switchHView('stats')"><i class="fas fa-chart-bar"></i> Stats</div>
+    </div>
+    <div class="history-body">
+
+      <!-- VUE LISTE -->
+      <div id="view-list">
+        <div class="h-list-actions">
+          <button class="tb-btn" id="sel-all-btn" onclick="toggleSelectAll()"><i class="fas fa-check-double"></i> Tout sélectionner</button>
+          <button class="tb-btn primary" onclick="shareSelected()"><i class="fas fa-paper-plane"></i> Envoyer</button>
+          <button class="tb-btn" style="color:var(--accent);border-color:var(--accent);" onclick="deleteSelected()"><i class="fas fa-trash"></i> Supprimer</button>
+        </div>
+        <!-- Barre de tri -->
+        <div class="sort-bar">
+          <span class="sort-label">Tri :</span>
+          <button class="sort-btn active desc" id="sort-date" onclick="setSortList('date')">
+            Date <span class="sort-arrow">↓</span>
+          </button>
+          <button class="sort-btn" id="sort-saved" onclick="setSortList('saved')">
+            Sauvegarde <span class="sort-arrow">↓</span>
+          </button>
+          <button class="sort-btn" id="sort-shop" onclick="setSortList('shop')">
+            Magasin <span class="sort-arrow">↓</span>
+          </button>
+          <button class="sort-btn" id="sort-amount" onclick="setSortList('amount')">
+            Montant <span class="sort-arrow">↓</span>
+          </button>
+          <span class="sort-count" id="sort-count"></span>
+        </div>
+        <div class="h-list-scroll" id="h-list-scroll"></div>
+      </div>
+
+      <!-- VUE TABLEAU -->
+      <div id="view-table">
+        <div style="display:flex;gap:8px;flex-shrink:0;align-items:center;">
+          <button class="tb-btn primary" onclick="exportTableCSV()"><i class="fas fa-file-csv"></i> Exporter CSV</button>
+          <button class="tb-btn" onclick="openImportPaste()" style="border-color:var(--secondary);color:var(--secondary);"><i class="fas fa-paste"></i> Importer</button>
+          <!-- Tri tableau -->
+          <span style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);margin-left:4px;">Tri :</span>
+          <button class="sort-btn active desc" id="tsort-date" onclick="setTableSort('date')">Date <span class="sort-arrow">↓</span></button>
+          <button class="sort-btn" id="tsort-shop" onclick="setTableSort('shop')">Mag. <span class="sort-arrow">↓</span></button>
+          <button class="sort-btn" id="tsort-amount" onclick="setTableSort('amount')">Mnt. <span class="sort-arrow">↓</span></button>
+        </div>
+        <div class="tbl-wrap">
+          <table class="receipts-table">
+            <thead><tr>
+              <th>Date</th><th>Magasin</th><th>HT €</th><th>TTC €</th><th style="width:36px;"></th>
+            </tr></thead>
+            <tbody id="receipts-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- VUE STATS -->
+      <div id="view-stats">
+        <div class="stats-grid" id="stats-cards"></div>
+        <div class="stats-section-title" style="margin-top:4px;"><i class="fas fa-store" style="margin-right:5px;"></i>Top magasins</div>
+        <div id="stats-shops"></div>
+        <div class="stats-section-title"><i class="fas fa-calendar-alt" style="margin-right:5px;"></i>Dépenses par mois</div>
+        <div id="stats-months"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- EXPORT MODAL -->
+<div id="export-overlay" class="export-overlay" onclick="exportOverlayClick(event)">
+  <div class="export-box">
+    <h3>Exporter les reçus</h3>
+    <p id="export-selection-label" style="margin-bottom:14px;"></p>
+
+    <!-- Statut export des reçus sélectionnés -->
+    <div id="export-status-bar" style="
+      display:flex; align-items:center; gap:10px;
+      background:var(--panel-bg); border:1px solid var(--border);
+      border-radius:10px; padding:9px 13px; margin-bottom:14px; font-size:12px;
+    ">
+      <i class="fas fa-history" style="color:var(--secondary);font-size:14px;flex-shrink:0;"></i>
+      <div style="flex:1;min-width:0;">
+        <div style="margin-bottom:3px;font-weight:800;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);">Statut des reçus sélectionnés</div>
+        <div id="export-status-text" style="font-size:12px;color:var(--text);font-weight:600;">Calcul…</div>
+      </div>
+    </div>
+
+    <!-- Format PDF -->
+    <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.6px;color:var(--muted);margin-bottom:8px;">Format PDF</div>
+    <div class="pdf-opts">
+      <label class="pdf-opt">
+        <input type="radio" name="pdf-format" value="separate">
+        <div class="pdf-opt-card"><span class="pdf-opt-icon"><i class="fas fa-file-pdf"></i></span><span class="pdf-opt-title">Séparés</span><span class="pdf-opt-sub">Un PDF par reçu</span></div>
+      </label>
+      <label class="pdf-opt">
+        <input type="radio" name="pdf-format" value="compiled" checked>
+        <div class="pdf-opt-card"><span class="pdf-opt-icon"><i class="fas fa-box"></i></span><span class="pdf-opt-title">Compilé</span><span class="pdf-opt-sub">Tous en un seul PDF</span></div>
+      </label>
+    </div>
+    <div class="export-divider"></div>
+
+    <!-- Bouton ZIP unique -->
+    <button class="exp-btn" onclick="actionDownloadZip()" style="width:100%;margin-bottom:4px;">
+      <div class="exp-btn-icon" style="background:rgba(0,100,102,0.12);"><i class="fas fa-file-archive" style="color:var(--secondary);"></i></div>
+      <div>
+        <span class="exp-btn-title">Télécharger ZIP</span>
+        <span class="exp-btn-sub">PDF + récapitulatif XLSX</span>
+      </div>
+      <span class="exp-btn-arrow">›</span>
+    </button>
+
+    <button class="export-cancel-btn" onclick="closeExport()">Annuler</button>
+  </div>
+</div>
+
+<!-- ─── TOP BAR ──────────────────────────────────────────── -->
+<div class="topbar">
+  <div class="logo" onclick="refreshLogo()">
+    <div class="mosaic-core"><svg id="mosaic-svg" viewBox="0 0 100 100" preserveAspectRatio="none"></svg></div>
+    <div class="logo-text">
+      <div class="logo-title" id="word-outils"></div>
+      <div class="logo-sub">ONLINE</div>
+    </div>
+  </div>
+  <div class="topbar-sep"></div>
+  <div class="topbar-badge" id="file-badge" onclick="openHistory()" style="cursor:pointer;">
+    <i class="fas fa-scroll" style="color:var(--secondary);font-size:13px;"></i>
+    <span>Archives</span>
+    <span class="count" id="badge-count">0</span>
+  </div>
+</div>
+
+<!-- ─── WORKSPACE ──────────────────────────────────────────── -->
+<div class="workspace">
+
+  <!-- LEFT : FORMULAIRE -->
+  <div class="left-panel">
+    <div class="panel-header">
+      <div class="panel-title">Formulaire</div>
+      <div class="panel-headline">Infos du reçu</div>
+    </div>
+
+    <div class="form-scroll">
+
+      <!-- Queue indicator -->
+      <div class="queue-bar" id="queue-bar">
+        <i class="fas fa-images" style="font-size:13px;color:var(--secondary);"></i>
+        <span id="queue-label" style="font-size:12px;font-weight:700;"></span>
+        <div class="queue-dots" id="queue-dots"></div>
+        <div class="queue-nav">
+          <button id="q-prev" onclick="queueNav(-1)" disabled><i class="fas fa-chevron-left"></i></button>
+          <button id="q-next" onclick="queueNav(1)"><i class="fas fa-chevron-right"></i></button>
+        </div>
+      </div>
+
+      <!-- Aperçu nom de fichier — EN PREMIER -->
+      <div class="field-group" id="name-preview-group">
+        <div class="field-label"><i class="fas fa-tag"></i> Nom du fichier généré</div>
+        <div style="background:rgba(10,36,114,0.05);border:1px solid var(--border);border-radius:9px;padding:9px 12px;">
+          <span id="name-preview" style="font-family:'DM Mono',monospace;font-size:12px;color:var(--primary);word-break:break-all;"></span><span style="color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;">.jpg</span>
+        </div>
+      </div>
+
+      <!-- Montant TTC -->
+      <div class="field-group">
+        <div class="field-label"><i class="fas fa-euro-sign"></i> Montant TTC</div>
+        <input type="number" id="capture-amount" class="input-pro" placeholder="Ex: 42.50" oninput="autoComputeHT()">
+      </div>
+
+      <!-- HT Accordion -->
+      <div class="field-group">
+        <div id="ht-trigger" class="ht-trigger" onclick="toggleHTAccordion()">
+          <span><i class="fas fa-calculator" style="margin-right:6px;"></i>Ajouter le montant HT</span>
+          <span id="ht-arrow" style="font-size:11px;transition:transform 0.2s;">▾</span>
+        </div>
+        <div id="ht-result-bar" class="ht-result-bar" onclick="toggleHTAccordion()">
+          <i class="fas fa-calculator"></i>
+          <span style="font-size:11px;font-weight:700;">HT</span>
+          <span class="ht-result-val" id="ht-result-val">—</span>
+          <span style="font-size:10px;color:var(--muted);margin-left:4px;">modifier ▾</span>
+        </div>
+        <div id="ht-body" style="display:none;margin-bottom:6px;">
+          <div class="tva-chips" id="tva-chips">
+            <div class="tva-chip" id="tva-20" onclick="selectTVA('20')">20%</div>
+            <div class="tva-chip" id="tva-10" onclick="selectTVA('10')">10%</div>
+            <div class="tva-chip" id="tva-5" onclick="selectTVA('5.5')">5,5%</div>
+            <div class="tva-chip" id="tva-manual" onclick="selectTVA('manual')">Saisir</div>
+          </div>
+          <div id="ht-manual-wrap" style="display:none;">
+            <input type="number" id="capture-ht" class="input-pro" placeholder="Montant HT €" style="border-color:var(--accent);margin-bottom:6px;" oninput="syncManualHT()">
+          </div>
+          <div id="ht-computed" class="ht-computed">
+            <span style="font-size:12px;font-weight:600;opacity:0.8;">HT calculé</span>
+            <span class="ht-computed-val" id="ht-computed-val">—</span>
+            <span onclick="resetTVAToChips()" style="font-size:11px;color:var(--accent);font-weight:700;cursor:pointer;margin-left:8px;">✕</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Magasin -->
+      <div class="field-group">
+        <div class="field-label"><i class="fas fa-store"></i> Magasin / abonnement</div>
+        <div class="shop-wrap">
+          <input type="text" id="capture-shop" class="input-pro" placeholder="Nom du magasin ou abonnement (ex: ORANGE)"
+            autocomplete="off" oninput="onShopInput()" onkeydown="onShopKey(event)" onfocus="onShopInput()" onblur="setTimeout(()=>document.getElementById('autocomplete-list').style.display='none',150)">
+          <div id="autocomplete-list" class="autocomplete-list"></div>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-top:8px;cursor:pointer;">
+          <input type="checkbox" id="batch-auto-increment" onchange="onBatchToggle()"> Auto incrément mensuel
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-top:6px;cursor:pointer;">
+          <input type="checkbox" id="batch-repeat-price" onchange="onBatchToggle()"> Répéter le montant
+        </label>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px;">Utilise le même champ pour le nom du magasin et de l’abonnement. L’auto-incrément avance la date, et la repetition du montant conserve le même prix.</div>
+      </div>
+
+      <!-- ─── DATE v2 — EN BAS ─── -->
+      <div class="field-group">
+        <div class="field-label"><i class="fas fa-calendar"></i> Date du reçu</div>
+
+        <div class="date-chips-row" id="date-chips-row">
+          <div class="date-chip active" id="chip-today" onclick="selectTodayChip()">
+            <i class="fas fa-calendar-day"></i> Auj.
+          </div>
+          <!-- chips historiques injectées par JS -->
+          <div class="date-chip" id="chip-manual" onclick="toggleCalendar()">
+            <i class="fas fa-calendar-alt"></i> Cal.
+          </div>
+        </div>
+
+        <input type="date" id="capture-date" style="position:absolute;opacity:0;width:1px;height:1px;" oninput="onDateInputChange()" onchange="onDateInputChange()">
+
+        <div class="mini-cal" id="mini-cal">
+          <div class="cal-header">
+            <button class="cal-nav-btn" onclick="calNav(-1)"><i class="fas fa-chevron-left"></i></button>
+            <span class="cal-month-label" id="cal-month-label"></span>
+            <button class="cal-nav-btn" onclick="calNav(1)"><i class="fas fa-chevron-right"></i></button>
+          </div>
+          <div class="cal-weekdays">
+            <div class="cal-wd">L</div><div class="cal-wd">M</div><div class="cal-wd">M</div>
+            <div class="cal-wd">J</div><div class="cal-wd">V</div>
+            <div class="cal-wd" style="color:var(--accent);">S</div>
+            <div class="cal-wd" style="color:var(--accent);">D</div>
+          </div>
+          <div class="cal-days" id="cal-days"></div>
+        </div>
+
+        <div class="date-display">
+          <span style="color:var(--muted);"><i class="fas fa-calendar-check"></i></span>
+          <span class="date-display-label">Date sélectionnée</span>
+          <span class="date-display-val" id="date-display-val" style="color:var(--accent);">— choisir —</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="form-actions">
+      <div style="display:flex;flex-direction:column;flex:1;gap:4px;">
+        <div style="display:flex;gap:8px;">
+          <button class="btn-action btn-cancel" onclick="resetForm()" style="flex:0 0 auto;padding:12px 16px;"><i class="fas fa-undo"></i></button>
+          <button class="btn-action btn-save" id="save-btn" onclick="confirmSave()" disabled style="flex:1;"><i class="fas fa-check-circle"></i> Sauvegarder</button>
+        </div>
+        <div class="save-hint" id="save-hint"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT : PHOTO -->
+  <div class="right-panel">
+    <div class="photo-header">
+      <i class="fas fa-images" style="color:var(--secondary);"></i>
+      <span class="photo-header-title">Photo du reçu</span>
+      <span class="photo-header-sub" id="photo-header-sub">Aucune photo importée</span>
+      <div class="photo-header-actions">
+        <button class="tb-btn" onclick="triggerFileInput()"><i class="fas fa-folder-open"></i> Importer</button>
+      </div>
+    </div>
+
+    <div class="filename-display" id="filename-display">
+      <span class="filename-label">Fichier source :</span>
+      <span class="filename-chip" id="filename-chip">—</span>
+      <span class="compress-badge" id="compress-badge"><i class="fas fa-compress-alt"></i> <span id="compress-text"></span></span>
+    </div>
+
+    <input type="file" id="file-input" accept="image/*,application/pdf" multiple onchange="onFilesSelected(event)">
+
+    <div class="drop-zone" id="drop-zone"
+      onclick="triggerFileInput()"
+      ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+      <div class="drop-zone-inner">
+        <div class="drop-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+        <div class="drop-title">Glissez vos photos ou PDF ici</div>
+        <div class="drop-sub">ou cliquez pour parcourir</div>
+        <div style="display:flex;gap:8px;margin-top:4px;">
+          <span class="drop-kbd">JPG</span>
+          <span class="drop-kbd">PNG</span>
+          <span class="drop-kbd">WEBP</span>
+          <span class="drop-kbd">HEIC</span>
+          <span class="drop-kbd" style="color:var(--accent);border-color:var(--accent);">PDF</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="photo-preview" id="photo-preview">
+      <div class="photo-img-wrap" id="photo-img-wrap">
+        <img id="preview-img" src="" alt="Aperçu" style="cursor:grab;transform-origin:center center;transition:transform 0.08s ease;user-select:none;" draggable="false">
+        <div class="inline-zoom-bar" id="inline-zoom-bar">
+          <button class="iz-btn" onclick="inlineZoomStep(-0.25)" title="Dézoomer"><i class="fas fa-search-minus"></i></button>
+          <span class="iz-level" id="inline-zoom-level">100%</span>
+          <button class="iz-btn" onclick="inlineZoomStep(0.25)" title="Zoomer"><i class="fas fa-search-plus"></i></button>
+          <button class="iz-btn" onclick="inlineZoomReset()" title="Réinitialiser" style="font-size:10px;font-weight:800;">1:1</button>
+        </div>
+      </div>
+      <!-- PDF text-selectable viewer (replaces img for PDFs) -->
+      <div id="pdf-text-viewer">
+        <div class="pdf-page-container" id="pdf-page-container">
+          <canvas id="pdf-render-canvas"></canvas>
+          <div class="textLayer" id="pdf-text-layer"></div>
+        </div>
+        <div class="inline-zoom-bar" id="pdf-zoom-bar" style="position:fixed;bottom:10px;left:auto;">
+          <button class="iz-btn" onclick="pdfTextZoomStep(-0.25)" title="Dézoomer"><i class="fas fa-search-minus"></i></button>
+          <span class="iz-level" id="pdf-zoom-level">100%</span>
+          <button class="iz-btn" onclick="pdfTextZoomStep(0.25)" title="Zoomer"><i class="fas fa-search-plus"></i></button>
+          <button class="iz-btn" onclick="pdfTextZoomReset()" title="Réinitialiser" style="font-size:10px;font-weight:800;">1:1</button>
+        </div>
+      </div>
+      <div class="photo-strip" id="photo-strip"></div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+
+// ─── PDF.js SETUP ──────────────────────────────────────────
+if (window.pdfjsLib) {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
+
+async function renderPDFAllPages(arrayBuffer) {
+  if (!window.pdfjsLib) throw new Error('PDF.js non chargé');
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  const pageCount = pdf.numPages;
+  const results = [];
+  for (let p = 1; p <= pageCount; p++) {
+    const page = await pdf.getPage(p);
+    // Échelle calculée pour viser la meilleure résolution possible (jusqu'à IMG_MAX_PX),
+    // rendue en UNE seule passe — ces vignettes ne sont plus recompressées ensuite,
+    // ce qui évite la double perte JPEG qui dégradait la qualité auparavant.
+    const baseViewport = page.getViewport({ scale: 1 });
+    // Échelle calculée pour viser la meilleure résolution possible sans dépasser IMG_MAX_PX,
+    // quelle que soit la forme de la page (cas fréquent des tickets de caisse très longs
+    // et étroits, où un plancher d'échelle fixe ferait exploser la taille du canvas).
+    const scale = Math.min(IMG_MAX_PX / baseViewport.width, IMG_MAX_PX / baseViewport.height, 4);
+    const viewport = page.getViewport({ scale });
+    const canvas = document.createElement('canvas');
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    const ctx = canvas.getContext('2d');
+    await page.render({ canvasContext: ctx, viewport }).promise;
+    results.push(canvas.toDataURL('image/jpeg', 0.95));
+  }
+  return { pages: results, pageCount };
+}
+
+// ─── STATE ─────────────────────────────────────────────────
+let db;
+let selectedIds = new Set();
+let currentHView = 'list';
+let acIndex = -1;
+window._tvaMode = 'none';
+// ─── DAY COLOR HELPER ──────────────────────────────────────
+const DAY_COLORS = ['#006466','#7B5EA7','#C0763A','#2A7A4B','#1A6FA8','#A8522E','#5C6BC0'];
+function setDayColor(el, idx) {
+  if (idx === undefined || idx === null) return;
+  el.setAttribute('data-day-color', idx);
+  el.style.setProperty('--day-color', DAY_COLORS[idx % DAY_COLORS.length]);
+}
+
+let _htAccordionOpen = false;
+
+// Photo queue
+let photoQueue = [];
+let currentQueueIdx = 0;
+let savedInSession = new Set();
+let editingReceiptId = null; // ID du reçu en cours de modification (null = nouveau)
+
+// Date state
+let activeChipDate = null;
+let lastSelectedDate = null;
+let calOpen = false;
+let calYear, calMonth;
+let receiptDates = new Set();
+
+// ─── INDEXEDDB ──────────────────────────────────────────────
+function showStorageError() {
+  const banner = document.createElement('div');
+  banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#F46060;color:white;padding:12px 20px;font-size:13px;font-weight:700;text-align:center;display:flex;align-items:center;justify-content:center;gap:10px;';
+  banner.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Stockage local indisponible (navigation privée ?). Les reçus ne seront pas sauvegardés. <button onclick="this.parentElement.remove()" style="background:rgba(255,255,255,0.2);border:none;color:white;border-radius:6px;padding:4px 10px;cursor:pointer;font-weight:700;font-family:inherit;">✕</button>';
+  document.body.prepend(banner);
+}
+
+let req;
+try {
+  req = indexedDB.open("ReceiptsDB", 2);
+} catch(e) {
+  showStorageError();
+  req = null;
+}
+
+if (req) {
+  req.onupgradeneeded = e => {
+    const db2 = e.target.result;
+    if (!db2.objectStoreNames.contains('receipts')) {
+      db2.createObjectStore("receipts", { keyPath: "id", autoIncrement: true });
+    }
+  };
+  req.onsuccess = e => {
+    db = e.target.result;
+    checkBadge();
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('capture-date').value = today;
+    refreshDateDisplay();
+    loadReceiptDatesAndBuildChips();
+  };
+  req.onerror = () => showStorageError();
+  req.onblocked = () => showStorageError();
+}
+
+// ─── LOGO MOSAÏQUE ──────────────────────────────────────────
+const vibrantColors = ['#006466','#F46060','#FFD972'];
+const darkBlue = '#0A2472';
+(function buildLogoText() {
+  const wrap = document.getElementById('word-outils');
+  'OUTILS'.split('').forEach(c => {
+    const s = document.createElement('span');
+    s.textContent = c; s.className = 'letter';
+    wrap.appendChild(s);
+  });
+})();
+function refreshLogo() {
+  const svg = document.getElementById('mosaic-svg');
+  const letters = document.querySelectorAll('.letter');
+  svg.innerHTML = '';
+  const gridSize = 4, step = 100 / (gridSize - 1);
+  let points = [], columnVibrant = [[],[],[]];
+  for (let y = 0; y < gridSize; y++) for (let x = 0; x < gridSize; x++) {
+    let px = x*step, py = y*step;
+    if (x>0 && x<gridSize-1 && y>0 && y<gridSize-1) { px+=(Math.random()-0.5)*step*0.8; py+=(Math.random()-0.5)*step*0.8; }
+    points.push({x:px,y:py});
+  }
+  for (let y=0;y<gridSize-1;y++) for (let x=0;x<gridSize-1;x++) {
+    const p1=points[y*gridSize+x],p2=points[y*gridSize+(x+1)],p3=points[(y+1)*gridSize+(x+1)],p4=points[(y+1)*gridSize+x];
+    const poly=document.createElementNS("http://www.w3.org/2000/svg","polygon");
+    const isDark=Math.random()<0.125;
+    const color=isDark?darkBlue:vibrantColors[Math.floor(Math.random()*vibrantColors.length)];
+    if(!isDark) columnVibrant[x].push(color);
+    poly.setAttribute("points",`${p1.x},${p1.y} ${p2.x},${p2.y} ${p3.x},${p3.y} ${p4.x},${p4.y}`);
+    poly.setAttribute("fill",color); poly.setAttribute("stroke",color); poly.setAttribute("stroke-width","0.5");
+    svg.appendChild(poly);
+  }
+  letters.forEach((l,i) => {
+    const col=i<2?0:i<4?1:2;
+    const pool=columnVibrant[col];
+    l.style.color=pool.length?pool[Math.floor(Math.random()*pool.length)]:vibrantColors[Math.floor(Math.random()*vibrantColors.length)];
+  });
+}
+refreshLogo();
+
+// ─── DATE CHIPS v2 ──────────────────────────────────────────
+function loadReceiptDatesAndBuildChips() {
+  if (!db) return;
+  db.transaction("receipts").objectStore("receipts").getAll().onsuccess = e => {
+    const all = e.target.result;
+    receiptDates = new Set();
+    const dateCounts = {};
+    all.forEach(item => {
+      const parts = item.name ? item.name.split('_')[0] : null;
+      if (parts && parts.length === 10) {
+        const iso = parts.replace(/\./g, '-');
+        receiptDates.add(iso);
+        dateCounts[iso] = (dateCounts[iso]||0) + 1;
+      }
+    });
+    const today = new Date().toISOString().split('T')[0];
+    const selectedDate = lastSelectedDate || document.getElementById('capture-date')?.value || today;
+    const recent = [];
+    if (selectedDate && selectedDate !== today) {
+      recent.push(selectedDate);
+    }
+    Object.keys(dateCounts)
+      .filter(d => d !== today && d !== selectedDate)
+      .sort((a, b) => {
+        const diff = dateCounts[b] - dateCounts[a];
+        return diff !== 0 ? diff : b.localeCompare(a);
+      })
+      .slice(0, 3)
+      .forEach(d => recent.push(d));
+    buildDateChips([...new Set(recent)].slice(0, 2));
+    renderCalIfOpen();
+  };
+}
+
+function buildDateChips(recentDates) {
+  const row = document.getElementById('date-chips-row');
+  row.querySelectorAll('.date-hist-chip').forEach(el => el.remove());
+  const manualChip = document.getElementById('chip-manual');
+  recentDates.forEach(isoDate => {
+    const chip = createHistChip(isoDate);
+    row.insertBefore(chip, manualChip);
+  });
+  refreshChipActiveStates();
+}
+
+function createHistChip(isoDate) {
+  const wrap = document.createElement('div');
+  wrap.className = 'date-hist-chip';
+  wrap.dataset.baseDate = isoDate;
+  let offset = 0;
+
+  const btnPrev = document.createElement('button');
+  btnPrev.className = 'dhc-arrow';
+  btnPrev.innerHTML = '◀';
+  btnPrev.title = 'Jour précédent';
+
+  const labelEl = document.createElement('div');
+  labelEl.className = 'dhc-label';
+
+  const btnNext = document.createElement('button');
+  btnNext.className = 'dhc-arrow';
+  btnNext.innerHTML = '▶';
+  btnNext.title = 'Jour suivant';
+
+  const today = new Date().toISOString().split('T')[0];
+
+  function getOffsetDate(base, off) {
+    const d = new Date(base + 'T12:00:00');
+    d.setDate(d.getDate() + off);
+    return d.toISOString().split('T')[0];
+  }
+
+  function formatChipLabel(iso) {
+    const [y, m, d] = iso.split('-');
+    const months = ['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
+    return `${parseInt(d)} ${months[parseInt(m)-1]}`;
+  }
+
+  function updateChip() {
+    const currentIso = getOffsetDate(isoDate, offset);
+    labelEl.textContent = formatChipLabel(currentIso);
+    wrap.dataset.currentDate = currentIso;
+    btnNext.disabled = currentIso >= today;
+    labelEl.title = receiptDates.has(currentIso) ? '≥1 reçu' : '';
+    refreshChipActiveStates();
+  }
+
+  btnPrev.addEventListener('click', e => { e.stopPropagation(); offset--; updateChip(); });
+  btnNext.addEventListener('click', e => { e.stopPropagation(); offset++; updateChip(); });
+  labelEl.addEventListener('click', () => {
+    const currentIso = wrap.dataset.currentDate || isoDate;
+    selectDateValue(currentIso, 'hist');
+    closeCalendar();
+  });
+
+  wrap.appendChild(btnPrev);
+  wrap.appendChild(labelEl);
+  wrap.appendChild(btnNext);
+  updateChip();
+  return wrap;
+}
+
+function selectTodayChip() {
+  const today = new Date().toISOString().split('T')[0];
+  selectDateValue(today, 'today');
+  closeCalendar();
+}
+
+function selectDateValue(isoDate, source) {
+  document.getElementById('capture-date').value = isoDate;
+  activeChipDate = source === 'today' ? null : isoDate;
+  lastSelectedDate = isoDate;
+  refreshDateDisplay();
+  refreshChipActiveStates();
+  updateNamePreview();
+  loadReceiptDatesAndBuildChips();
+}
+
+function refreshChipActiveStates() {
+  const current = document.getElementById('capture-date').value;
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('chip-today').classList.toggle('active', current === today && !calOpen);
+  document.querySelectorAll('.date-hist-chip').forEach(chip => {
+    const chipDate = chip.dataset.currentDate;
+    chip.classList.toggle('active', chipDate === current && current !== today);
+  });
+  document.getElementById('chip-manual').classList.toggle('active', calOpen);
+}
+
+function onDateInputChange() {
+  const iso = document.getElementById('capture-date').value;
+  if (iso) lastSelectedDate = iso;
+  refreshDateDisplay();
+  refreshChipActiveStates();
+  updateNamePreview();
+}
+
+// ─── MINI-CALENDRIER ────────────────────────────────────────
+function toggleCalendar() {
+  calOpen = !calOpen;
+  if (calOpen) {
+    const cur = document.getElementById('capture-date').value || new Date().toISOString().split('T')[0];
+    const [y, m] = cur.split('-');
+    calYear = parseInt(y); calMonth = parseInt(m) - 1;
+    document.getElementById('mini-cal').classList.add('open');
+    renderCalendar();
+  } else {
+    closeCalendar();
+  }
+  refreshChipActiveStates();
+}
+
+function closeCalendar() {
+  calOpen = false;
+  document.getElementById('mini-cal').classList.remove('open');
+  refreshChipActiveStates();
+}
+
+function calNav(dir) {
+  calMonth += dir;
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  renderCalendar();
+}
+
+function renderCalIfOpen() { if (calOpen) renderCalendar(); }
+
+function renderCalendar() {
+  const months = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+  document.getElementById('cal-month-label').textContent = `${months[calMonth]} ${calYear}`;
+  const today = new Date().toISOString().split('T')[0];
+  const selected = document.getElementById('capture-date').value;
+  const firstDay = new Date(calYear, calMonth, 1);
+  const lastDay = new Date(calYear, calMonth + 1, 0);
+  let startDow = firstDay.getDay();
+  startDow = startDow === 0 ? 6 : startDow - 1;
+  const container = document.getElementById('cal-days');
+  container.innerHTML = '';
+  for (let i = 0; i < startDow; i++) {
+    const el = document.createElement('div'); el.className = 'cal-day empty'; container.appendChild(el);
+  }
+  for (let d = 1; d <= lastDay.getDate(); d++) {
+    const iso = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const el = document.createElement('div');
+    el.className = 'cal-day';
+    el.textContent = d;
+    if (iso === today) el.classList.add('today');
+    if (iso === selected) el.classList.add('selected');
+    if (receiptDates.has(iso) && iso !== selected) el.classList.add('has-receipt');
+    if (iso > today) el.classList.add('future');
+    el.addEventListener('click', () => { selectDateValue(iso, 'cal'); renderCalendar(); });
+    container.appendChild(el);
+  }
+}
+
+// ─── DATE DISPLAY ───────────────────────────────────────────
+function formatDateDisplay(v) { if(!v) return '—'; const [y,m,d]=v.split('-'); return `${d}/${m}/${y}`; }
+function refreshDateDisplay() {
+  const v = document.getElementById('capture-date').value;
+  const el = document.getElementById('date-display-val');
+  el.textContent = v ? formatDateDisplay(v) : '— choisir —';
+  el.style.color = v ? 'var(--primary)' : 'var(--accent)';
+  updateSaveBtn();
+  updateNamePreview();
+}
+
+// ─── SHOP AUTOCOMPLETE ─────────────────────────────────────
+function getShopHistory() {
+  try {
+    const raw = JSON.parse(localStorage.getItem('shopHistory')||'{}');
+    return raw && typeof raw === 'object' ? raw : {};
+  } catch(e) {
+    return {};
+  }
+}
+function saveShopUsage(name) {
+  if (!name) return;
+  const key = name.toUpperCase();
+  const h = getShopHistory();
+  const existing = h[key];
+  let count = 1;
+  if (existing) {
+    if (typeof existing === 'number') {
+      count = existing + 1;
+    } else {
+      count = (existing.count || 0) + 1;
+    }
+  }
+  h[key] = { count, lastUsed: Date.now() };
+  localStorage.setItem('shopHistory', JSON.stringify(h));
+}
+function onShopInput() {
+  const val = document.getElementById('capture-shop').value.toUpperCase();
+  const h = getShopHistory();
+  const list = document.getElementById('autocomplete-list');
+  acIndex = -1;
+  const now = Date.now();
+  const suggestions = Object.entries(h).map(([name, data]) => {
+    let count = 0;
+    let lastUsed = 0;
+    if (typeof data === 'number') { count = data; }
+    else { count = data.count || 0; lastUsed = data.lastUsed || 0; }
+    const ageDays = lastUsed ? Math.max(0, (now - lastUsed) / 86400000) : 365;
+    const recencyScore = lastUsed ? Math.max(0, 1 - ageDays / 30) : 0;
+    return {
+      name,
+      count,
+      lastUsed,
+      score: count * 0.75 + recencyScore * 5
+    };
+  }).filter(item => item.name.startsWith(val) && item.name !== val);
+  const matches = suggestions.sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    if (b.lastUsed !== a.lastUsed) return b.lastUsed - a.lastUsed;
+    return b.count - a.count;
+  }).slice(0, 5);
+  if (!matches.length) { list.style.display='none'; updateNamePreview(); return; }
+  list.innerHTML = matches.map(({name, count, lastUsed}) => {
+    const ageDays = lastUsed ? Math.round((now - lastUsed) / 86400000) : null;
+    const badge = ageDays !== null ? `<span class="ac-freq">${count}×${ageDays<=7?' · récent':''}</span>` : `<span class="ac-freq">${count}×</span>`;
+    return `<div class="autocomplete-item" data-name="${name}" onmousedown="pickShop('${name}')"><span>🏪</span> ${name} ${badge}</div>`;
+  }).join('');
+  list.style.display = 'block';
+  updateNamePreview();
+}
+function pickShop(name) { document.getElementById('capture-shop').value=name; document.getElementById('autocomplete-list').style.display='none'; updateNamePreview(); }
+function onShopKey(e) {
+  const items = document.querySelectorAll('.autocomplete-item');
+  if (e.key==='ArrowDown') { acIndex=Math.min(acIndex+1,items.length-1); highlightAc(items); }
+  else if (e.key==='ArrowUp') { acIndex=Math.max(acIndex-1,0); highlightAc(items); }
+  else if (e.key==='Enter'&&acIndex>=0) { pickShop(items[acIndex].dataset.name); e.preventDefault(); }
+  else if (e.key==='Escape') { document.getElementById('autocomplete-list').style.display='none'; }
+  updateNamePreview();
+}
+function highlightAc(items) {
+  items.forEach((el,i)=>el.classList.toggle('selected',i===acIndex));
+  if (acIndex>=0) document.getElementById('capture-shop').value=items[acIndex].dataset.name;
+}
+
+// ─── HT / TVA ────────────────────────────────────────────────
+function toggleHTAccordion() {
+  _htAccordionOpen = !_htAccordionOpen;
+  const body = document.getElementById('ht-body');
+  const trigger = document.getElementById('ht-trigger');
+  const resultBar = document.getElementById('ht-result-bar');
+  const hasResult = window._tvaMode!=='none' && window._tvaMode!==null;
+  if (_htAccordionOpen) {
+    body.style.display='block';
+    if (hasResult) { trigger.style.display='none'; resultBar.style.display='none'; }
+    else { trigger.style.display='flex'; resultBar.style.display='none'; }
+    document.getElementById('ht-arrow').style.transform='rotate(180deg)';
+  } else {
+    body.style.display='none';
+    if (hasResult) { trigger.style.display='none'; resultBar.style.display='flex'; }
+    else { trigger.style.display='flex'; resultBar.style.display='none'; document.getElementById('ht-arrow').style.transform=''; }
+  }
+}
+function selectTVA(mode) {
+  window._tvaMode=mode;
+  ['20','10','5','manual'].forEach(id => { const el=document.getElementById('tva-'+id); if(el) el.classList.toggle('active', (id==='5'?'5.5':id)===mode||(id==='manual'&&mode==='manual')); });
+  const manualWrap=document.getElementById('ht-manual-wrap');
+  if (mode==='manual') {
+    manualWrap.style.display='block';
+    document.getElementById('ht-computed').style.display='none';
+    document.getElementById('tva-chips').style.display='none';
+    document.getElementById('capture-ht').focus();
+  } else {
+    manualWrap.style.display='none';
+    autoComputeHT();
+    _htAccordionOpen=false;
+    document.getElementById('ht-body').style.display='none';
+    document.getElementById('ht-trigger').style.display='none';
+    document.getElementById('ht-result-bar').style.display='flex';
+    document.getElementById('tva-chips').style.display='flex';
+  }
+}
+function autoComputeHT() {
+  const mode=window._tvaMode||'none';
+  const ttc=parseFloat(document.getElementById('capture-amount').value);
+  const display=document.getElementById('ht-computed');
+  if (mode==='none'||mode==='manual') { display.style.display='none'; return; }
+  if (isNaN(ttc)||ttc<=0) { display.style.display='none'; return; }
+  const rate=parseFloat(mode);
+  const ht=(ttc/(1+rate/100)).toFixed(2);
+  document.getElementById('ht-computed-val').textContent=ht.replace('.',',')+' €';
+  display.style.display='flex';
+  document.getElementById('ht-result-val').textContent=ht.replace('.',',')+' €';
+  updateNamePreview();
+}
+function syncManualHT() {
+  const val=document.getElementById('capture-ht').value;
+  if(val) document.getElementById('ht-result-val').textContent=parseFloat(val).toFixed(2).replace('.',',')+' €';
+  updateNamePreview();
+}
+function resetTVAToChips() {
+  window._tvaMode='none';
+  ['20','10','5','manual'].forEach(id=>{const el=document.getElementById('tva-'+id);if(el)el.classList.remove('active');});
+  document.getElementById('tva-chips').style.display='flex';
+  document.getElementById('ht-computed').style.display='none';
+  document.getElementById('ht-manual-wrap').style.display='none';
+  document.getElementById('ht-trigger').style.display='none';
+  document.getElementById('ht-result-bar').style.display='none';
+  document.getElementById('ht-body').style.display='block';
+  _htAccordionOpen=true;
+  updateNamePreview();
+}
+function resetTVA() {
+  window._tvaMode='none'; _htAccordionOpen=false;
+  document.getElementById('ht-body').style.display='none';
+  document.getElementById('ht-trigger').style.display='flex';
+  document.getElementById('ht-arrow').style.transform='';
+  document.getElementById('ht-result-bar').style.display='none';
+  document.getElementById('tva-chips').style.display='flex';
+  ['20','10','5','manual'].forEach(id=>{const el=document.getElementById('tva-'+id);if(el)el.classList.remove('active');});
+  document.getElementById('ht-manual-wrap').style.display='none';
+  document.getElementById('ht-computed').style.display='none';
+  const htInput=document.getElementById('capture-ht');
+  if(htInput) htInput.value='';
+}
+
+// ─── NAME PREVIEW ─────────────────────────────────────────
+function getBatchShopName() {
+  return document.getElementById('capture-shop').value.toUpperCase().trim();
+}
+
+function onBatchToggle() {
+  updateNamePreview();
+}
+
+function shouldRepeatPrice() {
+  return document.getElementById('batch-repeat-price')?.checked;
+}
+
+function incrementMonth(isoDate) {
+  if (!isoDate) return '';
+  const [y, m, d] = isoDate.split('-').map(Number);
+  const next = new Date(y, m - 1, d);
+  next.setMonth(next.getMonth() + 1);
+  const nextY = next.getFullYear();
+  const nextM = String(next.getMonth() + 1).padStart(2, '0');
+  const nextD = String(next.getDate()).padStart(2, '0');
+  return `${nextY}-${nextM}-${nextD}`;
+}
+
+function buildFileName() {
+  const dateVal = document.getElementById('capture-date').value;
+  const shopVal = getBatchShopName() || '';
+  const priceVal = document.getElementById('capture-amount').value||'0';
+  let htVal='';
+  const tvaMode=window._tvaMode||'none';
+  if (tvaMode==='manual') { htVal=document.getElementById('capture-ht').value||''; }
+  else if (tvaMode!=='none') {
+    const ttc=parseFloat(priceVal); const rate=parseFloat(tvaMode);
+    if(!isNaN(ttc)&&ttc>0) htVal=(ttc/(1+rate/100)).toFixed(2);
+  }
+  const htSuffix=htVal?`_${htVal}HT`:'';
+  const dateFormatted = dateVal ? dateVal.replace(/-/g,'.') : 'AAAA.MM.JJ';
+  const shopPart = shopVal||'MAGASIN';
+  return `${dateFormatted}_${shopPart}_${priceVal}EUR${htSuffix}`;
+}
+function updateNamePreview() {
+  const dateVal = document.getElementById('capture-date').value;
+  const shopVal = getBatchShopName();
+  const priceVal = document.getElementById('capture-amount').value;
+  const group = document.getElementById('name-preview-group');
+  const hasEnough = dateVal && (shopVal || priceVal);
+  group.style.display = hasEnough ? 'block' : 'none';
+  if (hasEnough) {
+    document.getElementById('name-preview').textContent = buildFileName();
+  }
+  updateSaveBtn();
+}
+function updateSaveBtn() {
+  const hasDate = !!document.getElementById('capture-date').value;
+  const hasPhoto = photoQueue.length > 0;
+  const btn = document.getElementById('save-btn');
+  btn.disabled = !(hasDate && hasPhoto);
+  const hint = document.getElementById('save-hint');
+  if (!hasPhoto && !hasDate) {
+    hint.innerHTML = '<i class="fas fa-info-circle"></i> Importez une photo et choisissez une date';
+  } else if (!hasPhoto) {
+    hint.innerHTML = '<i class="fas fa-camera"></i> Importez une photo pour sauvegarder';
+  } else if (!hasDate) {
+    hint.innerHTML = '<i class="fas fa-calendar"></i> Choisissez une date pour sauvegarder';
+  } else {
+    hint.innerHTML = '';
+  }
+}
+
+// ─── PHOTO IMPORT ──────────────────────────────────────────
+function triggerFileInput() { document.getElementById('file-input').click(); }
+function onFilesSelected(e) { handleFiles(Array.from(e.target.files)); e.target.value=''; }
+function onDragOver(e) { e.preventDefault(); document.getElementById('drop-zone').classList.add('drag-over'); }
+function onDragLeave() { document.getElementById('drop-zone').classList.remove('drag-over'); }
+function onDrop(e) {
+  e.preventDefault();
+  document.getElementById('drop-zone').classList.remove('drag-over');
+  const files = Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/')||f.type==='application/pdf');
+  handleFiles(files);
+}
+function handleFiles(files) {
+  if (!files.length) return;
+  const startIdx = photoQueue.length;
+
+  // We collect results asynchronously, then push all at once
+  let pending = files.length;
+  // Each entry in fileResults is either a single slot (image) or an array of slots (PDF pages)
+  const fileResults = new Array(files.length);
+
+  function onAllLoaded() {
+    // Flatten: images → 1 slot, PDFs → N slots (one per page)
+    const newSlots = fileResults.flat().filter(s => s !== null);
+    if (!newSlots.length) return;
+    photoQueue.push(...newSlots);
+    currentQueueIdx = startIdx;
+    renderPhotoQueue();
+    showPhotoAt(currentQueueIdx);
+    updateSaveBtn();
+    const comp = newSlots.find(s => s.compression && s.compression.wasCompressed);
+    if (comp) {
+      const c = comp.compression;
+      const badge = document.getElementById('compress-badge');
+      document.getElementById('compress-text').textContent = `${c.origW}×${c.origH} → ${c.newW}×${c.newH} (${c.newKB}Ko)`;
+      badge.classList.add('visible');
+    } else {
+      document.getElementById('compress-badge').classList.remove('visible');
+    }
+  }
+
+  files.forEach((file, i) => {
+    if (file.type === 'application/pdf') {
+      const reader = new FileReader();
+      reader.onload = async ev => {
+        try {
+          const originalBytes = ev.target.result;
+          // pdf.js peut transférer/détacher le buffer qu'on lui passe (il l'envoie à un
+          // worker interne) : on lui donne une copie indépendante via slice(0), et on
+          // garde "originalBytes" intact pour pouvoir l'utiliser plus tard à l'export.
+          const renderBuffer = originalBytes.slice(0);
+          const { pages, pageCount } = await renderPDFAllPages(renderBuffer);
+          // Un seul slot pour tout le PDF, avec toutes les pages groupées.
+          // On conserve aussi les octets bruts du PDF d'origine (originalBytes) :
+          // ils serviront à l'export pour réinjecter les vraies pages PDF
+          // (texte sélectionnable, qualité native) au lieu d'une image plate.
+          fileResults[i] = [{
+            file,
+            dataUrl: pages[0],          // page affichée par défaut
+            pages: pages,                // toutes les pages (aperçu)
+            currentPage: 0,              // page courante du slot
+            isPDF: true,
+            pdfPageCount: pageCount,
+            pdfBytes: originalBytes      // PDF original (ArrayBuffer), pour export sans perte
+          }];
+          if (pageCount > 1) showToast(`PDF chargé : ${pageCount} pages dans 1 vignette`);
+        } catch(err) {
+          showToast('Erreur PDF : ' + err.message);
+          fileResults[i] = [];
+        }
+        pending--;
+        if (pending === 0) onAllLoaded();
+      };
+      reader.readAsArrayBuffer(file);
+    } else {
+      const reader = new FileReader();
+      reader.onload = async ev => {
+        const result = await compressImage(ev.target.result, file.name);
+        fileResults[i] = [{ file, dataUrl: result.dataUrl, compression: result }];
+        pending--;
+        if (pending === 0) onAllLoaded();
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+}
+function renderPhotoQueue() {
+  const strip = document.getElementById('photo-strip');
+  strip.innerHTML = '';
+  photoQueue.forEach((item, i) => {
+    const thumb = document.createElement('div');
+    thumb.className = 'strip-thumb';
+    thumb.classList.toggle('active', i === currentQueueIdx);
+    thumb.classList.toggle('done', savedInSession.has(i));
+    thumb.onclick = () => { saveCurrentFormToQueue(); currentQueueIdx = i; showPhotoAt(i); };
+    const img = document.createElement('img');
+    // Afficher la page courante dans la vignette
+    const pageIdx = item.currentPage || 0;
+    img.src = item.pages ? item.pages[pageIdx] : item.dataUrl;
+    thumb.appendChild(img);
+    // Badge nb pages pour PDF multi-pages
+    if (item.pages && item.pages.length > 1) {
+      const badge = document.createElement('div');
+      badge.style.cssText = 'position:absolute;bottom:2px;right:2px;background:rgba(244,96,96,0.9);color:white;border-radius:4px;padding:1px 4px;font-size:9px;font-weight:800;line-height:1.4;pointer-events:none;';
+      badge.textContent = `${pageIdx+1}/${item.pages.length}`;
+      thumb.appendChild(badge);
+    }
+    strip.appendChild(thumb);
+    if (i === currentQueueIdx) {
+      thumb.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+  });
+  const add = document.createElement('div');
+  add.className = 'strip-add';
+  add.innerHTML = '<i class="fas fa-plus"></i>';
+  add.title = 'Ajouter des photos';
+  add.onclick = triggerFileInput;
+  strip.appendChild(add);
+
+  const bar = document.getElementById('queue-bar');
+  if (photoQueue.length > 1) {
+    bar.classList.add('visible');
+    document.getElementById('queue-label').textContent = `${currentQueueIdx+1} / ${photoQueue.length}`;
+    const dots = document.getElementById('queue-dots');
+    dots.innerHTML = '';
+    photoQueue.slice(0, Math.min(photoQueue.length, 8)).forEach((_, i) => {
+      const d = document.createElement('div');
+      d.className = 'queue-dot';
+      d.classList.toggle('done', savedInSession.has(i));
+      d.classList.toggle('active', i === currentQueueIdx);
+      d.onclick = () => { saveCurrentFormToQueue(); currentQueueIdx = i; showPhotoAt(i); };
+      dots.appendChild(d);
+    });
+    document.getElementById('q-prev').disabled = currentQueueIdx===0;
+    document.getElementById('q-next').disabled = currentQueueIdx===photoQueue.length-1;
+  } else {
+    bar.classList.remove('visible');
+  }
+}
+function saveCurrentFormToQueue() {
+  if (!photoQueue.length) return;
+  const tvaMode = window._tvaMode || 'none';
+  photoQueue[currentQueueIdx].formData = {
+    shop: getBatchShopName(),
+    amount: document.getElementById('capture-amount').value,
+    date: document.getElementById('capture-date').value,
+    tvaMode: tvaMode,
+    htManual: tvaMode === 'manual' ? document.getElementById('capture-ht').value : ''
+  };
+}
+
+function restoreFormFromQueue(idx) {
+  const item = photoQueue[idx];
+  if (!item) return;
+  const fd = item.formData;
+
+  // Réinitialise proprement d'abord
+  document.getElementById('capture-shop').value = '';
+  document.getElementById('capture-amount').value = '';
+  resetTVA();
+  closeCalendar();
+
+  if (fd) {
+    document.getElementById('capture-shop').value = fd.shop || '';
+    document.getElementById('capture-amount').value = fd.amount || '';
+    const dateVal = fd.date || new Date().toISOString().split('T')[0];
+    document.getElementById('capture-date').value = dateVal;
+
+    if (fd.tvaMode && fd.tvaMode !== 'none') {
+      if (fd.tvaMode === 'manual') {
+        window._tvaMode = 'manual';
+        document.getElementById('tva-manual').classList.add('active');
+        document.getElementById('ht-body').style.display = 'none';
+        document.getElementById('ht-trigger').style.display = 'none';
+        document.getElementById('ht-manual-wrap').style.display = 'block';
+        document.getElementById('tva-chips').style.display = 'none';
+        document.getElementById('capture-ht').value = fd.htManual || '';
+        const htVal = parseFloat(fd.htManual || 0);
+        document.getElementById('ht-result-val').textContent = htVal > 0 ? htVal.toFixed(2).replace('.', ',') + ' €' : '—';
+        document.getElementById('ht-result-bar').style.display = 'flex';
+        _htAccordionOpen = false;
+      } else {
+        selectTVA(fd.tvaMode);
+      }
+    }
+  } else {
+    document.getElementById('capture-shop').value = '';
+    document.getElementById('capture-amount').value = shouldRepeatPrice() ? document.getElementById('capture-amount').value : '';
+    document.getElementById('capture-date').value = new Date().toISOString().split('T')[0];
+  }
+
+  refreshDateDisplay();
+  refreshChipActiveStates();
+  updateNamePreview();
+}
+
+function showPhotoAt(idx) {
+  const item = photoQueue[idx];
+  if (!item) return;
+  document.getElementById('drop-zone').style.display = 'none';
+  document.getElementById('photo-preview').classList.add('visible');
+
+  const isPDF = !!item.isPDF;
+  const imgWrap = document.getElementById('photo-img-wrap');
+  const pdfViewer = document.getElementById('pdf-text-viewer');
+
+  if (isPDF) {
+    // Use text-selectable PDF viewer
+    imgWrap.style.display = 'none';
+    pdfViewer.classList.add('visible');
+    const pageIdx = item.currentPage || 0;
+    renderPDFTextLayer(item, pageIdx);
+  } else {
+    // Use normal image viewer
+    pdfViewer.classList.remove('visible');
+    imgWrap.style.display = '';
+    const pageIdx = item.currentPage || 0;
+    document.getElementById('preview-img').src = item.pages ? item.pages[pageIdx] : item.dataUrl;
+  }
+
+  document.getElementById('photo-header-sub').textContent = item.file.name;
+  document.getElementById('filename-display').classList.add('visible');
+  document.getElementById('filename-chip').textContent = item.file.name;
+
+  // PDF badge + navigateur de pages inline
+  let pdfBadge = document.getElementById('pdf-page-badge');
+  if (item.isPDF && item.pages && item.pages.length > 1) {
+    if (!pdfBadge) {
+      pdfBadge = document.createElement('span');
+      pdfBadge.id = 'pdf-page-badge';
+      pdfBadge.style.cssText = 'display:inline-flex;align-items:center;gap:4px;background:rgba(244,96,96,0.12);border:1px solid rgba(244,96,96,0.4);border-radius:6px;padding:2px 4px 2px 8px;font-size:11px;font-weight:700;color:var(--accent);margin-left:6px;';
+      document.getElementById('filename-display').appendChild(pdfBadge);
+    }
+    const pg = pageIdx + 1;
+    const total = item.pages.length;
+    pdfBadge.innerHTML = `<i class="fas fa-file-pdf"></i> PDF · p.${pg} / ${total}
+      <button onclick="pdfPageNav(-1)" style="background:rgba(244,96,96,0.15);border:none;border-radius:4px;width:20px;height:20px;cursor:pointer;font-size:11px;color:var(--accent);display:flex;align-items:center;justify-content:center;margin-left:4px;" ${pg===1?'disabled':''}>‹</button>
+      <button onclick="pdfPageNav(1)"  style="background:rgba(244,96,96,0.15);border:none;border-radius:4px;width:20px;height:20px;cursor:pointer;font-size:11px;color:var(--accent);display:flex;align-items:center;justify-content:center;" ${pg===total?'disabled':''}>›</button>`;
+    pdfBadge.style.display = 'inline-flex';
+  } else if (item.isPDF) {
+    if (!pdfBadge) {
+      pdfBadge = document.createElement('span');
+      pdfBadge.id = 'pdf-page-badge';
+      pdfBadge.style.cssText = 'display:inline-flex;align-items:center;gap:4px;background:rgba(244,96,96,0.12);border:1px solid rgba(244,96,96,0.4);border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700;color:var(--accent);margin-left:6px;';
+      document.getElementById('filename-display').appendChild(pdfBadge);
+    }
+    pdfBadge.innerHTML = `<i class="fas fa-file-pdf"></i> PDF · 1 page`;
+    pdfBadge.style.display = 'inline-flex';
+  } else if (pdfBadge) {
+    pdfBadge.style.display = 'none';
+  }
+
+  resetInlineZoom();
+  restoreFormFromQueue(idx);
+  renderPhotoQueue();
+}
+function queueNav(dir) {
+  saveCurrentFormToQueue();
+  const newIdx = currentQueueIdx + dir;
+  if (newIdx < 0 || newIdx >= photoQueue.length) return;
+  currentQueueIdx = newIdx;
+  showPhotoAt(currentQueueIdx);
+}
+
+function pdfPageNav(dir) {
+  const item = photoQueue[currentQueueIdx];
+  if (!item || !item.pages) return;
+  const newPage = (item.currentPage || 0) + dir;
+  if (newPage < 0 || newPage >= item.pages.length) return;
+  item.currentPage = newPage;
+  // Refresh via showPhotoAt which routes to correct viewer
+  renderPhotoQueue(); // rafraîchit la vignette (montre la page courante)
+  showPhotoAt(currentQueueIdx);
+}
+
+// ─── RESET FORM ────────────────────────────────────────────
+function resetForm() {
+  editingReceiptId = null;
+  document.getElementById('capture-shop').value='';
+  document.getElementById('capture-amount').value='';
+  document.getElementById('autocomplete-list').style.display='none';
+  document.getElementById('capture-date').value = '';
+  closeCalendar();
+  refreshDateDisplay();
+  refreshChipActiveStates();
+  resetTVA();
+  // Vider la queue et la prévisualisation
+  photoQueue = [];
+  currentQueueIdx = 0;
+  savedInSession = new Set();
+  document.getElementById('drop-zone').style.display = '';
+  document.getElementById('photo-preview').classList.remove('visible');
+  document.getElementById('photo-img-wrap').style.display = '';
+  document.getElementById('pdf-text-viewer').classList.remove('visible');
+  _pdfDocCache = null; _pdfDocBytes = null; _pdfTextItem = null;
+  document.getElementById('filename-display').classList.remove('visible');
+  document.getElementById('photo-header-sub').textContent = 'Aucune photo importée';
+  document.getElementById('compress-badge').classList.remove('visible');
+  const bar = document.getElementById('queue-bar');
+  if (bar) bar.classList.remove('visible');
+  const strip = document.getElementById('photo-strip');
+  if (strip) strip.innerHTML = '';
+  resetInlineZoom();
+  updateNamePreview();
+}
+
+// ─── CONFIRM MODAL ─────────────────────────────────────────
+function showConfirm(icon, title, msg, okLabel, okCb) {
+  document.getElementById('confirm-icon').textContent = icon;
+  document.getElementById('confirm-title').textContent = title;
+  document.getElementById('confirm-msg').textContent = msg;
+  document.getElementById('confirm-ok-btn').textContent = okLabel;
+  document.getElementById('confirm-overlay').classList.add('open');
+  document.getElementById('confirm-ok-btn').onclick = () => {
+    document.getElementById('confirm-overlay').classList.remove('open');
+    okCb();
+  };
+  document.getElementById('confirm-cancel-btn').onclick = () => {
+    document.getElementById('confirm-overlay').classList.remove('open');
+  };
+}
+
+// ─── SAVE ──────────────────────────────────────────────────
+async function confirmSave() {
+  const dateVal = document.getElementById('capture-date').value;
+  if (!dateVal) { showToast("Choisissez une date !"); return; }
+  if (!photoQueue.length) { showToast("Importez une photo !"); return; }
+  if (!window.PDFLib) { showToast("Erreur : pdf-lib non chargé"); return; }
+
+  const item = photoQueue[currentQueueIdx];
+  saveCurrentFormToQueue();
+  const shopVal = getBatchShopName() || 'RECU';
+  const fileNameBase = buildFileName();
+
+  saveShopUsage(shopVal);
+  showToast("Enregistrement...");
+
+  try {
+    const tx = db.transaction("receipts","readwrite");
+    const store = tx.objectStore("receipts");
+    // Si PDF multi-pages : stocker toutes les pages dans imgData (tableau)
+    const imgDataToStore = (item.pages && item.pages.length > 1) ? item.pages : item.dataUrl;
+    // Octets du PDF original (si la source était un vrai PDF) : permet un export
+    // sans perte et avec texte sélectionnable plus tard.
+    const pdfBytesToStore = item.pdfBytes || null;
+
+    if (editingReceiptId !== null) {
+      // Mode modification : on met à jour l'entrée existante
+      store.put({ id: editingReceiptId, name: fileNameBase, imgData: imgDataToStore, pdfBytes: pdfBytesToStore, date: Date.now() });
+    } else {
+      // Mode création : nouvel enregistrement
+      store.add({ name: fileNameBase, imgData: imgDataToStore, pdfBytes: pdfBytesToStore, date: Date.now() });
+    }
+
+    tx.oncomplete = () => {
+      showToast("✓ Enregistré : " + fileNameBase);
+      editingReceiptId = null; // reset mode édition
+      savedInSession.add(currentQueueIdx);
+      loadReceiptDatesAndBuildChips();
+      renderPhotoQueue();
+
+      let next = photoQueue.findIndex((_,i) => i>currentQueueIdx && !savedInSession.has(i));
+      if (next === -1) {
+        next = photoQueue.findIndex((_,i) => !savedInSession.has(i));
+      }
+      if (next !== -1) {
+        const autoIncrement = document.getElementById('batch-auto-increment')?.checked;
+        const currentDate = document.getElementById('capture-date').value;
+        const currentAmount = document.getElementById('capture-amount').value;
+        const currentTVA = window._tvaMode || 'none';
+        const currentHT = document.getElementById('capture-ht')?.value || '';
+        currentQueueIdx = next;
+        if (autoIncrement && currentDate) {
+          const nextDate = incrementMonth(currentDate);
+          if (nextDate) {
+            const nextItem = photoQueue[next];
+            if (!nextItem.formData) {
+              nextItem.formData = {
+                shop: getBatchShopName(),
+                amount: shouldRepeatPrice() ? currentAmount : '',
+                date: nextDate,
+                tvaMode: shouldRepeatPrice() ? currentTVA : 'none',
+                htManual: shouldRepeatPrice() && currentTVA === 'manual' ? currentHT : ''
+              };
+            }
+          }
+        }
+        showPhotoAt(next);
+      } else {
+        resetForm();
+      }
+
+      checkBadge();
+    };
+  } catch(err) { showToast("Erreur : "+err.message); }
+}
+
+// ─── BADGE ─────────────────────────────────────────────────
+function checkBadge() {
+  if (!db) return;
+  db.transaction("receipts").objectStore("receipts").getAll().onsuccess = e => {
+    const n = e.target.result.length;
+    const badge = document.getElementById('file-badge');
+    document.getElementById('badge-count').textContent = n;
+    badge.style.display = 'flex';
+  };
+}
+
+// ─── HISTORY ───────────────────────────────────────────────
+// ─── STOCKAGE & EXPORT STATUS ──────────────────────────────
+async function updateStorageIndicator() {
+  const label = document.getElementById('storage-label');
+  const bar   = document.getElementById('storage-bar');
+  const sub   = document.getElementById('storage-sub');
+  if (!label) return;
+  let usedBytes = 0;
+  await new Promise(resolve => {
+    db.transaction("receipts").objectStore("receipts").getAll().onsuccess = e => {
+      e.target.result.forEach(item => {
+        if (!item.imgData) return;
+        if (Array.isArray(item.imgData)) {
+          item.imgData.forEach(d => { usedBytes += d.length * 0.75; });
+        } else {
+          usedBytes += item.imgData.length * 0.75;
+        }
+      });
+      resolve();
+    };
+  });
+  function fmtSize(b) {
+    if (b < 1024*1024) return (b/1024).toFixed(0)+' Ko';
+    if (b < 1024*1024*1024) return (b/(1024*1024)).toFixed(1)+' Mo';
+    return (b/(1024*1024*1024)).toFixed(2)+' Go';
+  }
+  label.textContent = fmtSize(usedBytes);
+  if (navigator.storage && navigator.storage.estimate) {
+    const est = await navigator.storage.estimate();
+    const quota = est.quota || 0;
+    const pct = quota > 0 ? Math.min((usedBytes/quota)*100, 100) : 0;
+    bar.style.width = pct.toFixed(1)+'%';
+    bar.style.background = pct > 70 ? 'var(--accent)' : pct > 40 ? '#C0763A' : 'var(--secondary)';
+    sub.textContent = `${pct.toFixed(1)} % du quota · ${fmtSize(quota)} disponibles`;
+  } else {
+    bar.style.width = '0%';
+    sub.textContent = 'Quota non disponible sur ce navigateur';
+  }
+}
+
+async function updateExportStatusBar() {
+  const el = document.getElementById('export-status-text');
+  const lbl = document.getElementById('export-selection-label');
+  if (!el) return;
+  const allItems = await new Promise(r => db.transaction("receipts").objectStore("receipts").getAll().onsuccess = e => r(e.target.result));
+  const selected = allItems.filter(i => selectedIds.has(i.id) && i.imgData);
+  const total = selected.length;
+  const exported = selected.filter(i => !!i.exportedAt).length;
+  const notExported = total - exported;
+  if (lbl) lbl.textContent = `${total} reçu${total>1?'s':''} sélectionné${total>1?'s':''}`;
+  if (notExported === 0) {
+    el.innerHTML = `<span style="color:var(--secondary);"><i class="fas fa-check-circle"></i> Tous déjà exportés</span>`;
+  } else if (exported === 0) {
+    el.innerHTML = `<span style="color:var(--accent);"><i class="fas fa-exclamation-circle"></i> Aucun n'a encore été exporté</span>`;
+  } else {
+    el.innerHTML = `<span style="color:var(--secondary);"><i class="fas fa-check-circle"></i> ${exported} exporté${exported>1?'s':''}</span>&nbsp;&nbsp;<span style="color:var(--accent);"><i class="fas fa-exclamation-circle"></i> ${notExported} non exporté${notExported>1?'s':''}</span>`;
+  }
+}
+
+function openHistory() { document.getElementById('history-overlay').classList.add('open'); renderHistory(); updateStorageIndicator(); }
+function closeHistory() { document.getElementById('history-overlay').classList.remove('open'); }
+function historyOverlayClick(e) { if(e.target===document.getElementById('history-overlay')) closeHistory(); }
+
+function switchHView(v) {
+  currentHView=v;
+  document.getElementById('htab-list').classList.toggle('active',v==='list');
+  document.getElementById('htab-table').classList.toggle('active',v==='table');
+  document.getElementById('htab-stats').classList.toggle('active',v==='stats');
+  document.getElementById('view-list').style.display=v==='list'?'flex':'none';
+  document.getElementById('view-table').style.display=v==='table'?'flex':'none';
+  document.getElementById('view-stats').style.display=v==='stats'?'flex':'none';
+  if(v==='table') renderTable();
+  if(v==='stats') renderStats();
+}
+
+// ─── SORT STATE ────────────────────────────────────────────
+let listSortKey = 'date';
+let listSortDir = 'desc'; // 'asc' | 'desc'
+let tableSortKey = 'date';
+let tableSortDir = 'desc';
+
+function setSortList(key) {
+  if (listSortKey === key) { listSortDir = listSortDir === 'desc' ? 'asc' : 'desc'; }
+  else { listSortKey = key; listSortDir = 'desc'; }
+  ['date','shop','amount'].forEach(k => {
+    const btn = document.getElementById('sort-'+k);
+    btn.classList.toggle('active', k === listSortKey);
+    btn.className = btn.className.replace(/\b(asc|desc)\b/g, '').trim();
+    if (k === listSortKey) btn.classList.add(listSortDir);
+  });
+  renderHistory();
+}
+
+function setTableSort(key) {
+  if (tableSortKey === key) { tableSortDir = tableSortDir === 'desc' ? 'asc' : 'desc'; }
+  else { tableSortKey = key; tableSortDir = 'desc'; }
+  ['date','shop','amount'].forEach(k => {
+    const btn = document.getElementById('tsort-'+k);
+    btn.classList.toggle('active', k === tableSortKey);
+    btn.className = btn.className.replace(/\b(asc|desc)\b/g, '').trim();
+    if (k === tableSortKey) btn.classList.add(tableSortDir);
+  });
+  renderTable();
+}
+
+function sortItems(arr, key, dir) {
+  return arr.slice().sort((a, b) => {
+    let va, vb;
+    if (key === 'date') {
+      va = a.p.dateSort;
+      vb = b.p.dateSort;
+    } else if (key === 'saved') {
+      va = a.item.date || 0;
+      vb = b.item.date || 0;
+    } else if (key === 'shop') {
+      va = (a.p.shop||'').toLowerCase();
+      vb = (b.p.shop||'').toLowerCase();
+    } else if (key === 'amount') {
+      va = parseFloat(a.p.price)||0;
+      vb = parseFloat(b.p.price)||0;
+    }
+    if (va < vb) return dir === 'asc' ? -1 : 1;
+    if (va > vb) return dir === 'asc' ? 1 : -1;
+    return 0;
+  });
+}
+
+function renderHistory() {
+  if (currentHView==='table') { renderTable(); return; }
+  if (currentHView==='stats') { renderStats(); return; }
+  const scroll = document.getElementById('h-list-scroll');
+  scroll.innerHTML=''; selectedIds.clear();
+  document.getElementById('sel-all-btn').innerHTML='<i class="fas fa-check-double"></i> Tout sélectionner';
+  db.transaction("receipts").objectStore("receipts").getAll().onsuccess = e => {
+    const raw = e.target.result;
+    // Parse + sort
+    const withParsed = raw.map(item => ({ item, p: parseFileName(item.name)||{dateSort:'',shop:'',price:''} }));
+    const sorted = sortItems(withParsed, listSortKey, listSortDir);
+    document.getElementById('sort-count').textContent = sorted.length + ' reçu' + (sorted.length>1?'s':'');
+    if (!sorted.length) { scroll.innerHTML='<div style="text-align:center;opacity:0.4;padding:30px;font-size:13px;">Aucun reçu archivé</div>'; return; }
+    // Palette de couleurs par jour unique
+    const dayDates = [...new Set(sorted.map(({p}) => p.dateSort).filter(Boolean))].sort();
+    const dayColorMap = {};
+    dayDates.forEach((d, i) => { dayColorMap[d] = i % 7; });
+    sorted.forEach(({ item, p }) => {
+      const div = document.createElement('div');
+      div.className='h-item';
+      const colorIdx = dayColorMap[p.dateSort];
+      if (colorIdx !== undefined) setDayColor(div, colorIdx);
+      div.onclick=()=>{
+        div.classList.toggle('selected');
+        selectedIds.has(item.id)?selectedIds.delete(item.id):selectedIds.add(item.id);
+        const total = sorted.length;
+        document.getElementById('sel-all-btn').innerHTML = selectedIds.size===total
+          ? '<i class="fas fa-check-double"></i> Tout désélectionner'
+          : '<i class="fas fa-check-double"></i> Tout sélectionner';
+      };
+      const editBtn = document.createElement('button');
+      editBtn.className = 'h-edit-btn';
+      editBtn.innerHTML = '<i class="fas fa-pen"></i> Modifier';
+      editBtn.onclick = ev => { ev.stopPropagation(); loadReceiptIntoForm(item); closeHistory(); };
+      const checkEl = document.createElement('div'); checkEl.className = 'h-check';
+      const nameEl = document.createElement('div'); nameEl.className = 'h-name'; nameEl.textContent = item.name;
+      // Badge exporté
+      const expBadge = document.createElement('span');
+      if (item.exportedAt) {
+        expBadge.className = 'exported-badge';
+        const d = new Date(item.exportedAt);
+        const dd = String(d.getDate()).padStart(2,'0');
+        const mm = String(d.getMonth()+1).padStart(2,'0');
+        expBadge.innerHTML = `<i class="fas fa-check"></i> ${dd}/${mm}`;
+        expBadge.title = `Exporté le ${dd}/${mm}/${d.getFullYear()}`;
+      } else {
+        expBadge.className = 'not-exported-badge';
+        expBadge.innerHTML = `<i class="fas fa-clock"></i> Non exporté`;
+      }
+      // Badge multi-pages pour les PDF groupés
+      if (Array.isArray(item.imgData) && item.imgData.length > 1) {
+        const pgBadge = document.createElement('span');
+        pgBadge.style.cssText = 'flex-shrink:0;background:rgba(244,96,96,0.12);border:1px solid rgba(244,96,96,0.35);border-radius:5px;padding:2px 7px;font-size:10px;font-weight:800;color:var(--accent);white-space:nowrap;';
+        pgBadge.innerHTML = `<i class="fas fa-file-pdf"></i> ${item.imgData.length} p.`;
+        div.appendChild(checkEl); div.appendChild(nameEl); div.appendChild(pgBadge); div.appendChild(expBadge); div.appendChild(editBtn);
+      } else {
+        div.appendChild(checkEl); div.appendChild(nameEl); div.appendChild(expBadge);
+        if (!item.imgData) {
+          const noPhotoBadge = document.createElement('span');
+          noPhotoBadge.className = 'not-exported-badge';
+          noPhotoBadge.style.background = 'rgba(0,0,0,0.06)';
+          noPhotoBadge.style.color = 'var(--text)';
+          noPhotoBadge.style.borderColor = 'rgba(0,0,0,0.1)';
+          noPhotoBadge.innerHTML = '<i class="fas fa-image"></i> Sans photo';
+          noPhotoBadge.title = 'Aucune image importée pour ce reçu';
+          div.appendChild(noPhotoBadge);
+        }
+        div.appendChild(editBtn);
+      }
+      scroll.appendChild(div);
+    });
+  };
+}
+
+function toggleSelectAll() {
+  const items = document.querySelectorAll('#h-list-scroll .h-item');
+  db.transaction("receipts").objectStore("receipts").getAll().onsuccess = e => {
+    const all = e.target.result;
+    if (selectedIds.size===all.length&&all.length>0) {
+      selectedIds.clear(); items.forEach(d=>d.classList.remove('selected'));
+      document.getElementById('sel-all-btn').innerHTML='<i class="fas fa-check-double"></i> Tout sélectionner';
+    } else {
+      selectedIds.clear(); all.forEach(i=>selectedIds.add(i.id)); items.forEach(d=>d.classList.add('selected'));
+      document.getElementById('sel-all-btn').innerHTML='<i class="fas fa-check-double"></i> Tout désélectionner';
+    }
+  };
+}
+
+function deleteSelected() {
+  if (!selectedIds.size) {
+    showConfirm('🗑️','Tout supprimer ?','Supprimer les photos de tous les reçus ? Les données restent dans le tableau.','Supprimer', () => {
+      const tx=db.transaction("receipts","readwrite"); const store=tx.objectStore("receipts");
+      store.getAll().onsuccess=e=>{e.target.result.forEach(i=>{if(i.imgData){i.imgData=null;store.put(i);}});};
+      tx.oncomplete=()=>{selectedIds.clear();renderHistory();checkBadge();showToast("Photos supprimées !");};
+    });
+  } else {
+    showConfirm('🗑️','Supprimer la sélection ?',`Supprimer les photos des ${selectedIds.size} élément(s) sélectionné(s) ?`,'Supprimer', () => {
+      const ids=new Set(selectedIds);
+      const tx=db.transaction("receipts","readwrite"); const store=tx.objectStore("receipts");
+      store.getAll().onsuccess=e=>{e.target.result.forEach(i=>{if(ids.has(i.id)&&i.imgData){i.imgData=null;store.put(i);}});};
+      tx.oncomplete=()=>{selectedIds.clear();renderHistory();checkBadge();showToast("Photos supprimées !");};
+    });
+  }
+}
+
+function shareSelected() {
+  if (!selectedIds.size) { showToast("Sélectionnez des reçus d'abord !"); return; }
+  document.getElementById('export-overlay').classList.add('open');
+  updateExportStatusBar();
+}
+
+// ─── TABLE ─────────────────────────────────────────────────
+function parseFileName(n) {
+  const parts=n.split('_'); if(parts.length<3) return null;
+  const [y,m,d]=parts[0].split('.');
+  const price=parts[2].replace('EUR','');
+  const ht=parts[3]?parts[3].replace('HT',''):'';
+  return{date:`${d}/${m}/${y}`,dateSort:`${y}-${m}-${d}`,shop:parts[1],price,ht};
+}
+function fmt(n){return n.toFixed(2).replace('.',',');}
+
+function renderTable() {
+  db.transaction("receipts").objectStore("receipts").getAll().onsuccess = e => {
+    const results=e.target.result;
+    const withParsed=results.map(i=>({item:i,p:parseFileName(i.name)})).filter(x=>x.p);
+    const sorted = sortItems(withParsed, tableSortKey, tableSortDir);
+    const tbody=document.getElementById('receipts-tbody');
+    tbody.innerHTML='';
+    let totalTTC=0,totalHT=0;
+    // Palette couleur par jour
+    const dayDatesT = [...new Set(sorted.map(({p}) => p.dateSort).filter(Boolean))].sort();
+    const dayColorMapT = {};
+    dayDatesT.forEach((d, i) => { dayColorMapT[d] = i % 7; });
+    sorted.forEach(({item,p})=>{
+      const ttc=parseFloat(p.price)||0; const ht=parseFloat(p.ht)||0;
+      totalTTC+=ttc; if(ht)totalHT+=ht;
+      const tr=document.createElement('tr');
+      const colorIdx = dayColorMapT[p.dateSort];
+      if (colorIdx !== undefined) setDayColor(tr, colorIdx);
+      tr.innerHTML=`<td>${p.date}</td><td style="font-weight:600;">${p.shop}</td><td>${p.ht?fmt(parseFloat(p.ht))+' €':'—'}</td><td>${ttc>0?fmt(ttc)+' €':'—'}</td><td style="text-align:center;"><button class="tbl-del-btn" onclick="deleteTableRow(${item.id})" title="Supprimer"><i class="fas fa-trash"></i></button></td>`;
+      tbody.appendChild(tr);
+    });
+    if (sorted.length>0) {
+      const tr=document.createElement('tr'); tr.className='tbl-total';
+      tr.innerHTML=`<td colspan="2">TOTAL (${sorted.length} reçus)</td><td>${totalHT>0?fmt(totalHT)+' €':'—'}</td><td>${fmt(totalTTC)} €</td><td></td>`;
+      tbody.appendChild(tr);
+    }
+    if (!sorted.length) tbody.innerHTML='<tr><td colspan="5" style="text-align:center;opacity:0.5;padding:20px;">Aucun reçu enregistré</td></tr>';
+  };
+}
+
+function deleteTableRow(id) {
+  showConfirm('🗑️','Supprimer ce reçu ?','Cette action est irréversible.','Supprimer', () => {
+    const tx=db.transaction("receipts","readwrite");
+    tx.objectStore("receipts").delete(id);
+    tx.oncomplete=()=>{renderTable();checkBadge();showToast("Reçu supprimé !");};
+  });
+}
+
+// ─── CSV ───────────────────────────────────────────────────
+// ─── XLSX ──────────────────────────────────────────────────
+async function generateXLSX(items) {
+  if (typeof XLSX === 'undefined') throw new Error('SheetJS non chargé');
+  const rows = [['Date', 'Magasin', 'HT (€)', 'TTC (€)']];
+  const parsed = items
+    .map(i => parseFileName(i.name))
+    .filter(Boolean)
+    .sort((a, b) => a.dateSort.localeCompare(b.dateSort));
+  parsed.forEach(p => {
+    rows.push([
+      p.date,
+      p.shop,
+      p.ht ? parseFloat(p.ht) : '',
+      p.price ? parseFloat(p.price) : ''
+    ]);
+  });
+  const ttcTotal = parsed.reduce((s, p) => s + (parseFloat(p.price) || 0), 0);
+  const htTotal  = parsed.reduce((s, p) => s + (parseFloat(p.ht)    || 0), 0);
+  rows.push(['TOTAL (' + parsed.length + ' reçus)', '', htTotal || '', ttcTotal]);
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [{ wch: 12 }, { wch: 22 }, { wch: 12 }, { wch: 12 }];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Reçus');
+  return XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+}
+
+async function exportTableCSV() {
+  const allItems = await new Promise(r => db.transaction("receipts").objectStore("receipts").getAll().onsuccess = e => r(e.target.result));
+  if (typeof XLSX === 'undefined') { showToast('SheetJS non chargé'); return; }
+  const xlsxData = await generateXLSX(allItems.filter(i => parseFileName(i.name)));
+  const blob = new Blob([xlsxData], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  fallbackDownload(blob, `Recapitulatif_${getTimeStr()}.xlsx`);
+}
+
+// ─── EXPORT ────────────────────────────────────────────────
+function closeExport() { document.getElementById('export-overlay').classList.remove('open'); }
+function exportOverlayClick(e) { if(e.target===document.getElementById('export-overlay')) closeExport(); }
+
+async function getSelectedItems() {
+  const allItems = await new Promise(r =>
+    db.transaction("receipts").objectStore("receipts").getAll().onsuccess = e => r(e.target.result)
+  );
+  return allItems.filter(item => selectedIds.has(item.id) && item.imgData);
+}
+
+function getTimeStr() {
+  const d=new Date(); const p=n=>String(n).padStart(2,'0');
+  return d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+'_'+p(d.getHours())+p(d.getMinutes())+p(d.getSeconds());
+}
+
+function dataUrlToBytes(dataUrl) {
+  const base64 = dataUrl.split(',')[1];
+  const binary = atob(base64);
+  const len = binary.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+
+// Insère un reçu (item) dans un PDFDocument (pdf-lib) en cours de construction.
+// - Si l'item provient d'un vrai PDF (pdfBytes présent) : on copie ses pages
+//   d'origine telles quelles → qualité native + texte toujours sélectionnable.
+// - Sinon (photo) : on insère l'image dans une page A4, comme avant.
+async function addItemToPdfDoc(pdfDoc, item) {
+  if (item.pdfBytes) {
+    const srcDoc = await PDFLib.PDFDocument.load(item.pdfBytes);
+    const copiedPages = await pdfDoc.copyPages(srcDoc, srcDoc.getPageIndices());
+    copiedPages.forEach(p => pdfDoc.addPage(p));
+  } else {
+    const pages = Array.isArray(item.imgData) ? item.imgData : [item.imgData];
+    for (const pageDataUrl of pages) {
+      const bytes = dataUrlToBytes(pageDataUrl);
+      const jpg = await pdfDoc.embedJpg(bytes);
+      const { x, y, w, h } = fitA4(jpg.width, jpg.height);
+      const page = pdfDoc.addPage([595.28, 841.89]); // A4 en points
+      page.drawImage(jpg, { x, y, width: w, height: h });
+    }
+  }
+}
+
+async function buildSinglePDF(item) {
+  const pdfDoc = await PDFLib.PDFDocument.create();
+  await addItemToPdfDoc(pdfDoc, item);
+  const bytes = await pdfDoc.save();
+  return new Blob([bytes], { type: 'application/pdf' });
+}
+
+async function buildCompiledPDF(items) {
+  const pdfDoc = await PDFLib.PDFDocument.create();
+  for (const item of items) {
+    await addItemToPdfDoc(pdfDoc, item);
+  }
+  const bytes = await pdfDoc.save();
+  return new Blob([bytes], { type: 'application/pdf' });
+}
+
+function fitA4(iw,ih){const pw=595.28,ph=841.89;const r=Math.min(pw/iw,ph/ih);const w=iw*r,h=ih*r;return{x:(pw-w)/2,y:(ph-h)/2,w,h};}
+
+function fallbackDownload(blob,filename){
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),1000);showToast("Fichier téléchargé !");
+}
+
+async function actionDownloadZip() {
+  const fmt = document.querySelector('input[name="pdf-format"]:checked').value;
+  closeExport(); showToast("Préparation du ZIP...");
+  try {
+    const items = await getSelectedItems(); if (!items.length) { showToast("Aucun fichier"); return; }
+    if (typeof JSZip === 'undefined') { showToast("JSZip non chargé"); return; }
+    if (typeof XLSX === 'undefined') { showToast("SheetJS non chargé"); return; }
+    const zip = new JSZip(); const timeStr = getTimeStr();
+    if (fmt === 'separate') {
+      for (let i of items) {
+        const b = await buildSinglePDF(i);
+        zip.file(`${i.name}.pdf`, b);
+      }
+    } else {
+      const pdfBlob = await buildCompiledPDF(items); zip.file(`Recus_Compiles_${timeStr}.pdf`, pdfBlob);
+    }
+    // XLSX des reçus exportés
+    const xlsxData = await generateXLSX(items);
+    zip.file(`Recapitulatif_${timeStr}.xlsx`, xlsxData);
+    const zb = await zip.generateAsync({ type: 'blob' }); fallbackDownload(zb, `Export_${timeStr}.zip`);
+    // Marquer tous les reçus exportés dans IndexedDB
+    const now = Date.now();
+    const tx = db.transaction("receipts", "readwrite");
+    const store = tx.objectStore("receipts");
+    for (let item of items) { item.exportedAt = now; store.put(item); }
+    tx.oncomplete = () => { renderHistory(); showToast("✓ ZIP téléchargé — reçus marqués exportés"); };
+  } catch(err) { showToast("Erreur ZIP: " + err.message); }
+}
+
+// ─── LOAD RECEIPT INTO FORM ────────────────────────────────
+function loadReceiptIntoForm(item) {
+  // Parse filename: YYYY.MM.DD_SHOP_PRICEeur[_HTHT]
+  const parts = item.name.split('_');
+  const datePart = parts[0]; // YYYY.MM.DD
+  const shopPart = parts[1] || '';
+  const pricePart = (parts[2] || '').replace(/EUR$/i, '');
+  const htPart = parts[3] ? parts[3].replace(/HT$/i, '') : '';
+
+  // Reset form first (remet editingReceiptId à null)
+  resetForm();
+  resetTVA();
+
+  // Mémoriser l'ID APRÈS le reset pour la sauvegarde en mode édition
+  editingReceiptId = item.id;
+
+  // Date
+  if (datePart && datePart.length === 10) {
+    const isoDate = datePart.replace(/\./g, '-');
+    document.getElementById('capture-date').value = isoDate;
+    refreshDateDisplay();
+    refreshChipActiveStates();
+  }
+
+  // Magasin
+  if (shopPart) {
+    document.getElementById('capture-shop').value = shopPart;
+  }
+
+  // Montant TTC
+  if (pricePart) {
+    document.getElementById('capture-amount').value = pricePart;
+  }
+
+  // Montant HT (saisie manuelle)
+  if (htPart) {
+    window._tvaMode = 'manual';
+    document.getElementById('ht-body').style.display = 'block';
+    document.getElementById('ht-trigger').style.display = 'none';
+    document.getElementById('ht-result-bar').style.display = 'flex';
+    document.getElementById('ht-manual-wrap').style.display = 'block';
+    document.getElementById('tva-chips').style.display = 'none';
+    document.getElementById('capture-ht').value = htPart;
+    document.getElementById('ht-result-val').textContent = parseFloat(htPart).toFixed(2).replace('.', ',') + ' €';
+    document.getElementById('tva-manual').classList.add('active');
+    _htAccordionOpen = false;
+    document.getElementById('ht-body').style.display = 'none';
+    document.getElementById('ht-result-bar').style.display = 'flex';
+  }
+
+  // Charger l'image dans la queue si elle existe
+  if (item.imgData) {
+    const fakeFile = { name: item.name + (Array.isArray(item.imgData)?'.pdf':'.jpg') };
+    // Pré-remplir formData dans la queue pour que restoreFormFromQueue ne réinitialise pas les valeurs
+    const savedFormData = {
+      shop: shopPart,
+      amount: pricePart,
+      date: datePart && datePart.length === 10 ? datePart.replace(/\./g, '-') : new Date().toISOString().split('T')[0],
+      tvaMode: htPart ? 'manual' : 'none',
+      htManual: htPart || ''
+    };
+    if (Array.isArray(item.imgData)) {
+      // PDF multi-pages stocké comme tableau
+      photoQueue = [{ file: fakeFile, dataUrl: item.imgData[0], pages: item.imgData, currentPage: 0, isPDF: true, pdfPageCount: item.imgData.length, pdfBytes: item.pdfBytes || null, formData: savedFormData }];
+    } else {
+      photoQueue = [{ file: fakeFile, dataUrl: item.imgData, pdfBytes: item.pdfBytes || null, formData: savedFormData }];
+    }
+    currentQueueIdx = 0;
+    savedInSession = new Set();
+    renderPhotoQueue();
+    // Afficher l'image sans écraser le formulaire (showPhotoAt appelle restoreFormFromQueue
+    // qui utilisera nos formData pré-remplis au lieu de réinitialiser)
+    showPhotoAt(0);
+  }
+
+  updateNamePreview();
+  showToast('Reçu chargé dans le formulaire');
+}
+
+
+// ─── STATS ─────────────────────────────────────────────────
+function renderStats() {
+  db.transaction("receipts").objectStore("receipts").getAll().onsuccess = e => {
+    const all = e.target.result.filter(i=>i.imgData);
+    const parsed = all.map(i=>parseFileName(i.name)).filter(Boolean);
+    if (!parsed.length) {
+      document.getElementById('stats-cards').innerHTML = '<div style="grid-column:1/-1;text-align:center;opacity:0.4;padding:20px;font-size:13px;">Aucun reçu archivé</div>';
+      document.getElementById('stats-shops').innerHTML = '';
+      document.getElementById('stats-months').innerHTML = '';
+      return;
+    }
+    // Totaux globaux
+    const totalTTC = parsed.reduce((s,p)=>s+(parseFloat(p.price)||0),0);
+    const totalHT = parsed.reduce((s,p)=>s+(parseFloat(p.ht)||0),0);
+    // Mois en cours
+    const now = new Date();
+    const curMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    const thisMTTC = parsed.filter(p=>p.dateSort.startsWith(curMonth)).reduce((s,p)=>s+(parseFloat(p.price)||0),0);
+    // Nombre de magasins uniques
+    const uniqueShops = new Set(parsed.map(p=>p.shop)).size;
+    // Cards
+    const months=['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
+    const curLabel = months[now.getMonth()]+' '+now.getFullYear();
+    document.getElementById('stats-cards').innerHTML = `
+      <div class="stat-card accent">
+        <div class="stat-card-label">Total TTC</div>
+        <div class="stat-card-val">${fmt(totalTTC)} €</div>
+        <div class="stat-card-sub">${parsed.length} reçu${parsed.length>1?'s':''}</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-card-label">Ce mois (${curLabel})</div>
+        <div class="stat-card-val">${fmt(thisMTTC)} €</div>
+        <div class="stat-card-sub">TTC</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">Total HT</div>
+        <div class="stat-card-val">${totalHT>0?fmt(totalHT)+' €':'—'}</div>
+        <div class="stat-card-sub">si renseigné</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">Magasins</div>
+        <div class="stat-card-val">${uniqueShops}</div>
+        <div class="stat-card-sub">enseigne${uniqueShops>1?'s':''} différente${uniqueShops>1?'s':''}</div>
+      </div>`;
+    // Top magasins
+    const shopMap = {};
+    parsed.forEach(p => {
+      const s = p.shop||'?';
+      if (!shopMap[s]) shopMap[s] = { total:0, count:0 };
+      shopMap[s].total += parseFloat(p.price)||0;
+      shopMap[s].count++;
+    });
+    const topShops = Object.entries(shopMap).sort((a,b)=>b[1].total-a[1].total).slice(0,5);
+    const maxShop = topShops[0]?.[1].total||1;
+    const medals = ['🥇','🥈','🥉','4.','5.'];
+    document.getElementById('stats-shops').innerHTML = topShops.map(([name,d],i)=>`
+      <div class="shop-rank-item">
+        <span class="shop-rank-pos">${medals[i]}</span>
+        <span class="shop-rank-name">${name}</span>
+        <div class="shop-rank-col">
+          <span class="shop-rank-total">${fmt(d.total)} €</span>
+          <span class="shop-rank-count">${d.count} reçu${d.count>1?'s':''}</span>
+        </div>
+      </div>
+      <div class="shop-rank-bar-wrap"><div class="shop-rank-bar" style="width:${Math.round(d.total/maxShop*100)}%"></div></div>
+    `).join('');
+    // Dépenses par mois (6 derniers mois)
+    const monthMap = {};
+    parsed.forEach(p=>{
+      const m = p.dateSort.substring(0,7);
+      monthMap[m]=(monthMap[m]||0)+(parseFloat(p.price)||0);
+    });
+    const sortedMonths = Object.entries(monthMap).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,8).reverse();
+    const maxM = Math.max(...sortedMonths.map(m=>m[1]),1);
+    document.getElementById('stats-months').innerHTML = sortedMonths.map(([m,v])=>{
+      const [y,mo]=m.split('-');
+      const label = months[parseInt(mo)-1]+' '+y;
+      return `<div class="month-item">
+        <span class="month-label">${label}</span>
+        <div class="month-bar-wrap"><div class="month-bar" style="width:${Math.round(v/maxM*100)}%"></div></div>
+        <span class="month-amount">${fmt(v)} €</span>
+      </div>`;
+    }).join('');
+  };
+}
+
+// ─── COMPRESSION IMAGE ─────────────────────────────────────
+const IMG_MAX_PX = 3000;
+const IMG_QUALITY = 0.92;
+
+function compressImage(dataUrl, fileName) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const { width: w, height: h } = img;
+      let nw = w, nh = h;
+      if (w > IMG_MAX_PX || h > IMG_MAX_PX) {
+        const r = Math.min(IMG_MAX_PX/w, IMG_MAX_PX/h);
+        nw = Math.round(w*r); nh = Math.round(h*r);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = nw; canvas.height = nh;
+      canvas.getContext('2d').drawImage(img, 0, 0, nw, nh);
+      const compressed = canvas.toDataURL('image/jpeg', IMG_QUALITY);
+      const origKB = Math.round(dataUrl.length * 0.75 / 1024);
+      const newKB = Math.round(compressed.length * 0.75 / 1024);
+      const wasCompressed = (w > IMG_MAX_PX || h > IMG_MAX_PX);
+      resolve({ dataUrl: compressed, origKB, newKB, wasCompressed, origW: w, origH: h, newW: nw, newH: nh });
+    };
+    img.src = dataUrl;
+  });
+}
+
+// ─── ZOOM INLINE ───────────────────────────────────────────
+let inlineScale = 1;
+let inlinePanX = 0, inlinePanY = 0;
+let inlineDragging = false;
+let inlineDragStartX = 0, inlineDragStartY = 0;
+let inlinePanStartX = 0, inlinePanStartY = 0;
+
+function applyInlineZoom() {
+  const img = document.getElementById('preview-img');
+  img.style.transform = `translate(${inlinePanX}px, ${inlinePanY}px) scale(${inlineScale})`;
+  document.getElementById('inline-zoom-level').textContent = Math.round(inlineScale*100)+'%';
+}
+
+function inlineZoomStep(delta) {
+  inlineScale = Math.max(0.5, Math.min(8, inlineScale + delta));
+  if (inlineScale <= 1) { inlinePanX = 0; inlinePanY = 0; }
+  applyInlineZoom();
+}
+
+function inlineZoomReset() {
+  inlineScale = 1; inlinePanX = 0; inlinePanY = 0;
+  applyInlineZoom();
+}
+
+function showInlineZoomBar() {
+  document.getElementById('inline-zoom-bar').classList.add('visible');
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  const imgWrap = document.getElementById('photo-img-wrap');
+  const img = document.getElementById('preview-img');
+
+  // Afficher la barre au survol du panneau photo
+  imgWrap.addEventListener('mouseenter', () => {
+    if (img.src && img.src !== window.location.href) showInlineZoomBar();
+  });
+
+  // Molette pour zoomer inline
+  imgWrap.addEventListener('wheel', e => {
+    if (!img.src || img.src === window.location.href) return;
+    e.preventDefault();
+    const delta = e.deltaY < 0 ? 0.15 : -0.15;
+    inlineScale = Math.max(0.5, Math.min(8, inlineScale + delta));
+    if (inlineScale <= 1) { inlinePanX = 0; inlinePanY = 0; }
+    applyInlineZoom();
+  }, { passive: false });
+
+  // Drag pour déplacer
+  img.addEventListener('mousedown', e => {
+    if (e.button !== 0 || inlineScale <= 1) return;
+    inlineDragging = true;
+    inlineDragStartX = e.clientX; inlineDragStartY = e.clientY;
+    inlinePanStartX = inlinePanX; inlinePanStartY = inlinePanY;
+    img.style.cursor = 'grabbing';
+    e.preventDefault();
+  });
+  window.addEventListener('mousemove', e => {
+    if (!inlineDragging) return;
+    inlinePanX = inlinePanStartX + (e.clientX - inlineDragStartX);
+    inlinePanY = inlinePanStartY + (e.clientY - inlineDragStartY);
+    applyInlineZoom();
+  });
+  window.addEventListener('mouseup', () => {
+    inlineDragging = false;
+    const img2 = document.getElementById('preview-img');
+    img2.style.cursor = inlineScale > 1 ? 'grab' : 'grab';
+  });
+
+  // Double-clic : ouvre l'overlay zoom complet
+  img.addEventListener('dblclick', openZoom);
+
+  // Molette pour zoomer le PDF text viewer
+  document.getElementById('pdf-text-viewer').addEventListener('wheel', e => {
+    if (!_pdfTextItem) return;
+    e.preventDefault();
+    const delta = e.deltaY < 0 ? 0.15 : -0.15;
+    pdfTextZoomStep(delta);
+  }, { passive: false });
+});
+
+// Réinitialise le zoom inline quand on change de photo
+function resetInlineZoom() {
+  inlineScale = 1; inlinePanX = 0; inlinePanY = 0;
+  applyInlineZoom();
+  document.getElementById('inline-zoom-bar').classList.remove('visible');
+}
+
+// ─── PDF TEXT LAYER VIEWER ──────────────────────────────────
+let pdfTextScale = 1.0;
+let _pdfTextItem = null;
+let _pdfTextPageIdx = 0;
+let _pdfDocCache = null; // cached pdfjsLib document (reused if same pdfBytes)
+let _pdfDocBytes = null;
+
+async function renderPDFTextLayer(item, pageIdx) {
+  _pdfTextItem = item;
+  _pdfTextPageIdx = pageIdx;
+  const container = document.getElementById('pdf-page-container');
+  const canvas = document.getElementById('pdf-render-canvas');
+  const textLayer = document.getElementById('pdf-text-layer');
+  textLayer.innerHTML = '';
+
+  // Load PDF document (cache if same source)
+  if (!_pdfDocCache || _pdfDocBytes !== item.pdfBytes) {
+    try {
+      const buf = item.pdfBytes.slice(0);
+      _pdfDocCache = await pdfjsLib.getDocument({ data: buf }).promise;
+      _pdfDocBytes = item.pdfBytes;
+    } catch(e) {
+      // Fallback to image if text layer fails
+      document.getElementById('pdf-text-viewer').classList.remove('visible');
+      document.getElementById('photo-img-wrap').style.display = '';
+      document.getElementById('preview-img').src = item.pages ? item.pages[pageIdx] : item.dataUrl;
+      return;
+    }
+  }
+
+  const pdf = _pdfDocCache;
+  const page = await pdf.getPage(pageIdx + 1);
+
+  // Compute scale to fit container width
+  const viewerEl = document.getElementById('pdf-text-viewer');
+  const availW = viewerEl.clientWidth - 32;
+  const baseVp = page.getViewport({ scale: 1 });
+  const fitScale = Math.min(availW / baseVp.width, 1.5);
+  const renderScale = fitScale * pdfTextScale;
+
+  const viewport = page.getViewport({ scale: renderScale });
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+  container.style.width = viewport.width + 'px';
+  container.style.height = viewport.height + 'px';
+  textLayer.style.width = viewport.width + 'px';
+  textLayer.style.height = viewport.height + 'px';
+
+  // Render canvas
+  const ctx = canvas.getContext('2d');
+  await page.render({ canvasContext: ctx, viewport }).promise;
+
+  // Render text layer
+  const textContent = await page.getTextContent();
+  const spans = [];
+  textContent.items.forEach(item => {
+    if (!item.str) return;
+    const tx = pdfjsLib.Util.transform(viewport.transform, item.transform);
+    const span = document.createElement('span');
+    span.textContent = item.str;
+    const angle = Math.atan2(tx[1], tx[0]);
+    const scaleX = Math.sqrt(tx[0]*tx[0] + tx[1]*tx[1]);
+    const scaleY = item.height * renderScale;
+    span.style.left = tx[4] + 'px';
+    span.style.top = (tx[5] - scaleY) + 'px';
+    span.style.fontSize = scaleY + 'px';
+    span.style.transform = angle ? `rotate(${angle}rad)` : '';
+    // Scale text to match rendered width
+    if (item.width > 0) {
+      const desiredW = item.width * renderScale;
+      const naturalW = scaleX * (item.str.length || 1);
+      if (desiredW > 0) span.style.transform += ` scaleX(${desiredW / (scaleY * item.str.length * 0.6 || 1)})`;
+    }
+    textLayer.appendChild(span);
+  });
+
+  // Show zoom bar for PDF
+  document.getElementById('pdf-zoom-bar').classList.add('visible');
+  document.getElementById('pdf-zoom-level').textContent = Math.round(pdfTextScale * 100) + '%';
+}
+
+function pdfTextZoomStep(delta) {
+  pdfTextScale = Math.max(0.5, Math.min(4, pdfTextScale + delta));
+  if (_pdfTextItem) renderPDFTextLayer(_pdfTextItem, _pdfTextPageIdx);
+}
+
+function pdfTextZoomReset() {
+  pdfTextScale = 1.0;
+  if (_pdfTextItem) renderPDFTextLayer(_pdfTextItem, _pdfTextPageIdx);
+}
+
+// ─── ZOOM ──────────────────────────────────────────────────
+let zoomScale = 1;
+let zoomMinScale = 0.2;
+let zoomMaxScale = 8;
+let zoomPanX = 0, zoomPanY = 0;
+let zoomDragging = false;
+let zoomDragStartX = 0, zoomDragStartY = 0;
+let zoomPanStartX = 0, zoomPanStartY = 0;
+
+function openZoom() {
+  const src = document.getElementById('preview-img').src;
+  if (!src || src === window.location.href) return;
+  const img = document.getElementById('zoom-img');
+  img.src = src;
+  zoomScale = 1; zoomPanX = 0; zoomPanY = 0;
+  applyZoomTransform();
+  document.getElementById('zoom-overlay').classList.add('open');
+  // Hide hint after 3s
+  const hint = document.getElementById('zoom-hint');
+  hint.classList.remove('fade');
+  setTimeout(() => hint.classList.add('fade'), 2800);
+  // Keyboard
+  document.addEventListener('keydown', onZoomKey);
+}
+
+function closeZoom() {
+  document.getElementById('zoom-overlay').classList.remove('open');
+  document.removeEventListener('keydown', onZoomKey);
+}
+
+function zoomOverlayClick(e) {
+  if (e.target === document.getElementById('zoom-overlay') || e.target === document.getElementById('zoom-container')) closeZoom();
+}
+
+function applyZoomTransform() {
+  const img = document.getElementById('zoom-img');
+  img.style.transform = `translate(${zoomPanX}px, ${zoomPanY}px) scale(${zoomScale})`;
+  document.getElementById('zoom-level').textContent = Math.round(zoomScale*100)+'%';
+}
+
+function zoomStep(delta) {
+  zoomScale = Math.max(zoomMinScale, Math.min(zoomMaxScale, zoomScale + delta));
+  if (zoomScale <= 1) { zoomPanX = 0; zoomPanY = 0; }
+  applyZoomTransform();
+}
+
+function zoomReset() { zoomScale = 1; zoomPanX = 0; zoomPanY = 0; applyZoomTransform(); }
+function zoomFit() { zoomReset(); }
+
+function onZoomKey(e) {
+  if (e.key === 'Escape') closeZoom();
+  if (e.key === '+' || e.key === '=') zoomStep(0.25);
+  if (e.key === '-') zoomStep(-0.25);
+  if (e.key === '0') zoomReset();
+}
+
+// Initialise les événements zoom au chargement
+window.addEventListener('DOMContentLoaded', () => {
+  const img = document.getElementById('zoom-img');
+  const container = document.getElementById('zoom-container');
+
+  // Molette souris
+  container.addEventListener('wheel', e => {
+    e.preventDefault();
+    const delta = e.deltaY < 0 ? 0.15 : -0.15;
+    const newScale = Math.max(zoomMinScale, Math.min(zoomMaxScale, zoomScale + delta));
+    // Zoom centré sur le curseur
+    const rect = img.getBoundingClientRect();
+    const mx = e.clientX - rect.left - rect.width/2;
+    const my = e.clientY - rect.top - rect.height/2;
+    const factor = newScale/zoomScale;
+    zoomPanX = zoomPanX * factor + mx * (1 - factor) / zoomScale;
+    zoomPanY = zoomPanY * factor + my * (1 - factor) / zoomScale;
+    zoomScale = newScale;
+    if (zoomScale <= 1) { zoomPanX = 0; zoomPanY = 0; }
+    applyZoomTransform();
+  }, { passive: false });
+
+  // Drag souris
+  img.addEventListener('mousedown', e => {
+    if (e.button !== 0) return;
+    zoomDragging = true;
+    zoomDragStartX = e.clientX; zoomDragStartY = e.clientY;
+    zoomPanStartX = zoomPanX; zoomPanStartY = zoomPanY;
+    img.classList.add('grabbing');
+    e.preventDefault();
+  });
+  window.addEventListener('mousemove', e => {
+    if (!zoomDragging) return;
+    zoomPanX = zoomPanStartX + (e.clientX - zoomDragStartX);
+    zoomPanY = zoomPanStartY + (e.clientY - zoomDragStartY);
+    applyZoomTransform();
+  });
+  window.addEventListener('mouseup', () => {
+    zoomDragging = false;
+    document.getElementById('zoom-img').classList.remove('grabbing');
+  });
+
+  // Touch pinch-to-zoom
+  let lastTouchDist = null;
+  let lastTouchMidX = 0, lastTouchMidY = 0;
+  container.addEventListener('touchstart', e => {
+    if (e.touches.length === 2) {
+      lastTouchDist = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+      lastTouchMidX = (e.touches[0].clientX+e.touches[1].clientX)/2;
+      lastTouchMidY = (e.touches[0].clientY+e.touches[1].clientY)/2;
+    }
+  }, { passive: true });
+  container.addEventListener('touchmove', e => {
+    if (e.touches.length === 2) {
+      const dist = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+      if (lastTouchDist) {
+        const factor = dist/lastTouchDist;
+        zoomScale = Math.max(zoomMinScale, Math.min(zoomMaxScale, zoomScale * factor));
+        if (zoomScale <= 1) { zoomPanX = 0; zoomPanY = 0; }
+        applyZoomTransform();
+      }
+      lastTouchDist = dist;
+      e.preventDefault();
+    }
+  }, { passive: false });
+  container.addEventListener('touchend', () => { lastTouchDist = null; });
+});
+
+function showToast(m) {
+  const t=document.getElementById('toast'); t.textContent=m; t.style.display='block';
+  clearTimeout(t._to); t._to=setTimeout(()=>t.style.display='none',2500);
+}
+
+window.onload=()=>{ refreshLogo(); };
+</script>
+
+<!-- IMPORT PASTE MODAL -->
+<div id="import-overlay" class="export-overlay" onclick="if(event.target===this)closeImportPaste()" style="display:none;align-items:center;justify-content:center;">
+  <div class="export-box" style="max-width:560px;width:95%;">
+    <h3 style="margin-bottom:6px;"><i class="fas fa-paste" style="margin-right:8px;color:var(--secondary);"></i>Importer depuis un tableau</h3>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">Copiez-collez des lignes depuis un tableau (Excel, Numbers, ou texte tabulé).<br>Colonnes attendues : <b>Date</b> · <b>Magasin</b> · <b>Montant TTC</b> · <b>Montant HT</b> (optionnel)</p>
+    <div id="import-paste-area" contenteditable="false" style="
+      min-height:120px;max-height:220px;overflow-y:auto;
+      background:var(--panel-bg);border:2px dashed var(--border);border-radius:10px;
+      padding:10px 12px;font-size:12px;font-family:'DM Mono',monospace;
+      color:var(--text);margin-bottom:10px;cursor:pointer;
+      display:flex;align-items:flex-start;
+    " onclick="document.getElementById('import-textarea').focus()">
+      <textarea id="import-textarea" placeholder="Collez ici vos lignes (Ctrl+V)…&#10;Exemple : 07/07/2025&#9;CARREFOUR&#9;7,56&#9;6,30" style="
+        width:100%;min-height:100px;background:transparent;border:none;outline:none;
+        font-size:12px;font-family:'DM Mono',monospace;color:var(--text);
+        resize:vertical;line-height:1.6;
+      "></textarea>
+    </div>
+    <div id="import-preview" style="margin-bottom:10px;display:none;">
+      <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);margin-bottom:6px;" id="import-preview-title"></div>
+      <div style="max-height:160px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;overflow-x:hidden;">
+        <table style="width:100%;border-collapse:collapse;font-size:11px;" id="import-preview-table">
+          <thead><tr style="background:var(--panel-bg);">
+            <th style="padding:6px 8px;text-align:left;font-weight:800;">Date</th>
+            <th style="padding:6px 8px;text-align:left;font-weight:800;">Magasin</th>
+            <th style="padding:6px 8px;text-align:right;font-weight:800;">TTC €</th>
+            <th style="padding:6px 8px;text-align:right;font-weight:800;">HT €</th>
+            <th style="padding:6px 8px;width:20px;"></th>
+          </tr></thead>
+          <tbody id="import-preview-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div id="import-error" style="display:none;font-size:12px;color:var(--accent);margin-bottom:8px;padding:8px 10px;background:rgba(244,96,96,0.08);border-radius:8px;border:1px solid rgba(244,96,96,0.3);"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button class="tb-btn confirm-cancel" onclick="closeImportPaste()">Annuler</button>
+      <button class="tb-btn" id="import-parse-btn" onclick="parseImportPaste()" style="border-color:var(--secondary);color:var(--secondary);"><i class="fas fa-search"></i> Analyser</button>
+      <button class="tb-btn primary" id="import-confirm-btn" onclick="confirmImport()" style="display:none;"><i class="fas fa-check"></i> Importer <span id="import-count-label"></span></button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── IMPORT PASTE ───────────────────────────────────────────
+let importParsedRows = [];
+
+function openImportPaste() {
+  document.getElementById('import-overlay').style.display = 'flex';
+  document.getElementById('import-textarea').value = '';
+  document.getElementById('import-preview').style.display = 'none';
+  document.getElementById('import-error').style.display = 'none';
+  document.getElementById('import-confirm-btn').style.display = 'none';
+  document.getElementById('import-parse-btn').style.display = '';
+  importParsedRows = [];
+  setTimeout(() => document.getElementById('import-textarea').focus(), 80);
+}
+function closeImportPaste() {
+  document.getElementById('import-overlay').style.display = 'none';
+}
+
+function parseAmount(s) {
+  if (!s) return null;
+  // "7,56 €" / "7.56" / "7,56" / "+7,56" / "-7,56"
+  const clean = s.replace(/[€\s]/g, '').replace(',', '.').replace(/[^0-9.\-]/g, '');
+  const n = parseFloat(clean);
+  return isNaN(n) ? null : Math.abs(n);
+}
+
+function parseImportDate(s) {
+  if (!s) return null;
+  s = s.trim();
+  // DD/MM/YYYY or DD-MM-YYYY
+  let m = s.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})$/);
+  if (m) return { iso: `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`, display: `${m[1].padStart(2,'0')}/${m[2].padStart(2,'0')}/${m[3]}` };
+  // YYYY-MM-DD
+  m = s.match(/^(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})$/);
+  if (m) return { iso: `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`, display: `${m[3].padStart(2,'0')}/${m[2].padStart(2,'0')}/${m[1]}` };
+  return null;
+}
+
+function parseImportPaste() {
+  const raw = document.getElementById('import-textarea').value.trim();
+  const errEl = document.getElementById('import-error');
+  errEl.style.display = 'none';
+  document.getElementById('import-preview').style.display = 'none';
+  document.getElementById('import-confirm-btn').style.display = 'none';
+  importParsedRows = [];
+
+  if (!raw) { errEl.textContent = 'Rien à analyser : collez d\'abord vos lignes.'; errEl.style.display = 'block'; return; }
+
+  const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  const rows = [];
+  const errors = [];
+
+  lines.forEach((line, idx) => {
+    // Split by tab, or by multiple spaces (≥2), or by semicolons
+    let cols;
+    if (line.includes('\t')) cols = line.split('\t');
+    else if (line.includes(';')) cols = line.split(';');
+    else cols = line.split(/\s{2,}/);
+    cols = cols.map(c => c.trim()).filter((c,i) => i === 0 || c.length > 0);
+
+    // Try to find date, shop, ttc, ht from cols
+    // Expected: Date | (E/S flag opt) | Magasin | TTC | HT  OR  Date | Magasin | TTC | HT
+    // Skip header-like rows
+    const firstLow = cols[0] ? cols[0].toLowerCase() : '';
+    if (['date','jour','intitulé','intitule','libellé','libelle'].some(h => firstLow.includes(h))) return;
+
+    // Detect E/S columns (like "Entrée/ Sortie (E)" or single E/S letters)
+    // Remove columns that are just "E", "S", "(E)", "(S)"
+    const filtered = cols.filter(c => !/^[(]?[EeSs][)]?$/.test(c.trim()));
+
+    if (filtered.length < 2) { errors.push(`Ligne ${idx+1} ignorée (trop peu de colonnes)`); return; }
+
+    const dateInfo = parseImportDate(filtered[0]);
+    if (!dateInfo) { errors.push(`Ligne ${idx+1} : date non reconnue "${filtered[0]}"`); return; }
+
+    const shop = filtered[1] ? filtered[1].toUpperCase().replace(/[^A-Z0-9\s\-'&\.]/g, '').trim() : 'INCONNU';
+
+    // Remaining cols are amounts — pick the largest as TTC, smaller as HT
+    const amounts = filtered.slice(2).map(parseAmount).filter(n => n !== null && n > 0);
+    amounts.sort((a,b) => b-a);
+    const ttc = amounts[0] || null;
+    const ht = amounts[1] || null;
+
+    if (!ttc) { errors.push(`Ligne ${idx+1} : montant TTC non trouvé`); return; }
+
+    rows.push({ dateInfo, shop, ttc, ht });
+  });
+
+  if (!rows.length) {
+    const msg = errors.length ? `Aucune ligne valide trouvée.\n${errors.slice(0,3).join('\n')}` : 'Aucune ligne valide trouvée.';
+    errEl.textContent = msg; errEl.style.display = 'block'; return;
+  }
+
+  importParsedRows = rows;
+
+  // Preview
+  renderImportPreview(rows);
+  document.getElementById('import-preview-title').textContent = `${rows.length} ligne(s) reconnue(s)${errors.length ? ' · ' + errors.length + ' ignorée(s)' : ''}`;
+  document.getElementById('import-preview').style.display = 'block';
+  document.getElementById('import-count-label').textContent = `(${rows.length})`;
+  document.getElementById('import-confirm-btn').style.display = '';
+  document.getElementById('import-parse-btn').style.display = rows.length ? 'none' : '';
+
+  if (errors.length) {
+    errEl.textContent = errors.slice(0,5).join('\n');
+    errEl.style.display = 'block';
+  }
+}
+
+function renderImportPreview(rows) {
+  const tbody = document.getElementById('import-preview-tbody');
+  tbody.innerHTML = '';
+  rows.forEach((r, i) => {
+    const tr = document.createElement('tr');
+    tr.style.borderBottom = '1px solid rgba(0,100,102,0.1)';
+    tr.innerHTML = `
+      <td style="padding:5px 8px;">${r.dateInfo.display}</td>
+      <td style="padding:5px 8px;font-weight:600;">${r.shop}</td>
+      <td style="padding:5px 8px;text-align:right;">${r.ttc.toFixed(2).replace('.',',')} €</td>
+      <td style="padding:5px 8px;text-align:right;">${r.ht ? r.ht.toFixed(2).replace('.',',') + ' €' : '—'}</td>
+      <td style="padding:5px 8px;text-align:center;">
+        <button onclick="removeImportRow(${i})" title="Retirer" style="background:none;border:none;cursor:pointer;color:var(--accent);font-size:13px;">✕</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function removeImportRow(i) {
+  importParsedRows.splice(i, 1);
+  // Re-render preview quickly
+  document.getElementById('import-count-label').textContent = `(${importParsedRows.length})`;
+  if (!importParsedRows.length) {
+    document.getElementById('import-preview').style.display = 'none';
+    document.getElementById('import-confirm-btn').style.display = 'none';
+    document.getElementById('import-parse-btn').style.display = '';
+    return;
+  }
+  renderImportPreview(importParsedRows);
+}
+
+async function confirmImport() {
+  if (!importParsedRows.length) return;
+  const tx = db.transaction("receipts", "readwrite");
+  const store = tx.objectStore("receipts");
+
+  importParsedRows.forEach(r => {
+    // Build filename : YYYY.MM.DD_SHOP_PRIXEURhHT
+    const [y,m,d] = r.dateInfo.iso.split('-');
+    const ttcStr = r.ttc.toFixed(2);
+    const htStr = r.ht ? r.ht.toFixed(2) : '';
+    const shopClean = r.shop.replace(/[^A-Z0-9]/g, '').substring(0, 20) || 'IMPORT';
+    const nameParts = [`${y}.${m}.${d}`, shopClean, `${ttcStr}EUR`];
+    if (htStr) nameParts.push(`${htStr}HT`);
+    const name = nameParts.join('_');
+    // imgData is null (pas de photo) — toujours listé dans le tableau
+    store.add({ name, imgData: null, date: Date.now() });
+  });
+
+  tx.oncomplete = () => {
+    closeImportPaste();
+    renderTable();
+    checkBadge();
+    showToast(`✓ ${importParsedRows.length} reçu(s) importé(s) !`);
+    importParsedRows = [];
+  };
+  tx.onerror = () => showToast('Erreur lors de l\'import');
+}
+</script>
+</body>
+</html>
