@@ -745,7 +745,7 @@ body {
   white-space: nowrap; pointer-events: none;
 }
 .current-photo-thumb, .current-photo-thumb * {
-  -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; touch-action: manipulation;
+  -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; touch-action: none;
 }
 
 /* ─── MOBILE TABS (form / photo) ──────────────────────────── */
@@ -3626,6 +3626,10 @@ function switchMobileView(which) {
     thumb.addEventListener(evt, closeMagnifier);
   });
   thumb.addEventListener('contextmenu', e => e.preventDefault());
+  // Bloque explicitement le geste tactile natif d'Android/Chrome (menu image, Lens, sélection)
+  thumb.addEventListener('touchstart', e => e.preventDefault(), { passive: false });
+  thumb.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+  thumb.addEventListener('touchend', e => e.preventDefault(), { passive: false });
   // Empêche le tap normal (bascule photo/zoom) de se déclencher juste après un appui long
   thumb.addEventListener('click', e => {
     if (didLongPress) {
