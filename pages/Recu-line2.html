@@ -737,6 +737,7 @@ body {
   position: fixed; inset: 0; z-index: 500;
   background: rgba(8,8,10,0.94);
   display: none; align-items: center; justify-content: center; padding: 24px;
+  touch-action: none;
 }
 .photo-magnifier-overlay.visible { display: flex; }
 .photo-magnifier-img {
@@ -744,6 +745,7 @@ body {
   background-size: contain; background-repeat: no-repeat; background-position: center;
   border-radius: 10px; box-shadow: 0 12px 48px rgba(0,0,0,0.5);
   transform-origin: center center;
+  touch-action: none;
 }
 .photo-magnifier-hint {
   position: absolute; top: max(14px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%);
@@ -877,13 +879,22 @@ body {
   .h-tab { min-height: 38px; }
   .sort-btn { min-height: 32px; }
 
-  /* ── Barre d'actions (Enregistrer / Annuler) toujours visible ── */
+  /* ── Barre d'actions (Enregistrer / Annuler) toujours visible ──
+     Position fixe, calée sur la zone visible réelle (au-dessus du clavier)
+     via --kb-offset, plutôt que sticky : ça ne dépend plus de la hauteur
+     du body/flex qui peut mettre du temps à se recalculer sur certains
+     téléphones/navigateurs. */
   .form-actions {
-    position: sticky; bottom: 0; z-index: 5;
+    position: fixed; left: 0; right: 0;
+    bottom: var(--kb-offset, 0px);
+    z-index: 20;
     background: var(--surface);
     box-shadow: 0 -4px 12px rgba(0,0,0,0.06);
     padding-bottom: calc(10px + env(safe-area-inset-bottom));
   }
+  /* Espace réservé en bas du formulaire pour que le dernier champ ne soit
+     jamais caché derrière la barre désormais fixe */
+  .form-scroll { padding-bottom: calc(92px + env(safe-area-inset-bottom)); }
 
   /* ── Onglet actif plus lisible (pastille de fond) ── */
   .mobile-tab.active { background: rgba(244,96,96,0.08); }
@@ -965,7 +976,7 @@ body {
 
 <!-- MAGNIFIER OVERLAY (appui long sur la vignette photo en cours) -->
 <div class="photo-magnifier-overlay" id="photo-magnifier-overlay">
-  <div class="photo-magnifier-hint"><i class="fas fa-hand-pointer"></i> Glissez pour zoomer · relâchez pour revenir</div>
+  <div class="photo-magnifier-hint"><i class="fas fa-hand-pointer"></i> Pincez avec 2 doigts pour zoomer · relâchez pour revenir</div>
   <div class="photo-magnifier-img" id="photo-magnifier-img"></div>
 </div>
 
@@ -3676,8 +3687,14 @@ function switchMobileView(which) {
       raf = requestAnimationFrame(() => {
         if (isMobile()) {
           document.documentElement.style.setProperty('--app-height', vv.height + 'px');
+          // Distance entre le bas de la fenêtre et le bas de la zone visible
+          // réelle = hauteur du clavier (+ éventuelle barre système). On s'en
+          // sert pour coller la barre Enregistrer juste au-dessus.
+          const kbOffset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+          document.documentElement.style.setProperty('--kb-offset', kbOffset + 'px');
         } else {
           document.documentElement.style.removeProperty('--app-height');
+          document.documentElement.style.removeProperty('--kb-offset');
         }
       });
     };
@@ -3730,8 +3747,9 @@ function switchMobileView(which) {
 // ─── Loupe plein écran par appui long sur la vignette photo ─
 // Permet de revoir la photo en grand sans quitter le formulaire :
 // on maintient le doigt appuyé sur la vignette, on relâche pour revenir.
-// Une fois la loupe ouverte, glisser le doigt vers le haut/bas zoome,
-// et glisser latéralement déplace l'image zoomée.
+// Une fois la loupe ouverte : pincer avec 2 doigts zoome (comme dans une
+// galerie photo classique), un seul doigt glissé verticalement zoome aussi
+// (pratique quand l'autre main tient le téléphone).
 (function() {
   const thumb = document.getElementById('current-photo-thumb');
   const overlay = document.getElementById('photo-magnifier-overlay');
@@ -3742,19 +3760,38 @@ function switchMobileView(which) {
   let isHolding = false;
   let didLongPress = false;
 
-  // État du zoom / déplacement pendant l'appui maintenu
-  let lastX = 0, lastY = 0;       // dernière position connue du doigt
-  let originX = 0, originY = 0;   // position du doigt au moment où la loupe s'ouvre
+  // Position du doigt qui a déclenché l'appui long (celui qui, si on le
+  // relâche, referme la loupe)
+  let lastX = 0, lastY = 0;
+  let originX = 0, originY = 0;
+
+  // État affiché de l'image
   let scale = 1, panX = 0, panY = 0;
-  let baseW = 0, baseH = 0;       // dimensions de l'image affichée, pour clamper le déplacement
+  let baseW = 0, baseH = 0;
+
+  // Suivi de tous les doigts posés, pour détecter un pincement à 2 doigts
+  const pointers = new Map(); // pointerId -> {x, y}
+  let pinchStartDist = null;
+  let pinchStartScale = 1;
+  let pinchStartMid = null;
+  let pinchStartPan = { x: 0, y: 0 };
 
   function applyTransform() {
     magImg.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
   }
   function resetTransform(animate) {
     scale = 1; panX = 0; panY = 0;
+    pinchStartDist = null; pinchStartMid = null;
     magImg.style.transition = animate ? 'transform 0.15s ease-out' : 'none';
     applyTransform();
+  }
+  function clampPan(x, y, s) {
+    const maxX = (baseW * (s - 1)) / 2;
+    const maxY = (baseH * (s - 1)) / 2;
+    return {
+      x: Math.min(maxX, Math.max(-maxX, x)),
+      y: Math.min(maxY, Math.max(-maxY, y))
+    };
   }
 
   function getCurrentPhotoSrc() {
@@ -3782,7 +3819,66 @@ function switchMobileView(which) {
     if (!isHolding) return;
     isHolding = false;
     overlay.classList.remove('visible');
+    pointers.clear();
     resetTransform(false);
+  }
+
+  function registerPointer(e) {
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    // Un doigt vient de s'ajouter ou de disparaître : on repart d'un
+    // pincement neuf pour éviter un saut de zoom brutal.
+    pinchStartDist = null;
+    pinchStartMid = null;
+  }
+
+  function onPointerMoveShared(e) {
+    if (!pointers.has(e.pointerId)) return;
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (!isHolding) return;
+
+    if (pointers.size >= 2) {
+      // ─ Pincement à deux doigts : zoom + léger déplacement ─
+      const pts = Array.from(pointers.values()).slice(0, 2);
+      const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+      const midX = (pts[0].x + pts[1].x) / 2;
+      const midY = (pts[0].y + pts[1].y) / 2;
+      if (pinchStartDist == null) {
+        pinchStartDist = dist;
+        pinchStartScale = scale;
+        pinchStartMid = { x: midX, y: midY };
+        pinchStartPan = { x: panX, y: panY };
+      }
+      scale = Math.min(4, Math.max(1, pinchStartScale * (dist / pinchStartDist)));
+      const clamped = clampPan(
+        pinchStartPan.x + (midX - pinchStartMid.x),
+        pinchStartPan.y + (midY - pinchStartMid.y),
+        scale
+      );
+      panX = clamped.x; panY = clamped.y;
+      magImg.style.transition = 'none';
+      applyTransform();
+    } else if (pointers.size === 1) {
+      // ─ Un seul doigt : glisser vers le haut/bas zoome ─
+      lastX = e.clientX; lastY = e.clientY;
+      const dy = lastY - originY;
+      scale = Math.min(4, Math.max(1, 1 - dy / 150));
+      const clamped = clampPan(lastX - originX, 0, scale);
+      panX = clamped.x; panY = 0;
+      magImg.style.transition = 'none';
+      applyTransform();
+    }
+  }
+
+  function onPointerUpShared(e) {
+    pointers.delete(e.pointerId);
+    pinchStartDist = null;
+    pinchStartMid = null;
+    if (pointers.size === 1) {
+      // Il reste un doigt : on repart du zoom courant pour éviter un saut
+      const remaining = Array.from(pointers.values())[0];
+      originX = remaining.x; originY = remaining.y + (scale - 1) * 150; // ré-aligne dy=0 sur le zoom actuel
+      lastX = remaining.x; lastY = remaining.y;
+    }
   }
 
   thumb.addEventListener('pointerdown', e => {
@@ -3792,26 +3888,27 @@ function switchMobileView(which) {
     clearTimeout(pressTimer);
     didLongPress = false;
     lastX = e.clientX; lastY = e.clientY;
+    registerPointer(e);
     pressTimer = setTimeout(openMagnifier, 260);
   });
-
-  thumb.addEventListener('pointermove', e => {
-    lastX = e.clientX; lastY = e.clientY;
-    if (!isHolding) return;
-    const dx = lastX - originX;
-    const dy = lastY - originY;
-    // Glisser vers le haut zoome (comme sur un appareil photo), vers le bas dézoome
-    scale = Math.min(4, Math.max(1, 1 - dy / 150));
-    // Déplacement latéral autorisé une fois zoomé, borné pour ne pas sortir du cadre
-    const maxPanX = (baseW * (scale - 1)) / 2;
-    panX = Math.min(maxPanX, Math.max(-maxPanX, dx));
-    magImg.style.transition = 'none';
-    applyTransform();
-  });
-
+  thumb.addEventListener('pointermove', onPointerMoveShared);
   ['pointerup', 'pointerleave', 'pointercancel'].forEach(evt => {
-    thumb.addEventListener(evt, closeMagnifier);
+    thumb.addEventListener(evt, e => { pointers.delete(e.pointerId); closeMagnifier(); });
   });
+
+  // Le 2e doigt (pincement) arrive forcément sur l'overlay, puisqu'elle
+  // recouvre tout l'écran une fois la loupe ouverte.
+  overlay.addEventListener('pointerdown', e => {
+    if (!isHolding) return;
+    e.preventDefault();
+    try { overlay.setPointerCapture(e.pointerId); } catch(err) {}
+    registerPointer(e);
+  }, { passive: false });
+  overlay.addEventListener('pointermove', onPointerMoveShared);
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(evt => {
+    overlay.addEventListener(evt, onPointerUpShared);
+  });
+
   thumb.addEventListener('contextmenu', e => e.preventDefault());
   // Bloque explicitement le geste tactile natif d'Android/Chrome (menu image, Lens, sélection)
   thumb.addEventListener('touchstart', e => e.preventDefault(), { passive: false });
