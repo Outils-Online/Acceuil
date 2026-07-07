@@ -3675,6 +3675,20 @@ function switchMobileView(which) {
 (function() {
   function isMobile() { return window.innerWidth <= 900; }
 
+  // ── DEBUG TEMPORAIRE ── petit badge qui affiche les mesures en direct,
+  // pour comprendre ce qui se passe réellement sur ton téléphone.
+  // (à retirer une fois le bug identifié)
+  function debugBadge() {
+    let el = document.getElementById('kb-debug-badge');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'kb-debug-badge';
+      el.style.cssText = 'position:fixed;top:4px;right:4px;z-index:99999;background:rgba(0,0,0,0.8);color:#0f0;font:10px monospace;padding:5px 7px;border-radius:6px;pointer-events:none;white-space:pre;line-height:1.4;';
+      document.body.appendChild(el);
+    }
+    return el;
+  }
+
   // 1) Recale la hauteur réelle de la page sur la zone visible (au-dessus du clavier)
   //    via une variable CSS (--app-height), au lieu d'écraser body.style.height
   //    directement : ça évite les conflits avec la règle 100dvh du CSS mobile,
@@ -3692,9 +3706,19 @@ function switchMobileView(which) {
           // sert pour coller la barre Enregistrer juste au-dessus.
           const kbOffset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
           document.documentElement.style.setProperty('--kb-offset', kbOffset + 'px');
+          const badge = debugBadge();
+          badge.style.display = 'block';
+          badge.textContent =
+            'innerH:' + window.innerHeight +
+            '\nvvH:' + Math.round(vv.height) +
+            '\nvvTop:' + Math.round(vv.offsetTop) +
+            '\nkbOffset:' + Math.round(kbOffset) +
+            '\nactiveEl:' + (document.activeElement ? document.activeElement.tagName : '-');
         } else {
           document.documentElement.style.removeProperty('--app-height');
           document.documentElement.style.removeProperty('--kb-offset');
+          const el = document.getElementById('kb-debug-badge');
+          if (el) el.style.display = 'none';
         }
       });
     };
