@@ -320,6 +320,12 @@ body {
 .btn-save:hover { background: #d94f4f; }
 .btn-save:disabled { opacity: 0.4; cursor: not-allowed; }
 .btn-save:disabled:hover { background: var(--accent); }
+@keyframes save-btn-pulse {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(244,96,96,0.5); }
+  40% { transform: scale(1.035); box-shadow: 0 0 0 8px rgba(244,96,96,0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(244,96,96,0); }
+}
+.btn-save.pulse-ready { animation: save-btn-pulse 0.5s ease-out; }
 
 /* ─── RIGHT PANEL : PHOTO ──────────────────────────────────── */
 .right-panel { display: flex; flex-direction: column; overflow: hidden; background: var(--panel-bg); }
@@ -887,6 +893,14 @@ body {
   /* ── Évite le rebond de la page qui gêne le swipe/scroll ── */
   html, body { overscroll-behavior-y: contain; }
   .left-panel, .right-panel, .form-scroll { overscroll-behavior: contain; }
+
+  /* ── Calendrier plus grand et plus tactile ── */
+  .cal-header { padding: 12px 14px 10px; }
+  .cal-month-label { font-size: 14px; }
+  .cal-nav-btn { width: 34px; height: 34px; font-size: 13px; }
+  .cal-wd { font-size: 10px; padding: 4px 0; }
+  .cal-days { gap: 4px; padding: 4px 10px 12px; }
+  .cal-day { font-size: 13px; border-radius: 8px; }
 }
 
 
@@ -1175,7 +1189,7 @@ body {
       <!-- Montant TTC -->
       <div class="field-group">
         <div class="field-label"><i class="fas fa-euro-sign"></i> Montant TTC</div>
-        <input type="number" id="capture-amount" class="input-pro" inputmode="decimal" placeholder="Ex: 42.50" oninput="autoComputeHT()">
+        <input type="number" id="capture-amount" class="input-pro" inputmode="decimal" enterkeyhint="next" placeholder="Ex: 42.50" oninput="autoComputeHT()">
       </div>
 
       <!-- HT Accordion -->
@@ -1198,7 +1212,7 @@ body {
             <div class="tva-chip" id="tva-manual" onclick="selectTVA('manual')">Saisir</div>
           </div>
           <div id="ht-manual-wrap" style="display:none;">
-            <input type="number" id="capture-ht" class="input-pro" inputmode="decimal" placeholder="Montant HT €" style="border-color:var(--accent);margin-bottom:6px;" oninput="syncManualHT()">
+            <input type="number" id="capture-ht" class="input-pro" inputmode="decimal" enterkeyhint="next" placeholder="Montant HT €" style="border-color:var(--accent);margin-bottom:6px;" oninput="syncManualHT()">
           </div>
           <div id="ht-computed" class="ht-computed">
             <span style="font-size:12px;font-weight:600;opacity:0.8;">HT calculé</span>
@@ -1213,8 +1227,11 @@ body {
         <div class="field-label"><i class="fas fa-store"></i> Magasin / abonnement</div>
         <div class="shop-wrap">
           <input type="text" id="capture-shop" class="input-pro" placeholder="Nom du magasin ou abonnement (ex: ORANGE)"
-            autocomplete="off" autocapitalize="characters" oninput="onShopInput()" onkeydown="onShopKey(event)" onfocus="onShopInput()" onblur="setTimeout(()=>document.getElementById('autocomplete-list').style.display='none',150)">
+            autocomplete="off" autocapitalize="characters" enterkeyhint="done" oninput="onShopInput()" onkeydown="onShopKey(event)" onfocus="onShopInput()" onblur="setTimeout(()=>document.getElementById('autocomplete-list').style.display='none',150)">
           <div id="autocomplete-list" class="autocomplete-list"></div>
+        </div>
+        <div id="reuse-last-btn" onclick="applyLastReceiptInfo()" style="display:none;margin-top:8px;font-size:11.5px;font-weight:700;color:var(--secondary);background:rgba(0,100,102,0.06);border:1px dashed var(--border);border-radius:8px;padding:8px 10px;cursor:pointer;align-items:center;gap:6px;">
+          <i class="fas fa-clock-rotate-left"></i> <span id="reuse-last-label">Reprendre les infos du dernier reçu</span>
         </div>
         <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-top:8px;cursor:pointer;">
           <input type="checkbox" id="batch-auto-increment" onchange="onBatchToggle()"> Auto incrément mensuel
@@ -1747,7 +1764,64 @@ function onShopInput() {
   list.style.display = 'block';
   updateNamePreview();
 }
-function pickShop(name) { document.getElementById('capture-shop').value=name; document.getElementById('autocomplete-list').style.display='none'; updateNamePreview(); }
+// ─── Reprendre les infos du dernier reçu enregistré ─────────
+function saveLastReceiptInfo(shop, tvaMode, htManual) {
+  try {
+    localStorage.setItem('lastReceiptInfo', JSON.stringify({ shop, tvaMode: tvaMode || 'none', htManual: htManual || '' }));
+  } catch(e) {}
+}
+function getLastReceiptInfo() {
+  try {
+    const raw = localStorage.getItem('lastReceiptInfo');
+    return raw ? JSON.parse(raw) : null;
+  } catch(e) { return null; }
+}
+function refreshReuseLastBtn() {
+  const el = document.getElementById('reuse-last-btn');
+  const shopEl = document.getElementById('capture-shop');
+  if (!el || !shopEl) return;
+  const info = getLastReceiptInfo();
+  const shouldShow = !!(info && info.shop && !shopEl.value);
+  if (shouldShow) {
+    const tvaLabel = info.tvaMode && info.tvaMode !== 'none' ? ' · TVA ' + (info.tvaMode === 'manual' ? 'manuelle' : info.tvaMode + '%') : '';
+    document.getElementById('reuse-last-label').textContent = `Reprendre : ${info.shop}${tvaLabel}`;
+    el.style.display = 'flex';
+  } else {
+    el.style.display = 'none';
+  }
+}
+function applyLastReceiptInfo() {
+  const info = getLastReceiptInfo();
+  if (!info) return;
+  const shopEl = document.getElementById('capture-shop');
+  shopEl.value = info.shop;
+  updateNamePreview();
+  if (info.tvaMode && info.tvaMode !== 'none') {
+    if (info.tvaMode === 'manual') {
+      document.getElementById('ht-body').style.display = 'block';
+      _htAccordionOpen = true;
+    }
+    selectTVA(info.tvaMode);
+    if (info.tvaMode === 'manual' && info.htManual) {
+      document.getElementById('capture-ht').value = info.htManual;
+      syncManualHT();
+    }
+  }
+  document.getElementById('reuse-last-btn').style.display = 'none';
+  if (navigator.vibrate) navigator.vibrate(10);
+  showToast('✓ Infos reprises : ' + info.shop);
+}
+
+function pickShop(name) {
+  document.getElementById('capture-shop').value=name;
+  document.getElementById('autocomplete-list').style.display='none';
+  updateNamePreview();
+  document.getElementById('capture-shop').blur();
+  const amountEl = document.getElementById('capture-amount');
+  if (amountEl && !amountEl.value) {
+    setTimeout(() => amountEl.focus(), 60);
+  }
+}
 function onShopKey(e) {
   const items = document.querySelectorAll('.autocomplete-item');
   if (e.key==='ArrowDown') { acIndex=Math.min(acIndex+1,items.length-1); highlightAc(items); }
@@ -1898,7 +1972,14 @@ function updateSaveBtn() {
   const hasDate = !!document.getElementById('capture-date').value;
   const hasPhoto = photoQueue.length > 0;
   const btn = document.getElementById('save-btn');
+  const wasDisabled = btn.disabled;
   btn.disabled = !(hasDate && hasPhoto);
+  if (wasDisabled && !btn.disabled) {
+    if (navigator.vibrate) navigator.vibrate(15);
+    btn.classList.remove('pulse-ready');
+    void btn.offsetWidth; // relance l'animation
+    btn.classList.add('pulse-ready');
+  }
   const hint = document.getElementById('save-hint');
   if (!hasPhoto && !hasDate) {
     hint.innerHTML = '<i class="fas fa-info-circle"></i> Importez une photo et choisissez une date';
@@ -2166,6 +2247,7 @@ function showPhotoAt(idx) {
   restoreFormFromQueue(idx);
   renderPhotoQueue();
   updateCurrentPhotoThumb(item, idx);
+  refreshReuseLastBtn();
 }
 
 // ─── Vignette "photo en cours de renommage" ────────────────
@@ -2249,6 +2331,7 @@ function resetForm() {
   document.getElementById('current-photo-thumb').style.display = 'none';
   resetInlineZoom();
   updateNamePreview();
+  refreshReuseLastBtn();
 }
 
 // ─── CONFIRM MODAL ─────────────────────────────────────────
@@ -2301,6 +2384,7 @@ async function confirmSave() {
 
     tx.oncomplete = () => {
       showToast("✓ Enregistré : " + fileNameBase);
+      saveLastReceiptInfo(shopVal, window._tvaMode, document.getElementById('capture-ht')?.value || '');
       editingReceiptId = null; // reset mode édition
       savedInSession.add(currentQueueIdx);
       loadReceiptDatesAndBuildChips();
@@ -3547,6 +3631,30 @@ function switchMobileView(which) {
     const right = document.getElementById('right-panel-el');
     if (left) attachSwipe(left, () => switchMobileView('photo'), () => {});
     if (right) attachSwipe(right, () => {}, () => switchMobileView('form'));
+    if (typeof refreshReuseLastBtn === 'function') refreshReuseLastBtn();
+
+    // Touche "Suivant" du clavier : montant/HT → magasin
+    const chain = { 'capture-amount': 'capture-shop', 'capture-ht': 'capture-shop' };
+    Object.keys(chain).forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const next = document.getElementById(chain[id]);
+          if (next) next.focus();
+        }
+      });
+    });
+    const shopEl = document.getElementById('capture-shop');
+    if (shopEl) {
+      shopEl.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && typeof acIndex !== 'undefined' && acIndex < 0) {
+          e.preventDefault();
+          shopEl.blur();
+        }
+      });
+    }
   });
 })();
 
