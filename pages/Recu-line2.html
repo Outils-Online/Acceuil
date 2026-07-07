@@ -891,6 +891,14 @@ body {
     background: var(--surface);
     box-shadow: 0 -4px 12px rgba(0,0,0,0.06);
     padding-bottom: calc(10px + env(safe-area-inset-bottom));
+    transition: transform 0.15s ease, opacity 0.15s ease;
+  }
+  /* Pendant la saisie (clavier ouvert), on cache la barre pour laisser
+     toute la place au champ + clavier ; elle revient dès qu'on quitte le champ. */
+  body.kb-typing .form-actions {
+    transform: translateY(100%);
+    opacity: 0;
+    pointer-events: none;
   }
   /* Espace réservé en bas du formulaire pour que le dernier champ ne soit
      jamais caché derrière la barre désormais fixe */
@@ -3671,23 +3679,9 @@ function switchMobileView(which) {
   });
 })();
 
-// ─── Clavier mobile : garder les champs et boutons visibles ─
+// ─── Clavier mobile : garder les champs visibles, cacher la barre pendant la saisie ─
 (function() {
   function isMobile() { return window.innerWidth <= 900; }
-
-  // ── DEBUG TEMPORAIRE ── petit badge qui affiche les mesures en direct,
-  // pour comprendre ce qui se passe réellement sur ton téléphone.
-  // (à retirer une fois le bug identifié)
-  function debugBadge() {
-    let el = document.getElementById('kb-debug-badge');
-    if (!el) {
-      el = document.createElement('div');
-      el.id = 'kb-debug-badge';
-      el.style.cssText = 'position:fixed;top:4px;right:4px;z-index:99999;background:rgba(0,0,0,0.8);color:#0f0;font:10px monospace;padding:5px 7px;border-radius:6px;pointer-events:none;white-space:pre;line-height:1.4;';
-      document.body.appendChild(el);
-    }
-    return el;
-  }
 
   // 1) Recale la hauteur réelle de la page sur la zone visible (au-dessus du clavier)
   //    via une variable CSS (--app-height), au lieu d'écraser body.style.height
@@ -3702,23 +3696,12 @@ function switchMobileView(which) {
         if (isMobile()) {
           document.documentElement.style.setProperty('--app-height', vv.height + 'px');
           // Distance entre le bas de la fenêtre et le bas de la zone visible
-          // réelle = hauteur du clavier (+ éventuelle barre système). On s'en
-          // sert pour coller la barre Enregistrer juste au-dessus.
+          // réelle = hauteur du clavier (+ éventuelle barre système).
           const kbOffset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
           document.documentElement.style.setProperty('--kb-offset', kbOffset + 'px');
-          const badge = debugBadge();
-          badge.style.display = 'block';
-          badge.textContent =
-            'innerH:' + window.innerHeight +
-            '\nvvH:' + Math.round(vv.height) +
-            '\nvvTop:' + Math.round(vv.offsetTop) +
-            '\nkbOffset:' + Math.round(kbOffset) +
-            '\nactiveEl:' + (document.activeElement ? document.activeElement.tagName : '-');
         } else {
           document.documentElement.style.removeProperty('--app-height');
           document.documentElement.style.removeProperty('--kb-offset');
-          const el = document.getElementById('kb-debug-badge');
-          if (el) el.style.display = 'none';
         }
       });
     };
@@ -3733,11 +3716,18 @@ function switchMobileView(which) {
   //    la vitesse du téléphone), on attend l'événement visualViewport qui
   //    signale que le clavier a fini de s'ouvrir, puis on scrolle.
   let activeField = null;
+  let hideBarTimer = null;
+
   document.addEventListener('focusin', e => {
     if (!isMobile()) return;
     const t = e.target;
     if (!(t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA'))) return;
     activeField = t;
+
+    // Pendant la saisie, on cache la barre Enregistrer/Annuler pour laisser
+    // toute la place au champ + clavier.
+    clearTimeout(hideBarTimer);
+    document.body.classList.add('kb-typing');
 
     const scrollToField = () => {
       if (document.activeElement !== activeField) return;
@@ -3765,7 +3755,18 @@ function switchMobileView(which) {
       setTimeout(scrollToField, 300);
     }
   });
-  document.addEventListener('focusout', () => { activeField = null; });
+
+  document.addEventListener('focusout', () => {
+    activeField = null;
+    // Petit délai avant de réafficher la barre : si le focus part vers un
+    // autre champ (ex: touche "Suivant"), on ne veut pas de clignotement.
+    clearTimeout(hideBarTimer);
+    hideBarTimer = setTimeout(() => {
+      const t = document.activeElement;
+      const stillTyping = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA');
+      if (!stillTyping) document.body.classList.remove('kb-typing');
+    }, 120);
+  });
 })();
 
 // ─── Loupe plein écran par appui long sur la vignette photo ─
