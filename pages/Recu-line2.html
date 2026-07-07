@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
 <title>Reçus — Bureau</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -726,6 +726,24 @@ body {
   box-shadow: 0 1px 3px rgba(0,0,0,0.3);
 }
 
+/* ─── Loupe plein écran (appui long sur la vignette) ────────── */
+.photo-magnifier-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(8,8,10,0.94);
+  display: none; align-items: center; justify-content: center; padding: 24px;
+}
+.photo-magnifier-overlay.visible { display: flex; }
+.photo-magnifier-overlay img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 10px; box-shadow: 0 12px 48px rgba(0,0,0,0.5); }
+.photo-magnifier-hint {
+  position: absolute; top: max(14px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%);
+  color: rgba(255,255,255,0.85); font-size: 12px; font-weight: 700;
+  background: rgba(255,255,255,0.1); padding: 7px 16px; border-radius: 20px;
+  white-space: nowrap; pointer-events: none;
+}
+.current-photo-thumb, .current-photo-thumb img {
+  -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; touch-action: manipulation;
+}
+
 /* ─── MOBILE TABS (form / photo) ──────────────────────────── */
 .mobile-tabs { display: none; }
 
@@ -784,9 +802,34 @@ body {
 
   /* Tableau : scroll horizontal plutôt que colonnes écrasées */
   #view-table > div:first-child { flex-wrap: wrap; }
-  .tbl-wrap { overflow-x: auto; }
-  .receipts-table { font-size: 11px; min-width: 480px; }
-  .receipts-table th, .receipts-table td { padding: 7px 8px; }
+  .tbl-wrap { overflow-x: visible; }
+
+  /* ── Historique : cartes empilées plutôt que tableau écrasé ── */
+  .receipts-table, .receipts-table thead, .receipts-table tbody,
+  .receipts-table tr, .receipts-table th, .receipts-table td { display: block; width: 100%; }
+  .receipts-table thead { display: none; }
+  .receipts-table tbody tr {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 10px 12px; margin-bottom: 8px; position: relative;
+  }
+  .receipts-table tbody tr[data-day-color] { border-left: 4px solid var(--day-color, var(--border)); }
+  .receipts-table td { width: auto; padding: 2px 0 !important; border: none !important; background: none !important; }
+  .receipts-table td[data-label]::before {
+    content: attr(data-label); display: block; font-size: 9px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 1px;
+  }
+  .receipts-table td[data-label="Date"] { order: 1; flex: 0 0 auto; font-size: 12px; }
+  .receipts-table td[data-label="Magasin"] { order: 2; flex: 1 1 auto; min-width: 0; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .receipts-table td[data-label="HT"] { order: 4; flex: 0 0 auto; font-size: 12px; }
+  .receipts-table td[data-label="TTC"] { order: 5; flex: 0 0 auto; font-size: 13px; font-weight: 800; color: var(--primary); }
+  .receipts-table td[data-label=""] { order: 3; margin-left: auto; padding: 0 !important; }
+  .receipts-table td.tbl-total-label { order: 0; flex: 1 1 auto; font-size: 13px; }
+  .receipts-table tbody tr.tbl-total {
+    background: rgba(0,100,102,0.08); border-color: var(--secondary); font-weight: 800;
+  }
+  .receipts-table tbody tr.tbl-total td { font-size: 12px; }
+  .receipts-table tbody tr.tbl-total td[colspan] { order: 1; flex: 1 1 auto; }
 
   .stats-grid { gap: 8px; }
   .stat-card { padding: 11px 12px; }
@@ -804,7 +847,44 @@ body {
   #import-overlay .export-box, #import-overlay [style*="max-width:560px"] { max-width: 100% !important; width: 100% !important; padding: 14px !important; }
 
   .current-photo-thumb { width: 40px; height: 40px; border-radius: 9px; }
+
+  /* ── Zones tactiles agrandies (min. ~44px, recommandation mobile) ── */
+  .input-pro { padding: 13px 14px; font-size: 16px; border-radius: 10px; } /* 16px : évite le zoom auto iOS/Android au focus */
+  .date-chip { padding: 11px 13px; font-size: 12.5px; }
+  .tva-chip { padding: 12px 4px; font-size: 12px; }
+  .ht-trigger, .ht-result-bar { padding: 12px 14px; }
+  .autocomplete-item { padding: 14px 14px; font-size: 14px; }
+  label { min-height: 20px; }
+  input[type="checkbox"] { width: 18px; height: 18px; }
+  .queue-nav button { width: 34px; height: 34px; }
+  .zoom-btn { width: 34px; height: 34px; font-size: 14px; }
+  .mobile-tab { padding: 13px 6px; min-height: 46px; }
+  .tb-btn { min-height: 40px; }
+  .btn-action { padding: 14px; font-size: 15px; min-height: 48px; }
+  .strip-thumb { width: 52px; height: 52px; }
+  .h-tab { min-height: 38px; }
+  .sort-btn { min-height: 32px; }
+
+  /* ── Barre d'actions (Enregistrer / Annuler) toujours visible ── */
+  .form-actions {
+    position: sticky; bottom: 0; z-index: 5;
+    background: var(--surface);
+    box-shadow: 0 -4px 12px rgba(0,0,0,0.06);
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
+  }
+
+  /* ── Onglet actif plus lisible (pastille de fond) ── */
+  .mobile-tab.active { background: rgba(244,96,96,0.08); }
+
+  /* ── Zone de sécurité (encoche / barre de geste Android) ── */
+  .mobile-tabs { padding-top: env(safe-area-inset-top); }
+  .zoom-controls { padding-bottom: calc(6px + env(safe-area-inset-bottom)); }
+
+  /* ── Évite le rebond de la page qui gêne le swipe/scroll ── */
+  html, body { overscroll-behavior-y: contain; }
+  .left-panel, .right-panel, .form-scroll { overscroll-behavior: contain; }
 }
+
 
 @media (max-width: 420px) {
   .logo-sub { display: none; }
@@ -862,6 +942,12 @@ body {
 </div>
 
 <div id="toast" class="toast"></div>
+
+<!-- MAGNIFIER OVERLAY (appui long sur la vignette photo en cours) -->
+<div class="photo-magnifier-overlay" id="photo-magnifier-overlay">
+  <div class="photo-magnifier-hint"><i class="fas fa-hand-pointer"></i> Relâchez pour revenir au formulaire</div>
+  <img id="photo-magnifier-img" src="" alt="Photo en cours" draggable="false">
+</div>
 
 <!-- CONFIRM MODAL -->
 <div id="confirm-overlay" class="confirm-overlay">
@@ -1085,7 +1171,7 @@ body {
       <!-- Montant TTC -->
       <div class="field-group">
         <div class="field-label"><i class="fas fa-euro-sign"></i> Montant TTC</div>
-        <input type="number" id="capture-amount" class="input-pro" placeholder="Ex: 42.50" oninput="autoComputeHT()">
+        <input type="number" id="capture-amount" class="input-pro" inputmode="decimal" placeholder="Ex: 42.50" oninput="autoComputeHT()">
       </div>
 
       <!-- HT Accordion -->
@@ -1108,7 +1194,7 @@ body {
             <div class="tva-chip" id="tva-manual" onclick="selectTVA('manual')">Saisir</div>
           </div>
           <div id="ht-manual-wrap" style="display:none;">
-            <input type="number" id="capture-ht" class="input-pro" placeholder="Montant HT €" style="border-color:var(--accent);margin-bottom:6px;" oninput="syncManualHT()">
+            <input type="number" id="capture-ht" class="input-pro" inputmode="decimal" placeholder="Montant HT €" style="border-color:var(--accent);margin-bottom:6px;" oninput="syncManualHT()">
           </div>
           <div id="ht-computed" class="ht-computed">
             <span style="font-size:12px;font-weight:600;opacity:0.8;">HT calculé</span>
@@ -1123,7 +1209,7 @@ body {
         <div class="field-label"><i class="fas fa-store"></i> Magasin / abonnement</div>
         <div class="shop-wrap">
           <input type="text" id="capture-shop" class="input-pro" placeholder="Nom du magasin ou abonnement (ex: ORANGE)"
-            autocomplete="off" oninput="onShopInput()" onkeydown="onShopKey(event)" onfocus="onShopInput()" onblur="setTimeout(()=>document.getElementById('autocomplete-list').style.display='none',150)">
+            autocomplete="off" autocapitalize="characters" oninput="onShopInput()" onkeydown="onShopKey(event)" onfocus="onShopInput()" onblur="setTimeout(()=>document.getElementById('autocomplete-list').style.display='none',150)">
           <div id="autocomplete-list" class="autocomplete-list"></div>
         </div>
         <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-top:8px;cursor:pointer;">
@@ -2529,12 +2615,12 @@ function renderTable() {
       const tr=document.createElement('tr');
       const colorIdx = dayColorMapT[p.dateSort];
       if (colorIdx !== undefined) setDayColor(tr, colorIdx);
-      tr.innerHTML=`<td>${p.date}</td><td style="font-weight:600;">${p.shop}</td><td>${p.ht?fmt(parseFloat(p.ht))+' €':'—'}</td><td>${ttc>0?fmt(ttc)+' €':'—'}</td><td style="text-align:center;"><button class="tbl-del-btn" onclick="deleteTableRow(${item.id})" title="Supprimer"><i class="fas fa-trash"></i></button></td>`;
+      tr.innerHTML=`<td data-label="Date">${p.date}</td><td data-label="Magasin" style="font-weight:600;">${p.shop}</td><td data-label="HT">${p.ht?fmt(parseFloat(p.ht))+' €':'—'}</td><td data-label="TTC">${ttc>0?fmt(ttc)+' €':'—'}</td><td data-label="" style="text-align:center;"><button class="tbl-del-btn" onclick="deleteTableRow(${item.id})" title="Supprimer"><i class="fas fa-trash"></i></button></td>`;
       tbody.appendChild(tr);
     });
     if (sorted.length>0) {
       const tr=document.createElement('tr'); tr.className='tbl-total';
-      tr.innerHTML=`<td colspan="2">TOTAL (${sorted.length} reçus)</td><td>${totalHT>0?fmt(totalHT)+' €':'—'}</td><td>${fmt(totalTTC)} €</td><td></td>`;
+      tr.innerHTML=`<td class="tbl-total-label" colspan="2">TOTAL (${sorted.length} reçus)</td><td data-label="HT">${totalHT>0?fmt(totalHT)+' €':'—'}</td><td data-label="TTC">${fmt(totalTTC)} €</td><td data-label=""></td>`;
       tbody.appendChild(tr);
     }
     if (!sorted.length) tbody.innerHTML='<tr><td colspan="5" style="text-align:center;opacity:0.5;padding:20px;">Aucun reçu enregistré</td></tr>';
@@ -3395,6 +3481,156 @@ async function confirmImport() {
   };
   tx.onerror = () => showToast('Erreur lors de l\'import');
 }
+
+// ═══════════════════════════════════════════════════════════
+// MOBILE : bascule Formulaire / Photo, swipe, clavier
+// ═══════════════════════════════════════════════════════════
+
+// ─── Bascule d'onglet ───────────────────────────────────────
+function switchMobileView(which) {
+  const left = document.getElementById('left-panel-el');
+  const right = document.getElementById('right-panel-el');
+  const tabForm = document.getElementById('mtab-form');
+  const tabPhoto = document.getElementById('mtab-photo');
+  if (which === 'photo') {
+    left.classList.remove('mobile-active');
+    right.classList.add('mobile-active');
+    tabForm.classList.remove('active');
+    tabPhoto.classList.add('active');
+  } else {
+    right.classList.remove('mobile-active');
+    left.classList.add('mobile-active');
+    tabPhoto.classList.remove('active');
+    tabForm.classList.add('active');
+  }
+}
+
+// Si une photo est ajoutée sur mobile, on bascule automatiquement sur l'onglet Photo
+(function() {
+  const dropZone = document.querySelector('.drop-zone');
+  if (dropZone) {
+    dropZone.addEventListener('click', () => {
+      if (window.innerWidth <= 900) setTimeout(() => switchMobileView('photo'), 150);
+    });
+  }
+})();
+
+// ─── Glisser (swipe) pour changer d'onglet ──────────────────
+(function() {
+  function attachSwipe(el, onSwipeLeft, onSwipeRight) {
+    let startX = 0, startY = 0, tracking = false;
+    el.addEventListener('touchstart', e => {
+      if (window.innerWidth > 900 || e.touches.length !== 1) { tracking = false; return; }
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      tracking = true;
+    }, { passive: true });
+    el.addEventListener('touchend', e => {
+      if (!tracking) return;
+      tracking = false;
+      const endX = e.changedTouches[0].clientX;
+      const endY = e.changedTouches[0].clientY;
+      const dx = endX - startX;
+      const dy = endY - startY;
+      // Swipe surtout horizontal, distance suffisante
+      if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.8) {
+        if (dx < 0) onSwipeLeft(); else onSwipeRight();
+      }
+    }, { passive: true });
+  }
+  document.addEventListener('DOMContentLoaded', () => {
+    const left = document.getElementById('left-panel-el');
+    const right = document.getElementById('right-panel-el');
+    if (left) attachSwipe(left, () => switchMobileView('photo'), () => {});
+    if (right) attachSwipe(right, () => {}, () => switchMobileView('form'));
+  });
+})();
+
+// ─── Clavier mobile : garder les champs et boutons visibles ─
+(function() {
+  // 1) Recale la hauteur réelle de la page sur la zone visible (au-dessus du clavier)
+  if (window.visualViewport) {
+    const vv = window.visualViewport;
+    const applyVV = () => {
+      if (window.innerWidth <= 900) {
+        document.body.style.height = vv.height + 'px';
+      } else {
+        document.body.style.height = '';
+      }
+    };
+    vv.addEventListener('resize', applyVV);
+    vv.addEventListener('scroll', applyVV);
+    window.addEventListener('resize', applyVV);
+    applyVV();
+  }
+  // 2) Fait remonter le champ actif au-dessus du clavier une fois qu'il s'est ouvert
+  document.addEventListener('focusin', e => {
+    if (window.innerWidth > 900) return;
+    const t = e.target;
+    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) {
+      setTimeout(() => { t.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 300);
+    }
+  });
+})();
+
+// ─── Loupe plein écran par appui long sur la vignette photo ─
+// Permet de revoir la photo en grand sans quitter le formulaire :
+// on maintient le doigt appuyé sur la vignette, on relâche pour revenir.
+(function() {
+  const thumb = document.getElementById('current-photo-thumb');
+  const overlay = document.getElementById('photo-magnifier-overlay');
+  const magImg = document.getElementById('photo-magnifier-img');
+  if (!thumb || !overlay || !magImg) return;
+
+  let pressTimer = null;
+  let isHolding = false;
+  let didLongPress = false;
+
+  function getCurrentPhotoSrc() {
+    if (typeof photoQueue === 'undefined' || !photoQueue.length) return null;
+    const item = photoQueue[currentQueueIdx];
+    if (!item) return null;
+    const pageIdx = item.currentPage || 0;
+    return item.pages ? item.pages[pageIdx] : item.dataUrl;
+  }
+
+  function openMagnifier() {
+    const src = getCurrentPhotoSrc();
+    if (!src) return;
+    magImg.src = src;
+    overlay.classList.add('visible');
+    isHolding = true;
+    didLongPress = true;
+    if (navigator.vibrate) navigator.vibrate(10);
+  }
+  function closeMagnifier() {
+    clearTimeout(pressTimer);
+    if (!isHolding) return;
+    isHolding = false;
+    overlay.classList.remove('visible');
+  }
+
+  thumb.addEventListener('pointerdown', e => {
+    if (e.button !== undefined && e.button !== 0) return;
+    e.preventDefault();
+    try { thumb.setPointerCapture(e.pointerId); } catch(err) {}
+    clearTimeout(pressTimer);
+    didLongPress = false;
+    pressTimer = setTimeout(openMagnifier, 260);
+  });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(evt => {
+    thumb.addEventListener(evt, closeMagnifier);
+  });
+  thumb.addEventListener('contextmenu', e => e.preventDefault());
+  // Empêche le tap normal (bascule photo/zoom) de se déclencher juste après un appui long
+  thumb.addEventListener('click', e => {
+    if (didLongPress) {
+      e.stopImmediatePropagation();
+      e.preventDefault();
+      didLongPress = false;
+    }
+  }, true);
+})();
 </script>
 </body>
 </html>
