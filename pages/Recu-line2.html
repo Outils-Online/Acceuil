@@ -26,7 +26,7 @@ body {
   font-family: 'Space Grotesk', sans-serif;
   background: var(--bg);
   color: var(--text);
-  height: 100vh;
+  height: var(--app-height, 100vh);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -743,6 +743,7 @@ body {
   width: 100%; height: 100%;
   background-size: contain; background-repeat: no-repeat; background-position: center;
   border-radius: 10px; box-shadow: 0 12px 48px rgba(0,0,0,0.5);
+  transform-origin: center center;
 }
 .photo-magnifier-hint {
   position: absolute; top: max(14px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%);
@@ -761,7 +762,8 @@ body {
    RESPONSIVE — TABLETTE & MOBILE (S23 ≈ 360–412px de large)
    ══════════════════════════════════════════════════════════ */
 @media (max-width: 900px) {
-  html, body { height: 100dvh; }
+  html { height: 100dvh; }
+  body { height: var(--app-height, 100dvh); }
 
   /* Topbar plus compacte */
   .topbar { height: 48px; padding: 0 12px; gap: 8px; }
@@ -963,7 +965,7 @@ body {
 
 <!-- MAGNIFIER OVERLAY (appui long sur la vignette photo en cours) -->
 <div class="photo-magnifier-overlay" id="photo-magnifier-overlay">
-  <div class="photo-magnifier-hint"><i class="fas fa-hand-pointer"></i> Relâchez pour revenir au formulaire</div>
+  <div class="photo-magnifier-hint"><i class="fas fa-hand-pointer"></i> Glissez pour zoomer · relâchez pour revenir</div>
   <div class="photo-magnifier-img" id="photo-magnifier-img"></div>
 </div>
 
@@ -3660,34 +3662,76 @@ function switchMobileView(which) {
 
 // ─── Clavier mobile : garder les champs et boutons visibles ─
 (function() {
+  function isMobile() { return window.innerWidth <= 900; }
+
   // 1) Recale la hauteur réelle de la page sur la zone visible (au-dessus du clavier)
+  //    via une variable CSS (--app-height), au lieu d'écraser body.style.height
+  //    directement : ça évite les conflits avec la règle 100dvh du CSS mobile,
+  //    qui elle aussi essaie de suivre le clavier sur certains navigateurs.
   if (window.visualViewport) {
     const vv = window.visualViewport;
+    let raf = null;
     const applyVV = () => {
-      if (window.innerWidth <= 900) {
-        document.body.style.height = vv.height + 'px';
-      } else {
-        document.body.style.height = '';
-      }
+      if (raf) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        if (isMobile()) {
+          document.documentElement.style.setProperty('--app-height', vv.height + 'px');
+        } else {
+          document.documentElement.style.removeProperty('--app-height');
+        }
+      });
     };
     vv.addEventListener('resize', applyVV);
     vv.addEventListener('scroll', applyVV);
     window.addEventListener('resize', applyVV);
     applyVV();
   }
-  // 2) Fait remonter le champ actif au-dessus du clavier une fois qu'il s'est ouvert
+
+  // 2) Fait remonter le champ actif au-dessus du clavier.
+  //    Au lieu d'un délai fixe (qui peut tomber trop tôt ou trop tard selon
+  //    la vitesse du téléphone), on attend l'événement visualViewport qui
+  //    signale que le clavier a fini de s'ouvrir, puis on scrolle.
+  let activeField = null;
   document.addEventListener('focusin', e => {
-    if (window.innerWidth > 900) return;
+    if (!isMobile()) return;
     const t = e.target;
-    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) {
-      setTimeout(() => { t.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 300);
+    if (!(t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA'))) return;
+    activeField = t;
+
+    const scrollToField = () => {
+      if (document.activeElement !== activeField) return;
+      activeField.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    };
+
+    if (window.visualViewport) {
+      let done = false;
+      const onceResized = () => {
+        if (done) return;
+        done = true;
+        window.visualViewport.removeEventListener('resize', onceResized);
+        setTimeout(scrollToField, 60);
+      };
+      window.visualViewport.addEventListener('resize', onceResized);
+      // Filet de sécurité si l'event ne se déclenche pas (clavier déjà ouvert,
+      // clavier flottant, etc.)
+      setTimeout(() => {
+        if (done) return;
+        done = true;
+        window.visualViewport.removeEventListener('resize', onceResized);
+        scrollToField();
+      }, 400);
+    } else {
+      setTimeout(scrollToField, 300);
     }
   });
+  document.addEventListener('focusout', () => { activeField = null; });
 })();
 
 // ─── Loupe plein écran par appui long sur la vignette photo ─
 // Permet de revoir la photo en grand sans quitter le formulaire :
 // on maintient le doigt appuyé sur la vignette, on relâche pour revenir.
+// Une fois la loupe ouverte, glisser le doigt vers le haut/bas zoome,
+// et glisser latéralement déplace l'image zoomée.
 (function() {
   const thumb = document.getElementById('current-photo-thumb');
   const overlay = document.getElementById('photo-magnifier-overlay');
@@ -3697,6 +3741,21 @@ function switchMobileView(which) {
   let pressTimer = null;
   let isHolding = false;
   let didLongPress = false;
+
+  // État du zoom / déplacement pendant l'appui maintenu
+  let lastX = 0, lastY = 0;       // dernière position connue du doigt
+  let originX = 0, originY = 0;   // position du doigt au moment où la loupe s'ouvre
+  let scale = 1, panX = 0, panY = 0;
+  let baseW = 0, baseH = 0;       // dimensions de l'image affichée, pour clamper le déplacement
+
+  function applyTransform() {
+    magImg.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+  }
+  function resetTransform(animate) {
+    scale = 1; panX = 0; panY = 0;
+    magImg.style.transition = animate ? 'transform 0.15s ease-out' : 'none';
+    applyTransform();
+  }
 
   function getCurrentPhotoSrc() {
     if (typeof photoQueue === 'undefined' || !photoQueue.length) return null;
@@ -3713,6 +3772,9 @@ function switchMobileView(which) {
     overlay.classList.add('visible');
     isHolding = true;
     didLongPress = true;
+    originX = lastX; originY = lastY;
+    baseW = magImg.offsetWidth; baseH = magImg.offsetHeight;
+    resetTransform(false);
     if (navigator.vibrate) navigator.vibrate(10);
   }
   function closeMagnifier() {
@@ -3720,6 +3782,7 @@ function switchMobileView(which) {
     if (!isHolding) return;
     isHolding = false;
     overlay.classList.remove('visible');
+    resetTransform(false);
   }
 
   thumb.addEventListener('pointerdown', e => {
@@ -3728,8 +3791,24 @@ function switchMobileView(which) {
     try { thumb.setPointerCapture(e.pointerId); } catch(err) {}
     clearTimeout(pressTimer);
     didLongPress = false;
+    lastX = e.clientX; lastY = e.clientY;
     pressTimer = setTimeout(openMagnifier, 260);
   });
+
+  thumb.addEventListener('pointermove', e => {
+    lastX = e.clientX; lastY = e.clientY;
+    if (!isHolding) return;
+    const dx = lastX - originX;
+    const dy = lastY - originY;
+    // Glisser vers le haut zoome (comme sur un appareil photo), vers le bas dézoome
+    scale = Math.min(4, Math.max(1, 1 - dy / 150));
+    // Déplacement latéral autorisé une fois zoomé, borné pour ne pas sortir du cadre
+    const maxPanX = (baseW * (scale - 1)) / 2;
+    panX = Math.min(maxPanX, Math.max(-maxPanX, dx));
+    magImg.style.transition = 'none';
+    applyTransform();
+  });
+
   ['pointerup', 'pointerleave', 'pointercancel'].forEach(evt => {
     thumb.addEventListener(evt, closeMagnifier);
   });
