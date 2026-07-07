@@ -717,7 +717,7 @@ body {
   transition: border-color 0.15s, transform 0.15s;
 }
 .current-photo-thumb:hover { border-color: var(--accent); transform: scale(1.04); }
-.current-photo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.current-photo-thumb-bg { width: 100%; height: 100%; background-size: cover; background-position: center; display: none; }
 .current-photo-thumb i { font-size: 18px; color: var(--accent); }
 .current-photo-thumb-badge {
   position: absolute; bottom: -3px; right: -3px;
@@ -733,14 +733,18 @@ body {
   display: none; align-items: center; justify-content: center; padding: 24px;
 }
 .photo-magnifier-overlay.visible { display: flex; }
-.photo-magnifier-overlay img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 10px; box-shadow: 0 12px 48px rgba(0,0,0,0.5); }
+.photo-magnifier-img {
+  width: 100%; height: 100%;
+  background-size: contain; background-repeat: no-repeat; background-position: center;
+  border-radius: 10px; box-shadow: 0 12px 48px rgba(0,0,0,0.5);
+}
 .photo-magnifier-hint {
   position: absolute; top: max(14px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%);
   color: rgba(255,255,255,0.85); font-size: 12px; font-weight: 700;
   background: rgba(255,255,255,0.1); padding: 7px 16px; border-radius: 20px;
   white-space: nowrap; pointer-events: none;
 }
-.current-photo-thumb, .current-photo-thumb img {
+.current-photo-thumb, .current-photo-thumb * {
   -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; touch-action: manipulation;
 }
 
@@ -946,7 +950,7 @@ body {
 <!-- MAGNIFIER OVERLAY (appui long sur la vignette photo en cours) -->
 <div class="photo-magnifier-overlay" id="photo-magnifier-overlay">
   <div class="photo-magnifier-hint"><i class="fas fa-hand-pointer"></i> Relâchez pour revenir au formulaire</div>
-  <img id="photo-magnifier-img" src="" alt="Photo en cours" draggable="false">
+  <div class="photo-magnifier-img" id="photo-magnifier-img"></div>
 </div>
 
 <!-- CONFIRM MODAL -->
@@ -1141,7 +1145,7 @@ body {
         <div class="panel-headline">Infos du reçu</div>
       </div>
       <div class="current-photo-thumb" id="current-photo-thumb" style="display:none;" onclick="onCurrentThumbClick()" title="Photo en cours de renommage">
-        <img id="current-photo-thumb-img" src="" alt="Photo en cours">
+        <div class="current-photo-thumb-bg" id="current-photo-thumb-img"></div>
         <i class="fas fa-file-pdf" id="current-photo-thumb-pdf" style="display:none;"></i>
         <span class="current-photo-thumb-badge" id="current-photo-thumb-badge" style="display:none;"></span>
       </div>
@@ -2176,7 +2180,7 @@ function updateCurrentPhotoThumb(item, idx) {
   const src = item.isPDF ? null : (item.pages ? item.pages[pageIdx] : item.dataUrl);
 
   if (src) {
-    img.src = src; img.style.display = '';
+    img.style.backgroundImage = `url("${src}")`; img.style.display = 'block';
     pdfIcon.style.display = 'none';
   } else {
     img.style.display = 'none';
@@ -3597,7 +3601,7 @@ function switchMobileView(which) {
   function openMagnifier() {
     const src = getCurrentPhotoSrc();
     if (!src) return;
-    magImg.src = src;
+    magImg.style.backgroundImage = `url("${src}")`;
     overlay.classList.add('visible');
     isHolding = true;
     didLongPress = true;
