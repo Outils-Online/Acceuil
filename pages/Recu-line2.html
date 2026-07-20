@@ -2,8 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="color-scheme" content="light only">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Reçus — Bureau</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -27,7 +26,7 @@ body {
   font-family: 'Space Grotesk', sans-serif;
   background: var(--bg);
   color: var(--text);
-  height: var(--app-height, 100vh);
+  height: 100vh;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -321,12 +320,6 @@ body {
 .btn-save:hover { background: #d94f4f; }
 .btn-save:disabled { opacity: 0.4; cursor: not-allowed; }
 .btn-save:disabled:hover { background: var(--accent); }
-@keyframes save-btn-pulse {
-  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(244,96,96,0.5); }
-  40% { transform: scale(1.035); box-shadow: 0 0 0 8px rgba(244,96,96,0); }
-  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(244,96,96,0); }
-}
-.btn-save.pulse-ready { animation: save-btn-pulse 0.5s ease-out; }
 
 /* ─── RIGHT PANEL : PHOTO ──────────────────────────────────── */
 .right-panel { display: flex; flex-direction: column; overflow: hidden; background: var(--panel-bg); }
@@ -716,224 +709,6 @@ body {
 .month-bar { height: 6px; background: var(--secondary); border-radius: 3px; transition: width 0.6s ease; }
 .month-amount { font-size: 12px; font-weight: 800; color: var(--primary); flex-shrink: 0; min-width: 68px; text-align: right; font-family: 'DM Mono', monospace; }
 
-/* ─── Vignette "photo en cours de renommage" ──────────────── */
-.current-photo-thumb {
-  width: 46px; height: 46px; border-radius: 10px; overflow: hidden; flex-shrink: 0;
-  border: 2px solid var(--border); cursor: pointer; position: relative;
-  background: var(--panel-bg); display: flex; align-items: center; justify-content: center;
-  transition: border-color 0.15s, transform 0.15s;
-}
-.current-photo-thumb:hover { border-color: var(--accent); transform: scale(1.04); }
-.current-photo-thumb-bg { width: 100%; height: 100%; background-size: cover; background-position: center; display: none; }
-.current-photo-thumb i { font-size: 18px; color: var(--accent); }
-.current-photo-thumb-badge {
-  position: absolute; bottom: -3px; right: -3px;
-  background: var(--accent); color: white; font-size: 9px; font-weight: 800;
-  border-radius: 8px; padding: 1px 4px; line-height: 1.3; white-space: nowrap;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-}
-
-/* ─── Loupe plein écran (appui long sur la vignette) ────────── */
-.photo-magnifier-overlay {
-  position: fixed; inset: 0; z-index: 500;
-  background: rgba(8,8,10,0.94);
-  display: none; align-items: center; justify-content: center; padding: 24px;
-  touch-action: none;
-}
-.photo-magnifier-overlay.visible { display: flex; }
-.photo-magnifier-img {
-  width: 100%; height: 100%;
-  background-size: contain; background-repeat: no-repeat; background-position: center;
-  border-radius: 10px; box-shadow: 0 12px 48px rgba(0,0,0,0.5);
-  transform-origin: center center;
-  touch-action: none;
-}
-.photo-magnifier-hint {
-  position: absolute; top: max(14px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%);
-  color: rgba(255,255,255,0.85); font-size: 12px; font-weight: 700;
-  background: rgba(255,255,255,0.1); padding: 7px 16px; border-radius: 20px;
-  white-space: nowrap; pointer-events: none;
-}
-.current-photo-thumb, .current-photo-thumb * {
-  -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; touch-action: none;
-}
-
-/* ─── MOBILE TABS (form / photo) ──────────────────────────── */
-.mobile-tabs { display: none; }
-
-/* ══════════════════════════════════════════════════════════
-   RESPONSIVE — TABLETTE & MOBILE (S23 ≈ 360–412px de large)
-   ══════════════════════════════════════════════════════════ */
-@media (max-width: 900px) {
-  html { height: 100dvh; }
-  body { height: var(--app-height, 100dvh); }
-
-  /* Topbar plus compacte */
-  .topbar { height: 48px; padding: 0 12px; gap: 8px; }
-  .logo-title { font-size: 11px; }
-  .logo-sub { font-size: 8px; letter-spacing: 2px; }
-  .topbar-badge { padding: 4px 10px 4px 7px; font-size: 11px; }
-  .tb-btn { padding: 0 10px; height: 32px; font-size: 12px; }
-
-  /* Bascule Formulaire / Photo */
-  .mobile-tabs {
-    display: flex; flex-shrink: 0;
-    background: var(--surface); border-bottom: 1px solid var(--border);
-  }
-  .mobile-tab {
-    flex: 1; text-align: center; padding: 11px 6px;
-    font-size: 12px; font-weight: 800; color: var(--muted);
-    cursor: pointer; border-bottom: 2px solid transparent; transition: 0.15s;
-  }
-  .mobile-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-  .mobile-tab i { margin-right: 5px; }
-
-  /* Empile le formulaire et la photo, un seul visible à la fois */
-  .workspace { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
-  .left-panel, .right-panel { border-right: none; display: none; min-height: 0; }
-  .left-panel.mobile-active, .right-panel.mobile-active { display: flex; }
-
-  .panel-header { padding: 12px 14px 10px; }
-  .panel-headline { font-size: 16px; }
-  .form-scroll { padding: 12px 14px; }
-  .form-actions { padding: 10px 14px; }
-
-  .photo-header { padding: 10px 14px; flex-wrap: wrap; }
-  .filename-display { padding: 8px 14px; }
-
-  /* Historique / modales : occupent tout l'écran, texte compact */
-  .history-box { border-radius: 0; }
-  .history-topbar { padding: 12px 14px; }
-  .history-topbar h2 { font-size: 15px; }
-  #storage-indicator { padding: 8px 14px; }
-  .history-tabs { padding: 8px 14px 0; overflow-x: auto; }
-  .h-tab { padding: 7px 10px; font-size: 11px; white-space: nowrap; }
-  #view-list, #view-table, #view-stats { padding: 10px 14px; }
-  .h-list-actions { flex-wrap: wrap; }
-  .h-list-actions .tb-btn { font-size: 11px; padding: 0 10px; height: 32px; flex: 1 1 auto; }
-  .sort-bar { gap: 5px; }
-  .sort-btn { font-size: 10px; padding: 5px 8px; }
-  .sort-count { width: 100%; text-align: right; margin-top: 2px; }
-
-  /* Tableau : scroll horizontal plutôt que colonnes écrasées */
-  #view-table > div:first-child { flex-wrap: wrap; }
-  .tbl-wrap { overflow-x: visible; }
-
-  /* ── Historique : cartes empilées plutôt que tableau écrasé ── */
-  .receipts-table, .receipts-table thead, .receipts-table tbody,
-  .receipts-table tr, .receipts-table th, .receipts-table td { display: block; width: 100%; }
-  .receipts-table thead { display: none; }
-  .receipts-table tbody tr {
-    display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px;
-    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
-    padding: 10px 12px; margin-bottom: 8px; position: relative;
-  }
-  .receipts-table tbody tr[data-day-color] { border-left: 4px solid var(--day-color, var(--border)); }
-  .receipts-table td { width: auto; padding: 2px 0 !important; border: none !important; background: none !important; }
-  .receipts-table td[data-label]::before {
-    content: attr(data-label); display: block; font-size: 9px; font-weight: 800;
-    text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 1px;
-  }
-  .receipts-table td[data-label="Date"] { order: 1; flex: 0 0 auto; font-size: 12px; }
-  .receipts-table td[data-label="Magasin"] { order: 2; flex: 1 1 auto; min-width: 0; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .receipts-table td[data-label="HT"] { order: 4; flex: 0 0 auto; font-size: 12px; }
-  .receipts-table td[data-label="TTC"] { order: 5; flex: 0 0 auto; font-size: 13px; font-weight: 800; color: var(--primary); }
-  .receipts-table td[data-label=""] { order: 3; margin-left: auto; padding: 0 !important; }
-  .receipts-table td.tbl-total-label { order: 0; flex: 1 1 auto; font-size: 13px; }
-  .receipts-table tbody tr.tbl-total {
-    background: rgba(0,100,102,0.08); border-color: var(--secondary); font-weight: 800;
-  }
-  .receipts-table tbody tr.tbl-total td { font-size: 12px; }
-  .receipts-table tbody tr.tbl-total td[colspan] { order: 1; flex: 1 1 auto; }
-
-  .stats-grid { gap: 8px; }
-  .stat-card { padding: 11px 12px; }
-  .stat-card-val { font-size: 18px; }
-
-  .export-box { padding: 18px; border-radius: 14px; }
-  .pdf-opts { gap: 6px; }
-  .confirm-box { padding: 18px; }
-
-  /* Zoom plein écran : contrôles resserrés */
-  .zoom-controls { bottom: 14px; padding: 6px 10px; gap: 5px; }
-  .zoom-btn { width: 30px; height: 30px; font-size: 13px; }
-
-  /* Overlay d'import CSV : plein écran, colonnes qui scrollent */
-  #import-overlay .export-box, #import-overlay [style*="max-width:560px"] { max-width: 100% !important; width: 100% !important; padding: 14px !important; }
-
-  .current-photo-thumb { width: 40px; height: 40px; border-radius: 9px; }
-
-  /* ── Zones tactiles agrandies (min. ~44px, recommandation mobile) ── */
-  .input-pro { padding: 13px 14px; font-size: 16px; border-radius: 10px; } /* 16px : évite le zoom auto iOS/Android au focus */
-  .date-chip { padding: 11px 13px; font-size: 12.5px; }
-  .tva-chip { padding: 12px 4px; font-size: 12px; }
-  .ht-trigger, .ht-result-bar { padding: 12px 14px; }
-  .autocomplete-item { padding: 14px 14px; font-size: 14px; }
-  label { min-height: 20px; }
-  input[type="checkbox"] { width: 18px; height: 18px; }
-  .queue-nav button { width: 34px; height: 34px; }
-  .zoom-btn { width: 34px; height: 34px; font-size: 14px; }
-  .mobile-tab { padding: 13px 6px; min-height: 46px; }
-  .tb-btn { min-height: 40px; }
-  .btn-action { padding: 14px; font-size: 15px; min-height: 48px; }
-  .strip-thumb { width: 52px; height: 52px; }
-  .h-tab { min-height: 38px; }
-  .sort-btn { min-height: 32px; }
-
-  /* ── Barre d'actions (Enregistrer / Annuler) toujours visible ──
-     Position fixe, calée sur la zone visible réelle (au-dessus du clavier)
-     via --kb-offset, plutôt que sticky : ça ne dépend plus de la hauteur
-     du body/flex qui peut mettre du temps à se recalculer sur certains
-     téléphones/navigateurs. */
-  .form-actions {
-    position: fixed; left: 0; right: 0;
-    bottom: var(--kb-offset, 0px);
-    z-index: 20;
-    background: var(--surface);
-    box-shadow: 0 -4px 12px rgba(0,0,0,0.06);
-    padding-bottom: calc(10px + env(safe-area-inset-bottom));
-    transition: transform 0.15s ease, opacity 0.15s ease;
-  }
-  /* Pendant la saisie (clavier ouvert), on cache la barre pour laisser
-     toute la place au champ + clavier ; elle revient dès qu'on quitte le champ. */
-  body.kb-typing .form-actions {
-    transform: translateY(100%);
-    opacity: 0;
-    pointer-events: none;
-  }
-  /* Espace réservé en bas du formulaire pour que le dernier champ ne soit
-     jamais caché derrière la barre désormais fixe */
-  .form-scroll { padding-bottom: calc(92px + env(safe-area-inset-bottom)); }
-
-  /* ── Onglet actif plus lisible (pastille de fond) ── */
-  .mobile-tab.active { background: rgba(244,96,96,0.08); }
-
-  /* ── Zone de sécurité (encoche / barre de geste Android) ── */
-  .mobile-tabs { padding-top: env(safe-area-inset-top); }
-  .zoom-controls { padding-bottom: calc(6px + env(safe-area-inset-bottom)); }
-
-  /* ── Évite le rebond de la page qui gêne le swipe/scroll ── */
-  html, body { overscroll-behavior-y: contain; }
-  .left-panel, .right-panel, .form-scroll { overscroll-behavior: contain; }
-
-  /* ── Calendrier plus grand et plus tactile ── */
-  .cal-header { padding: 12px 14px 10px; }
-  .cal-month-label { font-size: 14px; }
-  .cal-nav-btn { width: 34px; height: 34px; font-size: 13px; }
-  .cal-wd { font-size: 10px; padding: 4px 0; }
-  .cal-days { gap: 4px; padding: 4px 10px 12px; }
-  .cal-day { font-size: 13px; border-radius: 8px; }
-}
-
-
-@media (max-width: 420px) {
-  .logo-sub { display: none; }
-  .topbar-badge span:not(.count) { display: none; }
-  .mobile-tab { font-size: 11px; padding: 10px 4px; }
-  .date-chips-row { gap: 4px; }
-  .tva-chips { gap: 4px; }
-}
-
 /* ─── COULEURS PAR JOUR — ARCHIVES ──────────────────── */
 /* Les couleurs sont injectées via JS : setDayColor(el, colorIndex) */
 .h-item[data-day-color] { border-left: 3px solid var(--day-color, #006466); background: rgba(0,0,0,0.02); }
@@ -982,12 +757,6 @@ body {
 </div>
 
 <div id="toast" class="toast"></div>
-
-<!-- MAGNIFIER OVERLAY (appui long sur la vignette photo en cours) -->
-<div class="photo-magnifier-overlay" id="photo-magnifier-overlay">
-  <div class="photo-magnifier-hint"><i class="fas fa-hand-pointer"></i> Pincez avec 2 doigts pour zoomer · relâchez pour revenir</div>
-  <div class="photo-magnifier-img" id="photo-magnifier-img"></div>
-</div>
 
 <!-- CONFIRM MODAL -->
 <div id="confirm-overlay" class="confirm-overlay">
@@ -1167,24 +936,11 @@ body {
 <!-- ─── WORKSPACE ──────────────────────────────────────────── -->
 <div class="workspace">
 
-  <!-- Bascule mobile Formulaire / Photo -->
-  <div class="mobile-tabs">
-    <div class="mobile-tab active" id="mtab-form" onclick="switchMobileView('form')"><i class="fas fa-edit"></i>Formulaire</div>
-    <div class="mobile-tab" id="mtab-photo" onclick="switchMobileView('photo')"><i class="fas fa-image"></i>Photo</div>
-  </div>
-
   <!-- LEFT : FORMULAIRE -->
-  <div class="left-panel mobile-active" id="left-panel-el">
-    <div class="panel-header" style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
-      <div style="min-width:0;">
-        <div class="panel-title">Formulaire</div>
-        <div class="panel-headline">Infos du reçu</div>
-      </div>
-      <div class="current-photo-thumb" id="current-photo-thumb" style="display:none;" onclick="onCurrentThumbClick()" title="Photo en cours de renommage">
-        <div class="current-photo-thumb-bg" id="current-photo-thumb-img"></div>
-        <i class="fas fa-file-pdf" id="current-photo-thumb-pdf" style="display:none;"></i>
-        <span class="current-photo-thumb-badge" id="current-photo-thumb-badge" style="display:none;"></span>
-      </div>
+  <div class="left-panel">
+    <div class="panel-header">
+      <div class="panel-title">Formulaire</div>
+      <div class="panel-headline">Infos du reçu</div>
     </div>
 
     <div class="form-scroll">
@@ -1211,7 +967,7 @@ body {
       <!-- Montant TTC -->
       <div class="field-group">
         <div class="field-label"><i class="fas fa-euro-sign"></i> Montant TTC</div>
-        <input type="number" id="capture-amount" class="input-pro" inputmode="decimal" enterkeyhint="next" placeholder="Ex: 42.50" oninput="autoComputeHT()">
+        <input type="number" id="capture-amount" class="input-pro" placeholder="Ex: 42.50" oninput="autoComputeHT()">
       </div>
 
       <!-- HT Accordion -->
@@ -1234,7 +990,7 @@ body {
             <div class="tva-chip" id="tva-manual" onclick="selectTVA('manual')">Saisir</div>
           </div>
           <div id="ht-manual-wrap" style="display:none;">
-            <input type="number" id="capture-ht" class="input-pro" inputmode="decimal" enterkeyhint="next" placeholder="Montant HT €" style="border-color:var(--accent);margin-bottom:6px;" oninput="syncManualHT()">
+            <input type="number" id="capture-ht" class="input-pro" placeholder="Montant HT €" style="border-color:var(--accent);margin-bottom:6px;" oninput="syncManualHT()">
           </div>
           <div id="ht-computed" class="ht-computed">
             <span style="font-size:12px;font-weight:600;opacity:0.8;">HT calculé</span>
@@ -1249,11 +1005,8 @@ body {
         <div class="field-label"><i class="fas fa-store"></i> Magasin / abonnement</div>
         <div class="shop-wrap">
           <input type="text" id="capture-shop" class="input-pro" placeholder="Nom du magasin ou abonnement (ex: ORANGE)"
-            autocomplete="off" autocapitalize="characters" enterkeyhint="done" oninput="onShopInput()" onkeydown="onShopKey(event)" onfocus="onShopInput()" onblur="setTimeout(()=>document.getElementById('autocomplete-list').style.display='none',150)">
+            autocomplete="off" oninput="onShopInput()" onkeydown="onShopKey(event)" onfocus="onShopInput()" onblur="setTimeout(()=>document.getElementById('autocomplete-list').style.display='none',150)">
           <div id="autocomplete-list" class="autocomplete-list"></div>
-        </div>
-        <div id="reuse-last-btn" onclick="applyLastReceiptInfo()" style="display:none;margin-top:8px;font-size:11.5px;font-weight:700;color:var(--secondary);background:rgba(0,100,102,0.06);border:1px dashed var(--border);border-radius:8px;padding:8px 10px;cursor:pointer;align-items:center;gap:6px;">
-          <i class="fas fa-clock-rotate-left"></i> <span id="reuse-last-label">Reprendre les infos du dernier reçu</span>
         </div>
         <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-top:8px;cursor:pointer;">
           <input type="checkbox" id="batch-auto-increment" onchange="onBatchToggle()"> Auto incrément mensuel
@@ -1316,7 +1069,7 @@ body {
   </div>
 
   <!-- RIGHT : PHOTO -->
-  <div class="right-panel" id="right-panel-el">
+  <div class="right-panel">
     <div class="photo-header">
       <i class="fas fa-images" style="color:var(--secondary);"></i>
       <span class="photo-header-title">Photo du reçu</span>
@@ -1786,64 +1539,7 @@ function onShopInput() {
   list.style.display = 'block';
   updateNamePreview();
 }
-// ─── Reprendre les infos du dernier reçu enregistré ─────────
-function saveLastReceiptInfo(shop, tvaMode, htManual) {
-  try {
-    localStorage.setItem('lastReceiptInfo', JSON.stringify({ shop, tvaMode: tvaMode || 'none', htManual: htManual || '' }));
-  } catch(e) {}
-}
-function getLastReceiptInfo() {
-  try {
-    const raw = localStorage.getItem('lastReceiptInfo');
-    return raw ? JSON.parse(raw) : null;
-  } catch(e) { return null; }
-}
-function refreshReuseLastBtn() {
-  const el = document.getElementById('reuse-last-btn');
-  const shopEl = document.getElementById('capture-shop');
-  if (!el || !shopEl) return;
-  const info = getLastReceiptInfo();
-  const shouldShow = !!(info && info.shop && !shopEl.value);
-  if (shouldShow) {
-    const tvaLabel = info.tvaMode && info.tvaMode !== 'none' ? ' · TVA ' + (info.tvaMode === 'manual' ? 'manuelle' : info.tvaMode + '%') : '';
-    document.getElementById('reuse-last-label').textContent = `Reprendre : ${info.shop}${tvaLabel}`;
-    el.style.display = 'flex';
-  } else {
-    el.style.display = 'none';
-  }
-}
-function applyLastReceiptInfo() {
-  const info = getLastReceiptInfo();
-  if (!info) return;
-  const shopEl = document.getElementById('capture-shop');
-  shopEl.value = info.shop;
-  updateNamePreview();
-  if (info.tvaMode && info.tvaMode !== 'none') {
-    if (info.tvaMode === 'manual') {
-      document.getElementById('ht-body').style.display = 'block';
-      _htAccordionOpen = true;
-    }
-    selectTVA(info.tvaMode);
-    if (info.tvaMode === 'manual' && info.htManual) {
-      document.getElementById('capture-ht').value = info.htManual;
-      syncManualHT();
-    }
-  }
-  document.getElementById('reuse-last-btn').style.display = 'none';
-  if (navigator.vibrate) navigator.vibrate(10);
-  showToast('✓ Infos reprises : ' + info.shop);
-}
-
-function pickShop(name) {
-  document.getElementById('capture-shop').value=name;
-  document.getElementById('autocomplete-list').style.display='none';
-  updateNamePreview();
-  document.getElementById('capture-shop').blur();
-  const amountEl = document.getElementById('capture-amount');
-  if (amountEl && !amountEl.value) {
-    setTimeout(() => amountEl.focus(), 60);
-  }
-}
+function pickShop(name) { document.getElementById('capture-shop').value=name; document.getElementById('autocomplete-list').style.display='none'; updateNamePreview(); }
 function onShopKey(e) {
   const items = document.querySelectorAll('.autocomplete-item');
   if (e.key==='ArrowDown') { acIndex=Math.min(acIndex+1,items.length-1); highlightAc(items); }
@@ -1994,14 +1690,7 @@ function updateSaveBtn() {
   const hasDate = !!document.getElementById('capture-date').value;
   const hasPhoto = photoQueue.length > 0;
   const btn = document.getElementById('save-btn');
-  const wasDisabled = btn.disabled;
   btn.disabled = !(hasDate && hasPhoto);
-  if (wasDisabled && !btn.disabled) {
-    if (navigator.vibrate) navigator.vibrate(15);
-    btn.classList.remove('pulse-ready');
-    void btn.offsetWidth; // relance l'animation
-    btn.classList.add('pulse-ready');
-  }
   const hint = document.getElementById('save-hint');
   if (!hasPhoto && !hasDate) {
     hint.innerHTML = '<i class="fas fa-info-circle"></i> Importez une photo et choisissez une date';
@@ -2268,41 +1957,6 @@ function showPhotoAt(idx) {
   resetInlineZoom();
   restoreFormFromQueue(idx);
   renderPhotoQueue();
-  updateCurrentPhotoThumb(item, idx);
-  refreshReuseLastBtn();
-}
-
-// ─── Vignette "photo en cours de renommage" ────────────────
-function updateCurrentPhotoThumb(item, idx) {
-  const thumb = document.getElementById('current-photo-thumb');
-  const img = document.getElementById('current-photo-thumb-img');
-  const pdfIcon = document.getElementById('current-photo-thumb-pdf');
-  const badge = document.getElementById('current-photo-thumb-badge');
-  if (!item) { thumb.style.display = 'none'; return; }
-
-  const pageIdx = item.currentPage || 0;
-  const src = item.isPDF ? null : (item.pages ? item.pages[pageIdx] : item.dataUrl);
-
-  if (src) {
-    img.style.backgroundImage = `url("${src}")`; img.style.display = 'block';
-    pdfIcon.style.display = 'none';
-  } else {
-    img.style.display = 'none';
-    pdfIcon.style.display = '';
-  }
-
-  if (photoQueue.length > 1) {
-    badge.textContent = `${idx + 1}/${photoQueue.length}`;
-    badge.style.display = '';
-  } else {
-    badge.style.display = 'none';
-  }
-  thumb.style.display = 'flex';
-}
-
-function onCurrentThumbClick() {
-  if (window.innerWidth <= 900) { switchMobileView('photo'); return; }
-  if (typeof openZoom === 'function') openZoom();
 }
 function queueNav(dir) {
   saveCurrentFormToQueue();
@@ -2350,10 +2004,8 @@ function resetForm() {
   if (bar) bar.classList.remove('visible');
   const strip = document.getElementById('photo-strip');
   if (strip) strip.innerHTML = '';
-  document.getElementById('current-photo-thumb').style.display = 'none';
   resetInlineZoom();
   updateNamePreview();
-  refreshReuseLastBtn();
 }
 
 // ─── CONFIRM MODAL ─────────────────────────────────────────
@@ -2406,7 +2058,6 @@ async function confirmSave() {
 
     tx.oncomplete = () => {
       showToast("✓ Enregistré : " + fileNameBase);
-      saveLastReceiptInfo(shopVal, window._tvaMode, document.getElementById('capture-ht')?.value || '');
       editingReceiptId = null; // reset mode édition
       savedInSession.add(currentQueueIdx);
       loadReceiptDatesAndBuildChips();
@@ -2725,12 +2376,12 @@ function renderTable() {
       const tr=document.createElement('tr');
       const colorIdx = dayColorMapT[p.dateSort];
       if (colorIdx !== undefined) setDayColor(tr, colorIdx);
-      tr.innerHTML=`<td data-label="Date">${p.date}</td><td data-label="Magasin" style="font-weight:600;">${p.shop}</td><td data-label="HT">${p.ht?fmt(parseFloat(p.ht))+' €':'—'}</td><td data-label="TTC">${ttc>0?fmt(ttc)+' €':'—'}</td><td data-label="" style="text-align:center;"><button class="tbl-del-btn" onclick="deleteTableRow(${item.id})" title="Supprimer"><i class="fas fa-trash"></i></button></td>`;
+      tr.innerHTML=`<td>${p.date}</td><td style="font-weight:600;">${p.shop}</td><td>${p.ht?fmt(parseFloat(p.ht))+' €':'—'}</td><td>${ttc>0?fmt(ttc)+' €':'—'}</td><td style="text-align:center;"><button class="tbl-del-btn" onclick="deleteTableRow(${item.id})" title="Supprimer"><i class="fas fa-trash"></i></button></td>`;
       tbody.appendChild(tr);
     });
     if (sorted.length>0) {
       const tr=document.createElement('tr'); tr.className='tbl-total';
-      tr.innerHTML=`<td class="tbl-total-label" colspan="2">TOTAL (${sorted.length} reçus)</td><td data-label="HT">${totalHT>0?fmt(totalHT)+' €':'—'}</td><td data-label="TTC">${fmt(totalTTC)} €</td><td data-label=""></td>`;
+      tr.innerHTML=`<td colspan="2">TOTAL (${sorted.length} reçus)</td><td>${totalHT>0?fmt(totalHT)+' €':'—'}</td><td>${fmt(totalTTC)} €</td><td></td>`;
       tbody.appendChild(tr);
     }
     if (!sorted.length) tbody.innerHTML='<tr><td colspan="5" style="text-align:center;opacity:0.5;padding:20px;">Aucun reçu enregistré</td></tr>';
@@ -3591,364 +3242,6 @@ async function confirmImport() {
   };
   tx.onerror = () => showToast('Erreur lors de l\'import');
 }
-
-// ═══════════════════════════════════════════════════════════
-// MOBILE : bascule Formulaire / Photo, swipe, clavier
-// ═══════════════════════════════════════════════════════════
-
-// ─── Bascule d'onglet ───────────────────────────────────────
-function switchMobileView(which) {
-  const left = document.getElementById('left-panel-el');
-  const right = document.getElementById('right-panel-el');
-  const tabForm = document.getElementById('mtab-form');
-  const tabPhoto = document.getElementById('mtab-photo');
-  if (which === 'photo') {
-    left.classList.remove('mobile-active');
-    right.classList.add('mobile-active');
-    tabForm.classList.remove('active');
-    tabPhoto.classList.add('active');
-  } else {
-    right.classList.remove('mobile-active');
-    left.classList.add('mobile-active');
-    tabPhoto.classList.remove('active');
-    tabForm.classList.add('active');
-  }
-}
-
-// Si une photo est ajoutée sur mobile, on bascule automatiquement sur l'onglet Photo
-(function() {
-  const dropZone = document.querySelector('.drop-zone');
-  if (dropZone) {
-    dropZone.addEventListener('click', () => {
-      if (window.innerWidth <= 900) setTimeout(() => switchMobileView('photo'), 150);
-    });
-  }
-})();
-
-// ─── Glisser (swipe) pour changer d'onglet ──────────────────
-(function() {
-  function attachSwipe(el, onSwipeLeft, onSwipeRight) {
-    let startX = 0, startY = 0, tracking = false;
-    el.addEventListener('touchstart', e => {
-      if (window.innerWidth > 900 || e.touches.length !== 1) { tracking = false; return; }
-      startX = e.touches[0].clientX;
-      startY = e.touches[0].clientY;
-      tracking = true;
-    }, { passive: true });
-    el.addEventListener('touchend', e => {
-      if (!tracking) return;
-      tracking = false;
-      const endX = e.changedTouches[0].clientX;
-      const endY = e.changedTouches[0].clientY;
-      const dx = endX - startX;
-      const dy = endY - startY;
-      // Swipe surtout horizontal, distance suffisante
-      if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.8) {
-        if (dx < 0) onSwipeLeft(); else onSwipeRight();
-      }
-    }, { passive: true });
-  }
-  document.addEventListener('DOMContentLoaded', () => {
-    const left = document.getElementById('left-panel-el');
-    const right = document.getElementById('right-panel-el');
-    if (left) attachSwipe(left, () => switchMobileView('photo'), () => {});
-    if (right) attachSwipe(right, () => {}, () => switchMobileView('form'));
-    if (typeof refreshReuseLastBtn === 'function') refreshReuseLastBtn();
-
-    // Touche "Suivant" du clavier : montant/HT → magasin
-    const chain = { 'capture-amount': 'capture-shop', 'capture-ht': 'capture-shop' };
-    Object.keys(chain).forEach(id => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.addEventListener('keydown', e => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          const next = document.getElementById(chain[id]);
-          if (next) next.focus();
-        }
-      });
-    });
-    const shopEl = document.getElementById('capture-shop');
-    if (shopEl) {
-      shopEl.addEventListener('keydown', e => {
-        if (e.key === 'Enter' && typeof acIndex !== 'undefined' && acIndex < 0) {
-          e.preventDefault();
-          shopEl.blur();
-        }
-      });
-    }
-  });
-})();
-
-// ─── Clavier mobile : garder les champs visibles, cacher la barre pendant la saisie ─
-(function() {
-  function isMobile() { return window.innerWidth <= 900; }
-
-  // 1) Recale la hauteur réelle de la page sur la zone visible (au-dessus du clavier)
-  //    via une variable CSS (--app-height), au lieu d'écraser body.style.height
-  //    directement : ça évite les conflits avec la règle 100dvh du CSS mobile,
-  //    qui elle aussi essaie de suivre le clavier sur certains navigateurs.
-  if (window.visualViewport) {
-    const vv = window.visualViewport;
-    let raf = null;
-    const applyVV = () => {
-      if (raf) cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => {
-        if (isMobile()) {
-          document.documentElement.style.setProperty('--app-height', vv.height + 'px');
-          // Distance entre le bas de la fenêtre et le bas de la zone visible
-          // réelle = hauteur du clavier (+ éventuelle barre système).
-          const kbOffset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
-          document.documentElement.style.setProperty('--kb-offset', kbOffset + 'px');
-        } else {
-          document.documentElement.style.removeProperty('--app-height');
-          document.documentElement.style.removeProperty('--kb-offset');
-        }
-      });
-    };
-    vv.addEventListener('resize', applyVV);
-    vv.addEventListener('scroll', applyVV);
-    window.addEventListener('resize', applyVV);
-    applyVV();
-  }
-
-  // 2) Fait remonter le champ actif au-dessus du clavier.
-  //    Au lieu d'un délai fixe (qui peut tomber trop tôt ou trop tard selon
-  //    la vitesse du téléphone), on attend l'événement visualViewport qui
-  //    signale que le clavier a fini de s'ouvrir, puis on scrolle.
-  let activeField = null;
-  let hideBarTimer = null;
-
-  document.addEventListener('focusin', e => {
-    if (!isMobile()) return;
-    const t = e.target;
-    if (!(t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA'))) return;
-    activeField = t;
-
-    // Pendant la saisie, on cache la barre Enregistrer/Annuler pour laisser
-    // toute la place au champ + clavier.
-    clearTimeout(hideBarTimer);
-    document.body.classList.add('kb-typing');
-
-    const scrollToField = () => {
-      if (document.activeElement !== activeField) return;
-      activeField.scrollIntoView({ block: 'center', behavior: 'smooth' });
-    };
-
-    if (window.visualViewport) {
-      let done = false;
-      const onceResized = () => {
-        if (done) return;
-        done = true;
-        window.visualViewport.removeEventListener('resize', onceResized);
-        setTimeout(scrollToField, 60);
-      };
-      window.visualViewport.addEventListener('resize', onceResized);
-      // Filet de sécurité si l'event ne se déclenche pas (clavier déjà ouvert,
-      // clavier flottant, etc.)
-      setTimeout(() => {
-        if (done) return;
-        done = true;
-        window.visualViewport.removeEventListener('resize', onceResized);
-        scrollToField();
-      }, 400);
-    } else {
-      setTimeout(scrollToField, 300);
-    }
-  });
-
-  document.addEventListener('focusout', () => {
-    activeField = null;
-    // Petit délai avant de réafficher la barre : si le focus part vers un
-    // autre champ (ex: touche "Suivant"), on ne veut pas de clignotement.
-    clearTimeout(hideBarTimer);
-    hideBarTimer = setTimeout(() => {
-      const t = document.activeElement;
-      const stillTyping = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA');
-      if (!stillTyping) document.body.classList.remove('kb-typing');
-    }, 120);
-  });
-})();
-
-// ─── Loupe plein écran par appui long sur la vignette photo ─
-// Permet de revoir la photo en grand sans quitter le formulaire :
-// on maintient le doigt appuyé sur la vignette, on relâche pour revenir.
-// Une fois la loupe ouverte : pincer avec 2 doigts zoome (comme dans une
-// galerie photo classique), un seul doigt glissé verticalement zoome aussi
-// (pratique quand l'autre main tient le téléphone).
-(function() {
-  const thumb = document.getElementById('current-photo-thumb');
-  const overlay = document.getElementById('photo-magnifier-overlay');
-  const magImg = document.getElementById('photo-magnifier-img');
-  if (!thumb || !overlay || !magImg) return;
-
-  let pressTimer = null;
-  let isHolding = false;
-  let didLongPress = false;
-
-  // Position du doigt qui a déclenché l'appui long (celui qui, si on le
-  // relâche, referme la loupe)
-  let lastX = 0, lastY = 0;
-  let originX = 0, originY = 0;
-
-  // État affiché de l'image
-  let scale = 1, panX = 0, panY = 0;
-  let baseW = 0, baseH = 0;
-
-  // Suivi de tous les doigts posés, pour détecter un pincement à 2 doigts
-  const pointers = new Map(); // pointerId -> {x, y}
-  let pinchStartDist = null;
-  let pinchStartScale = 1;
-  let pinchStartMid = null;
-  let pinchStartPan = { x: 0, y: 0 };
-
-  function applyTransform() {
-    magImg.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
-  }
-  function resetTransform(animate) {
-    scale = 1; panX = 0; panY = 0;
-    pinchStartDist = null; pinchStartMid = null;
-    magImg.style.transition = animate ? 'transform 0.15s ease-out' : 'none';
-    applyTransform();
-  }
-  function clampPan(x, y, s) {
-    const maxX = (baseW * (s - 1)) / 2;
-    const maxY = (baseH * (s - 1)) / 2;
-    return {
-      x: Math.min(maxX, Math.max(-maxX, x)),
-      y: Math.min(maxY, Math.max(-maxY, y))
-    };
-  }
-
-  function getCurrentPhotoSrc() {
-    if (typeof photoQueue === 'undefined' || !photoQueue.length) return null;
-    const item = photoQueue[currentQueueIdx];
-    if (!item) return null;
-    const pageIdx = item.currentPage || 0;
-    return item.pages ? item.pages[pageIdx] : item.dataUrl;
-  }
-
-  function openMagnifier() {
-    const src = getCurrentPhotoSrc();
-    if (!src) return;
-    magImg.style.backgroundImage = `url("${src}")`;
-    overlay.classList.add('visible');
-    isHolding = true;
-    didLongPress = true;
-    originX = lastX; originY = lastY;
-    baseW = magImg.offsetWidth; baseH = magImg.offsetHeight;
-    resetTransform(false);
-    if (navigator.vibrate) navigator.vibrate(10);
-  }
-  function closeMagnifier() {
-    clearTimeout(pressTimer);
-    if (!isHolding) return;
-    isHolding = false;
-    overlay.classList.remove('visible');
-    pointers.clear();
-    resetTransform(false);
-  }
-
-  function registerPointer(e) {
-    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    // Un doigt vient de s'ajouter ou de disparaître : on repart d'un
-    // pincement neuf pour éviter un saut de zoom brutal.
-    pinchStartDist = null;
-    pinchStartMid = null;
-  }
-
-  function onPointerMoveShared(e) {
-    if (!pointers.has(e.pointerId)) return;
-    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    if (!isHolding) return;
-
-    if (pointers.size >= 2) {
-      // ─ Pincement à deux doigts : zoom + léger déplacement ─
-      const pts = Array.from(pointers.values()).slice(0, 2);
-      const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
-      const midX = (pts[0].x + pts[1].x) / 2;
-      const midY = (pts[0].y + pts[1].y) / 2;
-      if (pinchStartDist == null) {
-        pinchStartDist = dist;
-        pinchStartScale = scale;
-        pinchStartMid = { x: midX, y: midY };
-        pinchStartPan = { x: panX, y: panY };
-      }
-      scale = Math.min(4, Math.max(1, pinchStartScale * (dist / pinchStartDist)));
-      const clamped = clampPan(
-        pinchStartPan.x + (midX - pinchStartMid.x),
-        pinchStartPan.y + (midY - pinchStartMid.y),
-        scale
-      );
-      panX = clamped.x; panY = clamped.y;
-      magImg.style.transition = 'none';
-      applyTransform();
-    } else if (pointers.size === 1) {
-      // ─ Un seul doigt : glisser vers le haut/bas zoome ─
-      lastX = e.clientX; lastY = e.clientY;
-      const dy = lastY - originY;
-      scale = Math.min(4, Math.max(1, 1 - dy / 150));
-      const clamped = clampPan(lastX - originX, 0, scale);
-      panX = clamped.x; panY = 0;
-      magImg.style.transition = 'none';
-      applyTransform();
-    }
-  }
-
-  function onPointerUpShared(e) {
-    pointers.delete(e.pointerId);
-    pinchStartDist = null;
-    pinchStartMid = null;
-    if (pointers.size === 1) {
-      // Il reste un doigt : on repart du zoom courant pour éviter un saut
-      const remaining = Array.from(pointers.values())[0];
-      originX = remaining.x; originY = remaining.y + (scale - 1) * 150; // ré-aligne dy=0 sur le zoom actuel
-      lastX = remaining.x; lastY = remaining.y;
-    }
-  }
-
-  thumb.addEventListener('pointerdown', e => {
-    if (e.button !== undefined && e.button !== 0) return;
-    e.preventDefault();
-    try { thumb.setPointerCapture(e.pointerId); } catch(err) {}
-    clearTimeout(pressTimer);
-    didLongPress = false;
-    lastX = e.clientX; lastY = e.clientY;
-    registerPointer(e);
-    pressTimer = setTimeout(openMagnifier, 260);
-  });
-  thumb.addEventListener('pointermove', onPointerMoveShared);
-  ['pointerup', 'pointerleave', 'pointercancel'].forEach(evt => {
-    thumb.addEventListener(evt, e => { pointers.delete(e.pointerId); closeMagnifier(); });
-  });
-
-  // Le 2e doigt (pincement) arrive forcément sur l'overlay, puisqu'elle
-  // recouvre tout l'écran une fois la loupe ouverte.
-  overlay.addEventListener('pointerdown', e => {
-    if (!isHolding) return;
-    e.preventDefault();
-    try { overlay.setPointerCapture(e.pointerId); } catch(err) {}
-    registerPointer(e);
-  }, { passive: false });
-  overlay.addEventListener('pointermove', onPointerMoveShared);
-  ['pointerup', 'pointerleave', 'pointercancel'].forEach(evt => {
-    overlay.addEventListener(evt, onPointerUpShared);
-  });
-
-  thumb.addEventListener('contextmenu', e => e.preventDefault());
-  // Bloque explicitement le geste tactile natif d'Android/Chrome (menu image, Lens, sélection)
-  thumb.addEventListener('touchstart', e => e.preventDefault(), { passive: false });
-  thumb.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
-  thumb.addEventListener('touchend', e => e.preventDefault(), { passive: false });
-  // Empêche le tap normal (bascule photo/zoom) de se déclencher juste après un appui long
-  thumb.addEventListener('click', e => {
-    if (didLongPress) {
-      e.stopImmediatePropagation();
-      e.preventDefault();
-      didLongPress = false;
-    }
-  }, true);
-})();
 </script>
 </body>
 </html>
