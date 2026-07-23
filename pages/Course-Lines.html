@@ -272,6 +272,26 @@ select option { background: white; }
 }
 .session-banner-top {
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 10px; margin-bottom: 0;
+}
+.session-banner-top-left {
+  display: flex; align-items: center; gap: 5px;
+  min-width: 0; flex: 1; overflow: hidden;
+}
+.session-name-truncate {
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  min-width: 0; flex-shrink: 1;
+}
+.session-inline-prices {
+  display: flex; align-items: baseline; gap: 3px;
+  flex-shrink: 0; white-space: nowrap;
+}
+.session-inline-total {
+  font-size: 0.82rem; font-weight: 800; color: var(--color-accent);
+}
+.session-inline-fiches {
+  font-size: 0.68rem; font-weight: 600; color: var(--color-secondary); opacity: 0.85;
 }
 .session-panel {
   overflow: visible;
@@ -510,15 +530,16 @@ select option { background: white; }
 .session-cost { font-size: 0.72rem; color: var(--color-accent); font-weight: 700; display: flex; align-items: center; gap: 4px; }
 .btn-reset {
   background: none; border: 1px solid rgba(244,96,96,0.3); color: var(--color-accent);
-  font-size: 0.75rem; font-weight: 700; cursor: pointer; padding: 5px 8px;
-  border-radius: 8px; opacity: 0.7; transition: all 0.2s; font-family: var(--font-body);
+  font-size: 0.7rem; font-weight: 700; cursor: pointer; padding: 0;
+  width: 24px; height: 24px;
+  border-radius: 7px; opacity: 0.7; transition: all 0.2s; font-family: var(--font-body);
   display: inline-flex; align-items: center; justify-content: center;
 }
 .btn-reset:hover { opacity: 1; background: rgba(244,96,96,0.1); }
 .btn-export-list {
   background: var(--glass); border: 1px solid var(--border-color);
-  color: var(--color-secondary); width: 28px; height: 28px; border-radius: 8px;
-  cursor: pointer; font-size: 0.78rem; display: inline-flex; align-items: center; justify-content: center;
+  color: var(--color-secondary); width: 24px; height: 24px; border-radius: 7px;
+  cursor: pointer; font-size: 0.72rem; display: inline-flex; align-items: center; justify-content: center;
   transition: all 0.2s;
 }
 .btn-export-list:hover { border-color: var(--color-accent); color: var(--color-accent); background: rgba(244,96,96,0.1); }
@@ -591,6 +612,15 @@ select option { background: white; }
 .list-item.is-muted { opacity: 0.45; }
 .list-item.is-muted .qty-big { text-decoration: line-through; }
 .muted-tag { font-size: 0.6rem; font-weight: 700; color: var(--color-secondary); background: rgba(0,100,102,0.1); border-radius: 6px; padding: 1px 6px; margin-left: 4px; }
+/* ── Badge inventaire discret ── */
+.inv-stock-badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 0.57rem; font-weight: 700; letter-spacing: 0.3px;
+  padding: 2px 7px; border-radius: 20px; margin-left: 5px;
+  vertical-align: middle;
+}
+.inv-stock-badge.has { background: rgba(0,100,102,0.1); color: var(--color-secondary); border: 1px solid rgba(0,100,102,0.2); }
+.inv-stock-badge.none { background: rgba(244,96,96,0.08); color: var(--color-accent); border: 1px solid rgba(244,96,96,0.2); }
 .item-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .item-name {
   font-weight: 600; font-size: 0.92rem;
@@ -648,22 +678,52 @@ select option { background: white; }
 .recipe-card.collapsed .recipe-card-header { margin-bottom: 0; }
 .toggle-icon { width: 24px; font-size: 0.75rem; color: var(--color-secondary); transition: transform 0.28s var(--ease); text-align: center; }
 .recipe-card.collapsed .toggle-icon { transform: rotate(-90deg); }
-/* ---------- INGREDIENT LIST (remplacement accordéons) ---------- */
-.ing-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+/* ---------- INGREDIENT LIST ---------- */
+.ing-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
 .ing-pill {
-  display: flex; align-items: center; gap: 10px;
-  background: var(--glass); border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm); padding: 10px 14px;
-  cursor: pointer; transition: all 0.18s;
+  display: flex; align-items: center; gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background 0.18s var(--ease), border-color 0.18s;
 }
-.ing-pill:hover { border-color: var(--color-primary); background: rgba(10,36,114,0.05); transform: translateX(3px); }
-.ing-pill-icon { width: 30px; height: 30px; border-radius: 9px; background: rgba(10,36,114,0.1); display: flex; align-items: center; justify-content: center; color: var(--color-primary); font-size: 0.75rem; flex-shrink: 0; }
+.ing-pill:hover { border-color: rgba(10,36,114,0.2); background: rgba(10,36,114,0.02); }
+.ing-pill-icon {
+  width: 32px; height: 32px; border-radius: 9px;
+  background: rgba(10,36,114,0.07);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--color-primary); font-size: 0.78rem; flex-shrink: 0;
+}
 .ing-pill-body { flex: 1; min-width: 0; }
-.ing-pill-name { font-weight: 700; font-size: 0.88rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.ing-pill-meta { font-size: 0.68rem; color: var(--color-secondary); margin-top: 2px; display: flex; gap: 6px; flex-wrap: wrap; }
-.ing-pill-cost { font-size: 0.72rem; font-weight: 700; color: var(--color-accent); white-space: nowrap; }
-.ing-pill-del { width: 28px; height: 28px; border-radius: 8px; background: rgba(244,96,96,0.1); border: 1px solid rgba(244,96,96,0.2); color: var(--color-accent); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; flex-shrink: 0; transition: all 0.15s; }
-.ing-pill-del:hover { background: var(--color-accent); color: white; }
+.ing-pill-name {
+  font-weight: 600; font-size: 0.88rem; color: var(--text-main);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ing-pill-meta {
+  font-size: 0.65rem; color: var(--color-secondary);
+  margin-top: 3px; display: flex; gap: 5px; align-items: center; flex-wrap: wrap;
+}
+.ing-pill-meta-sep { opacity: 0.35; }
+.ing-pill-dots { display: inline-flex; align-items: center; gap: 3px; opacity: 0.75; }
+.ing-pill-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+.ing-pill-qty {
+  font-family: var(--font-display); font-size: 1rem; font-weight: 700;
+  color: var(--color-primary); white-space: nowrap;
+  display: flex; align-items: baseline; gap: 3px; flex-shrink: 0;
+}
+.ing-pill-qty-unit {
+  font-size: 0.6rem; font-weight: 600; color: var(--color-secondary);
+}
+.ing-pill-del {
+  width: 28px; height: 28px; border-radius: 8px;
+  background: none; border: 1px solid var(--border-color);
+  color: var(--color-secondary); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.72rem; flex-shrink: 0; transition: all 0.15s;
+}
+.ing-pill-del:hover { background: var(--color-accent); color: white; border-color: var(--color-accent); }
 
 /* ---------- MODAL INGRÉDIENT ---------- */
 .ing-modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -681,6 +741,27 @@ select option { background: white; }
 }
 /* Supprimé : ancienne box coût estimé */
 .ing-modal-cost-preview { display: none; }
+
+/* ---------- SUGGESTION NOM INGRÉDIENT ---------- */
+.ing-suggest-item {
+  width: 100%; text-align: left;
+  background: var(--surface); border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-sm); padding: 10px 14px;
+  cursor: pointer; transition: all 0.18s var(--ease);
+  display: flex; flex-direction: column; gap: 3px;
+}
+.ing-suggest-item:hover {
+  border-color: var(--color-primary);
+  background: rgba(10,36,114,0.04);
+  transform: translateY(-1px);
+}
+.ing-suggest-item:active { transform: scale(0.98); }
+.ing-suggest-name {
+  font-weight: 700; font-size: 0.9rem; color: var(--text-main);
+}
+.ing-suggest-meta {
+  font-size: 0.65rem; color: var(--color-secondary); font-weight: 500;
+}
 
 /* Scan barcode */
 .barcode-section { margin-bottom: 14px; }
@@ -972,6 +1053,29 @@ select option { background: white; }
 </style>
 </head>
 <body>
+<!-- MODAL DOUBLON -->
+<div class="modal-overlay" id="modal-doublon" style="opacity:0;pointer-events:none;transition:opacity 0.25s;">
+  <div class="modal-sheet" style="transform:translateY(20px);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);">
+    <div class="modal-handle"></div>
+    <div class="modal-title" style="font-family:var(--font-display);font-size:1.1rem;margin-bottom:6px;color:var(--color-primary);display:flex;align-items:center;gap:8px;">
+      <i class="fa-solid fa-copy" style="color:var(--color-highlight);"></i> Doublon détecté
+    </div>
+    <p style="font-size:0.78rem;color:var(--color-secondary);margin-bottom:14px;" id="cl-doublon-sub"></p>
+    <div id="cl-doublon-existing-info" style="padding:10px 14px;border-radius:12px;background:rgba(10,36,114,0.06);border:1px solid rgba(10,36,114,0.12);margin-bottom:16px;font-size:0.82rem;color:var(--color-secondary);"></div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px;">
+      <button class="btn btn-success" style="width:100%;" onclick="clDoublonFusionner()">
+        <i class="fa-solid fa-code-merge"></i> Fusionner (additionner les qtés)
+      </button>
+      <button class="btn btn-neutral" style="width:100%;" onclick="clDoublonGarder()">
+        <i class="fa-solid fa-copy"></i> Garder séparé
+      </button>
+      <button class="btn btn-neutral" style="width:100%;border-color:var(--color-accent);color:var(--color-accent);" onclick="clCloseDoublon()">
+        Annuler
+      </button>
+    </div>
+  </div>
+</div>
+
 <div id="toast-container"></div>
 <div class="app-shell">
   <header>
@@ -1031,10 +1135,21 @@ select option { background: white; }
     </div>
 
     <div id="sec-list" class="section">
+
       <div class="session-banner">
         <!-- Ligne 1 : label + actions compactes -->
         <div class="session-banner-top">
-          <button onclick="toggleSessionPanel()" style="background:none;border:none;cursor:pointer;padding:0;display:flex;align-items:center;gap:6px;" title="Afficher/masquer les filtres"><span class="session-label" style="margin:0;"><i class="fa-solid fa-list-check" style="margin-right:5px;color:var(--color-accent);"></i><span id="active-session-name"></span></span><i class="fa-solid fa-chevron-down" id="session-panel-toggle" style="font-size:0.55rem;color:var(--color-secondary);opacity:0.5;transition:transform 0.25s ease;"></i></button>
+          <button onclick="toggleSessionPanel()" style="background:none;border:none;cursor:pointer;padding:0;display:flex;align-items:center;gap:5px;min-width:0;flex:1;overflow:hidden;" title="Afficher/masquer les filtres">
+            <div class="session-banner-top-left">
+              <i class="fa-solid fa-list-check" style="font-size:0.7rem;color:var(--color-accent);flex-shrink:0;"></i>
+              <span class="session-label session-name-truncate" style="margin:0;" id="active-session-name"></span>
+              <div class="session-inline-prices">
+                <span class="session-inline-total" id="session-cost-inline-total"></span>
+                <span class="session-inline-fiches" id="session-cost-inline-fiches"></span>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-down" id="session-panel-toggle" style="font-size:0.55rem;color:var(--color-secondary);opacity:0.5;transition:transform 0.25s ease;flex-shrink:0;"></i>
+          </button>
           <div class="session-banner-actions">
             <button class="btn-export-list" onclick="shareListURL()" title="Partager"><i class="fa-solid fa-share-nodes"></i></button>
             <button class="btn-export-list" onclick="exportListJSON()" title="Exporter"><i class="fa-solid fa-arrow-up-from-bracket"></i></button>
@@ -1045,14 +1160,10 @@ select option { background: white; }
         </div>
         <div class="session-panel" id="session-panel">
 
-          <!-- Coûts : Total + vue contextuelle -->
-          <div class="session-costs-row" id="session-costs-row" style="margin-top:8px;">
-            <div class="cost-block-total">
-              <span class="cost-block-label">Total</span>
-              <span class="cost-block-val" id="session-cost-total">—</span>
-            </div>
-            <span class="cost-arrow" id="cost-arrow-ctx" style="display:none;">→</span>
-            <div class="cost-block-filtered" id="cost-block-ctx" style="display:none;">
+          <!-- Coût contextuel (filtre actif) -->
+          <div class="session-costs-row" id="session-costs-row" style="margin-top:8px; display:none;">
+            <span class="cost-arrow" id="cost-arrow-ctx">↳</span>
+            <div class="cost-block-filtered" id="cost-block-ctx">
               <span class="cost-block-label" id="cost-ctx-label">—</span>
               <span class="cost-block-val" id="cost-ctx-val">—</span>
             </div>
@@ -1165,6 +1276,9 @@ select option { background: white; }
   <div class="nav-item" id="nav-labo" onclick="switchView('labo')">
     <i class="fa-solid fa-book-open"></i><span>LABO</span>
   </div>
+  <a class="nav-item" href="Invent-Lines.html" style="text-decoration:none;color:inherit;">
+    <i class="fa-solid fa-box-open"></i><span>STOCK</span>
+  </a>
 </nav>
 
 <script>
@@ -1335,15 +1449,137 @@ function openSingleModal() {
   });
 }
 
+// Calcule la similarité entre deux chaînes (0 = identiques, plus grand = plus différent)
+function _levenshtein(a, b) {
+  const m = a.length, n = b.length;
+  const dp = Array.from({length: m+1}, (_, i) => Array.from({length: n+1}, (_, j) => i === 0 ? j : j === 0 ? i : 0));
+  for (let i = 1; i <= m; i++) for (let j = 1; j <= n; j++)
+    dp[i][j] = a[i-1] === b[j-1] ? dp[i-1][j-1] : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+  return dp[m][n];
+}
+
+// Retourne vrai si deux noms d'articles sont suspicieusement similaires
+function _isSimilarName(a, b) {
+  const na = a.toLowerCase().trim(), nb = b.toLowerCase().trim();
+  if (na === nb) return true; // identique
+  // L'un contient l'autre (ex: "huile pepin" ⊂ "huile de pepin")
+  if (na.includes(nb) || nb.includes(na)) return true;
+  // Mots en commun : si ≥2 mots identiques ET noms courts → suspect
+  const wa = new Set(na.split(/\s+/)), wb = new Set(nb.split(/\s+/));
+  const common = [...wa].filter(w => w.length > 2 && wb.has(w));
+  if (common.length >= 2) return true;
+  // Distance de Levenshtein relative
+  const dist = _levenshtein(na, nb);
+  const maxLen = Math.max(na.length, nb.length);
+  if (maxLen > 0 && dist / maxLen < 0.35) return true;
+  return false;
+}
+
 function addSingleFromModal(name, qty, unit, cat, price, shop) {
   const sess = currentSession();
+  // Détection doublon exact (même nom + même unité)
+  const exactMatch = sess.list.find(i => i.name.toLowerCase() === name.toLowerCase() && i.unit === unit);
+  if (exactMatch) {
+    pushUndoState();
+    exactMatch.qty = parseFloat((exactMatch.qty + qty).toFixed(4));
+    exactMatch.done = false;
+    saveToIngredientDB(name, unit, price, cat, shop);
+    saveState();
+    toast(`${name} — quantité mise à jour ✓`);
+    return;
+  }
+  // Détection de noms similaires dans TOUTES les sources connues
+  const nameLower = name.toLowerCase().trim();
+
+  const _STOP = new Set(['de','du','des','le','la','les','un','une','au','aux','et','en','a','pour','par','avec','sans','sur','or','my']);
+  function _wordMatch(a, b) {
+    const wa = a.split(/[\s\u0027\u2019\u2018\-]+/).filter(w => w.length > 2 && !_STOP.has(w));
+    const wb = b.split(/[\s\u0027\u2019\u2018\-]+/).filter(w => w.length > 2 && !_STOP.has(w));
+    if (wa.length === 0 || wb.length === 0) return false;
+    if (wa.some(iw => wb.some(kw => kw.includes(iw) || iw.includes(kw)))) return true;
+    return wa.some(iw => wb.some(kw => {
+      if (Math.abs(iw.length - kw.length) > 2) return false;
+      return _levenshtein(iw, kw) <= 1 && Math.max(iw.length, kw.length) >= 4;
+    }));
+  }
+
+  // Cherche dans la liste active (on peut fusionner les quantités)
+  const similarInList = sess.list.filter(i => {
+    const kl = i.name.toLowerCase();
+    return kl !== nameLower && _wordMatch(nameLower, kl);
+  });
+
+  // Cherche aussi dans toutes les sources connues (DB, fiches, autres sessions)
+  const allKnownSimilar = getAllKnownIngredients().filter(i => {
+    const kl = i.name.toLowerCase();
+    if (kl === nameLower) return false;
+    if (similarInList.find(s => s.name.toLowerCase() === kl)) return false;
+    return _wordMatch(nameLower, kl);
+  });
+
+  const hasSimilar = similarInList.length > 0 || allKnownSimilar.length > 0;
+  if (hasSimilar) {
+    document.getElementById('fuzzy-doublon-modal')?.remove();
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay'; modal.id = 'fuzzy-doublon-modal';
+
+    // Items dans la liste — on peut fusionner
+    const listItemsHtml = similarInList.map(m => `
+      <button class="ing-suggest-item" onclick="
+        document.getElementById('fuzzy-doublon-modal').remove();
+        (function(){
+          const sess=currentSession(); pushUndoState();
+          const it=sess.list.find(i=>i.name===${JSON.stringify(m.name)}&&i.unit===${JSON.stringify(m.unit)});
+          if(it){it.qty=parseFloat((it.qty+${qty}).toFixed(4));it.done=false;}
+          saveToIngredientDB(${JSON.stringify(name)},${JSON.stringify(unit)},${price||0},${JSON.stringify(cat)},${JSON.stringify(shop||'')});
+          saveState(); renderList(); toast('Quantité ajoutée à ${escapeAttr(m.name)} ✓');
+        })()
+      ">
+        <div class="ing-suggest-name">${escapeHtml(m.name)} <span style="font-size:0.65rem;background:rgba(10,36,114,0.1);color:var(--color-primary);border-radius:6px;padding:1px 6px;margin-left:4px;">dans la liste</span></div>
+        <div class="ing-suggest-meta">${m.qty} ${escapeHtml(m.unit)}${m.shop ? ' · ' + escapeHtml(m.shop) : ''}</div>
+      </button>`).join('');
+
+    // Items connus ailleurs — on propose juste le nom
+    const knownItemsHtml = allKnownSimilar.slice(0, 5 - similarInList.length).map(m => `
+      <button class="ing-suggest-item" onclick="
+        document.getElementById('fuzzy-doublon-modal').remove();
+        (function(){
+          const sess=currentSession(); pushUndoState();
+          sess.list.push({name:${JSON.stringify(m.name)},qty:${qty},unit:${JSON.stringify(m.unit||unit)},cat:${JSON.stringify(m.cat||cat)},price:${m.price||price||0},shop:${JSON.stringify(m.shop||shop||'')},done:false});
+          saveToIngredientDB(${JSON.stringify(m.name)},${JSON.stringify(m.unit||unit)},${m.price||price||0},${JSON.stringify(m.cat||cat)},${JSON.stringify(m.shop||shop||'')});
+          saveState(); renderList(); toast('${escapeAttr(m.name)} ajouté ✓');
+        })()
+      ">
+        <div class="ing-suggest-name">${escapeHtml(m.name)}</div>
+        ${m.unit ? `<div class="ing-suggest-meta">${escapeHtml(m.unit)}${m.shop ? ' · ' + escapeHtml(m.shop) : ''}</div>` : ''}
+      </button>`).join('');
+
+    modal.innerHTML = `<div class="modal-sheet" style="padding:20px;max-width:420px;">
+      <div class="modal-handle"></div>
+      <div class="modal-title"><i class="fa-solid fa-magnifying-glass" style="color:var(--color-primary);margin-right:8px;"></i>Articles similaires trouvés</div>
+      <div class="modal-sub" style="margin-bottom:14px;">Tu saisis <strong>"${escapeHtml(name)}"</strong>. Veux-tu utiliser un article existant ?</div>
+      <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;">${listItemsHtml}${knownItemsHtml}</div>
+      <div style="border-top:1px solid var(--border-color);padding-top:12px;display:flex;flex-direction:column;gap:8px;">
+        <button class="btn btn-primary" onclick="
+          document.getElementById('fuzzy-doublon-modal').remove();
+          (function(){
+            const sess=currentSession(); pushUndoState();
+            sess.list.push({name:${JSON.stringify(name)},qty:${qty},unit:${JSON.stringify(unit)},cat:${JSON.stringify(cat)},price:${price||0},shop:${JSON.stringify(shop||'')},done:false});
+            saveToIngredientDB(${JSON.stringify(name)},${JSON.stringify(unit)},${price||0},${JSON.stringify(cat)},${JSON.stringify(shop||'')});
+            saveState(); renderList(); toast('${escapeAttr(name)} ajouté ✓');
+          })()
+        "><i class="fa-solid fa-plus"></i> Ajouter "${escapeHtml(name)}" comme nouvel article</button>
+        <button class="btn btn-neutral" onclick="document.getElementById('fuzzy-doublon-modal').remove()">Annuler</button>
+      </div>
+    </div>`;
+    modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+    document.body.appendChild(modal);
+    return;
+  }
+  // Pas de doublon — ajout normal
   pushUndoState();
-  const exist = sess.list.find(i => i.name.toLowerCase() === name.toLowerCase() && i.unit === unit);
-  if (exist) { exist.qty = parseFloat((exist.qty + qty).toFixed(4)); exist.done = false; }
-  else sess.list.push({ name, qty, unit, cat, price: price || 0, shop: shop || '', done: false });
-  // Mémorise cet ingrédient dans la base de connaissances
+  sess.list.push({ name, qty, unit, cat, price: price || 0, shop: shop || '', done: false });
   saveToIngredientDB(name, unit, price, cat, shop);
-  // sess.singles est recalculé dynamiquement dans renderListView
   saveState();
   toast(`${name} ajouté à la liste ✓`);
 }
@@ -1413,19 +1649,27 @@ function renderIngList() {
     updateRecipeTotalCost(); return;
   }
   container.innerHTML = _ings.map((ing, idx) => {
-    const cost = computeIngCost(ing.qty, ing.unit, ing.price || 0);
     const pm = getPriceMode(ing.unit);
-    const costStr = cost > 0 ? `${cost.toFixed(2)} €` : '';
     const priceStr = ing.price > 0 ? `${ing.price.toFixed(2)} ${pm.label}` : '';
-    const shopStr = ing.shop ? `<i class="fa-solid fa-store"></i> ${escapeHtml(ing.shop)}` : '';
-    const metas = [ing.qty + ' ' + ing.unit, ing.cat, priceStr, shopStr].filter(Boolean);
+    const shopStr = ing.shop ? escapeHtml(ing.shop) : '';
+    const catStr = ing.cat ? escapeHtml(ing.cat) : '';
+    // Méta : rayon · magasin · prix
+    const metaParts = [catStr, shopStr, priceStr].filter(Boolean);
+    const metaHtml = metaParts.join(`<span class="ing-pill-meta-sep"> · </span>`);
+    // Dots recettes — cherche les fiches qui contiennent cet ingrédient
+    const relatedRecipes = state.recipes.filter(r =>
+      r.ingredients.some(i => i.name.toLowerCase() === ing.name.toLowerCase() && i.unit === ing.unit)
+    );
+    const dotsHtml = relatedRecipes.length > 0
+      ? `<span class="ing-pill-dots">${relatedRecipes.map(r => `<span class="ing-pill-dot" style="background:${recipeColor(r.name)};" title="${escapeAttr(r.name)}"></span>`).join('')}</span>`
+      : '';
     return `<div class="ing-pill" onclick="openIngModal(${idx})">
       <div class="ing-pill-icon"><i class="fa-solid fa-leaf"></i></div>
       <div class="ing-pill-body">
         <div class="ing-pill-name">${escapeHtml(ing.name)}</div>
-        <div class="ing-pill-meta">${metas.join(' · ')}</div>
+        <div class="ing-pill-meta">${metaHtml}${dotsHtml ? `<span class="ing-pill-meta-sep"> · </span>${dotsHtml}` : ''}</div>
       </div>
-      ${costStr ? `<div class="ing-pill-cost">${costStr}</div>` : ''}
+      <div class="ing-pill-qty">${ing.qty}<span class="ing-pill-qty-unit">${escapeHtml(ing.unit)}</span></div>
       <button class="ing-pill-del" onclick="event.stopPropagation(); deleteIng(${idx})"><i class="fa-solid fa-xmark"></i></button>
     </div>`;
   }).join('');
@@ -1580,14 +1824,193 @@ function confirmIngModal(editIdx) {
     return;
   }
 
+  // Détection doublon dans la fiche (hors édition du même index)
+  if (editIdx === null) {
+    const dupIdx = _ings.findIndex(i => i.name.toLowerCase() === name.toLowerCase());
+    if (dupIdx !== -1) {
+      const dup = _ings[dupIdx];
+      _clPendingIng = { name, qty, unit, price, cat, shop, dupIdx };
+      document.getElementById('cl-doublon-sub').textContent = `"${name}" est déjà dans cette fiche.`;
+      document.getElementById('cl-doublon-existing-info').innerHTML =
+        `<strong>${escapeHtml(dup.name)}</strong> — ${dup.qty} ${escapeHtml(dup.unit)}` +
+        (dup.price > 0 ? ` · ${dup.price.toFixed(2)} €` : '') +
+        (dup.shop ? ` · ${escapeHtml(dup.shop)}` : '');
+      clOpenDoublon();
+      return;
+    }
+  }
+
+  // Suggestion de noms existants similaires (si le nom tapé n'est pas déjà un nom exact connu)
+  const nameLower = name.toLowerCase().trim();
+  const allKnown = getAllKnownIngredients();
+  const isExactKnown = allKnown.some(i => i.name.toLowerCase() === nameLower);
+  if (!isExactKnown) {
+    const _STOPFR2 = new Set(['de','du','des','le','la','les','un','une','au','aux','et','en','a','pour','par','avec','sans','sur']);
+    const inputWords = nameLower.split(/[\s\u0027\u2019\u2018\-]+/).filter(w => w.length > 2 && !_STOPFR2.has(w));
+    if (inputWords.length === 0) { _doConfirmIng(editIdx, name, qty, unit, price, cat, shop); return; }
+      const exact = allKnown.filter(i => {
+      const kl = i.name.toLowerCase();
+      if (kl === nameLower) return false;
+      const knownWords = kl.split(/[\s\u0027\u2019\u2018\-]+/);
+      const match = inputWords.some(iw => knownWords.some(kw => kw.includes(iw) || iw.includes(kw)));
+      return match;
+    });
+    const fuzzy = allKnown.filter(i => {
+      const kl = i.name.toLowerCase();
+      if (kl === nameLower) return false;
+      if (exact.find(e => e.name === i.name)) return false;
+      const knownWords = kl.split(/[\s\u0027\u2019\u2018\-]+/);
+      return inputWords.some(iw =>
+        knownWords.some(kw => {
+          const dist = _levenshtein(iw, kw);
+          return dist <= 1 && Math.max(iw.length, kw.length) > 3;
+        })
+      );
+    });
+    const suggestions = [...exact, ...fuzzy].slice(0, 5);
+  
+    if (suggestions.length > 0) {
+      _showIngNameSuggestionModal(name, qty, unit, price, cat, shop, editIdx, suggestions);
+      return;
+    }
+  }
+
+  _doConfirmIng(editIdx, name, qty, unit, price, cat, shop);
+}
+
+function _showIngNameSuggestionModal(name, qty, unit, price, cat, shop, editIdx, suggestions) {
+  document.getElementById('ing-name-suggest-modal')?.remove();
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.id = 'ing-name-suggest-modal';
+
+  const suggItems = suggestions.map((s, i) => {
+    const pm = getPriceMode(s.unit || 'kg');
+    const meta = [s.cat, s.shop, s.price > 0 ? `${s.price.toFixed(2)} ${pm.label}` : ''].filter(Boolean).join(' · ');
+    return `<button class="ing-suggest-item" onclick="_pickIngSuggestion(${i})">
+      <div class="ing-suggest-name">${escapeHtml(s.name)}</div>
+      ${meta ? `<div class="ing-suggest-meta">${escapeHtml(meta)}</div>` : ''}
+    </button>`;
+  }).join('');
+
+  modal.innerHTML = `
+    <div class="modal-sheet" style="padding:20px;max-width:420px;">
+      <div class="modal-handle"></div>
+      <div class="modal-title">
+        <i class="fa-solid fa-magnifying-glass" style="color:var(--color-primary);margin-right:8px;"></i>
+        Nom similaire trouvé
+      </div>
+      <div class="modal-sub" style="margin-bottom:14px;">
+        Tu saisis <strong>"${escapeHtml(name)}"</strong>. Des ingrédients proches existent déjà — veux-tu utiliser un nom existant ?
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;">
+        ${suggItems}
+      </div>
+      <div style="border-top:1px solid var(--border-color);padding-top:12px;display:flex;flex-direction:column;gap:8px;">
+        <button class="btn btn-primary" onclick="_confirmIngSuggestionNew()">
+          <i class="fa-solid fa-plus"></i> Garder "${escapeHtml(name)}" comme nouveau nom
+        </button>
+        <button class="btn btn-neutral" onclick="document.getElementById('ing-name-suggest-modal').remove()">
+          Annuler
+        </button>
+      </div>
+    </div>`;
+
+  // Stocke le contexte en attente
+  window._pendingIngSuggest = { name, qty, unit, price, cat, shop, editIdx, suggestions };
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  document.body.appendChild(modal);
+}
+
+function _pickIngSuggestion(idx) {
+  const ctx = window._pendingIngSuggest;
+  if (!ctx) return;
+  const s = ctx.suggestions[idx];
+  document.getElementById('ing-name-suggest-modal')?.remove();
+  // Pré-remplit le modal ingrédient avec le nom choisi + ses infos
+  const nameEl  = document.getElementById('im-name');
+  const unitEl  = document.getElementById('im-unit');
+  const catEl   = document.getElementById('im-cat');
+  const priceEl = document.getElementById('im-price');
+  const shopEl  = document.getElementById('im-shop');
+  if (nameEl)  nameEl.value  = s.name;
+  if (unitEl)  { unitEl.value = s.unit || ctx.unit; onIngModalUnitChange(unitEl); }
+  const qtyEl = document.getElementById('im-qty');
+  if (qtyEl && ctx.qty > 0) qtyEl.value = ctx.qty;
+  if (catEl && s.cat)   catEl.value  = s.cat;
+  if (priceEl && s.price > 0) priceEl.value = s.price.toFixed(2);
+  if (shopEl && s.shop) shopEl.value = s.shop;
+  updateIngModalCost();
+  const fromList = ctx.fromList;
+  window._pendingIngSuggest = null;
+  if (fromList) {
+    // Depuis la liste : confirme directement avec le nom choisi
+    _doConfirmIngFromList(s.name, ctx.qty, s.unit || ctx.unit, s.price || ctx.price, s.cat || ctx.cat, s.shop || ctx.shop);
+  } else {
+    nameEl?.focus();
+  }
+}
+
+function _confirmIngSuggestionNew() {
+  const ctx = window._pendingIngSuggest;
+  if (!ctx) return;
+  document.getElementById('ing-name-suggest-modal')?.remove();
+  window._pendingIngSuggest = null;
+  if (ctx.fromList) {
+    _doConfirmIngFromList(ctx.name, ctx.qty, ctx.unit, ctx.price, ctx.cat, ctx.shop);
+  } else {
+    _doConfirmIng(ctx.editIdx, ctx.name, ctx.qty, ctx.unit, ctx.price, ctx.cat, ctx.shop);
+  }
+}
+
+let _clPendingIng = null;
+
+function _doConfirmIng(editIdx, name, qty, unit, price, cat, shop) {
   const ing = { id: editIdx !== null ? (_ings[editIdx]?.id || Date.now()) : Date.now(), name, qty, unit, price, cat, shop };
   if (editIdx !== null) { _ings[editIdx] = ing; } else { _ings.push(ing); }
-  // Mémorise cet ingrédient dans la base de connaissances
   saveToIngredientDB(name, unit, price, cat, shop);
   saveState();
   closeIngModal();
   renderIngList();
   toast(editIdx !== null ? `${name} mis à jour ✓` : `${name} ajouté ✓`);
+}
+
+function clOpenDoublon() {
+  const el = document.getElementById('modal-doublon');
+  el.style.opacity = '1'; el.style.pointerEvents = 'auto';
+  el.querySelector('.modal-sheet').style.transform = 'translateY(0)';
+}
+function clCloseDoublon() {
+  const el = document.getElementById('modal-doublon');
+  el.style.opacity = '0'; el.style.pointerEvents = 'none';
+  el.querySelector('.modal-sheet').style.transform = 'translateY(20px)';
+  _clPendingIng = null;
+}
+function clDoublonFusionner() {
+  if (!_clPendingIng) return;
+  const { dupIdx, qty, unit, price, shop } = _clPendingIng;
+  const dup = _ings[dupIdx];
+  dup.qty = dup.unit === unit ? parseFloat((dup.qty + qty).toFixed(4)) : qty;
+  dup.unit = unit;
+  if (price > 0) dup.price = price;
+  if (shop) dup.shop = shop;
+  saveState(); renderIngList();
+  toast(`${dup.name} fusionné ✓`);
+  clCloseDoublon();
+  closeIngModal();
+}
+function clDoublonGarder() {
+  if (!_clPendingIng) return;
+  const { name, qty, unit, price, cat, shop } = _clPendingIng;
+  const suffix = shop || `(${_ings.filter(i => i.name.toLowerCase().startsWith(name.toLowerCase())).length + 1})`;
+  const newName = `${name} ${suffix}`.trim();
+  const ing = { id: Date.now(), name: newName, qty, unit, price, cat, shop };
+  _ings.push(ing);
+  saveToIngredientDB(newName, unit, price, cat, shop);
+  saveState(); renderIngList();
+  toast(`Ajouté comme "${newName}" ✓`);
+  clCloseDoublon();
+  closeIngModal();
 }
 
 // Autocomplete nom dans la modal
@@ -1609,12 +2032,27 @@ function saveToIngredientDB(name, unit, price, cat, shop) {
 // Récupère tous les ingrédients connus (DB + fiches)
 function getAllKnownIngredients() {
   const map = {};
-  // D'abord les fiches (priorité basse)
+  // D'abord les fiches sauvegardées (priorité basse)
   state.recipes.forEach(r => r.ingredients.forEach(i => {
     const key = i.name.toLowerCase();
     if (!map[key]) map[key] = { name: i.name, unit: i.unit, price: i.price || 0, cat: i.cat, shop: i.shop || '' };
   }));
-  // Ensuite la DB (priorité haute — écrase les fiches)
+  // Les ingrédients de la fiche en cours d'édition (pas encore sauvegardée)
+  if (typeof _ings !== 'undefined' && Array.isArray(_ings)) {
+    _ings.forEach(i => {
+      const key = i.name.toLowerCase();
+      if (!map[key]) map[key] = { name: i.name, unit: i.unit, price: i.price || 0, cat: i.cat, shop: i.shop || '' };
+    });
+  }
+  // La liste de courses active
+  const sess = (typeof currentSession === 'function') ? currentSession() : null;
+  if (sess && Array.isArray(sess.list)) {
+    sess.list.forEach(i => {
+      const key = i.name.toLowerCase();
+      if (!map[key]) map[key] = { name: i.name, unit: i.unit, price: i.price || 0, cat: i.cat, shop: i.shop || '' };
+    });
+  }
+  // Ensuite la DB (priorité haute — écrase tout)
   Object.values(state.ingredientDB).forEach(i => {
     map[i.name.toLowerCase()] = i;
   });
@@ -1626,9 +2064,20 @@ function handleIngModalAC(input) {
   const box = input.nextElementSibling;
   if (val.length < 1) { box.style.display = 'none'; return; }
   const known = getAllKnownIngredients();
-  const matches = known.filter(i => i.name.toLowerCase().includes(val)).slice(0, 6);
+  // Correspondances exactes (contient le texte tapé)
+  const exact = known.filter(i => i.name.toLowerCase().includes(val));
+  // Correspondances approx (similaire mais ne contient pas le texte exactement)
+  const fuzzy = known.filter(i => {
+    if (exact.find(e => e.name === i.name)) return false;
+    return _isSimilarName(i.name, val);
+  });
+  const matches = [...exact, ...fuzzy].slice(0, 6);
   if (matches.length) {
-    box.innerHTML = matches.map(m => `<div class="ac-item" onclick="selectIngModalAC('${escapeAttr(m.name)}','${escapeAttr(m.unit)}','${escapeAttr(m.cat)}','${m.price||0}','${escapeAttr(m.shop||'')}')">${escapeHtml(m.name)}<span>${m.unit} · ${m.cat}${m.shop?' · '+m.shop:''}</span></div>`).join('');
+    box.innerHTML = matches.map(m => {
+      const isFuzzy = !exact.find(e => e.name === m.name);
+      const hint = isFuzzy ? ` <span style="font-size:0.6rem;color:var(--color-accent);margin-left:4px;">similaire</span>` : '';
+      return `<div class="ac-item" onclick="selectIngModalAC('${escapeAttr(m.name)}','${escapeAttr(m.unit)}','${escapeAttr(m.cat)}','${m.price||0}','${escapeAttr(m.shop||'')}')">${escapeHtml(m.name)}${hint}<span>${m.unit} · ${m.cat}${m.shop?' · '+m.shop:''}</span></div>`;
+    }).join('');
     box.style.display = 'block';
   } else { box.style.display = 'none'; }
 }
@@ -2086,9 +2535,18 @@ function handleAC(input) {
   if (val.length < 1) { box.style.display = 'none'; return; }
   const known = [];
   state.recipes.forEach(r => r.ingredients.forEach(i => { if (!known.find(k => k.name.toLowerCase() === i.name.toLowerCase())) known.push(i); }));
-  const matches = known.filter(i => i.name.toLowerCase().includes(val)).slice(0, 5);
+  const exact = known.filter(i => i.name.toLowerCase().includes(val));
+  const fuzzy = known.filter(i => {
+    if (exact.find(e => e.name === i.name)) return false;
+    return _isSimilarName(i.name, val);
+  });
+  const matches = [...exact, ...fuzzy].slice(0, 5);
   if (matches.length) {
-    box.innerHTML = matches.map(m => `<div class="ac-item" onclick="selectAC(this,'${escapeAttr(m.name)}','${escapeAttr(m.unit)}','${escapeAttr(m.cat)}','${escapeAttr(m.shop||'')}')">${escapeHtml(m.name)}<span>${m.unit} · ${m.cat}${m.shop ? ' · '+m.shop : ''}</span></div>`).join('');
+    box.innerHTML = matches.map(m => {
+      const isFuzzy = !exact.find(e => e.name === m.name);
+      const hint = isFuzzy ? ` <span style="font-size:0.6rem;color:var(--color-accent);margin-left:4px;">similaire</span>` : '';
+      return `<div class="ac-item" onclick="selectAC(this,'${escapeAttr(m.name)}','${escapeAttr(m.unit)}','${escapeAttr(m.cat)}','${escapeAttr(m.shop||'')}')">${escapeHtml(m.name)}${hint}<span>${m.unit} · ${m.cat}${m.shop ? ' · '+m.shop : ''}</span></div>`;
+    }).join('');
     box.style.display = 'block';
   } else { box.style.display = 'none'; }
 }
@@ -2669,11 +3127,35 @@ function renderListView() {
   const totalFromList = _costOf(sess.list.filter(i => !i.muted));
   const costTotalEl = document.getElementById('session-cost-total');
   if (totalFromList > 0) {
-    costTotalEl.textContent = totalFromList.toFixed(2) + ' €';
-    document.getElementById('session-costs-row').style.display = 'flex';
+    if (costTotalEl) costTotalEl.textContent = totalFromList.toFixed(2) + ' €';
   } else {
-    costTotalEl.textContent = '—';
-    document.getElementById('session-costs-row').style.display = 'none';
+    if (costTotalEl) costTotalEl.textContent = '—';
+  }
+
+  // --- Prix inline dans la bannière ---
+  const inlineTotal = document.getElementById('session-cost-inline-total');
+  const inlineFiches = document.getElementById('session-cost-inline-fiches');
+  if (inlineTotal) {
+    inlineTotal.textContent = totalFromList > 0 ? totalFromList.toFixed(2) + ' €' : '';
+  }
+  if (inlineFiches) {
+    // Calcul coût fiches (même logique que le drawer)
+    const _recipeIngKeys = new Set(
+      Object.keys(sess.recipes).flatMap(rName => {
+        const r = state.recipes.find(x => x.name === rName);
+        return r ? r.ingredients.map(i => i.name.toLowerCase() + '|' + i.unit) : [];
+      })
+    );
+    const _fichesCost = Object.keys(sess.recipes).length > 0
+      ? sess.list.reduce((sum, item) => {
+          if (item.muted) return sum;
+          if (!_recipeIngKeys.has(item.name.toLowerCase() + '|' + item.unit)) return sum;
+          const ingInfo = state.recipes.flatMap(r => r.ingredients).find(i => i.name === item.name && i.unit === item.unit);
+          const price = (ingInfo?.price > 0 ? ingInfo.price : item.price) || 0;
+          return sum + computeIngCost(item.qty, item.unit, price);
+        }, 0)
+      : 0;
+    inlineFiches.textContent = _fichesCost > 0 ? '/ ' + _fichesCost.toFixed(2) + ' € fiches' : '';
   }
 
   // Bloc bleu : onglet actif + filtre(s) cumulés
@@ -2704,15 +3186,17 @@ function renderListView() {
   const _ctxCost = _costOf(_ctxItems);
   const elCtx = document.getElementById('cost-block-ctx');
   const elCtxArrow = document.getElementById('cost-arrow-ctx');
-  // Afficher si le coût contextuel est différent du total (sinon redondant)
+  const elCtxRow = document.getElementById('session-costs-row');
   if (_ctxCost > 0 && Math.abs(_ctxCost - totalFromList) > 0.005) {
     elCtx.style.display = 'inline-flex';
-    elCtxArrow.style.display = 'block';
+    if (elCtxArrow) elCtxArrow.style.display = 'block';
+    if (elCtxRow) elCtxRow.style.display = 'flex';
     document.getElementById('cost-ctx-label').textContent = _ctxParts.join(' · ');
     document.getElementById('cost-ctx-val').textContent = _ctxCost.toFixed(2) + ' €';
   } else {
     elCtx.style.display = 'none';
-    elCtxArrow.style.display = 'none';
+    if (elCtxArrow) elCtxArrow.style.display = 'none';
+    if (elCtxRow) elCtxRow.style.display = 'none';
   }
 
   // --- Bouton Voir tout ---
@@ -2822,6 +3306,41 @@ function renderListView() {
     const displayQty = converted.isInteger
       ? String(Math.ceil(converted.value))
       : converted.value.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(',', '.');
+    // ── Vérification inventaire & auto-mute ──────────────────────────
+    let autoMuted = false;
+    const invBadge = (() => {
+      try {
+        const inv = JSON.parse(localStorage.getItem('ovni_inventory') || '{}');
+        const entry = Object.values(inv).find(e => e.name && e.name.toLowerCase() === item.name.toLowerCase());
+        if (!entry) return '';
+        const dateStr = (() => {
+          if (!entry.updatedAt) return '';
+          const ms = Date.now() - entry.updatedAt;
+          const h = Math.floor(ms/3600000), d = Math.floor(ms/86400000);
+          if (h < 1) return "à l'instant";
+          if (h < 24) return `il y a ${h}h`;
+          if (d === 1) return 'hier';
+          if (d < 7) return `il y a ${d}j`;
+          return new Date(entry.updatedAt).toLocaleDateString('fr-FR',{day:'numeric',month:'short'});
+        })();
+        const qtyDisplay = entry.qty % 1 === 0 ? entry.qty : parseFloat(entry.qty.toFixed(2));
+        // Auto-mute si stock suffisant
+        if (entry.qty > 0 && entry.qty >= qtyToShow) {
+          autoMuted = true;
+          if (!item.muted) {
+            item.muted = true;
+            // Persiste le changement sans déclencher un re-render complet
+            try { localStorage.setItem('ovni_v9', JSON.stringify({ view: state.view, listMode: state.listMode, editingId: state.editingId, activeFilter: state.activeFilter, sessions: state.sessions, currentSessionId: state.currentSessionId, recipes: state.recipes, categoryOrder: state.categoryOrder })); } catch(e2) {}
+          }
+          return `<span class="inv-stock-badge has" title="En stock : ${qtyDisplay} ${entry.unit} — suffisant"><i class="fa-solid fa-box"></i>${qtyDisplay} ${entry.unit} ✓</span>`;
+        }
+        if (entry.qty > 0) {
+          return `<span class="inv-stock-badge has" title="Inventaire : ${qtyDisplay} ${entry.unit}${dateStr ? ' — ' + dateStr : ''}"><i class="fa-solid fa-box"></i>${qtyDisplay} ${entry.unit}${dateStr ? ' — ' + dateStr : ''}</span>`;
+        } else {
+          return `<span class="inv-stock-badge none" title="Stock vide dans l'inventaire"><i class="fa-solid fa-box-open"></i>Vide</span>`;
+        }
+      } catch(e) { return ''; }
+    })();
     const isMuted = !!item.muted;
     const mutedTag = isMuted ? `<span class="muted-tag"><i class="fa-solid fa-check" style="font-size:0.55rem;margin-right:3px;"></i>en stock</span>` : '';
     return `<div class="swipe-wrapper" data-swipe-name="${escapeAttr(item.name)}" data-swipe-unit="${escapeAttr(item.unit)}">
@@ -2829,7 +3348,7 @@ function renderListView() {
       <div class="list-item ${item.done ? 'done' : ''}${dimmed ? ' item-dimmed' : ''}${isMuted ? ' is-muted' : ''}" data-lpname="${escapeAttr(item.name)}" data-lpunit="${escapeAttr(item.unit)}">
         <button class="btn-icon btn-icon-trash" onclick="delItem('${escapeAttr(item.name)}','${escapeAttr(item.unit)}')"><i class="fa-solid fa-trash"></i></button>
         <div class="item-info">
-          <span class="item-name" onclick="muteItem('${escapeAttr(item.name)}','${escapeAttr(item.unit)}')" style="cursor:pointer;">${escapeHtml(item.name)}${mutedTag}</span>
+          <span class="item-name" onclick="muteItem('${escapeAttr(item.name)}','${escapeAttr(item.unit)}')" style="cursor:pointer;">${escapeHtml(item.name)}${mutedTag}${invBadge}</span>
           <div class="item-meta-row">${dotsHtml}${shopTag}${priceTag}</div>
         </div>
         <div class="list-qty" onclick="openQtyEditModal('${escapeAttr(item.name)}','${escapeAttr(item.unit)}')" title="Modifier la quantité">
@@ -3252,7 +3771,28 @@ function renderNav() {
   if (todoCount > 0) { badge.textContent = todoCount; badge.style.display = ''; } else { badge.style.display = 'none'; }
 }
 
-function render() { renderSessionSelector(); renderProdView(); renderListView(); renderLabo(); renderNav(); }
+function render() { renderSessionSelector(); renderProdView(); renderListView(); renderLabo(); renderNav(); updateInvBanner(); }
+
+// ── Mise à jour du mini-panneau inventaire dans la vue COURSES ───────────
+function updateInvBanner() {
+  const el = document.getElementById('inv-banner-summary');
+  if (!el) return;
+  try {
+    const inv = JSON.parse(localStorage.getItem('ovni_inventory') || '{}');
+    const items = Object.values(inv);
+    if (!items.length) { el.textContent = 'Aucun article suivi'; return; }
+    const total = items.length;
+    const zero  = items.filter(i => i.qty <= 0).length;
+    const sess  = currentSession();
+    let overlap = 0;
+    if (sess && sess.list) {
+      overlap = sess.list.filter(i => {
+        return items.some(inv => inv.name.toLowerCase() === i.name.toLowerCase() && inv.qty > 0);
+      }).length;
+    }
+    el.textContent = `${total} articles suivis · ${overlap} déjà en stock${zero > 0 ? ` · ${zero} vide${zero>1?'s':''}` : ''}`;
+  } catch(e) { el.textContent = 'Inventaire disponible'; }
+}
 
 /* ---------- recipe import ---------- */
 function handleImportFile(input) { const file = input.files[0]; if (!file) return; readImportFile(file); input.value = ''; }
@@ -3693,6 +4233,49 @@ function confirmIngModalFromList() {
   if (!name) return toast('Nom requis', 'error');
   if (!qty || qty <= 0) return toast('Quantité invalide', 'error');
 
+  // Suggestion de noms similaires (sauf si l'utilisateur renomme un article existant)
+  const nameLower = name.toLowerCase().trim();
+  const isRename = origName.toLowerCase().trim() !== nameLower;
+  if (isRename) {
+    const allKnown = getAllKnownIngredients();
+    const isExactKnown = allKnown.some(i => i.name.toLowerCase() === nameLower);
+    if (!isExactKnown) {
+      const _STOPFR = new Set(['de','du','des','le','la','les','un','une','au','aux','et','en','a','pour','par','avec','sans','sur']);
+      const inputWords = nameLower.split(/[\s\u0027\u2019\u2018\-]+/).filter(w => w.length > 2 && !_STOPFR.has(w));
+      if (inputWords.length === 0) return;
+      const exact = allKnown.filter(i => {
+        const kl = i.name.toLowerCase();
+        if (kl === nameLower) return false;
+        const knownWords = kl.split(/[\s\u0027\u2019\u2018\-]+/).filter(w => w.length > 2 && !_STOPFR.has(w));
+        return inputWords.some(iw => knownWords.some(kw => kw.includes(iw) || iw.includes(kw)));
+      });
+      const fuzzy = allKnown.filter(i => {
+        const kl = i.name.toLowerCase();
+        if (kl === nameLower) return false;
+        if (exact.find(e => e.name === i.name)) return false;
+        const knownWords = kl.split(/[\s\u0027\u2019\u2018\-]+/).filter(w => w.length > 2 && !_STOPFR.has(w));
+        return inputWords.some(iw => knownWords.some(kw => {
+          const dist = _levenshtein(iw, kw);
+          return dist <= 1 && Math.max(iw.length, kw.length) > 3;
+        }));
+      });
+      const suggestions = [...exact, ...fuzzy].slice(0, 5);
+      if (suggestions.length > 0) {
+        window._pendingIngSuggest = { name, qty, unit, price, cat, shop, editIdx: null, suggestions, fromList: true };
+        _showIngNameSuggestionModal(name, qty, unit, price, cat, shop, null, suggestions);
+        return;
+      }
+    }
+  }
+
+  _doConfirmIngFromList(name, qty, unit, price, cat, shop);
+}
+
+function _doConfirmIngFromList(name, qty, unit, price, cat, shop) {
+  const origName = window._fromListIng?.origName;
+  const origUnit = window._fromListIng?.origUnit;
+  if (!origName || !origUnit) return;
+
   pushUndoState();
   let count = 0;
   // Mettre à jour dans TOUTES les fiches qui contiennent cet ingrédient (origName + origUnit)
@@ -3724,6 +4307,7 @@ function confirmIngModalFromList() {
   saveState();
   closeIngModal();
   window._fromListIng = null;
+  render();
   toast(`${name} mis à jour dans ${count} fiche${count > 1 ? 's' : ''} ✓`, 'success');
 }
 
