@@ -159,6 +159,10 @@ input[type=file]{display:none}
 .thumb-btn.del:hover{color:var(--coral)}
 .thumb-rot{position:absolute;top:6px;left:6px;background:rgba(0,0,0,.55);color:#fff;font-size:9px;padding:1px 4px;border-radius:3px;display:none}
 .page-thumb[data-rot]:not([data-rot="0"]) .thumb-rot{display:block}
+/* Bouton "agrandir" toujours visible (pas seulement au survol) — utile sur mobile/tactile où :hover ne se déclenche pas */
+.thumb-zoom-btn{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;background:rgba(10,36,114,.6);color:#fff;border:none;display:flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer;z-index:6;transition:background .15s,transform .15s;padding:0}
+.thumb-zoom-btn:hover{background:var(--coral);transform:scale(1.1)}
+.thumb-zoom-btn:active{transform:scale(.95)}
 .thumb-sel{position:absolute;inset:0;border-radius:var(--radius-sm);pointer-events:none}
 .page-thumb.selected .thumb-sel{background:rgba(244,96,96,.08)}
 #sel-bar{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--surface);border:1.5px solid var(--coral);border-radius:100px;padding:8px 16px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow),0 0 16px var(--glow);z-index:150;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;font-size:13px;white-space:nowrap}
@@ -1924,6 +1928,7 @@ var Pages={
     for(var i=0;i<S.docs.length;i++){var idx=S.docs[i].pages.findIndex(function(p){return p.id===pid;});if(idx>=0){delete S.cache[pid];S.sel.delete(pid);S.docs[i].pages.splice(idx,1);if(!S.docs[i].pages.length)Files.remove(S.docs[i].id);return;}}
   },
   delSel:function(){Undo.push();var ids=[...S.sel];ids.forEach(function(id){Pages.del(id,true);});S.sel.clear();S.lastSelPid=null;UI.renderAll();},
+  delOrSel:function(id){if(S.sel.size>1&&S.sel.has(id)){this.delSel();}else{this.del(id);UI.renderAll();}},
   dup:function(pid){var f=this.find(pid);if(!f)return;var i=f.doc.pages.indexOf(f.page);f.doc.pages.splice(i+1,0,{id:S.npi++,docId:f.doc.id,pi:f.page.pi,rot:f.page.rot});UI.renderAll();},
   dupSel:function(){Undo.push();var ids=[...S.sel];ids.forEach(function(id){var f=Pages.find(id);if(!f)return;var i=f.doc.pages.indexOf(f.page);f.doc.pages.splice(i+1,0,{id:S.npi++,docId:f.doc.id,pi:f.page.pi,rot:f.page.rot});});S.sel.clear();UI.renderAll();},
   rot:function(pid,deg){var f=this.find(pid);if(!f)return;Undo.push();f.page.rot=((f.page.rot+deg)%360+360)%360;delete S.cache[pid];if(f.page.uuid&&AnnotStore.load(f.page.uuid)){AnnotStore.renderThumbWithAnnots(f.page);}else{Render.renderThumb(pid);}UI.updateRotLabel(pid);},
@@ -2536,7 +2541,7 @@ var Preview={pages:[],idx:0,scale:1,_openedAt:0,_lastRenderedPage:null,
 var Ctx={pid:null,
   show:function(x,y,pid){this.pid=pid;var m=document.getElementById('ctx-menu');m.style.display='block';m.style.left=x+'px';m.style.top=y+'px';var r=m.getBoundingClientRect();if(r.right>innerWidth)m.style.left=(x-r.width)+'px';if(r.bottom>innerHeight)m.style.top=(y-r.height)+'px';},
   hide:function(){document.getElementById('ctx-menu').style.display='none';},
-  handle:function(a){var id=this.pid;this.hide();if(!id)return;if(a==='preview')Preview.open(id);else if(a==='dup'){Pages.dup(id);UI.renderAll();}else if(a==='rot-cw')Pages.rot(id,90);else if(a==='rot-ccw')Pages.rot(id,-90);else if(a==='del'){Pages.del(id);UI.renderAll();}else if(a==='first')Pages.first(id);else if(a==='last')Pages.last(id);}
+  handle:function(a){var id=this.pid;this.hide();if(!id)return;if(a==='preview')Preview.open(id);else if(a==='dup'){Pages.dup(id);UI.renderAll();}else if(a==='rot-cw')Pages.rot(id,90);else if(a==='rot-ccw')Pages.rot(id,-90);else if(a==='del'){Pages.delOrSel(id);}else if(a==='first')Pages.first(id);else if(a==='last')Pages.last(id);}
 };
 
 // PROJECT
@@ -2752,12 +2757,13 @@ var UI={
             '<button class="thumb-btn del" title="Supprimer" data-a="del" data-pid="'+pg.id+'"><i class="fa-solid fa-trash"></i></button>'+
           '</div></div>';
       el.addEventListener('click',function(e){if(e.target.closest('.thumb-btn'))return;var mode=e.shiftKey?'range':(e.metaKey||e.ctrlKey)?'multi':'single';Pages.toggleSel(pg.id,mode);});
-      el.addEventListener('click',function(e){var btn=e.target.closest('[data-a]');if(!btn)return;e.stopPropagation();if(btn.dataset.a==='del'){Pages.del(parseInt(btn.dataset.pid));UI.renderAll();}});
+      el.addEventListener('click',function(e){var btn=e.target.closest('[data-a]');if(!btn)return;e.stopPropagation();if(btn.dataset.a==='del'){Pages.delOrSel(parseInt(btn.dataset.pid));}});
       el.addEventListener('contextmenu',function(e){e.preventDefault();Ctx.show(e.clientX,e.clientY,pg.id);});
       return el;
     }
     el.innerHTML='<div class="thumb-canvas-wrap" data-pid="'+pg.id+'"><div class="thumb-loading"></div></div>'+
       '<div class="thumb-rot" data-rotlabel>'+pg.rot+'</div>'+
+      '<button class="thumb-btn thumb-zoom-btn" title="Agrandir l\'apercu" data-a="preview" data-pid="'+pg.id+'"><i class="fa-solid fa-expand"></i></button>'+
       '<div class="thumb-sel"></div>'+
       '<div class="thumb-footer"><span class="thumb-num" data-tnum>-</span>'+
         '<div class="thumb-actions">'+
@@ -2772,7 +2778,7 @@ var UI={
     el.addEventListener('click',function(e){
       var btn=e.target.closest('[data-a]');if(!btn)return;e.stopPropagation();
       var id=parseInt(btn.dataset.pid),a=btn.dataset.a;
-      if(a==='del'){Pages.del(id);UI.renderAll();}
+      if(a==='del'){Pages.delOrSel(id);}
       else if(a==='dup'){Pages.dup(id);UI.renderAll();}
       else if(a==='rot')Pages.rot(id,90);
       else if(a==='preview')Preview.open(id);
@@ -3168,19 +3174,45 @@ var ExportImg={
     hideModal('exportimg-modal');
     UI.showProgress(true);UI.setProgress(0,'Export images...');
     try{
+      var PDFDocument=window.PDFLib&&window.PDFLib.PDFDocument,PDFLibRef=window.PDFLib,degreesFn=window.PDFLib&&window.PDFLib.degrees;
+      function resolveIdExportImg(p){return (p._srcDocId&&S.bytes[p._srcDocId]?p._srcDocId:(S.bytes[p.docId]?p.docId:p.docId));}
       var baseName=doc.name.replace(/\.pdf$/i,'');
       for(var i=0;i<pages.length;i++){
         var pg=pages[i];
         UI.setProgress(Math.round((i/pages.length)*95),'Page '+(i+1)+'/'+pages.length+'...');
         await tick();
-        var pdfPage=await doc.pdfDoc.getPage(pg.pi+1);
-        var rot=(pdfPage.rotate+pg.rot)%360;
-        var vp=pdfPage.getViewport({scale:scale,rotation:rot});
-        var canvas=document.createElement('canvas');
-        canvas.width=Math.round(vp.width);canvas.height=Math.round(vp.height);
-        var ctx=canvas.getContext('2d');
-        if(fmt!=='png'){ctx.fillStyle='#ffffff';ctx.fillRect(0,0,canvas.width,canvas.height);}
-        await pdfPage.render({canvasContext:ctx,viewport:vp}).promise;
+        var canvas;
+        var srcBytesEntry=PDFDocument?S.bytes[resolveIdExportImg(pg)]:null;
+        var annotData=pg.uuid?AnnotStore.load(pg.uuid):null;
+        if(srcBytesEntry){
+          // Reconstruit la page isolée avec ses annotations gravées (comme l'export PDF classique)
+          // puis la re-rend via pdf.js afin que l'image reflète exactement l'apercu.
+          var srcDocImg=await PDFDocument.load(srcBytesEntry.slice(0),{ignoreEncryption:true});
+          var tmpOutImg=await PDFDocument.create();
+          var cpImg=(await tmpOutImg.copyPages(srcDocImg,[pg.pi]))[0];
+          if(pg.rot)cpImg.setRotation(degreesFn(((cpImg.getRotation().angle+pg.rot)%360+360)%360));
+          tmpOutImg.addPage(cpImg);
+          if(annotData)await AnnotStore.burnToPage(cpImg,annotData,PDFLibRef);
+          var tmpBytesImg=await tmpOutImg.save();
+          var tmpPdfImg=await pdfjsLib.getDocument({data:tmpBytesImg}).promise;
+          var tmpPageImg=await tmpPdfImg.getPage(1);
+          var vp=tmpPageImg.getViewport({scale:scale});
+          canvas=document.createElement('canvas');
+          canvas.width=Math.round(vp.width);canvas.height=Math.round(vp.height);
+          var ctx=canvas.getContext('2d');
+          if(fmt!=='png'){ctx.fillStyle='#ffffff';ctx.fillRect(0,0,canvas.width,canvas.height);}
+          await tmpPageImg.render({canvasContext:ctx,viewport:vp}).promise;
+        }else{
+          // Repli : octets source indisponibles, rendu brut sans annotations (comportement precedent)
+          var pdfPage=await doc.pdfDoc.getPage(pg.pi+1);
+          var rot=(pdfPage.rotate+pg.rot)%360;
+          var vp2=pdfPage.getViewport({scale:scale,rotation:rot});
+          canvas=document.createElement('canvas');
+          canvas.width=Math.round(vp2.width);canvas.height=Math.round(vp2.height);
+          var ctx2=canvas.getContext('2d');
+          if(fmt!=='png'){ctx2.fillStyle='#ffffff';ctx2.fillRect(0,0,canvas.width,canvas.height);}
+          await pdfPage.render({canvasContext:ctx2,viewport:vp2}).promise;
+        }
         var dataUrl=fmt==='jpeg'?canvas.toDataURL('image/jpeg',quality):canvas.toDataURL('image/'+fmt);
         var arr=dataUrl.split(',');
         var bstr=atob(arr[1]);
