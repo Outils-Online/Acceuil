@@ -109,10 +109,29 @@ input[type=file]{display:none}
 .status-dot{width:7px;height:7px;border-radius:50%;background:var(--emerald);box-shadow:0 0 5px var(--emerald);flex-shrink:0}
 #canvas-wrap{flex:1;overflow:hidden;position:relative}
 #canvas-area{height:100%;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:6px;background:var(--bg);position:relative}
-#empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;text-align:center;padding:40px}
-.empty-icon{font-size:56px;color:var(--ink);opacity:.2}
+#empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:18px;text-align:center;padding:40px}
 .empty-title{font-size:20px;font-weight:600;color:var(--ink)}
-.empty-sub{color:var(--text3);font-size:13px;max-width:340px;line-height:1.7}
+.empty-dropzone-hint{display:flex;flex-direction:column;align-items:center;padding:26px 34px 24px}
+.empty-icon{font-size:52px;color:var(--ink);opacity:.4}
+.format-badges{display:flex;gap:7px;margin-top:12px}
+.fmt-badge{width:26px;height:26px;border-radius:7px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;box-shadow:0 1px 3px rgba(10,36,114,.08)}
+.dropzone-caption{margin-top:12px;font-size:13.5px;color:var(--text2);font-weight:500}
+.empty-dropzone-hint .btn{margin-top:12px}
+.empty-actions-row{display:flex;align-items:center;gap:8px;margin-top:12px}
+.empty-actions-row .btn{margin-top:0}
+.btn-restore-session{color:var(--text3);border-color:var(--border)}
+.btn-restore-session:hover{color:var(--ink)}
+.tip-line{display:flex;flex-direction:column;align-items:flex-start;gap:3px;font-size:12.5px;color:var(--ink);max-width:400px;line-height:1.5;margin-top:2px;padding:12px 36px 12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 2px 8px rgba(10,36,114,.06);text-align:left;cursor:pointer;position:relative;transition:transform .15s ease,box-shadow .15s ease;-webkit-tap-highlight-color:transparent}
+.tip-line:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(10,36,114,.1)}
+.tip-line:active{transform:translateY(0) scale(.98)}
+.tip-line i{display:none}
+.tip-eyebrow{font-size:9.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:#C9962B}
+#tip-text{font-weight:500}
+.tip-refresh{display:flex !important;position:absolute;top:50%;right:12px;transform:translateY(-50%);font-size:11px;color:var(--text3);opacity:.8;transition:transform .3s ease}
+.tip-line:active .tip-refresh{transform:translateY(-50%) rotate(180deg)}
+.tip-demo-btn{background:none;color:var(--coral);border:none;padding:0;font-size:11px;font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.tip-demo-btn:hover{color:var(--coral2)}
+.tip-actions{display:flex;justify-content:flex-end;width:100%;margin-top:6px}
 #dropzone{position:absolute;inset:0;background:rgba(253,252,240,.93);border:2px dashed var(--coral);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:1000;pointer-events:none;opacity:0;transition:opacity .2s}
 #dropzone.visible{opacity:1;pointer-events:all}
 .doc-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:border-color .2s;animation:fadeIn .22s ease;display:flex;flex-direction:column;flex:0 0 auto;min-height:unset}
@@ -308,6 +327,48 @@ input[type=file]{display:none}
 /* print modal */
 .print-info{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;font-size:12px;color:var(--text2);line-height:1.7}
 .print-info strong{color:var(--ink)}
+
+/* export modal (telechargement + compression + impression) — v2 allegee */
+.modal-box.dl-modal{min-width:440px;max-width:460px;padding:20px 20px 18px;gap:14px}
+.dl-head{display:flex;align-items:center;gap:12px}
+.dl-head-icon{width:36px;height:36px;border-radius:10px;background:var(--coral);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.dl-head .modal-title{font-size:15px}
+.dl-subtitle{font-size:11.5px;color:var(--text3);margin-top:2px}
+.dl-block-label-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.dl-block-label{font-size:10.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text3)}
+.dl-select-all{font-size:11.5px;color:var(--emerald);cursor:pointer;font-weight:500}
+.dl-select-all:hover{text-decoration:underline}
+.dl-options{display:flex;flex-direction:column;gap:8px}
+.dl-hint{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--text2);background:var(--surface2);border-radius:var(--radius-sm);padding:9px 11px;line-height:1.5}
+.dl-hint i{color:var(--emerald);margin-top:2px;flex-shrink:0}
+/* option cards (impression / compression) */
+.dl-cards-row{display:flex;gap:8px}
+.dl-card{flex:1;display:flex;align-items:center;gap:8px;padding:9px 10px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;background:var(--surface2);transition:all .15s}
+.dl-card:hover{border-color:var(--border2)}
+.dl-card.active{border-color:var(--coral);background:var(--glow)}
+.dl-option-icon{width:26px;height:26px;border-radius:7px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:11px;flex-shrink:0;transition:all .15s}
+.dl-card.active .dl-option-icon{color:var(--coral);border-color:var(--coral)}
+.dl-option-title{font-size:12px;font-weight:600;color:var(--ink);flex:1}
+.dl-switch{position:relative;display:inline-block;width:32px;height:18px;flex-shrink:0;margin-left:auto}
+.dl-switch input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer;z-index:2}
+.dl-switch-track{position:absolute;inset:0;background:var(--border2);border-radius:100px;transition:background .15s}
+.dl-switch-track::before{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:transform .15s;box-shadow:0 1px 3px rgba(10,36,114,.3)}
+.dl-switch input:checked+.dl-switch-track{background:var(--coral)}
+.dl-switch input:checked+.dl-switch-track::before{transform:translateX(14px)}
+.dl-body{display:none;flex-direction:column;gap:10px;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--surface)}
+.dl-body.open{display:flex}
+.dl-compress-estimate{font-size:11.5px;color:var(--ink);font-weight:500;background:var(--surface2);border-radius:var(--radius-sm);padding:7px 9px}
+/* doc list */
+.export-doc-list{display:flex;flex-direction:column;gap:1px;max-height:150px;overflow-y:auto;padding:3px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg)}
+.export-doc-item{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text2);padding:6px 7px;cursor:pointer;border-radius:6px;transition:background .12s}
+.export-doc-item:hover{background:var(--surface2)}
+.export-doc-item input[type=checkbox]{accent-color:var(--coral);width:14px;height:14px;cursor:pointer;flex-shrink:0}
+.export-doc-item .edi-icon{color:var(--coral);font-size:11px;flex-shrink:0;opacity:.75}
+.export-doc-item span:first-of-type{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.export-doc-item .edi-pages{color:var(--text3);font-size:10.5px;margin-left:auto;flex-shrink:0}
+.edi-name-wrap{flex:1;min-width:0}
+.edi-name-wrap .card-name{font-size:12.5px;font-weight:500;padding:1px 3px;margin:-1px -3px}
+.edi-name-wrap .card-name-input{font-size:12.5px;height:20px;padding:1px 5px}
 ::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
@@ -859,6 +920,41 @@ input[type=file]{display:none}
 #text-toolbar{display:flex !important;flex-direction:column;gap:10px;padding:14px;flex:1;overflow-y:auto;background:transparent;border:none;border-radius:0;}
 
 /* ── TOOLTIP ──────────────────────────────────────────── */
+#tour-backdrop{position:fixed;inset:0;z-index:8999;display:none;background:transparent}
+#tour-spotlight{position:fixed;z-index:9000;display:none;border-radius:10px;box-shadow:0 0 0 9999px rgba(10,15,30,.6);transition:top .35s ease,left .35s ease,width .35s ease,height .35s ease;pointer-events:none}
+#tour-tooltip{position:fixed;z-index:9001;display:none;background:#fff;border-radius:12px;padding:14px 16px;width:260px;box-shadow:0 10px 30px rgba(10,15,30,.3);transition:top .35s ease,left .35s ease}
+.tt-arrow{position:absolute;width:14px;height:14px;background:#fff;transform:rotate(45deg)}
+.tt-progress{display:flex;gap:4px;margin-bottom:10px}
+.tt-dot{width:6px;height:6px;border-radius:50%;background:var(--border)}
+.tt-dot.active{background:var(--coral);width:16px;border-radius:3px}
+.tt-title{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:4px}
+.tt-desc{font-size:12.5px;color:var(--text2);line-height:1.55;margin-bottom:12px}
+.tt-actions{display:flex;justify-content:space-between;align-items:center}
+.tt-skip{font-size:11.5px;color:var(--text3);cursor:pointer;background:none;border:none;padding:4px 0}
+.tt-next{background:var(--coral);color:#fff;border:none;border-radius:7px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer}
+.tt-next:hover{background:var(--coral2)}
+.tt-illus{display:none;align-items:center;justify-content:center;gap:8px;height:54px;margin-bottom:10px;background:var(--surface2);border-radius:8px}
+.tt-illus.show{display:flex}
+.tt-page{width:22px;height:30px;background:#fff;border:1.5px solid var(--border2);border-radius:3px;flex-shrink:0}
+.tt-page.accent{border-color:var(--coral)}
+@keyframes illusSwapA{0%,100%{transform:translateX(0)}50%{transform:translateX(30px)}}
+@keyframes illusSwapB{0%,100%{transform:translateX(0)}50%{transform:translateX(-30px)}}
+.illus-move .a{animation:illusSwapA 1.6s ease-in-out infinite}
+.illus-move .b{animation:illusSwapB 1.6s ease-in-out infinite}
+@keyframes illusDupFade{0%,10%{opacity:0;transform:translateX(-8px) scale(.9)}40%,70%{opacity:1;transform:translateX(0) scale(1)}100%{opacity:0;transform:translateX(-8px) scale(.9)}}
+.illus-dup .clone{animation:illusDupFade 1.8s ease-in-out infinite;margin-left:-8px}
+@keyframes illusRotate{0%,15%{transform:rotate(0)}50%,65%{transform:rotate(90deg)}100%{transform:rotate(0)}}
+.illus-rotate .a{animation:illusRotate 2s ease-in-out infinite;display:flex;align-items:center;justify-content:center}
+@keyframes illusDelFade{0%,20%{opacity:1;transform:scale(1)}50%,70%{opacity:0;transform:scale(.6)}100%{opacity:1;transform:scale(1)}}
+.illus-delete .a{animation:illusDelFade 2s ease-in-out infinite}
+@keyframes illusMergeA{0%,15%{transform:translateX(0)}50%,100%{transform:translateX(14px)}}
+@keyframes illusMergeB{0%,15%{transform:translateX(0)}50%,100%{transform:translateX(-14px)}}
+.illus-merge .a{animation:illusMergeA 2s ease-in-out infinite}
+.illus-merge .b{animation:illusMergeB 2s ease-in-out infinite}
+@keyframes illusSplitA{0%,15%{transform:translateX(0)}50%,100%{transform:translateX(-16px)}}
+@keyframes illusSplitB{0%,15%{transform:translateX(0)}50%,100%{transform:translateX(16px)}}
+.illus-split .a{animation:illusSplitA 2s ease-in-out infinite}
+.illus-split .b{animation:illusSplitB 2s ease-in-out infinite}
 [title]{position:relative}
 .tippy{position:absolute;bottom:calc(100% + 7px);left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;font-size:11px;padding:4px 8px;border-radius:5px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;z-index:9999;font-family:'DM Sans',sans-serif;font-weight:500}
 .tippy::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:4px solid transparent;border-top-color:var(--ink)}
@@ -1014,7 +1110,7 @@ input[type=file]{display:none}
 @media(max-width:480px){
   :root{--tw:82px;--th:110px}
   header{height:46px}
-  .hactions #btn-print-prep,.hactions #btn-history{display:none}
+  .hactions #btn-history{display:none}
   .card-actions .card-btn[data-exportdoc]{display:none}
 }
 </style></head>
@@ -1028,7 +1124,7 @@ input[type=file]{display:none}
     <button class="btn btn-ghost btn-sm" id="btn-save"><i class="fa-solid fa-floppy-disk"></i> Projet</button>
     <button class="btn btn-ghost btn-sm" id="btn-load-proj"><i class="fa-solid fa-folder-open"></i> Charger</button>
     <div class="hsep"></div>
-    <button class="btn btn-icon" id="btn-print-prep" title="Preparer pour impression"><i class="fa-solid fa-print"></i></button><button class="btn btn-icon" id="btn-history" title="Historique des exports"><i class="fa-solid fa-clock-rotate-left"></i></button>
+    <button class="btn btn-icon" id="btn-history" title="Historique des exports"><i class="fa-solid fa-clock-rotate-left"></i></button>
     <div class="hsep"></div>
     <button class="btn btn-primary" id="btn-merge" disabled><i class="fa-solid fa-download"></i> Télécharger</button>
   </div>
@@ -1036,16 +1132,13 @@ input[type=file]{display:none}
 <!-- Desktop toolbar -->
 <div class="toolbar">
   <div class="tgroup">
-    <button class="btn btn-ghost btn-sm" id="btn-add" title="Ajouter des fichiers PDF"><i class="fa-solid fa-plus"></i> Ajouter PDF</button>
-    <button class="btn btn-ghost btn-sm" id="btn-add-img" title="Importer des images JPG/PNG comme pages PDF"><i class="fa-solid fa-image"></i> Importer image</button>
-    <input type="file" id="file-input" accept=".pdf" multiple>
-    <input type="file" id="img-input" accept=".jpg,.jpeg,.jfif,.png" multiple>
+    <button class="btn btn-ghost btn-sm" id="btn-add" title="Importer des fichiers : PDF, images, HEIC, TIFF, Word, Excel, PowerPoint, TXT, MD, RTF"><i class="fa-solid fa-file-import"></i> Importer</button>
+    <input type="file" id="file-input" accept=".pdf,.jpg,.jpeg,.jfif,.png,.gif,.webp,.bmp,.svg,.heic,.heif,.tif,.tiff,.txt,.md,.markdown,.rtf,.docx,.xlsx,.xls,.pptx" multiple>
   </div>
   <div class="tsep"></div>
   <div class="tgroup">
     <button class="btn btn-ghost btn-sm" id="btn-extract" title="Extraire les pages selectionnees (ou plage si rien de selectionne)"><i class="fa-solid fa-scissors"></i> Extraire</button>
     <button class="btn btn-ghost btn-sm" id="btn-merge-all" title="Fusionner tous les documents en un seul PDF" style="color:var(--emerald);border-color:var(--emerald)"><i class="fa-solid fa-layer-group"></i> <span class="btn-lbl">Tout fusionner</span></button>
-    <button class="btn btn-ghost btn-sm" id="btn-compress" title="Reduire la taille du PDF"><i class="fa-solid fa-compress"></i> Compresser</button>
     <button class="btn btn-ghost btn-sm" id="btn-export-img" title="Exporter les pages en images PNG/JPEG"><i class="fa-solid fa-images"></i> Images</button>
   </div>
   <div class="tsep"></div>
@@ -1074,7 +1167,7 @@ input[type=file]{display:none}
 <div id="mobile-toolbar">
   <!-- Row 1: always visible -->
   <div class="mbt-row">
-    <button class="mbt" id="btn-add-m" title="Ajouter PDF"><i class="fa-solid fa-plus"></i></button>
+    <button class="mbt" id="btn-add-m" title="Importer"><i class="fa-solid fa-plus"></i></button>
     <button class="mbt" id="btn-docs-m" title="Documents"><i class="fa-solid fa-layer-group"></i></button>
     <div class="mbt-sep"></div>
     <button class="mbt" id="btn-undo-m" disabled title="Annuler"><i class="fa-solid fa-rotate-left"></i></button>
@@ -1088,7 +1181,6 @@ input[type=file]{display:none}
 <div id="fab-menu">
   <div class="fab-item" id="fm-merge-all"><i class="fa-solid fa-layer-group"></i><span>Tout fusionner</span></div>
   <div class="fab-item" id="fm-extract"><i class="fa-solid fa-scissors"></i><span>Extraire plage</span></div>
-  <div class="fab-item" id="fm-compress"><i class="fa-solid fa-compress"></i><span>Compresser</span></div>
   <div class="fab-item" id="fm-export-img"><i class="fa-solid fa-images"></i><span>Export images</span></div>
 </div>
 <div id="undo-bar">
@@ -1107,15 +1199,27 @@ input[type=file]{display:none}
   <div id="canvas-wrap">
     <div id="canvas-area">
       <div id="empty-state">
-        <div class="empty-icon"><i class="fa-solid fa-folder-open"></i></div>
-        <div class="empty-title">Aucun PDF charge</div>
-        <div class="empty-sub">Glissez-deposez vos PDF ici ou cliquez pour en ajouter.</div>
-        <button class="btn btn-primary" id="btn-add2" style="margin-top:8px"><i class="fa-solid fa-plus"></i> Ajouter des PDF</button>
+        <div class="empty-dropzone-hint">
+          <div class="empty-icon"><i class="fa-solid fa-folder-open"></i></div>
+          <div class="format-badges">
+            <span class="fmt-badge" style="color:#E5473C" title="PDF"><i class="fa-solid fa-file-pdf"></i></span>
+            <span class="fmt-badge" style="color:#2B579A" title="Word"><i class="fa-solid fa-file-word"></i></span>
+            <span class="fmt-badge" style="color:#217346" title="Excel"><i class="fa-solid fa-file-excel"></i></span>
+            <span class="fmt-badge" style="color:#D24726" title="PowerPoint"><i class="fa-solid fa-file-powerpoint"></i></span>
+            <span class="fmt-badge" style="color:#8E8E97" title="Images"><i class="fa-solid fa-file-image"></i></span>
+          </div>
+          <div class="dropzone-caption">Glissez vos fichiers ici</div>
+          <div class="empty-actions-row">
+            <button class="btn btn-primary" id="btn-add2"><i class="fa-solid fa-plus"></i> ou cliquez pour importer</button>
+            <button class="btn btn-ghost btn-sm btn-restore-session" id="btn-restore-session" style="display:none" title="Reprendre les documents de la derniere session"><i class="fa-solid fa-clock-rotate-left"></i> Reprendre la derniere session</button>
+          </div>
+        </div>
+        <div class="tip-line" id="tip-line" title="Cliquer pour une autre astuce"><span class="tip-eyebrow">Le saviez-vous ?</span><span id="tip-text"></span><div class="tip-actions"><button type="button" class="tip-demo-btn" id="btn-demo">Voir une démo</button></div><i class="fa-solid fa-arrow-rotate-right tip-refresh"></i></div>
       </div>
     </div>
     <div id="dropzone">
       <i class="fa-solid fa-file-arrow-down" style="font-size:44px;color:var(--coral)"></i>
-      <span style="font-size:18px;font-weight:500;color:var(--coral)">Déposer PDF, JPG ou PNG ici</span>
+      <span style="font-size:18px;font-weight:500;color:var(--coral)">Déposer vos fichiers ici</span>
     </div>
   </div>
 </div>
@@ -1131,7 +1235,7 @@ input[type=file]{display:none}
   </div>
   <div class="bs-body" id="bs-list"></div>
   <div class="bs-foot">
-    <button class="btn btn-primary btn-sm" id="bs-add" style="width:100%;justify-content:center"><i class="fa-solid fa-plus"></i> Ajouter un PDF</button>
+    <button class="btn btn-primary btn-sm" id="bs-add" style="width:100%;justify-content:center"><i class="fa-solid fa-plus"></i> Importer un fichier</button>
   </div>
 </div>
 
@@ -1609,40 +1713,6 @@ input[type=file]{display:none}
   </div>
 </div>
 
-<!-- Compress modal -->
-<div class="modal-overlay" id="compress-modal">
-  <div class="modal-box t-coral">
-    <div class="modal-title"><i class="fa-solid fa-compress"></i> Compresser le PDF</div>
-    <div class="modal-row">
-      <label class="modal-label">Document</label>
-      <select id="compress-doc" class="modal-input" style="flex:1"></select>
-    </div>
-    <div class="modal-row">
-      <label class="modal-label" style="min-width:130px">Qualite images</label>
-      <div class="modal-slider-wrap" style="flex:1">
-        <input type="range" id="compress-quality" class="modal-slider" min="10" max="90" value="60">
-        <span class="modal-slider-val" id="compress-quality-val">60%</span>
-      </div>
-    </div>
-    <div class="modal-row">
-      <label class="modal-label" style="min-width:130px">Resolution max</label>
-      <div class="modal-slider-wrap" style="flex:1">
-        <input type="range" id="compress-dpi" class="modal-slider" min="72" max="300" value="150" step="6">
-        <span class="modal-slider-val" id="compress-dpi-val">150 dpi</span>
-      </div>
-    </div>
-    <label class="modal-check-row">
-      <input type="checkbox" id="compress-grayscale">
-      Convertir en niveaux de gris (reduit encore le poids)
-    </label>
-    <div class="modal-desc" id="compress-desc">Estimation disponible apres traitement.</div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost btn-sm" id="compress-cancel"><i class="fa-solid fa-xmark"></i> Annuler</button>
-      <button class="btn btn-primary btn-sm" id="compress-ok"><i class="fa-solid fa-download"></i> Compresser &amp; Telecharger</button>
-    </div>
-  </div>
-</div>
-
 <!-- Export images modal -->
 <div class="modal-overlay" id="exportimg-modal">
   <div class="modal-box t-emerald">
@@ -1742,24 +1812,95 @@ input[type=file]{display:none}
   </div>
 </div>
 
-<!-- Print prep modal -->
-<div class="modal-overlay" id="print-modal">
-  <div class="modal-box t-coral">
-    <div class="modal-title"><i class="fa-solid fa-print"></i> Preparation impression</div>
-    <div class="modal-desc" style="margin-bottom:4px">Insere des feuilles blanches pour que chaque document commence sur une page impaire. Ideal pour impression recto-verso ou reliure.</div>
-    <div class="print-info" id="print-info">Chargez des PDF pour voir l'apercu.</div>
-    <label class="modal-check-row" style="margin-top:6px">
-      <input type="checkbox" id="print-odd" checked>
-      Chaque document commence sur page impaire
-    </label>
-    <label class="modal-check-row">
-      <input type="checkbox" id="print-end">
-      Terminer sur page paire (derniere feuille complete)
-    </label>
-    <div class="modal-actions">
-      <button class="btn btn-ghost btn-sm" id="print-cancel"><i class="fa-solid fa-xmark"></i> Annuler</button>
-      <button class="btn btn-primary btn-sm" id="print-ok"><i class="fa-solid fa-download"></i> Generer &amp; Telecharger</button>
+<!-- Export modal : telechargement + preparation impression + compression, tout regroupe -->
+<div class="modal-overlay" id="export-modal">
+  <div class="modal-box t-coral dl-modal">
+    <div class="dl-head">
+      <div class="dl-head-icon"><i class="fa-solid fa-download"></i></div>
+      <div>
+        <div class="modal-title" style="margin:0">Telecharger</div>
+        <div class="dl-subtitle" id="export-size-info">Chargez des documents pour voir la taille</div>
+      </div>
     </div>
+
+    <div>
+      <div class="dl-block-label-row">
+        <span class="dl-block-label">Documents</span>
+        <span id="export-select-all" class="dl-select-all">Tout / Aucun</span>
+      </div>
+      <div class="export-doc-list" id="export-doc-list"></div>
+    </div>
+
+    <div class="dl-options">
+      <div class="dl-cards-row">
+        <label class="dl-card" id="export-print-section">
+          <div class="dl-option-icon"><i class="fa-solid fa-print"></i></div>
+          <div class="dl-option-title">Impression</div>
+          <span class="dl-switch"><input type="checkbox" id="export-print-toggle"><span class="dl-switch-track"></span></span>
+        </label>
+        <label class="dl-card" id="export-compress-section">
+          <div class="dl-option-icon"><i class="fa-solid fa-compress"></i></div>
+          <div class="dl-option-title">Compresser</div>
+          <span class="dl-switch"><input type="checkbox" id="export-compress-toggle"><span class="dl-switch-track"></span></span>
+        </label>
+      </div>
+
+      <div class="dl-body" id="export-print-body">
+        <div class="print-info" id="print-info">Chargez des PDF pour voir l'apercu.</div>
+        <label class="modal-check-row">
+          <input type="checkbox" id="print-odd" checked>
+          Chaque document commence sur page impaire
+        </label>
+        <label class="modal-check-row">
+          <input type="checkbox" id="print-end">
+          Terminer sur page paire (derniere feuille complete)
+        </label>
+      </div>
+
+      <div class="dl-body" id="export-compress-body">
+        <div class="modal-row">
+          <label class="modal-label" style="min-width:110px">Qualite images</label>
+          <div class="modal-slider-wrap" style="flex:1">
+            <input type="range" id="compress-quality" class="modal-slider" min="10" max="90" value="60">
+            <span class="modal-slider-val" id="compress-quality-val">60%</span>
+          </div>
+        </div>
+        <div class="modal-row">
+          <label class="modal-label" style="min-width:110px">Resolution max</label>
+          <div class="modal-slider-wrap" style="flex:1">
+            <input type="range" id="compress-dpi" class="modal-slider" min="72" max="300" value="150" step="6">
+            <span class="modal-slider-val" id="compress-dpi-val">150 dpi</span>
+          </div>
+        </div>
+        <label class="modal-check-row">
+          <input type="checkbox" id="compress-grayscale">
+          Convertir en niveaux de gris (reduit encore le poids)
+        </label>
+        <div class="dl-compress-estimate" id="compress-estimate"></div>
+      </div>
+    </div>
+
+    <div class="dl-hint"><i class="fa-solid fa-circle-info"></i><span id="export-doc-hint">Chaque document coche sera telecharge separement, tel quel.</span></div>
+
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-sm" id="export-cancel"><i class="fa-solid fa-xmark"></i> Annuler</button>
+      <button class="btn btn-primary btn-sm" id="export-ok"><i class="fa-solid fa-download"></i> Telecharger</button>
+    </div>
+  </div>
+</div>
+
+<!-- Guided tour -->
+<div id="tour-backdrop"></div>
+<div id="tour-spotlight"></div>
+<div id="tour-tooltip">
+  <div class="tt-arrow" id="tt-arrow"></div>
+  <div class="tt-progress" id="tt-progress"></div>
+  <div class="tt-illus" id="tt-illus"></div>
+  <div class="tt-title" id="tt-title"></div>
+  <div class="tt-desc" id="tt-desc"></div>
+  <div class="tt-actions">
+    <button class="tt-skip" id="tt-skip">Passer</button>
+    <button class="tt-next" id="tt-next">Suivant</button>
   </div>
 </div>
 
@@ -1815,8 +1956,340 @@ var Undo={stack:[],future:[],MAX:25,
   clear:function(){this.stack=[];this.future=[];this.upd();}
 };
 
+// LAZY LIBS - chargees a la demande seulement, jamais au demarrage (pour ne pas alourdir/risquer l'appli)
+var LazyLib={
+  _p:{},
+  load:function(url){
+    if(this._p[url])return this._p[url];
+    var p=new Promise(function(resolve,reject){
+      var s=document.createElement('script');
+      s.src=url;
+      s.onload=function(){resolve();};
+      s.onerror=function(){reject(new Error('Librairie indisponible ('+url+')'));};
+      document.head.appendChild(s);
+    });
+    this._p[url]=p;
+    return p;
+  }
+};
+var Lib={
+  mammoth:function(){return LazyLib.load('https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.12.2/mammoth.browser.min.js').then(function(){return window.mammoth;});},
+  xlsx:function(){return LazyLib.load('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js').then(function(){return window.XLSX;});},
+  jszip:function(){return LazyLib.load('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js').then(function(){return window.JSZip;});},
+  heic2any:function(){return LazyLib.load('https://cdnjs.cloudflare.com/ajax/libs/heic2any/0.0.4/heic2any.min.js').then(function(){return window.heic2any;});},
+  utif:function(){return LazyLib.load('https://cdn.jsdelivr.net/npm/utif@3.1.0/UTIF.js').then(function(){return window.UTIF;});}
+};
+
+// Dessin de texte "a l'epreuve des balles": si un caractere n'est pas supporte par la police standard,
+// on le remplace au lieu de faire planter toute la conversion.
+function safeWidth(font,text,size){
+  try{return font.widthOfTextAtSize(text,size);}catch(e){return text.length*size*0.5;}
+}
+function safeDrawText(page,text,opts){
+  try{page.drawText(text,opts);}catch(e){
+    try{page.drawText(text.replace(/[^\x00-\xFF]/g,'?'),opts);}catch(e2){/* on saute cette ligne plutot que de tout casser */}
+  }
+}
+
 // FILES
 var Files={
+  EXT_JPGPNG:/\.(jpe?g|jfif|png)$/i,
+  EXT_RASTER:/\.(gif|webp|bmp|svg)$/i,
+  EXT_HEIC:/\.(heic|heif)$/i,
+  EXT_TIFF:/\.tiff?$/i,
+  EXT_TEXT:/\.(txt|md|markdown)$/i,
+  EXT_RTF:/\.rtf$/i,
+  EXT_DOCX:/\.docx$/i,
+  EXT_XLSX:/\.(xlsx|xls)$/i,
+  EXT_PPTX:/\.pptx$/i,
+  isSupportedExtra:function(name){
+    return Files.EXT_JPGPNG.test(name)||Files.EXT_RASTER.test(name)||Files.EXT_HEIC.test(name)||Files.EXT_TIFF.test(name)||Files.EXT_TEXT.test(name)||Files.EXT_RTF.test(name)||Files.EXT_DOCX.test(name)||Files.EXT_XLSX.test(name)||Files.EXT_PPTX.test(name);
+  },
+  // ---- Pagination de texte structure ("blocks") en vrai PDF texte (recherchable, leger) ----
+  _wrapText:function(font,size,text,maxWidth){
+    if(!text)return [''];
+    var words=text.split(/\s+/).filter(Boolean);
+    if(!words.length)return [''];
+    var lines=[],cur='';
+    words.forEach(function(w){
+      var test=cur?cur+' '+w:w;
+      if(safeWidth(font,test,size)>maxWidth&&cur){lines.push(cur);cur=w;}
+      else cur=test;
+    });
+    if(cur)lines.push(cur);
+    return lines;
+  },
+  blocksToPdfBytes:async function(blocks){
+    var PDFDocument=window.PDFLib.PDFDocument,StandardFonts=window.PDFLib.StandardFonts;
+    var doc=await PDFDocument.create();
+    var fontRegular=await doc.embedFont(StandardFonts.Helvetica);
+    var fontBold=await doc.embedFont(StandardFonts.HelveticaBold);
+    var A4W=595,A4H=842,margin=50,maxW=A4W-margin*2;
+    var page=doc.addPage([A4W,A4H]),y=A4H-margin;
+    function newPage(){page=doc.addPage([A4W,A4H]);y=A4H-margin;}
+    (blocks&&blocks.length?blocks:[{type:'p',text:''}]).forEach(function(b){
+      var text=(b.text||'').toString();
+      var size=11,font=fontRegular,indent=0,gapBefore=2,gapAfter=6,lineH=14;
+      if(b.type==='h1'){size=18;font=fontBold;lineH=22;gapBefore=12;gapAfter=8;}
+      else if(b.type==='h2'){size=14;font=fontBold;lineH=18;gapBefore=9;gapAfter=6;}
+      else if(b.type==='h3'){size=12;font=fontBold;lineH=16;gapBefore=7;gapAfter=5;}
+      else if(b.type==='li'){indent=16;text='•  '+text;}
+      y-=gapBefore;
+      if(y<margin)newPage();
+      var lines=Files._wrapText(font,size,text,maxW-indent);
+      lines.forEach(function(ln){
+        if(y<margin+lineH)newPage();
+        safeDrawText(page,ln,{x:margin+indent,y:y-size,size:size,font:font});
+        y-=lineH;
+      });
+      y-=gapAfter;
+    });
+    return await doc.save();
+  },
+  // ---- Images matricielles (raster) decodables nativement par le navigateur -> PNG ----
+  _imageFileToPngBytes:function(file){
+    return new Promise(function(resolve,reject){
+      var url=URL.createObjectURL(file);
+      var img=new Image();
+      img.onload=function(){
+        try{
+          var canvas=document.createElement('canvas');
+          canvas.width=img.naturalWidth||img.width;
+          canvas.height=img.naturalHeight||img.height;
+          if(!canvas.width||!canvas.height){URL.revokeObjectURL(url);reject(new Error('Image vide'));return;}
+          var ctx=canvas.getContext('2d');
+          ctx.drawImage(img,0,0);
+          canvas.toBlob(function(blob){
+            URL.revokeObjectURL(url);
+            if(!blob){reject(new Error('Conversion image impossible'));return;}
+            blob.arrayBuffer().then(function(ab){resolve(new Uint8Array(ab));}).catch(reject);
+          },'image/png');
+        }catch(e){URL.revokeObjectURL(url);reject(e);}
+      };
+      img.onerror=function(){URL.revokeObjectURL(url);reject(new Error('Image illisible ou format non supporte par le navigateur'));};
+      img.src=url;
+    });
+  },
+  _pngBytesToPdfBytes:async function(pngBytes){
+    var PDFDocument=window.PDFLib.PDFDocument;
+    var out=await PDFDocument.create();
+    var img=await out.embedPng(pngBytes);
+    var A4W=595,A4H=842;
+    var scale=Math.min(A4W/img.width,A4H/img.height);
+    var dw=img.width*scale,dh=img.height*scale,dx=(A4W-dw)/2,dy=(A4H-dh)/2;
+    var page=out.addPage([A4W,A4H]);
+    page.drawImage(img,{x:dx,y:dy,width:dw,height:dh});
+    return await out.save();
+  },
+  _pngPagesToPdfBytes:async function(pngPagesArr){
+    var PDFDocument=window.PDFLib.PDFDocument;
+    var out=await PDFDocument.create();
+    var A4W=595,A4H=842;
+    for(var i=0;i<pngPagesArr.length;i++){
+      var img=await out.embedPng(pngPagesArr[i]);
+      var scale=Math.min(A4W/img.width,A4H/img.height);
+      var dw=img.width*scale,dh=img.height*scale,dx=(A4W-dw)/2,dy=(A4H-dh)/2;
+      var page=out.addPage([A4W,A4H]);
+      page.drawImage(img,{x:dx,y:dy,width:dw,height:dh});
+    }
+    return await out.save();
+  },
+  // ---- HEIC/HEIF (photos iPhone) ----
+  _heicToPngBytes:async function(file){
+    var heic2any=await Lib.heic2any();
+    var outBlob=await heic2any({blob:file,toType:'image/png',quality:0.92});
+    if(Array.isArray(outBlob))outBlob=outBlob[0];
+    var ab=await outBlob.arrayBuffer();
+    return new Uint8Array(ab);
+  },
+  // ---- TIFF (mono ou multi-pages) ----
+  _tiffToPngPages:async function(file){
+    var UTIF=await Lib.utif();
+    var ab=await file.arrayBuffer();
+    var ifds=UTIF.decode(ab);
+    if(!ifds||!ifds.length)throw new Error('TIFF vide ou illisible');
+    if(ifds.length>100)ifds=ifds.slice(0,100); // garde-fou anti-surcharge memoire
+    var pages=[];
+    for(var i=0;i<ifds.length;i++){
+      var ifd=ifds[i];
+      UTIF.decodeImage(ab,ifd);
+      var rgba=UTIF.toRGBA8(ifd);
+      var canvas=document.createElement('canvas');
+      canvas.width=ifd.width;canvas.height=ifd.height;
+      var ctx=canvas.getContext('2d');
+      var imgData=ctx.createImageData(ifd.width,ifd.height);
+      imgData.data.set(rgba);
+      ctx.putImageData(imgData,0,0);
+      var pngBytes=await new Promise(function(resolve,reject){
+        canvas.toBlob(function(b){
+          if(!b){reject(new Error('Conversion TIFF impossible'));return;}
+          b.arrayBuffer().then(function(ab2){resolve(new Uint8Array(ab2));}).catch(reject);
+        },'image/png');
+      });
+      pages.push(pngBytes);
+    }
+    return pages;
+  },
+  // ---- Texte brut / Markdown ----
+  _textFileToBlocks:async function(file){
+    var text=(await file.text()).replace(/\r\n/g,'\n');
+    var isMd=/\.(md|markdown)$/i.test(file.name);
+    var blocks=[];
+    text.split('\n').forEach(function(line){
+      if(isMd){
+        var h=line.match(/^(#{1,3})\s+(.*)/);
+        if(h){blocks.push({type:'h'+h[1].length,text:h[2]});return;}
+        var li=line.match(/^\s*[-*]\s+(.*)/);
+        if(li){blocks.push({type:'li',text:li[1]});return;}
+      }
+      blocks.push({type:'p',text:line});
+    });
+    return blocks.length?blocks:[{type:'p',text:''}];
+  },
+  // ---- RTF (extraction de texte "best effort") ----
+  // Vrai petit analyseur (et non un simple regex) car les groupes RTF sont imbriques:
+  // {\fonttbl{\f0 Arial;}} par exemple - un regex plat laisse fuiter "Arial;" dans le texte.
+  _rtfToText:function(raw){
+    var skipGroups=/^\\(fonttbl|colortbl|stylesheet|info|generator|pict|object|footnote|header|footer|annotation|field|listtable|listoverridetable|rsidtable|latentstyles|panose|themedata|colorschememapping|xmlns)\b/;
+    var i=0,n=raw.length,depth=0,skipDepth=-1,out=[],pendingSkip=0;
+    function emit(ch){if(skipDepth>=0)return;if(pendingSkip>0){pendingSkip--;return;}out.push(ch);}
+    while(i<n){
+      var c=raw[i];
+      if(c==='\\'){
+        var rest=raw.slice(i+1);
+        var m=rest.match(/^([a-zA-Z]+)(-?\d+)?[ ]?/);
+        if(m){
+          var name=m[1],numStr=m[2],consumed=1+m[0].length;
+          if(name==='par'||name==='line')emit('\n');
+          else if(name==='tab')emit('\t');
+          else if(name==='u'&&numStr!==undefined){
+            var code=parseInt(numStr,10);if(code<0)code+=65536;
+            if(skipDepth<0){try{out.push(String.fromCodePoint(code));}catch(e){}}
+            pendingSkip=1; // le caractere ANSI de remplacement qui suit \uN doit etre saute
+          }
+          i+=consumed;continue;
+        }else{
+          var esc=rest[0];
+          if(esc==="'"){i+=1+1+2;continue;} // \'xx : octet Latin-1 echappe, ignore
+          else if(esc==='{'||esc==='}'||esc==='\\'){emit(esc);i+=2;continue;}
+          else{i+=2;continue;}
+        }
+      }else if(c==='{'){
+        depth++;
+        if(skipDepth<0){var m2=raw.slice(i+1).match(/^\\([a-zA-Z]+)/);if(m2&&skipGroups.test('\\'+m2[1]))skipDepth=depth;}
+        i++;continue;
+      }else if(c==='}'){
+        if(skipDepth===depth)skipDepth=-1;
+        depth=Math.max(0,depth-1);
+        i++;continue;
+      }else{emit(c);i++;}
+    }
+    return out.join('');
+  },
+  _rtfFileToBlocks:async function(file){
+    var raw=await file.text();
+    var text=this._rtfToText(raw);
+    text=text.split('\n').map(function(l){return l.trim();}).join('\n').replace(/\n{3,}/g,'\n\n').trim();
+    if(!text)throw new Error('Aucun texte lisible trouve dans ce RTF');
+    return text.split('\n').map(function(l){return{type:'p',text:l};});
+  },
+  // ---- Word (.docx) via mammoth : structure -> blocks ----
+  _docxFileToBlocks:async function(file){
+    var mammoth=await Lib.mammoth();
+    var ab=await file.arrayBuffer();
+    var result=await mammoth.convertToHtml({arrayBuffer:ab});
+    var doc=new DOMParser().parseFromString(result.value,'text/html');
+    var blocks=[];
+    function walk(node){
+      Array.prototype.forEach.call(node.childNodes,function(child){
+        if(child.nodeType!==1)return;
+        var tag=child.tagName.toLowerCase();
+        if(tag==='h1')blocks.push({type:'h1',text:child.textContent.trim()});
+        else if(tag==='h2')blocks.push({type:'h2',text:child.textContent.trim()});
+        else if(/^h[3-6]$/.test(tag))blocks.push({type:'h3',text:child.textContent.trim()});
+        else if(tag==='li')blocks.push({type:'li',text:child.textContent.trim()});
+        else if(tag==='p')blocks.push({type:'p',text:child.textContent.trim()});
+        else if(tag==='table'){
+          Array.prototype.forEach.call(child.querySelectorAll('tr'),function(tr){
+            var cells=Array.prototype.map.call(tr.querySelectorAll('td,th'),function(td){return td.textContent.trim();});
+            blocks.push({type:'p',text:cells.join('  |  ')});
+          });
+        }
+        else walk(child);
+      });
+    }
+    walk(doc.body);
+    return blocks.length?blocks:[{type:'p',text:''}];
+  },
+  // ---- Excel (.xlsx/.xls) via SheetJS : chaque feuille -> tableau texte paginé ----
+  _xlsxFileToPdfBytes:async function(file){
+    var XLSX=await Lib.xlsx();
+    var ab=await file.arrayBuffer();
+    var wb=XLSX.read(ab,{type:'array'});
+    var PDFDocument=window.PDFLib.PDFDocument,StandardFonts=window.PDFLib.StandardFonts;
+    var out=await PDFDocument.create();
+    var fontRegular=await out.embedFont(StandardFonts.Courier);
+    var fontBold=await out.embedFont(StandardFonts.CourierBold);
+    var A4W=842,A4H=595,margin=36; // paysage: plus lisible pour des tableaux
+    var truncated=false;
+    wb.SheetNames.forEach(function(sheetName){
+      var ws=wb.Sheets[sheetName];
+      var aoa=XLSX.utils.sheet_to_json(ws,{header:1,defval:'',raw:false});
+      if(!aoa.length)return;
+      var maxCols=Math.min(aoa.reduce(function(m,r){return Math.max(m,r.length);},0)||1,15);
+      if(aoa.some(function(r){return r.length>maxCols;}))truncated=true;
+      if(aoa.length>2000){aoa=aoa.slice(0,2000);truncated=true;}
+      var colW=(A4W-margin*2)/maxCols,size=8,lineH=12,colGutter=8;
+      var maxChars=Math.max(4,Math.floor((colW-colGutter)/(size*0.6)));
+      var page=out.addPage([A4W,A4H]),y=A4H-margin;
+      safeDrawText(page,sheetName,{x:margin,y:y-14,size:12,font:fontBold});
+      y-=26;
+      aoa.forEach(function(row,ri){
+        if(y<margin+lineH){page=out.addPage([A4W,A4H]);y=A4H-margin;}
+        for(var c=0;c<maxCols;c++){
+          var cell=row[c]!=null?String(row[c]):'';
+          if(cell.length>maxChars)cell=cell.slice(0,maxChars-1)+'…';
+          safeDrawText(page,cell,{x:margin+c*colW,y:y-size,size:size,font:ri===0?fontBold:fontRegular});
+        }
+        y-=lineH;
+      });
+    });
+    if(out.getPageCount()===0)throw new Error('Classeur vide ou illisible');
+    if(truncated)Toast.show('Certaines colonnes/lignes trop nombreuses ont ete tronquees','info');
+    return await out.save();
+  },
+  // ---- PowerPoint (.pptx) : texte des diapositives uniquement (best effort, pas de mise en forme/images) ----
+  _pptxFileToBlocks:async function(file){
+    var JSZip=await Lib.jszip();
+    var zip=await JSZip.loadAsync(file);
+    var slideFiles=Object.keys(zip.files).filter(function(p){return /^ppt\/slides\/slide\d+\.xml$/.test(p);});
+    if(!slideFiles.length)throw new Error('Aucune diapositive trouvee dans ce fichier');
+    slideFiles.sort(function(a,b){
+      var na=parseInt(a.match(/slide(\d+)\.xml/)[1],10),nb=parseInt(b.match(/slide(\d+)\.xml/)[1],10);
+      return na-nb;
+    });
+    var blocks=[],parser=new DOMParser();
+    for(var i=0;i<slideFiles.length;i++){
+      var xml=await zip.files[slideFiles[i]].async('text');
+      var xdoc=parser.parseFromString(xml,'application/xml');
+      var texts=Array.prototype.map.call(xdoc.getElementsByTagName('a:t'),function(n){return n.textContent;}).filter(function(t){return t&&t.trim();});
+      blocks.push({type:'h2',text:'Diapositive '+(i+1)});
+      if(texts.length)texts.forEach(function(t){blocks.push({type:'li',text:t});});
+      else blocks.push({type:'p',text:'(pas de texte detecte sur cette diapositive)'});
+    }
+    return blocks;
+  },
+  // Point d'entree unique: repartit automatiquement PDF / autres formats, un seul message de statut
+  importFiles:async function(files){
+    var arr=Array.from(files);
+    var pdfs=arr.filter(function(f){return f.name.toLowerCase().endsWith('.pdf');});
+    var others=arr.filter(function(f){return Files.isSupportedExtra(f.name);});
+    var unknown=arr.length-pdfs.length-others.length;
+    if(!pdfs.length&&!others.length){Toast.show('Aucun format pris en charge dans la selection','error');return;}
+    if(pdfs.length)await this.load(pdfs);
+    if(others.length)await this.loadImages(others);
+    if(unknown>0)Toast.show(unknown+' fichier(s) ignore(s) (format non pris en charge)','error');
+  },
   load:async function(files){
     var arr=Array.from(files);
     var pdfs=arr.filter(function(f){return f.name.toLowerCase().endsWith('.pdf');});
@@ -1826,11 +2299,16 @@ var Files={
     UI.setStatus('Pret');UI.renderAll();
   },
   loadImages:async function(files){
-    var imgs=Array.from(files).filter(function(f){return /\.(jpe?g|jfif|png)$/i.test(f.name);});
-    if(!imgs.length){Toast.show('Aucune image valide','error');return;}
+    var known=Array.from(files).filter(function(f){return Files.isSupportedExtra(f.name);});
+    if(!known.length){Toast.show('Aucun format pris en charge dans la selection','error');return;}
     UI.setStatus('Conversion...');
-    for(var j=0;j<imgs.length;j++)await this.loadImage(imgs[j]);
+    var okCount=0,failCount=0;
+    for(var j=0;j<known.length;j++){
+      var ok=await this.loadImage(known[j]);
+      if(ok)okCount++;else failCount++;
+    }
     UI.setStatus('Pret');UI.renderAll();
+    if(failCount&&okCount)Toast.show(failCount+' fichier(s) sur '+known.length+' n\'ont pas pu etre importes','error');
   },
   loadOne:async function(file){
     try{
@@ -1873,26 +2351,54 @@ var Files={
     }catch(e){Toast.show('Erreur image: '+file.name,'error');console.error(e);}
   },
   loadImage:async function(file){
-    if(!checkLibs())return;
+    if(!checkLibs())return false;
+    var name=file.name;
     try{
-      var ab=await file.arrayBuffer();
-      var bytes=new Uint8Array(ab);
-      var PDFDocument=window.PDFLib.PDFDocument;
-      var out=await PDFDocument.create();
-      var isJpg=/\.(jpe?g|jfif)$/i.test(file.name);
-      var img=isJpg?await out.embedJpg(bytes):await out.embedPng(bytes);
-      var A4W=595,A4H=842;
-      var scale=Math.min(A4W/img.width,A4H/img.height);
-      var dw=img.width*scale,dh=img.height*scale;
-      var dx=(A4W-dw)/2,dy=(A4H-dh)/2;
-      var page=out.addPage([A4W,A4H]);
-      page.drawImage(img,{x:dx,y:dy,width:dw,height:dh});
-      var pdfBytes=await out.save();
+      var pdfBytes;
+      if(Files.EXT_JPGPNG.test(name)){
+        // Chemin d'origine inchange (fidelite/poids optimal, deja teste et fiable)
+        var ab=await file.arrayBuffer();
+        var bytes=new Uint8Array(ab);
+        var PDFDocument=window.PDFLib.PDFDocument;
+        var out=await PDFDocument.create();
+        var isJpg=/\.(jpe?g|jfif)$/i.test(name);
+        var img=isJpg?await out.embedJpg(bytes):await out.embedPng(bytes);
+        var A4W=595,A4H=842;
+        var scale=Math.min(A4W/img.width,A4H/img.height);
+        var dw=img.width*scale,dh=img.height*scale,dx=(A4W-dw)/2,dy=(A4H-dh)/2;
+        var page=out.addPage([A4W,A4H]);
+        page.drawImage(img,{x:dx,y:dy,width:dw,height:dh});
+        pdfBytes=await out.save();
+      }else if(Files.EXT_RASTER.test(name)){
+        pdfBytes=await Files._pngBytesToPdfBytes(await Files._imageFileToPngBytes(file));
+      }else if(Files.EXT_HEIC.test(name)){
+        pdfBytes=await Files._pngBytesToPdfBytes(await Files._heicToPngBytes(file));
+      }else if(Files.EXT_TIFF.test(name)){
+        pdfBytes=await Files._pngPagesToPdfBytes(await Files._tiffToPngPages(file));
+      }else if(Files.EXT_TEXT.test(name)){
+        pdfBytes=await Files.blocksToPdfBytes(await Files._textFileToBlocks(file));
+      }else if(Files.EXT_RTF.test(name)){
+        pdfBytes=await Files.blocksToPdfBytes(await Files._rtfFileToBlocks(file));
+      }else if(Files.EXT_DOCX.test(name)){
+        pdfBytes=await Files.blocksToPdfBytes(await Files._docxFileToBlocks(file));
+      }else if(Files.EXT_XLSX.test(name)){
+        pdfBytes=await Files._xlsxFileToPdfBytes(file);
+      }else if(Files.EXT_PPTX.test(name)){
+        pdfBytes=await Files.blocksToPdfBytes(await Files._pptxFileToBlocks(file));
+      }else{
+        Toast.show('Format non pris en charge: '+name,'error');
+        return false;
+      }
       var blob=new Blob([pdfBytes],{type:'application/pdf'});
-      var pdfName=file.name.replace(/\.(jpe?g|jfif|png)$/i,'.pdf');
+      var pdfName=name.replace(/\.[^./\\]+$/,'')+'.pdf';
       var pdfFile=new File([blob],pdfName,{type:'application/pdf'});
       await this.loadOne(pdfFile);
-    }catch(e){Toast.show('Erreur image: '+file.name,'error');console.error(e);}
+      return true;
+    }catch(e){
+      console.error(e);
+      Toast.show('Erreur import "'+name+'": '+(e&&e.message?e.message:'echec de conversion'),'error');
+      return false;
+    }
   },
   remove:function(docId){
     var idx=S.docs.findIndex(function(d){return d.id===docId;});
@@ -2106,8 +2612,8 @@ var DD={
 
 // MERGE
 var Merge={
-  start:async function(){
-    var docs=S.docs.filter(function(d){return !d._ghost&&d.pages.length;});
+  start:async function(docIds){
+    var docs=S.docs.filter(function(d){return !d._ghost&&d.pages.length&&(!docIds||docIds.indexOf(d.id)!==-1);});
     if(!docs.length){Toast.show('Aucune page','error');return;}
     if(!checkLibs())return;
     // Si la preview est ouverte ET qu'il y a des annotations → les graver d'abord dans les bytes
@@ -2367,6 +2873,18 @@ var Split={
         out.addPage(cp);
         outPages.push({outPage:cp,pg:pg});
       }
+      // Cache de documents pdf.js par doc source, chargés à la demande (uniquement si
+      // une page a effectivement une gomme à traiter) pour la rédaction réelle du
+      // texte (étapes 4/5) — cf. RedactionZone.computeForSavedEraser.
+      var pdfJsDocsCache={};
+      async function getPdfJsPageExport(srcId,pi){
+        if(!(srcId in pdfJsDocsCache)){
+          try{pdfJsDocsCache[srcId]=await pdfjsLib.getDocument({data:S.bytes[srcId].slice(0)}).promise;}
+          catch(e){pdfJsDocsCache[srcId]=null;}
+        }
+        if(!pdfJsDocsCache[srcId])return null;
+        try{return await pdfJsDocsCache[srcId].getPage(pi+1);}catch(e){return null;}
+      }
       // Graver les annotations sauvegardées pour chaque page
       for(var k=0;k<outPages.length;k++){
         var entry=outPages[k];
@@ -2374,7 +2892,12 @@ var Split={
         if(annotData){
           UI.setProgress(Math.round(70+(k/outPages.length)*25),'Annotations page '+(k+1)+'...');
           await tick();
-          await AnnotStore.burnToPage(entry.outPage,annotData,PDFLib);
+          var burnOpts=null;
+          if(annotData.eraser&&annotData.eraser.src){
+            var pdfJsPageForRedact=await getPdfJsPageExport(resolveIdExport(entry.pg),entry.pg.pi);
+            if(pdfJsPageForRedact)burnOpts={pdfJsPage:pdfJsPageForRedact};
+          }
+          await AnnotStore.burnToPage(entry.outPage,annotData,PDFLib,burnOpts);
         }
       }
       UI.setProgress(98,'Enregistrement...');await tick();
@@ -2578,6 +3101,52 @@ var Project={
       }
       S.ndi=data.ndi;S.npi=data.npi;UI.renderAll();Toast.show('Projet charge','success');
     }catch(e){Toast.show('Erreur: '+e.message,'error');}
+  },
+  /* ── Sauvegarde automatique de session (silencieuse, dans le stockage local) ── */
+  AUTOKEY:'pdfstudio_autosession',
+  _autoTimer:null,
+  autoSaveDebounced:function(){
+    clearTimeout(Project._autoTimer);
+    Project._autoTimer=setTimeout(function(){Project._autoSaveNow();},900);
+  },
+  _autoSaveNow:function(){
+    try{
+      if(!S.docs||!S.docs.length)return;
+      var self=this;
+      var data={v:1,ts:Date.now(),docs:S.docs.map(function(d){
+        return{id:d.id,name:d.name,cnt:d.cnt,
+          b64:self.toB64(S.bytes[d.id]),
+          pages:d.pages.map(function(p){return{id:p.id,docId:p.docId,pi:p.pi,rot:p.rot,uuid:p.uuid};})};
+      }),ndi:S.ndi,npi:S.npi};
+      localStorage.setItem(Project.AUTOKEY,JSON.stringify(data));
+    }catch(e){/* quota depassee ou autre : on echoue silencieusement */}
+  },
+  hasAutoSave:function(){
+    try{
+      var raw=localStorage.getItem(Project.AUTOKEY);
+      if(!raw)return null;
+      var data=JSON.parse(raw);
+      if(!data||!data.docs||!data.docs.length)return null;
+      return data;
+    }catch(e){return null;}
+  },
+  clearAutoSave:function(){try{localStorage.removeItem(Project.AUTOKEY);}catch(e){}},
+  restoreAuto:async function(){
+    var data=Project.hasAutoSave();
+    if(!data){Toast.show('Aucune session a restaurer','error');return;}
+    try{
+      S.docs=[];S.sel.clear();S.bytes={};S.pdfDocs={};S.cache={};DD.destroyAll();Undo.clear();
+      for(var i=0;i<data.docs.length;i++){
+        var d=data.docs[i];
+        var bytes=Uint8Array.from(atob(d.b64),function(c){return c.charCodeAt(0);});
+        var pdfDoc=await pdfjsLib.getDocument({data:bytes.slice(0)}).promise;
+        S.bytes[d.id]=bytes;
+        S.pdfDocs[d.id]=pdfDoc;
+        S.docs.push({id:d.id,name:d.name,cnt:d.cnt,pdfDoc:pdfDoc,pages:d.pages});
+      }
+      S.ndi=data.ndi;S.npi=data.npi;UI.renderAll();
+      Toast.show('Session precedente restauree','success');
+    }catch(e){console.error(e);Toast.show('Erreur restauration: '+e.message,'error');}
   }
 };
 
@@ -2589,7 +3158,12 @@ var UI={
   renderAll:function(){
     var area=document.getElementById('canvas-area'),empty=document.getElementById('empty-state');
     var visCount=S.docs.filter(function(d){return !d._ghost;}).length;
-    if(!visCount){area.innerHTML='';area.appendChild(empty);document.getElementById('btn-merge').disabled=true;this.updateSidebar();return;}
+    if(!visCount){
+      area.innerHTML='';area.appendChild(empty);document.getElementById('btn-merge').disabled=true;this.updateSidebar();
+      var restoreBtn=document.getElementById('btn-restore-session');
+      if(restoreBtn)restoreBtn.style.display=Project.hasAutoSave()?'inline-flex':'none';
+      return;
+    }
     document.getElementById('btn-merge').disabled=false;
     var visCount=S.docs.filter(function(d){return !d._ghost;}).length;
     var mergeBtn=document.getElementById('btn-merge');
@@ -2619,6 +3193,7 @@ var UI={
     S.docs.forEach(function(d){d.pages.forEach(function(p){var w=document.querySelector('.thumb-canvas-wrap[data-pid="'+p.id+'"]');if(w&&!w.querySelector('canvas'))toRender.push(p.id);});});
     if(toRender.length)Render.queue(toRender);
     this.initCardSort();this.updateDocOrderBtns();this.updateSidebar();this.updateSel();
+    Project.autoSaveDebounced();
   },
   COLORS:['#FFD972','#F46060','#006466','#0A2472','#9b59b6','#e67e22'],
   buildCard:function(doc){
@@ -2997,19 +3572,15 @@ var BlankPage={
 
 // PRINT PREP
 var PrintPrep={
-  open:function(){
-    if(!S.docs.length){Toast.show('Chargez un PDF','error');return;}
-    this.updateInfo();
-    showModal('print-modal');
-  },
-  updateInfo:function(){
+  updateInfo:function(docsList){
+    docsList=docsList||S.docs;
     var odd=document.getElementById('print-odd').checked;
     var end=document.getElementById('print-end').checked;
     var el=document.getElementById('print-info');
-    if(!S.docs.length){el.textContent='Aucun document charge.';return;}
+    if(!docsList.length){el.textContent='Aucun document selectionne.';return;}
     var lines=[],total=0,blanksAdded=0;
     var runningPage=0;
-    S.docs.forEach(function(doc,i){
+    docsList.forEach(function(doc,i){
       var n=doc.pages.length;
       var blanks=0;
       if(odd&&i>0&&runningPage%2!==0){blanks=1;}
@@ -3022,117 +3593,320 @@ var PrintPrep={
     el.innerHTML=lines.join('<br>')+
       '<br><br><strong>Total: '+(total+blanksAdded)+' pages</strong> ('+(blanksAdded>0?blanksAdded+' feuille'+(blanksAdded>1?'s blanche ajoutee':'blanche ajoutee'):'aucune feuille blanche necessaire')+')';
   },
-  confirm:async function(){
-    if(!checkLibs())return;
-    var odd=document.getElementById('print-odd').checked;
-    var end=document.getElementById('print-end').checked;
-    hideModal('print-modal');
-    UI.showProgress(true);UI.setProgress(0,'Preparation impression...');
-    try{
-      var PDFDocument=window.PDFLib.PDFDocument,degrees=window.PDFLib.degrees;
-      var outDoc=await PDFDocument.create();
-      var ids=[...new Set(S.docs.flatMap(function(d){return d.pages.filter(function(p){return!p.blank;}).map(function(p){return String(p.docId);});}))];
-      var srcs={};
-      for(var i=0;i<ids.length;i++){
-        var id=ids[i];
-        UI.setProgress(Math.round((i/ids.length)*15),'Chargement '+(i+1)+'/'+ids.length+'...');
+  // Construit le PDF "pret a imprimer" (fusion + pages blanches) a partir d'un sous-ensemble
+  // de documents (docsList) et renvoie ses octets, sans telecharger ni fermer de modale —
+  // utilise par Export.confirm(). docsList par defaut = tous les documents ouverts.
+  build:async function(docsList,odd,end,onProgress){
+    docsList=docsList||S.docs;
+    var PDFDocument=window.PDFLib.PDFDocument,degrees=window.PDFLib.degrees;
+    var outDoc=await PDFDocument.create();
+    var ids=[...new Set(docsList.flatMap(function(d){return d.pages.filter(function(p){return!p.blank;}).map(function(p){return String(p.docId);});}))];
+    var srcs={};
+    for(var i=0;i<ids.length;i++){
+      var id=ids[i];
+      if(onProgress)onProgress(Math.round((i/ids.length)*15),'Chargement '+(i+1)+'/'+ids.length+'...');
+      await tick();
+      if(!S.bytes[id])continue;
+      srcs[id]=await PDFDocument.load(S.bytes[id].slice(0),{ignoreEncryption:true});
+    }
+    var runningPage=0;
+    var totalPages=0;
+    var allCount=docsList.flatMap(function(d){return d.pages;}).length;
+    for(var di=0;di<docsList.length;di++){
+      var doc=docsList[di];
+      if(odd&&di>0&&runningPage%2!==0){
+        var blankPg=outDoc.addPage();
+        blankPg.drawRectangle({x:0,y:0,width:blankPg.getWidth(),height:blankPg.getHeight(),color:window.PDFLib.rgb(1,1,1)});
+        runningPage++;totalPages++;
+      }
+      for(var pi=0;pi<doc.pages.length;pi++){
+        var pg=doc.pages[pi];
+        if(onProgress)onProgress(Math.round(15+(totalPages/Math.max(1,allCount))*80),'Page...');
         await tick();
-        if(!S.bytes[id])continue;
-        srcs[id]=await PDFDocument.load(S.bytes[id].slice(0),{ignoreEncryption:true});
-      }
-      var runningPage=0;
-      var totalPages=0;
-      for(var di=0;di<S.docs.length;di++){
-        var doc=S.docs[di];
-        if(odd&&di>0&&runningPage%2!==0){
-          var blankPg=outDoc.addPage();
-          blankPg.drawRectangle({x:0,y:0,width:blankPg.getWidth(),height:blankPg.getHeight(),color:window.PDFLib.rgb(1,1,1)});
-          runningPage++;totalPages++;
-        }
-        for(var pi=0;pi<doc.pages.length;pi++){
-          var pg=doc.pages[pi];
-          UI.setProgress(Math.round(15+(totalPages/Math.max(1,S.docs.flatMap(function(d){return d.pages;}).length))*80),'Page...');
-          await tick();
-          if(pg.blank){
-            var bp=outDoc.addPage();runningPage++;totalPages++;
-          }else{
-            var src=srcs[String(pg.docId)];if(!src)continue;
-            if(pg.pi>=src.getPageCount())continue;
-            var copied=(await outDoc.copyPages(src,[pg.pi]))[0];
-            if(pg.rot)copied.setRotation(degrees(((copied.getRotation().angle+pg.rot)%360+360)%360));
-            outDoc.addPage(copied);runningPage++;totalPages++;
-          }
+        if(pg.blank){
+          outDoc.addPage();runningPage++;totalPages++;
+        }else{
+          var src=srcs[String(pg.docId)];if(!src)continue;
+          if(pg.pi>=src.getPageCount())continue;
+          var copied=(await outDoc.copyPages(src,[pg.pi]))[0];
+          if(pg.rot)copied.setRotation(degrees(((copied.getRotation().angle+pg.rot)%360+360)%360));
+          outDoc.addPage(copied);runningPage++;totalPages++;
         }
       }
-      if(end&&runningPage%2!==0){
-        var fp=outDoc.addPage();
-        fp.drawRectangle({x:0,y:0,width:fp.getWidth(),height:fp.getHeight(),color:window.PDFLib.rgb(1,1,1)});
-      }
-      UI.setProgress(95,'Enregistrement...');await tick();
-      var bytes=await outDoc.save();
-      var fn='impression_'+(new Date().toISOString().slice(0,10))+'.pdf';
-      var sizeStr=formatSize(bytes.length);
-      download(bytes,fn,'application/pdf');
-      History.add({name:fn,date:formatDate(),pages:outDoc.getPageCount(),size:sizeStr});
-      Toast.show('PDF impression genere: '+outDoc.getPageCount()+' pages','success');
-    }catch(e){console.error(e);Toast.show('Erreur: '+e.message,'error');}
-    finally{UI.showProgress(false);}
+    }
+    if(end&&runningPage%2!==0){
+      var fp=outDoc.addPage();
+      fp.drawRectangle({x:0,y:0,width:fp.getWidth(),height:fp.getHeight(),color:window.PDFLib.rgb(1,1,1)});
+    }
+    var bytes=await outDoc.save();
+    return {bytes:bytes,pageCount:outDoc.getPageCount()};
   }
 };
 
 // COMPRESS
 
 var Compress={
+  // Rasterise un PDF (octets bruts) page par page pour reduire son poids, et renvoie les
+  // nouveaux octets — utilise par Export.confirm(), que la source soit un doc unique ou
+  // le resultat d'une fusion (PrintPrep.build).
+  rasterize:async function(bytes,quality,dpi,grayscale,onProgress){
+    var PDFDocument=window.PDFLib.PDFDocument;
+    var srcDoc=await PDFDocument.load(bytes.slice(0),{ignoreEncryption:true});
+    var pdfjsDoc=await pdfjsLib.getDocument({data:bytes.slice(0)}).promise;
+    var outDoc=await PDFDocument.create();
+    var pageCount=srcDoc.getPageCount();
+    for(var i=0;i<pageCount;i++){
+      if(onProgress)onProgress(Math.round((i/pageCount)*100),'Page '+(i+1)+'/'+pageCount+'...');
+      await tick();
+      var pdfPage=await pdfjsDoc.getPage(i+1);
+      var vp=pdfPage.getViewport({scale:dpi/72});
+      var canvas=document.createElement('canvas');
+      canvas.width=Math.round(vp.width);canvas.height=Math.round(vp.height);
+      var ctx=canvas.getContext('2d');
+      if(grayscale){ctx.filter='grayscale(1)';}
+      await pdfPage.render({canvasContext:ctx,viewport:vp}).promise;
+      var dataUrl=canvas.toDataURL('image/jpeg',quality);
+      var b64=dataUrl.split(',')[1];
+      var imgBytes=Uint8Array.from(atob(b64),function(c){return c.charCodeAt(0);});
+      var jpgImg=await outDoc.embedJpg(imgBytes);
+      var srcPg=srcDoc.getPage(i);
+      var rot=srcPg.getRotation().angle;
+      var w=srcPg.getWidth(),h=srcPg.getHeight();
+      var newPage=outDoc.addPage([w,h]);
+      newPage.setRotation(window.PDFLib.degrees(rot));
+      newPage.drawImage(jpgImg,{x:0,y:0,width:w,height:h});
+    }
+    var outBytes=await outDoc.save();
+    return {bytes:outBytes,pageCount:outDoc.getPageCount()};
+  }
+};
+
+// EXPORT (point d'entree unique : bouton rouge "Telecharger")
+// Regroupe telechargement simple, preparation impression et compression dans une seule modale.
+var Export={
+  _prefsKey:'pdftool_export_prefs',
   open:function(){
     if(!S.docs.length){Toast.show('Chargez un PDF','error');return;}
-    var sel=document.getElementById('compress-doc');
-    sel.innerHTML=S.docs.map(function(d){return '<option value="'+d.id+'">'+esc(d.name.replace(/\.pdf$/i,''))+' ('+d.pages.length+' p.)</option>';}).join('');
-    showModal('compress-modal');
+    // Liste des documents a cocher (tous coches par defaut)
+    var list=document.getElementById('export-doc-list');
+    list.innerHTML=S.docs.map(function(d){
+      return '<label class="export-doc-item"><input type="checkbox" class="export-doc-cb" value="'+d.id+'" checked>'+
+        '<i class="fa-solid fa-file-pdf edi-icon"></i>'+
+        '<span class="card-name-wrap edi-name-wrap" data-namewrap="'+d.id+'">'+
+          '<span class="card-name" data-rename="'+d.id+'" title="Cliquer pour renommer">'+esc(d.name.replace(/\.pdf$/i,''))+'</span>'+
+          '<input class="card-name-input" data-rename-input="'+d.id+'" type="text" spellcheck="false">'+
+        '</span>'+
+        '<span class="edi-pages">'+d.pages.length+' p.</span></label>';
+    }).join('');
+    list.querySelectorAll('.export-doc-cb').forEach(function(cb){
+      cb.addEventListener('change',function(){Export._onSelectionChange();});
+    });
+    list.querySelectorAll('[data-rename]').forEach(function(nameSpan){
+      var id=parseInt(nameSpan.dataset.rename);
+      var wrap=nameSpan.closest('.card-name-wrap');
+      var input=wrap.querySelector('[data-rename-input]');
+      function startRename(e){
+        e.stopPropagation();e.preventDefault();
+        var liveDoc=S.docs.find(function(x){return x.id===id;});
+        input.value=(liveDoc?liveDoc.name:'').replace(/\.pdf$/i,'');
+        wrap.classList.add('editing');
+        input.focus();input.select();
+      }
+      function commitRename(){
+        wrap.classList.remove('editing');
+        var liveDoc=S.docs.find(function(x){return x.id===id;});
+        if(!liveDoc)return;
+        var val=input.value.trim();
+        if(!val){nameSpan.textContent=liveDoc.name.replace(/\.pdf$/i,'');return;}
+        var newName=val.replace(/\.pdf$/i,'')+'.pdf';
+        if(newName!==liveDoc.name){
+          Undo.push();
+          liveDoc.name=newName;
+          UI.updateSidebar();
+          Toast.show('Renomme : "'+newName+'"','success');
+        }
+        nameSpan.textContent=liveDoc.name.replace(/\.pdf$/i,'');
+      }
+      function cancelRename(){
+        wrap.classList.remove('editing');
+        var liveDoc=S.docs.find(function(x){return x.id===id;});
+        nameSpan.textContent=liveDoc?liveDoc.name.replace(/\.pdf$/i,''):nameSpan.textContent;
+      }
+      nameSpan.addEventListener('click',startRename);
+      input.addEventListener('click',function(e){e.stopPropagation();});
+      input.addEventListener('mousedown',function(e){e.stopPropagation();});
+      input.addEventListener('blur',function(){commitRename();});
+      input.addEventListener('keydown',function(e){
+        e.stopPropagation();
+        if(e.key==='Enter'){e.preventDefault();input.blur();}
+        if(e.key==='Escape'){e.preventDefault();cancelRename();input.blur();}
+      });
+    });
+    document.getElementById('export-print-toggle').checked=false;
+    document.getElementById('export-compress-toggle').checked=false;
+    // Recharge les derniers reglages de compression / impression utilises
+    var prefs=Export._loadPrefs();
+    if(prefs.quality)document.getElementById('compress-quality').value=prefs.quality;
+    if(prefs.dpi)document.getElementById('compress-dpi').value=prefs.dpi;
+    document.getElementById('compress-grayscale').checked=!!prefs.grayscale;
+    document.getElementById('compress-quality-val').textContent=document.getElementById('compress-quality').value+'%';
+    document.getElementById('compress-dpi-val').textContent=document.getElementById('compress-dpi').value+' dpi';
+    document.getElementById('print-odd').checked=prefs.printOdd!==undefined?prefs.printOdd:true;
+    document.getElementById('print-end').checked=!!prefs.printEnd;
+    this._sync();
+    showModal('export-modal');
   },
-  confirm:async function(){
-    if(!checkLibs())return;
-    var doc=S.docs.find(function(d){return d.id===parseInt(document.getElementById('compress-doc').value);});
-    if(!doc)return;
-    var quality=parseInt(document.getElementById('compress-quality').value)/100;
-    var dpi=parseInt(document.getElementById('compress-dpi').value);
-    var grayscale=document.getElementById('compress-grayscale').checked;
-    hideModal('compress-modal');
-    UI.showProgress(true);UI.setProgress(0,'Compression en cours...');
+  _selectedIds:function(){
+    return [...document.querySelectorAll('.export-doc-cb:checked')].map(function(cb){return parseInt(cb.value);});
+  },
+  _selectedDocs:function(){
+    var ids=Export._selectedIds();
+    return S.docs.filter(function(d){return ids.indexOf(d.id)!==-1;});
+  },
+  toggleAll:function(){
+    var boxes=document.querySelectorAll('.export-doc-cb');
+    var allChecked=[...boxes].every(function(cb){return cb.checked;});
+    boxes.forEach(function(cb){cb.checked=!allChecked;});
+    Export._onSelectionChange();
+  },
+  _onSelectionChange:function(){
+    PrintPrep.updateInfo(Export._selectedDocs());
+    Export._updateSizeEstimate();
+  },
+  _sync:function(){
+    var printOn=document.getElementById('export-print-toggle').checked;
+    var compressOn=document.getElementById('export-compress-toggle').checked;
+    document.getElementById('export-print-section').classList.toggle('active',printOn);
+    document.getElementById('export-compress-section').classList.toggle('active',compressOn);
+    document.getElementById('export-print-body').classList.toggle('open',printOn);
+    document.getElementById('export-compress-body').classList.toggle('open',compressOn);
+    var hint=document.getElementById('export-doc-hint');
+    if(printOn){
+      hint.textContent='Les documents coches ci-dessus seront fusionnes en un seul PDF.';
+    }else if(compressOn){
+      hint.textContent='Chaque document coche sera compresse puis telecharge (un fichier par document).';
+    }else{
+      hint.textContent='Chaque document coche sera telecharge separement, tel quel.';
+    }
+    PrintPrep.updateInfo(Export._selectedDocs());
+    Export._updateSizeEstimate();
+  },
+  // Preferences (reglages de compression/impression) memorisees d'une session a l'autre.
+  // Les cases "Impression"/"Compresser" elles-memes repartent toujours decochees par securite.
+  _loadPrefs:function(){
+    try{return JSON.parse(localStorage.getItem(Export._prefsKey))||{};}catch(e){return {};}
+  },
+  _savePrefs:function(){
     try{
-      var PDFDocument=window.PDFLib.PDFDocument;
-      var srcDoc=await PDFDocument.load(S.bytes[doc.id].slice(0),{ignoreEncryption:true});
-      var outDoc=await PDFDocument.create();
-      var pageCount=srcDoc.getPageCount();
-      for(var i=0;i<pageCount;i++){
-        UI.setProgress(Math.round((i/pageCount)*80),'Page '+(i+1)+'/'+pageCount+'...');
-        await tick();
-        var pdfPage=await doc.pdfDoc.getPage(i+1);
+      localStorage.setItem(Export._prefsKey,JSON.stringify({
+        quality:document.getElementById('compress-quality').value,
+        dpi:document.getElementById('compress-dpi').value,
+        grayscale:document.getElementById('compress-grayscale').checked,
+        printOdd:document.getElementById('print-odd').checked,
+        printEnd:document.getElementById('print-end').checked
+      }));
+    }catch(e){}
+  },
+  onCompressInputChanged:function(){
+    Export._savePrefs();
+    Export._updateSizeEstimate();
+  },
+  // Estimation approximative : on compresse la 1ere page du 1er document selectionne avec les
+  // reglages actuels, puis on extrapole sur le nombre total de pages selectionnees.
+  _estTimer:null,
+  _updateSizeEstimate:function(){
+    var el=document.getElementById('export-size-info');
+    var estEl=document.getElementById('compress-estimate');
+    if(!el)return;
+    var docs=Export._selectedDocs();
+    var totalBytes=docs.reduce(function(s,d){return s+(S.bytes[d.id]?S.bytes[d.id].length:0);},0);
+    var totalPages=docs.reduce(function(s,d){return s+d.pages.length;},0);
+    var base=docs.length?(formatSize(totalBytes)+' \u2022 '+totalPages+' page'+(totalPages>1?'s':'')+' \u2022 '+docs.length+' document'+(docs.length>1?'s':'')):'Aucun document selectionne';
+    el.textContent=base;
+    var compressOn=document.getElementById('export-compress-toggle').checked;
+    if(!estEl)return;
+    if(!compressOn||!docs.length){estEl.textContent='';return;}
+    estEl.textContent='Estimation en cours...';
+    clearTimeout(Export._estTimer);
+    Export._estTimer=setTimeout(async function(){
+      var sampleDoc=docs.find(function(d){return d.pdfDoc;});
+      if(!sampleDoc){estEl.textContent='';return;}
+      try{
+        var quality=parseInt(document.getElementById('compress-quality').value)/100;
+        var dpi=parseInt(document.getElementById('compress-dpi').value);
+        var grayscale=document.getElementById('compress-grayscale').checked;
+        var pdfPage=await sampleDoc.pdfDoc.getPage(1);
         var vp=pdfPage.getViewport({scale:dpi/72});
         var canvas=document.createElement('canvas');
         canvas.width=Math.round(vp.width);canvas.height=Math.round(vp.height);
         var ctx=canvas.getContext('2d');
-        if(grayscale){ctx.filter='grayscale(1)';}
+        if(grayscale)ctx.filter='grayscale(1)';
         await pdfPage.render({canvasContext:ctx,viewport:vp}).promise;
-        var mimeType='image/jpeg';
-        var dataUrl=canvas.toDataURL(mimeType,quality);
-        var b64=dataUrl.split(',')[1];
-        var imgBytes=Uint8Array.from(atob(b64),function(c){return c.charCodeAt(0);});
-        var jpgImg=await outDoc.embedJpg(imgBytes);
-        var srcPg=srcDoc.getPage(i);
-        var rot=srcPg.getRotation().angle;
-        var w=srcPg.getWidth(),h=srcPg.getHeight();
-        var newPage=outDoc.addPage([w,h]);
-        newPage.setRotation(window.PDFLib.degrees(rot));
-        newPage.drawImage(jpgImg,{x:0,y:0,width:w,height:h});
+        var dataUrl=canvas.toDataURL('image/jpeg',quality);
+        var sampleBytes=Math.round(dataUrl.length*0.75);
+        var estTotal=sampleBytes*Math.max(1,totalPages);
+        estEl.textContent=formatSize(totalBytes)+' \u2192 \u2248 '+formatSize(estTotal)+' apres compression';
+      }catch(e){estEl.textContent='';}
+    },350);
+  },
+  confirm:async function(){
+    if(!checkLibs())return;
+    var printOn=document.getElementById('export-print-toggle').checked;
+    var compressOn=document.getElementById('export-compress-toggle').checked;
+    var ids=Export._selectedIds();
+    if(!ids.length){Toast.show('Selectionnez au moins un document','error');return;}
+    hideModal('export-modal');
+    Export._savePrefs();
+
+    if(!printOn&&!compressOn){
+      // Aucune option activee : telechargement simple des documents coches, tels quels.
+      await Merge.start(ids);
+      return;
+    }
+
+    UI.showProgress(true);UI.setProgress(0,'Preparation...');
+    try{
+      var docsSubset=S.docs.filter(function(d){return ids.indexOf(d.id)!==-1;});
+      if(printOn){
+        var odd=document.getElementById('print-odd').checked;
+        var end=document.getElementById('print-end').checked;
+        var built=await PrintPrep.build(docsSubset,odd,end,function(p,label){UI.setProgress(Math.round(p*(compressOn?0.4:1)),label);});
+        var bytes=built.bytes,pageCountOut=built.pageCount;
+        var origSize=bytes.length;
+        var fn='impression_'+(new Date().toISOString().slice(0,10))+'.pdf';
+        if(compressOn){
+          var quality=parseInt(document.getElementById('compress-quality').value)/100;
+          var dpi=parseInt(document.getElementById('compress-dpi').value);
+          var grayscale=document.getElementById('compress-grayscale').checked;
+          var res=await Compress.rasterize(bytes,quality,dpi,grayscale,function(p,label){UI.setProgress(40+Math.round(p*0.55),label);});
+          bytes=res.bytes;pageCountOut=res.pageCount;
+          fn=fn.replace(/\.pdf$/i,'')+'_compresse.pdf';
+        }
+        UI.setProgress(98,'Enregistrement...');await tick();
+        download(bytes,fn,'application/pdf');
+        History.add({name:fn,date:formatDate(),pages:pageCountOut,size:formatSize(bytes.length)});
+        var msg=compressOn?'PDF impression + compression genere : '+pageCountOut+' pages ('+formatSize(origSize)+' -> '+formatSize(bytes.length)+')':'PDF impression genere : '+pageCountOut+' pages';
+        Toast.show(msg,'success');
+      }else{
+        // Compression seule, potentiellement sur plusieurs documents : un fichier compresse par document.
+        var quality=parseInt(document.getElementById('compress-quality').value)/100;
+        var dpi=parseInt(document.getElementById('compress-dpi').value);
+        var grayscale=document.getElementById('compress-grayscale').checked;
+        for(var i=0;i<docsSubset.length;i++){
+          var doc=docsSubset[i];
+          var origBytes=S.bytes[doc.id];
+          if(!origBytes)continue;
+          var res=await Compress.rasterize(origBytes,quality,dpi,grayscale,function(p,label){
+            UI.setProgress(Math.round((i*100+p)/docsSubset.length),'Document '+(i+1)+'/'+docsSubset.length+' — '+label);
+          });
+          var fn=doc.name.replace(/\.pdf$/i,'')+'_compresse.pdf';
+          download(res.bytes,fn,'application/pdf');
+          History.add({name:fn,date:formatDate(),pages:res.pageCount,size:formatSize(res.bytes.length)});
+          Toast.show('"'+fn+'" compresse : '+formatSize(origBytes.length)+' -> '+formatSize(res.bytes.length),'success');
+          await tick();
+        }
       }
-      UI.setProgress(92,'Enregistrement...');await tick();
-      var outBytes=await outDoc.save();
-      var origSize=(S.bytes[doc.id].length/1024).toFixed(0);
-      var newSize=(outBytes.length/1024).toFixed(0);
-      var fn=doc.name.replace(/\.pdf$/i,'')+'_compresse.pdf';
-      download(outBytes,fn,'application/pdf');
-      Toast.show('Compresse: '+origSize+'ko -> '+newSize+'ko','success');
-    }catch(e){console.error(e);Toast.show('Erreur compression: '+e.message,'error');}
+    }catch(e){console.error(e);Toast.show('Erreur: '+e.message,'error');}
     finally{UI.showProgress(false);}
   }
 };
@@ -3330,8 +4104,10 @@ var AnnotStore={
         var erHasPixels=false;
         for(var epi=3;epi<erImgData.length;epi+=4){if(erImgData[epi]!==0){erHasPixels=true;break;}}
         if(erHasPixels){
-          var erOpaqueSrc=EraserTool.getOpaqueDataURL();
-          if(erOpaqueSrc)data.eraser={src:erOpaqueSrc,w:erCv.width,h:erCv.height};
+          // Recadré sur la zone effacée uniquement (voir getOpaqueCroppedDataURL) pour
+          // éviter de saturer le quota localStorage avec une image pleine page.
+          var erCrop=EraserTool.getOpaqueCroppedDataURL();
+          if(erCrop)data.eraser={src:erCrop.src,x:erCrop.x,y:erCrop.y,w:erCrop.w,h:erCrop.h};
         }
       }catch(erErr){/* canvas potentiellement non lisible, on ignore silencieusement */}
     }
@@ -3362,8 +4138,14 @@ var AnnotStore={
     try{return JSON.parse(raw);}catch(e){return null;}
   },
 
-  /* Grave les annotations d'une page directement dans une page pdf-lib (sans DOM) */
-  burnToPage:async function(outPage,data,PDFLib){
+  /* Grave les annotations d'une page directement dans une page pdf-lib (sans DOM).
+     `opts.pdfJsPage`, s'il est fourni, est la page pdf.js correspondante (contenu
+     ORIGINAL, avant toute gravure) : elle permet de tenter la vraie rédaction du
+     texte sous la gomme (étapes 4/5, cf. RedactionZone/RedactionSerializer/
+     RedactionInjector) en plus du masquage visuel existant. Sans elle (ou en cas
+     d'échec de la rédaction réelle), seul le masquage visuel s'applique — comportement
+     strictement identique à avant l'introduction de la rédaction réelle. */
+  burnToPage:async function(outPage,data,PDFLib,opts){
     if(!data)return;
     var pdfW=outPage.getWidth(),pdfH=outPage.getHeight();
     var displayW=data.displayW||1,displayH=data.displayH||1;
@@ -3420,6 +4202,20 @@ var AnnotStore={
 
     var out=outPage.doc; // référence au PDFDocument parent
 
+    // ── Rédaction réelle du texte sous la gomme (étapes 4/5) ──
+    // DOIT s'exécuter avant tout drawImage/drawText sur cette page : au-delà de ce
+    // point, /Contents ne correspond plus exactement au contenu original attendu par
+    // RedactionInjector._readOriginalContentBytes(). Best-effort et silencieux : si
+    // ça échoue (page trop complexe, API pdf-lib indisponible, image de gomme
+    // illisible...), on continue normalement — le masquage visuel ci-dessous
+    // (drawImage blanc) reste la seule protection, exactement comme avant.
+    if(data.eraser&&data.eraser.src&&opts&&opts.pdfJsPage){
+      try{
+        var redactRuns=await RedactionZone.computeForSavedEraser(opts.pdfJsPage,T,data);
+        if(redactRuns)RedactionInjector.redactPage(outPage,redactRuns,PDFLib);
+      }catch(e){console.warn('Rédaction réelle du texte sous la gomme : échec, masquage visuel conservé.',e);}
+    }
+
     // ── Gomme ──
     // Peinte en premier (juste au-dessus du contenu original de la page),
     // pour rester derrière toutes les autres annotations — exactement comme
@@ -3427,7 +4223,21 @@ var AnnotStore={
     if(data.eraser&&data.eraser.src){
       var erB64=data.eraser.src.split(',')[1];
       var erB=Uint8Array.from(atob(erB64),function(c){return c.charCodeAt(0);});
-      var erBox=fullPageBox();
+      var erBox;
+      if(typeof data.eraser.x==='number'){
+        // Image recadrée sur la zone effacée (voir EraserTool.getOpaqueCroppedDataURL) :
+        // on la replace comme un élément posé, à son emplacement d'origine, plutôt que
+        // de l'étirer sur toute la page.
+        var erCw=data.canvasW||1,erCh=data.canvasH||1;
+        var erCssLeft=offsetX+data.eraser.x*(displayW/erCw);
+        var erCssTop=offsetY+data.eraser.y*(displayH/erCh);
+        var erCssW=data.eraser.w*(displayW/erCw);
+        var erCssH=data.eraser.h*(displayH/erCh);
+        erBox=toPdf(erCssLeft,erCssTop,erCssW,erCssH);
+      }else{
+        // Anciennes données sauvegardées avant l'introduction du recadrage : image pleine page.
+        erBox=fullPageBox();
+      }
       outPage.drawImage(await out.embedPng(erB),{x:erBox.x,y:erBox.y,width:erBox.w,height:erBox.h,rotate:PDFLib.degrees(erBox.rotate)});
     }
 
@@ -3787,29 +4597,60 @@ var AnnotStore={
           EraserTool._ensureCanvas();
           if(!EraserTool._canvas||!EraserTool._ctx)return;
           var destCv=EraserTool._canvas,destCtx=EraserTool._ctx;
+          var hasCrop=typeof data.eraser.x==='number';
           destCtx.clearRect(0,0,destCv.width,destCv.height);
-          if(!rdiff){
-            // Pas de rotation : simple recopie, en resynchronisant la taille si besoin
-            if(destCv.width!==img.width||destCv.height!==img.height){
-              destCv.width=img.width;destCv.height=img.height;
+          if(!hasCrop){
+            // Anciennes données sauvegardées avant l'introduction du recadrage :
+            // image pleine page, comportement inchangé.
+            if(!rdiff){
+              if(destCv.width!==img.width||destCv.height!==img.height){
+                destCv.width=img.width;destCv.height=img.height;
+              }
+              destCtx.drawImage(img,0,0);
+            } else {
+              var tmpFull=document.createElement('canvas');
+              var rot90Full=(rdiff===90||rdiff===270);
+              tmpFull.width=rot90Full?img.height:img.width;
+              tmpFull.height=rot90Full?img.width:img.height;
+              var tctxFull=tmpFull.getContext('2d');
+              tctxFull.save();
+              tctxFull.translate(tmpFull.width/2,tmpFull.height/2);
+              tctxFull.rotate(rdiff*Math.PI/180);
+              tctxFull.drawImage(img,-img.width/2,-img.height/2);
+              tctxFull.restore();
+              if(destCv.width!==tmpFull.width||destCv.height!==tmpFull.height){
+                destCv.width=tmpFull.width;destCv.height=tmpFull.height;
+              }
+              destCtx.drawImage(tmpFull,0,0,destCv.width,destCv.height);
             }
-            destCtx.drawImage(img,0,0);
+          } else if(!rdiff){
+            // Image recadrée, pas de rotation : la replacer à son offset d'origine.
+            // destCv reste à la pleine résolution de la page (synchronisée par _ensureCanvas).
+            destCtx.drawImage(img,data.eraser.x,data.eraser.y);
           } else {
-            // Rotation : dessine l'image pivotée de rdiff° dans le nouveau repère du canvas
-            var tmp=document.createElement('canvas');
-            var rotated90or270=(rdiff===90||rdiff===270);
-            tmp.width=rotated90or270?img.height:img.width;
-            tmp.height=rotated90or270?img.width:img.height;
-            var tctx=tmp.getContext('2d');
-            tctx.save();
-            tctx.translate(tmp.width/2,tmp.height/2);
-            tctx.rotate(rdiff*Math.PI/180);
-            tctx.drawImage(img,-img.width/2,-img.height/2);
-            tctx.restore();
-            if(destCv.width!==tmp.width||destCv.height!==tmp.height){
-              destCv.width=tmp.width;destCv.height=tmp.height;
-            }
-            destCtx.drawImage(tmp,0,0,destCv.width,destCv.height);
+            // Image recadrée + rotation : on pivote uniquement le petit rectangle recadré,
+            // puis on le replace au bon endroit dans le nouveau repère — même logique de
+            // rotation que pour les formes/surlignages (rotPtCanvas), avec remise à
+            // l'échelle (cvScaleX/Y) si la page a été re-rendue à une résolution différente.
+            var corners=[
+              rotPtCanvas(data.eraser.x,data.eraser.y),
+              rotPtCanvas(data.eraser.x+data.eraser.w,data.eraser.y),
+              rotPtCanvas(data.eraser.x,data.eraser.y+data.eraser.h),
+              rotPtCanvas(data.eraser.x+data.eraser.w,data.eraser.y+data.eraser.h)
+            ];
+            var cxs=corners.map(function(p){return p.x;}),cys=corners.map(function(p){return p.y;});
+            var cnx=Math.min.apply(null,cxs),cny=Math.min.apply(null,cys);
+            var rot90Crop=(rdiff===90||rdiff===270);
+            var tmpCrop=document.createElement('canvas');
+            tmpCrop.width=rot90Crop?img.height:img.width;
+            tmpCrop.height=rot90Crop?img.width:img.height;
+            var tctxCrop=tmpCrop.getContext('2d');
+            tctxCrop.save();
+            tctxCrop.translate(tmpCrop.width/2,tmpCrop.height/2);
+            tctxCrop.rotate(rdiff*Math.PI/180);
+            tctxCrop.drawImage(img,-img.width/2,-img.height/2);
+            tctxCrop.restore();
+            destCtx.drawImage(tmpCrop,cnx*cvScaleX,cny*cvScaleY,tmpCrop.width*cvScaleX,tmpCrop.height*cvScaleY);
           }
           EraserTool._keepBehind();
         };
@@ -3876,25 +4717,33 @@ var AnnotStore={
           await new Promise(function(res){
             var erImg=new Image();
             erImg.onload=function(){
-              // IMPORTANT: le canvas de la gomme (data.eraser.w/h) est sauvegardé à la
-              // résolution PHYSIQUE du preview-canvas (rendu à scale*2 pour la netteté,
-              // cf. Render.preview), alors que scaleX/scaleY ci-dessus sont calculés à
-              // partir de dW/dH = data.displayW/displayH, c-à-d la taille CSS (1x) du
-              // canvas. Utiliser ew0/eh0 (2x) avec scaleX/scaleY (calibré pour du 1x)
-              // dessinait la gomme deux fois trop grande, ancrée en haut à gauche :
-              // tout ce qui n'était pas gommé dans le coin supérieur-gauche sortait du
-              // cadre du canvas et était clippé silencieusement — la gomme semblait donc
-              // ne jamais apparaître sur la miniature. On utilise dW/dH (déjà dans le
-              // même référentiel que scaleX/scaleY) à la place de ew0/eh0.
+              // data.eraser est désormais recadré sur la seule zone effacée (voir
+              // EraserTool.getOpaqueCroppedDataURL), positionnée par x/y/w/h en pixels
+              // du canvas PLEINE PAGE (data.canvasW/canvasH) — pas la taille CSS (dW/dH).
+              // On convertit donc d'abord vers le référentiel dW/dH (même unité que
+              // scaleX/scaleY et que rotRect ci-dessous), avant de dessiner — exactement
+              // comme drawImgOnThumb() le fait pour signatures/images. Ancien format
+              // (pleine page, sans x/y) conservé en repli pour compatibilité.
+              var hasCrop=typeof data.eraser.x==='number';
+              var erCw0=data.canvasW||1,erCh0=data.canvasH||1;
+              var erLeft=hasCrop?(data.eraser.x/erCw0)*dW:0;
+              var erTop=hasCrop?(data.eraser.y/erCh0)*dH:0;
+              var erWd=hasCrop?(data.eraser.w/erCw0)*dW:dW;
+              var erHd=hasCrop?(data.eraser.h/erCh0)*dH:dH;
               ctx.save();
               if(rdiff){
-                ctx.translate(cW/2,cH/2);
-                ctx.rotate(rdiff*Math.PI/180);
-                var ew=(rdiff===90||rdiff===270)?dW*scaleY:dW*scaleX;
-                var eh=(rdiff===90||rdiff===270)?dH*scaleX:dH*scaleY;
+                var rr=rotRect(erLeft,erTop,erWd,erHd);
+                var ex=rr.left*scaleX,ey=rr.top*scaleY;
+                var ecx=ex+(rr.width*scaleX)/2,ecy=ey+(rr.height*scaleY)/2;
+                ctx.translate(ecx,ecy);ctx.rotate(rdiff*Math.PI/180);
+                var ew=(rdiff===90||rdiff===270)?erWd*scaleY:erWd*scaleX;
+                var eh=(rdiff===90||rdiff===270)?erHd*scaleX:erHd*scaleY;
                 ctx.drawImage(erImg,-ew/2,-eh/2,ew,eh);
               }else{
-                ctx.drawImage(erImg,-offX*scaleX,-offY*scaleY,dW*scaleX,dH*scaleY);
+                // Le canvas de la gomme est calé sur le canvas PDF lui-même (pas sur le layer
+                // qui peut être plus grand et centrer le canvas avec des marges) : ses pixels
+                // représentent donc déjà la page depuis son coin (0,0), sans décalage à retirer.
+                ctx.drawImage(erImg,erLeft*scaleX,erTop*scaleY,erWd*scaleX,erHd*scaleY);
               }
               ctx.restore();res();
             };
@@ -4427,6 +5276,21 @@ var Signature={
       var pdfW=outPage.getWidth();
       var pdfH=outPage.getHeight();
 
+      // ── Rédaction réelle du texte sous la gomme (étapes 4/5) ──
+      // Doit s'exécuter avant TOUT drawImage sur cette page (donc avant même le
+      // surlignage ci-dessous) : au-delà de ce point, /Contents ne correspond plus
+      // exactement au contenu original attendu par RedactionInjector. Best-effort et
+      // silencieux : en cas d'échec, le masquage visuel (drawImage blanc plus bas)
+      // continue de s'appliquer normalement, comme avant l'introduction de la
+      // rédaction réelle — computeForCurrentPage() réutilise directement la page/le
+      // canvas de gomme actuellement affichés (Preview.pages[Preview.idx]/EraserTool).
+      if(EraserTool.hasContent()){
+        try{
+          var liveRedactRuns=await RedactionZone.computeForCurrentPage();
+          if(liveRedactRuns)RedactionInjector.redactPage(outPage,liveRedactRuns,PDFLib);
+        }catch(e){console.warn('Rédaction réelle du texte sous la gomme : échec, masquage visuel conservé.',e);}
+      }
+
       // ── Graver le surlignage ──
       var hlCanvas=HighlightTool.getCanvas();
       if(hlCanvas&&HighlightTool._strokes&&HighlightTool._strokes.length>0){
@@ -4572,7 +5436,15 @@ var Signature={
 
       UI.setProgress(95,'Finalisation...');
       var bytes=await out.save();
-      return{bytes:bytes,doc:doc};
+      // NB : f.doc (ci-dessus, réassigné dans "doc") est un objet source reconstruit
+      // par Pages.find() qui n'a pas de propriété "name" — seul f.ownerDoc l'a.
+      // Sans ce fallback, "doc.name" est undefined et burnAndDownload plante sur
+      // doc.name.replace(...), ce qui interrompt le téléchargement AVANT même
+      // d'atteindre l'appel à download() : aucun fichier n'est jamais généré,
+      // avec ou sans gomme — d'où l'impression que la gomme "n'est pas prise
+      // en compte à l'export" alors qu'en réalité rien ne s'exporte du tout.
+      var docName=(f.ownerDoc&&f.ownerDoc.name)||doc.name||'document.pdf';
+      return{bytes:bytes,doc:doc,docName:docName};
     }catch(e){console.error(e);Toast.show('Erreur: '+e.message,'error');return null;}
     finally{UI.showProgress(false);}
   },
@@ -4633,7 +5505,7 @@ var Signature={
     if(!result)return;
     var doc=result.doc;
     var newBytes=result.bytes;
-    var fn=doc.name.replace(/\.pdf$/i,'')+'_modifié.pdf';
+    var fn=result.docName.replace(/\.pdf$/i,'')+'_modifié.pdf';
     download(newBytes,fn,'application/pdf');
     History.add({name:fn,date:formatDate(),pages:doc.pages.length,size:formatSize(newBytes.length)});
     Toast.show('"'+fn+'" téléchargé — vous pouvez continuer à éditer','success');
@@ -5412,6 +6284,202 @@ var EspPanel={
   }
 };
 
+/* ══════════════════════════════════════════════════════════════════════
+   TextGeometry — ÉTAPE 1 de la vraie rédaction de texte sous la gomme.
+   ══════════════════════════════════════════════════════════════════════
+   Objectif : à partir d'une page pdf.js, retrouver la position EXACTE
+   (bounding box) de chaque glyphe de texte dessiné sur la page, dans
+   l'espace natif du PDF (origine bas-gauche, Y vers le haut — le même
+   référentiel que pdfPage.getViewport({scale:1}) et que page.getWidth()/
+   getHeight() côté pdf-lib, donc directement réutilisable plus tard avec
+   AnnotStore.burnToPage()/toPdf() sans conversion supplémentaire).
+
+   Principe : pdf.js expose déjà, via page.getOperatorList(), la liste des
+   opérateurs de dessin de la page (les mêmes qu'il utilise pour l'affichage),
+   y compris les transformations (cm), la matrice de texte (Tm/Td/T*) et
+   chaque texte affiché (Tj/TJ) avec, pour CHAQUE glyphe, son code de
+   caractère d'origine et sa largeur (en 1/1000 d'em). On reconstitue donc
+   "à la main" la même logique qu'un moteur PDF utiliserait pour positionner
+   le texte, sans avoir à écrire un parseur de flux de contenu brut.
+
+   Limites connues de cette étape 1 (à traiter plus tard si besoin) :
+   - Le texte à l'intérieur de Form XObjects imbriqués (paintFormXObjectBegin/
+     End) n'est PAS descendu récursivement : seul le contenu "de premier
+     niveau" de la page est analysé pour l'instant.
+   - Le crénelage (TJ) et les espacements (Tc/Tw/Tz) sont pris en compte,
+     mais pas testés sur un cas réel avec ajustements TJ (seulement Tj simple
+     dans les PDF de test utilisés). La formule appliquée suit néanmoins
+     exactement la spécification PDF.
+   - Cette étape ne fait QUE mesurer/renvoyer la géométrie : elle ne modifie
+     rien au PDF (pas de suppression/rédaction — ce sera l'étape suivante).
+   ══════════════════════════════════════════════════════════════════════ */
+var TextGeometry={
+  // Multiplie deux matrices PDF [a,b,c,d,e,f] : résultat = m appliquée AVANT base
+  // (équivalent à l'opérateur "cm" : nouvelle CTM = m × ancienne CTM).
+  _mul:function(m,base){
+    return[
+      m[0]*base[0]+m[1]*base[2],
+      m[0]*base[1]+m[1]*base[3],
+      m[2]*base[0]+m[3]*base[2],
+      m[2]*base[1]+m[3]*base[3],
+      m[4]*base[0]+m[5]*base[2]+base[4],
+      m[4]*base[1]+m[5]*base[3]+base[5]
+    ];
+  },
+  _pt:function(m,x,y){return{x:m[0]*x+m[2]*y+m[4],y:m[1]*x+m[3]*y+m[5]};},
+
+  /* Retourne une Promise<Array<Run>> où chaque Run = {str,x,y,w,h,glyphs:[...]}
+     glyphs[i] = {char,code,x,y,w,h} — tout en unités PDF natives (points),
+     bbox alignées sur les axes (axis-aligned), y compris pour du texte pivoté
+     (la bbox englobe alors la forme tournée, ce qui est le comportement voulu
+     pour détecter un chevauchement avec une zone gommée elle aussi axis-aligned). */
+  extractPageTextRuns:async function(pdfPage){
+    var opList=await pdfPage.getOperatorList();
+    var OPS=pdfjsLib.OPS;
+    var fnArray=opList.fnArray,argsArray=opList.argsArray;
+    var self=this;
+
+    var ctmStack=[],ctm=[1,0,0,1,0,0];
+    var textMatrix=[1,0,0,1,0,0],lineMatrix=[1,0,0,1,0,0];
+    var fontSize=1,charSpacing=0,wordSpacing=0,hScale=1,leading=0;
+    var runs=[];
+
+    function collect(items,isNextLine){
+      if(isNextLine){
+        lineMatrix=self._mul([1,0,0,1,0,-leading],lineMatrix);
+        textMatrix=lineMatrix.slice();
+      }
+      var glyphs=[],str='';
+      for(var gi=0;gi<items.length;gi++){
+        var item=items[gi];
+        if(typeof item==='number'){
+          // Ajustement TJ (crénelage) : décale la position, ne dessine rien.
+          var adj=(-item/1000)*fontSize*hScale;
+          textMatrix=self._mul([1,0,0,1,adj,0],textMatrix);
+          continue;
+        }
+        var w0=(item.width||0)/1000; // largeur du glyphe, 1/1000 d'em
+        var full=self._mul(textMatrix,ctm);
+        var advance=(w0*fontSize+charSpacing+(item.isSpace?wordSpacing:0))*hScale;
+        var p0=self._pt(full,0,0),p1=self._pt(full,0,fontSize);
+        var p2=self._pt(full,advance,0),p3=self._pt(full,advance,fontSize);
+        var xs=[p0.x,p1.x,p2.x,p3.x],ys=[p0.y,p1.y,p2.y,p3.y];
+        var gx=Math.min.apply(null,xs),gy=Math.min.apply(null,ys);
+        glyphs.push({
+          char:item.fontChar||item.unicode||'',code:item.originalCharCode,
+          x:gx,y:gy,w:Math.max.apply(null,xs)-gx,h:Math.max.apply(null,ys)-gy,
+          // Avance réelle (unités page, déjà mises à l'échelle fontSize/hScale) que ce
+          // glyphe fait parcourir à la matrice de texte. Nécessaire à l'étape 3 pour
+          // calculer, quand ce glyphe est effacé, l'ajustement TJ qui reproduit la
+          // même avance sans dessiner le caractère (cf. RedactionZone.buildEditPlan).
+          adv:advance
+        });
+        str+=(item.fontChar||item.unicode||'');
+        textMatrix=self._mul([1,0,0,1,advance,0],textMatrix);
+      }
+      if(glyphs.length){
+        var gxs=glyphs.map(function(g){return g.x;}),gys=glyphs.map(function(g){return g.y;});
+        var gxe=glyphs.map(function(g){return g.x+g.w;}),gye=glyphs.map(function(g){return g.y+g.h;});
+        var rx=Math.min.apply(null,gxs),ry=Math.min.apply(null,gys);
+        runs.push({
+          str:str,glyphs:glyphs,x:rx,y:ry,
+          w:Math.max.apply(null,gxe)-rx,h:Math.max.apply(null,gye)-ry,
+          // fontSize/hScale en vigueur pour CE run (constants pour tous ses glyphes :
+          // Tf/Tz ne peuvent pas apparaître au milieu d'un même Tj/TJ). Nécessaires à
+          // l'étape 3 pour convertir une avance en unité TJ (1/1000 d'em non mis à l'échelle).
+          fontSize:fontSize,hScale:hScale
+        });
+      }else{
+        // Run VIDE (ex: "() Tj", ou un TJ qui ne contient que des ajustements
+        // numériques sans aucune chaîne) : on le pousse QUAND MÊME, avec une bbox
+        // nulle. CRITIQUE pour l'étape 4 (RedactionSerializer) : ce tableau `runs`
+        // doit rester en correspondance 1-pour-1, DANS LE MÊME ORDRE, avec les
+        // opérations Tj/TJ/'/" retrouvées au niveau octets bruts. Si on ignorait les
+        // runs vides ici, le moindre "() Tj" présent sur la page décale cette
+        // correspondance pour TOUT ce qui suit — avec le risque bien réel d'appliquer
+        // par erreur les flags "erased" d'UN AUTRE passage de texte à un endroit
+        // totalement différent de la page (texte qui disparaît ailleurs que sous la
+        // gomme — c'est le bug de "destructuration" observé). Une bbox nulle ne peut
+        // jamais chevaucher une zone gommée, donc ce run vide n'est de toute façon
+        // jamais marqué "erased" (cf. markErasedGlyphs).
+        runs.push({str:str,glyphs:glyphs,x:0,y:0,w:0,h:0,fontSize:fontSize,hScale:hScale});
+      }
+    }
+
+    for(var i=0;i<fnArray.length;i++){
+      var fn=fnArray[i],args=argsArray[i];
+      switch(fn){
+        case OPS.save:ctmStack.push(ctm.slice());break;
+        case OPS.restore:ctm=ctmStack.pop()||ctm;break;
+        case OPS.transform:ctm=this._mul(args,ctm);break;
+        case OPS.setFont:fontSize=args[1];break;
+        case OPS.setCharSpacing:charSpacing=args[0];break;
+        case OPS.setWordSpacing:wordSpacing=args[0];break;
+        case OPS.setHScale:hScale=(args[0]||100)/100;break;
+        case OPS.setLeading:leading=args[0];break;
+        case OPS.beginText:textMatrix=[1,0,0,1,0,0];lineMatrix=[1,0,0,1,0,0];break;
+        case OPS.setTextMatrix:textMatrix=args.slice();lineMatrix=args.slice();break;
+        case OPS.moveText:
+          lineMatrix=this._mul([1,0,0,1,args[0],args[1]],lineMatrix);
+          textMatrix=lineMatrix.slice();
+          break;
+        case OPS.setLeadingMoveText:
+          leading=-args[1];
+          lineMatrix=this._mul([1,0,0,1,args[0],args[1]],lineMatrix);
+          textMatrix=lineMatrix.slice();
+          break;
+        case OPS.nextLine:
+          lineMatrix=this._mul([1,0,0,1,0,-leading],lineMatrix);
+          textMatrix=lineMatrix.slice();
+          break;
+        case OPS.showText:case OPS.showSpacedText:
+          collect(args[0],false);
+          break;
+        case OPS.nextLineShowText:
+          collect(args[0],true);
+          break;
+        case OPS.nextLineSetSpacingShowText:
+          wordSpacing=args[0];charSpacing=args[1];
+          collect(args[2],true);
+          break;
+      }
+    }
+    return runs;
+  },
+
+  /* Aide au débogage visuel : dessine un rectangle rouge sur l'aperçu autour
+     de chaque run de texte détecté sur la page actuellement affichée, pour
+     vérifier "à l'œil" que la géométrie extraite correspond bien au texte
+     réel avant de passer à la détection de chevauchement / suppression
+     (étapes suivantes). À retirer une fois l'étape 1 validée. Utilisation
+     depuis la console : TextGeometry.debugDrawOnPreview()
+  */
+  debugDrawOnPreview:async function(){
+    var pg=Preview.pages[Preview.idx];if(!pg)return;
+    var f=Pages.find(pg.id);if(!f)return;
+    var pdfPage=await f.doc.pdfDoc.getPage(pg.pi+1);
+    var runs=await this.extractPageTextRuns(pdfPage);
+    var canvas=document.getElementById('preview-canvas');
+    var layer=document.getElementById('sign-overlay-layer');
+    var canvasRect=canvas.getBoundingClientRect(),layerRect=layer.getBoundingClientRect();
+    var offX=canvasRect.left-layerRect.left,offY=canvasRect.top-layerRect.top;
+    var pdfW=pdfPage.getViewport({scale:1}).width,pdfH=pdfPage.getViewport({scale:1}).height;
+    var scaleX=canvasRect.width/pdfW,scaleY=canvasRect.height/pdfH;
+    document.querySelectorAll('.textgeo-debug-box').forEach(function(el){el.remove();});
+    runs.forEach(function(r){
+      var box=document.createElement('div');
+      box.className='textgeo-debug-box';
+      // Conversion espace PDF (bas-gauche, Y vers le haut) → écran (haut-gauche, Y vers le bas)
+      box.style.cssText='position:absolute;pointer-events:none;border:1px solid red;'+
+        'left:'+(offX+r.x*scaleX)+'px;top:'+(offY+(pdfH-r.y-r.h)*scaleY)+'px;'+
+        'width:'+(r.w*scaleX)+'px;height:'+(r.h*scaleY)+'px;z-index:500;';
+      layer.appendChild(box);
+    });
+    console.log('TextGeometry.debugDrawOnPreview: '+runs.length+' runs détectés',runs);
+    return runs;
+  }
+};
+
 var EraserTool={
   active:false,
   _size:20,
@@ -5526,7 +6594,9 @@ var EraserTool={
     }
     var pos=this._getPos(e);
     if(!pos)return false;
+    this._lastPos=null;
     this._erase(pos);
+    this._lastPos=pos;
     return true;
   },
 
@@ -5544,6 +6614,7 @@ var EraserTool={
     if(!this._drawing)return;
     var pos=this._getPos(e);
     if(pos)this._erase(pos);
+    if(pos)this._lastPos=pos;
   },
 
   onMouseUp:function(){
@@ -5555,6 +6626,7 @@ var EraserTool={
     }
     this._strokeBefore=null;
     this._drawing=false;
+    this._lastPos=null;
   },
 
   _erase:function(pos){
@@ -5578,6 +6650,20 @@ var EraserTool={
     this._ctx.save();
     this._ctx.globalCompositeOperation='source-over';
     this._ctx.fillStyle='#ffffff';
+    // Relier au point précédent par un trait plein (rond aux extrémités et aux jointures) :
+    // un simple point à chaque mousemove laisse des trous dès que la souris se déplace vite
+    // (distance entre deux positions > diamètre du pinceau), à travers lesquels le contenu
+    // original restait visible — d'où l'impression que la gomme "n'efface pas vraiment".
+    if(this._lastPos){
+      this._ctx.strokeStyle='#ffffff';
+      this._ctx.lineWidth=r*2;
+      this._ctx.lineCap='round';
+      this._ctx.lineJoin='round';
+      this._ctx.beginPath();
+      this._ctx.moveTo(this._lastPos.x,this._lastPos.y);
+      this._ctx.lineTo(pos.x,pos.y);
+      this._ctx.stroke();
+    }
     this._ctx.beginPath();
     this._ctx.arc(pos.x,pos.y,r,0,Math.PI*2);
     this._ctx.fill();
@@ -5625,6 +6711,56 @@ var EraserTool={
     return tmp.toDataURL('image/png');
   },
 
+  // Variante de getOpaqueDataURL() destinée à la PERSISTANCE (localStorage) uniquement.
+  // getOpaqueDataURL() encode toujours la page ENTIÈRE, même pour un tout petit coup de
+  // gomme (le canvas est rendu à scale*2 pour la netteté, donc potentiellement 1500x2000px
+  // et plus) — un seul petit trait pèse déjà des dizaines de Ko en base64. Multiplié par
+  // plusieurs pages/documents, ça sature vite le quota localStorage (5-10 Mo, partagé avec
+  // le reste de l'appli), et AnnotStore.save() échoue alors silencieusement à chaque fois
+  // ("Stockage plein — annotations non sauvegardées") : la gomme semble ne plus s'enregistrer
+  // du tout. On ne sauvegarde donc que le rectangle englobant (bounding box) des pixels
+  // effacés, avec sa position/taille, plutôt que l'image pleine page. Le rendu live à
+  // l'écran et le graving direct pendant l'édition (_burnToBytes) continuent d'utiliser
+  // getOpaqueDataURL() tel quel : seul le chemin de sauvegarde est concerné.
+  getOpaqueCroppedDataURL:function(){
+    if(!this._canvas||!this._ctx)return null;
+    var w=this._canvas.width,h=this._canvas.height;
+    if(!w||!h)return null;
+    var imgData=this._ctx.getImageData(0,0,w,h);
+    var d=imgData.data;
+    var minX=w,minY=h,maxX=-1,maxY=-1;
+    for(var y=0;y<h;y++){
+      var rowBase=y*w*4;
+      for(var x=0;x<w;x++){
+        if(d[rowBase+x*4+3]!==0){
+          if(x<minX)minX=x;if(x>maxX)maxX=x;
+          if(y<minY)minY=y;if(y>maxY)maxY=y;
+        }
+      }
+    }
+    if(maxX<0)return null; // rien d'effacé
+    // Petite marge de sécurité pour ne pas rogner un pixel anti-crénelé en bordure.
+    var pad=2;
+    minX=Math.max(0,minX-pad);minY=Math.max(0,minY-pad);
+    maxX=Math.min(w-1,maxX+pad);maxY=Math.min(h-1,maxY+pad);
+    var cw=maxX-minX+1,ch=maxY-minY+1;
+    var tmp=document.createElement('canvas');
+    tmp.width=cw;tmp.height=ch;
+    var tctx=tmp.getContext('2d');
+    var cropped=tctx.createImageData(cw,ch);
+    for(var yy=0;yy<ch;yy++){
+      var srcRow=(minY+yy)*w*4+minX*4;
+      var dstRow=yy*cw*4;
+      for(var xx=0;xx<cw;xx++){
+        var si=srcRow+xx*4,di=dstRow+xx*4;
+        if(d[si+3]>0){cropped.data[di]=255;cropped.data[di+1]=255;cropped.data[di+2]=255;cropped.data[di+3]=255;}
+        else{cropped.data[di+3]=0;}
+      }
+    }
+    tctx.putImageData(cropped,0,0);
+    return{src:tmp.toDataURL('image/png'),x:minX,y:minY,w:cw,h:ch};
+  },
+
   // Observe l'ajout de nouvelles annotations sur le layer pour que le
   // canvas de la gomme reste TOUJOURS le premier enfant (donc derrière
   // tout le reste), peu importe l'ordre dans lequel les outils sont utilisés.
@@ -5643,6 +6779,880 @@ var EraserTool={
   }
 };
 EraserTool._initBehindObserver();
+
+/* ══════════════════════════════════════════════════════════════════════
+   RedactionZone — ÉTAPE 2 de la vraie rédaction de texte sous la gomme.
+   ══════════════════════════════════════════════════════════════════════
+   Objectif : à partir des runs de texte renvoyés par TextGeometry (étape 1,
+   en espace PDF NATIF) et du canvas de la gomme (EraserTool._canvas, en
+   espace AFFICHÉ = ce que trace l'utilisateur à l'écran, potentiellement
+   pivoté), déterminer QUELS glyphes tombent sous une zone effacée.
+
+   Deux référentiels à concilier :
+   - "natif"   : origine bas-gauche, Y vers le haut, dimensions pdfW×pdfH
+                 (page.getViewport({scale:1}) / page.getWidth()-getHeight()
+                 côté pdf-lib) — c'est l'espace dans lequel TextGeometry
+                 exprime déjà les runs/glyphes (voir étape 1 ci-dessus).
+   - "affiché" : origine haut-gauche, Y vers le bas, dimensions du canvas de
+                 la gomme (EraserTool._canvas.width/height) en pixels — c'est
+                 l'espace dans lequel l'utilisateur trace ses coups de gomme
+                 (identique à preview-canvas, cf. EraserTool._ensureCanvas()).
+   La rotation totale T = (pdfPage.rotate + pg.rot) % 360 (même formule que
+   AnnotStore.burnToPage() ligne ~3995, et Render/export lignes ~3823/4496)
+   permet de passer de l'un à l'autre. On réutilise ici exactement la même
+   logique que dispToNative()/toPdf() dans burnToPage(), mais en sens inverse
+   (natif → affiché) pour pouvoir "regarder" dans le canvas de la gomme à
+   l'emplacement d'un glyphe donné.
+
+   Granularité : test au niveau du GLYPHE, pas du caractère "coupé en deux"
+   ni de la page entière — cf. point 3 du plan ("granularité caractère
+   suffisante pour la V1"). Un glyphe est considéré "sous la gomme" si une
+   fraction suffisante (REDACT_THRESHOLD) de sa bounding box recouvre des
+   pixels effacés (opaques) du canvas. Un simple test de chevauchement de
+   RECTANGLES (bbox du glyphe vs bbox globale de la zone effacée) marquerait
+   à tort des glyphes proches du trait mais non recouverts, car un coup de
+   gomme est une forme de pinceau ronde/irrégulière, pas un rectangle plein ;
+   on échantillonne donc directement les pixels du canvas de la gomme
+   (source de vérité exacte de ce qui a été effacé) plutôt que sa seule bbox.
+
+   Cette étape ne modifie toujours rien au PDF : elle enrichit chaque run de
+   TextGeometry avec, par glyphe, un booléen `erased`, et un résumé par run
+   (`anyErased`/`allErased`). La reconstruction réelle du flux de contenu
+   (retrait des glyphes concernés, Tj/TJ) sera l'étape 3.
+   ══════════════════════════════════════════════════════════════════════ */
+var RedactionZone={
+  // Fraction minimale (0..1) de la surface d'un glyphe qui doit recouvrir un
+  // pixel effacé opaque pour que le glyphe soit marqué "à rédiger". 0.4
+  // tolère un léger débord du trait de gomme sur les bords du glyphe (anti-
+  // crénelage, glyphes fins comme "l"/"i"/"." ) sans marquer un glyphe
+  // simplement "frôlé" par le bord d'un coup de gomme voisin.
+  REDACT_THRESHOLD:0.4,
+
+  // Rotation totale (source + pivot utilisateur), même formule que dans le
+  // reste du code — cf. AnnotStore.burnToPage() ligne ~3995, Render/export
+  // lignes ~3823/4496. Centralisée ici pour éviter toute divergence future.
+  computeRotation:function(pdfPage,pg){
+    var t=(((pdfPage&&pdfPage.rotate)||0)+((pg&&pg.rot)||0))%360;
+    if(t<0)t+=360;
+    return t;
+  },
+
+  // Construit un échantillonneur rapide sur le canvas de la gomme : lit le
+  // canvas UNE seule fois (getImageData coûteux) et renvoie isOpaque(cx,cy)
+  // en pixels canvas, réutilisable pour tester tous les glyphes de la page.
+  _buildEraserSampler:function(canvas,ctx){
+    if(!canvas||!ctx)return null;
+    var w=canvas.width,h=canvas.height;
+    if(!w||!h)return null;
+    var data;
+    try{data=ctx.getImageData(0,0,w,h).data;}catch(e){return null;}
+    return{
+      w:w,h:h,
+      isOpaque:function(cx,cy){
+        cx=Math.round(cx);cy=Math.round(cy);
+        if(cx<0||cy<0||cx>=w||cy>=h)return false;
+        return data[(cy*w+cx)*4+3]!==0;
+      }
+    };
+  },
+
+  // Convertit un point en espace NATIF (celui de TextGeometry) vers l'espace
+  // du CANVAS de la gomme (pixels, origine haut-gauche) — inverse exact de
+  // dispToNative() dans AnnotStore.burnToPage(), combiné à la mise à l'échelle
+  // "unités PDF affichées" → "pixels canvas" (canvasW/WdPdf, canvasH/HdPdf).
+  nativeToCanvasPx:function(x,y,pdfW,pdfH,T,canvasW,canvasH){
+    var swapped=(T===90||T===270);
+    var WdPdf=swapped?pdfH:pdfW,HdPdf=swapped?pdfW:pdfH;
+    var px,py; // point en espace "affiché" (avant mise à l'échelle vers le canvas)
+    if(T===90){px=y;py=x;}
+    else if(T===180){px=pdfW-x;py=y;}
+    else if(T===270){px=pdfW-y;py=pdfH-x;}
+    else{px=x;py=pdfH-y;}
+    return{x:px*(canvasW/WdPdf),y:py*(canvasH/HdPdf)};
+  },
+
+  // Convertit un rectangle axis-aligned en espace natif vers sa bounding box
+  // axis-aligned en pixels canvas, en passant ses 4 coins par nativeToCanvasPx
+  // (nécessaire pour rester correct en rotation 90/270, où x/y s'échangent).
+  nativeRectToCanvasBox:function(rx,ry,rw,rh,pdfW,pdfH,T,canvasW,canvasH){
+    var self=this;
+    var corners=[[rx,ry],[rx+rw,ry],[rx,ry+rh],[rx+rw,ry+rh]].map(function(c){
+      return self.nativeToCanvasPx(c[0],c[1],pdfW,pdfH,T,canvasW,canvasH);
+    });
+    var xs=corners.map(function(c){return c.x;}),ys=corners.map(function(c){return c.y;});
+    var minX=Math.min.apply(null,xs),maxX=Math.max.apply(null,xs);
+    var minY=Math.min.apply(null,ys),maxY=Math.max.apply(null,ys);
+    return{x:minX,y:minY,w:maxX-minX,h:maxY-minY};
+  },
+
+  // Fraction (0..1) de la bbox (en pixels canvas) qui recouvre des pixels
+  // effacés opaques, par échantillonnage en grille (rapide, précision
+  // suffisante : un glyphe fait au minimum quelques pixels de large à la
+  // résolution d'édition — le canvas de la gomme est rendu à scale*2, cf.
+  // commentaire de getOpaqueDataURL()).
+  _boxErasedRatio:function(sampler,box){
+    if(!sampler)return 0;
+    var x0=Math.max(0,Math.floor(box.x)),y0=Math.max(0,Math.floor(box.y));
+    var x1=Math.min(sampler.w-1,Math.ceil(box.x+box.w)),y1=Math.min(sampler.h-1,Math.ceil(box.y+box.h));
+    if(x1<x0||y1<y0)return 0;
+    var stepsX=Math.max(1,Math.min(6,Math.round(box.w))),stepsY=Math.max(1,Math.min(6,Math.round(box.h)));
+    var total=0,hit=0;
+    for(var i=0;i<stepsX;i++){
+      for(var j=0;j<stepsY;j++){
+        var sx=x0+((i+0.5)/stepsX)*(x1-x0+1);
+        var sy=y0+((j+0.5)/stepsY)*(y1-y0+1);
+        total++;
+        if(sampler.isOpaque(sx,sy))hit++;
+      }
+    }
+    return total?hit/total:0;
+  },
+
+  /* Fonction principale de l'étape 2 : prend les runs de TextGeometry (étape 1)
+     d'une page, plus le contexte de rotation/dimensions/canvas de gomme, et
+     renvoie les MÊMES runs enrichis d'un flag `erased` par glyphe (+ résumé
+     `anyErased`/`allErased` par run). Ne modifie rien au PDF (étape 3 s'en
+     chargera). opts = {canvas, ctx, pdfW, pdfH, T}. */
+  markErasedGlyphs:function(runs,opts){
+    var canvas=opts.canvas,ctx=opts.ctx,pdfW=opts.pdfW,pdfH=opts.pdfH,T=opts.T;
+    var sampler=this._buildEraserSampler(canvas,ctx);
+    var self=this;
+    runs.forEach(function(run){
+      run.anyErased=false;run.allErased=!!run.glyphs.length;
+      run.glyphs.forEach(function(g){
+        if(!sampler){g.erased=false;run.allErased=false;return;}
+        var box=self.nativeRectToCanvasBox(g.x,g.y,g.w,g.h,pdfW,pdfH,T,canvas.width,canvas.height);
+        var ratio=self._boxErasedRatio(sampler,box);
+        g.erased=ratio>=self.REDACT_THRESHOLD;
+        if(g.erased)run.anyErased=true;else run.allErased=false;
+      });
+    });
+    return runs;
+  },
+
+  /* ══════════════════════════════════════════════════════════════════════
+     ÉTAPE 3 : filtrer/tronquer les glyphes effacés.
+     ══════════════════════════════════════════════════════════════════════
+     Prend les runs enrichis par markErasedGlyphs (étape 2, chaque glyphe a
+     un flag `erased`) et décide, PAR RUN (= un seul appel Tj/TJ/'/" d'origine
+     dans le flux de contenu), ce qu'il faut en faire :
+
+     - rien d'effacé            → run intact, à réémettre tel quel.
+     - tout le run est effacé   → aucun glyphe à dessiner, mais il faut quand
+       même préserver l'avance totale du run, au cas où l'opérateur suivant
+       enchaîne sans repositionnement explicite (Td/Tm) — sinon tout le reste
+       de la ligne se décalerait vers la gauche.
+     - une partie est effacée   → on découpe le run en segments alternant
+       "texte à garder" et "trou effacé", chaque trou portant l'ajustement
+       numérique nécessaire pour ne pas décaler le texte qui suit.
+
+     La clé est qu'un ajustement numérique dans un tableau TJ déplace la
+     matrice de texte de exactement -(nombre/1000)*fontSize*hScale — soit la
+     MÊME formule que l'avance d'un glyphe normalement dessiné (cf. `advance`
+     dans extractPageTextRuns, étape 1) — mais sans rien afficher. On peut
+     donc remplacer un ou plusieurs glyphes effacés consécutifs par un simple
+     nombre reproduisant leur avance cumulée : le texte disparaît du flux de
+     contenu, la mise en page ne bouge pas d'un pixel.
+
+     Cette étape ne touche encore à aucun octet du PDF réel : elle ne fait
+     que produire un plan (segments de codes de caractères + trous chiffrés).
+     La sérialisation en un flux de contenu brut valide (Tf/Tm/Tj/TJ/cm/q/Q…)
+     et l'encodage des codes de caractères en octets selon la police (1 octet
+     vs police composite 2 octets) sont le travail de l'étape 4 ; la
+     réinjection dans la page pdf-lib (PDFRawStream bas niveau) celui de
+     l'étape 5.
+     ══════════════════════════════════════════════════════════════════════ */
+  buildEditPlan:function(runs){
+    var self=this;
+    return runs.map(function(run){
+      if(!run.anyErased)return{run:run,action:'keep'};
+
+      var fontSize=run.fontSize||1,hScale=run.hScale||1;
+      // Avance cumulée (unités page, déjà à l'échelle fontSize/hScale) → valeur
+      // numérique TJ équivalente (unités 1/1000 d'em, NON mises à l'échelle) —
+      // inverse exact de `adj=(-item/1000)*fontSize*hScale` (étape 1, collect()).
+      function advToTjGap(adv){
+        if(!fontSize||!hScale)return 0;
+        return -(adv*1000)/(fontSize*hScale);
+      }
+
+      // Run entièrement sous la gomme : rien à dessiner, un seul trou chiffré
+      // qui reproduit l'avance totale (aucune chaîne dans le TJ de sortie).
+      if(run.allErased){
+        var totalAdv=run.glyphs.reduce(function(s,g){return s+(g.adv||0);},0);
+        return{run:run,action:'drop',gap:advToTjGap(totalAdv)};
+      }
+
+      // Run partiellement effacé : regrouper les glyphes consécutifs de même
+      // statut (gardé/effacé) en segments, pour minimiser le nombre de trous
+      // (un seul ajustement chiffré par groupe d'effacés contigus, pas un par
+      // glyphe — plus fidèle à la structure d'un TJ normal et plus compact).
+      var segments=[],cur=null;
+      run.glyphs.forEach(function(g){
+        var erased=!!g.erased;
+        if(cur&&cur.erased===erased){cur.glyphs.push(g);}
+        else{cur={erased:erased,glyphs:[g]};segments.push(cur);}
+      });
+      var out=segments.map(function(seg){
+        if(seg.erased){
+          var adv=seg.glyphs.reduce(function(s,g){return s+(g.adv||0);},0);
+          return{type:'gap',gap:advToTjGap(adv)};
+        }
+        // Codes de caractères ORIGINAUX (originalCharCode, pas l'unicode décodé
+        // par pdf.js) : c'est ce que l'étape 4 devra ré-encoder en octets bruts
+        // conformes à l'encodage propre de la police (cf. contraintes du plan).
+        return{type:'text',codes:seg.glyphs.map(function(g){return g.code;})};
+      });
+      return{run:run,action:'rewrite',segments:out};
+    });
+  },
+
+  /* Variante pratique de computeForCurrentPage() qui enchaîne directement
+     avec buildEditPlan() (étape 3) pour la page actuellement affichée.
+     Renvoie {runs, plan} ou null si rien n'est effacé sur cette page. */
+  computeEditsForCurrentPage:async function(){
+    var runs=await this.computeForCurrentPage();
+    if(!runs)return null;
+    return{runs:runs,plan:this.buildEditPlan(runs)};
+  },
+
+  /* Aide au débogage : résume en console le plan d'édition de la page
+     affichée (runs intacts / tronqués / entièrement supprimés) sans rien
+     modifier — pour valider l'étape 3 avant de passer à la sérialisation
+     réelle (étape 4). Depuis la console : RedactionZone.debugLogEditPlan() */
+  debugLogEditPlan:async function(){
+    var res=await this.computeEditsForCurrentPage();
+    if(!res){console.log('RedactionZone.debugLogEditPlan: rien n\'est effacé sur cette page.');return null;}
+    var kept=0,dropped=0,rewritten=0;
+    res.plan.forEach(function(p){
+      if(p.action==='keep')kept++;else if(p.action==='drop')dropped++;else rewritten++;
+    });
+    console.log('RedactionZone.debugLogEditPlan: '+kept+' runs intacts, '+
+      rewritten+' runs tronqués, '+dropped+' runs entièrement supprimés',res.plan);
+    return res;
+  },
+
+  /* Point d'entrée pratique : reconstitue le contexte (page pdf.js, rotation,
+     dimensions, canvas de gomme courant) à partir de l'état de l'appli pour
+     la page actuellement affichée dans l'aperçu, extrait les runs (étape 1)
+     et les marque (étape 2). Renvoie null si rien n'est effacé sur cette
+     page (court-circuite tout le travail d'extraction, inutile sinon). */
+  computeForCurrentPage:async function(){
+    if(!EraserTool.hasContent())return null;
+    var pg=Preview.pages[Preview.idx];if(!pg)return null;
+    var f=Pages.find(pg.id);if(!f)return null;
+    var pdfPage=await f.doc.pdfDoc.getPage(pg.pi+1);
+    var runs=await TextGeometry.extractPageTextRuns(pdfPage);
+    var vp=pdfPage.getViewport({scale:1});
+    var T=this.computeRotation(pdfPage,pg);
+    return this.markErasedGlyphs(runs,{
+      canvas:EraserTool._canvas,ctx:EraserTool._ctx,
+      pdfW:vp.width,pdfH:vp.height,T:T
+    });
+  },
+
+  // Charge une dataURL (PNG) dans un HTMLImageElement, en Promise.
+  _loadImage:function(src){
+    return new Promise(function(resolve,reject){
+      var img=new Image();
+      img.onload=function(){resolve(img);};
+      img.onerror=function(){reject(new Error('RedactionZone: image de gomme illisible'));};
+      img.src=src;
+    });
+  },
+
+  /* Variante de computeForCurrentPage() qui NE dépend PAS de l'UI en cours
+     (EraserTool._canvas, Preview.idx...) : utilisée à l'export réel (étape 5,
+     AnnotStore.burnToPage) où la page traitée n'est pas forcément celle
+     affichée dans l'éditeur. Reconstruit un canvas hors-écran identique à
+     celui qu'aurait produit EraserTool au moment de la sauvegarde, à partir
+     des données persistées (`data.eraser`, `data.canvasW/H` — mêmes champs
+     que ceux lus dans AnnotStore.burnToPage pour peindre la gomme, cf.
+     ~ligne 4044).
+     `pdfPage` = page pdf.js correspondante (contenu ORIGINAL, avant toute
+     gravure), `T` = rotation totale (cf. computeRotation). Renvoie null si
+     aucune gomme n'est présente dans `data` ou si l'image est illisible. */
+  computeForSavedEraser:async function(pdfPage,T,data){
+    if(!data||!data.eraser||!data.eraser.src)return null;
+    var canvasW=data.canvasW||800,canvasH=data.canvasH||1000;
+    var canvas=document.createElement('canvas');
+    canvas.width=canvasW;canvas.height=canvasH;
+    var ctx=canvas.getContext('2d');
+    var img;
+    try{img=await this._loadImage(data.eraser.src);}catch(e){return null;}
+    if(typeof data.eraser.x==='number'){
+      // Image recadrée sur la zone effacée (cf. EraserTool.getOpaqueCroppedDataURL) :
+      // on la replace à son emplacement d'origine dans le canvas pleine page,
+      // exactement comme AnnotStore.burnToPage le fait pour le dessin visuel.
+      ctx.drawImage(img,data.eraser.x,data.eraser.y,data.eraser.w,data.eraser.h);
+    }else{
+      // Anciennes données (avant recadrage) : image pleine page.
+      ctx.drawImage(img,0,0,canvasW,canvasH);
+    }
+    var runs=await TextGeometry.extractPageTextRuns(pdfPage);
+    var vp=pdfPage.getViewport({scale:1});
+    return this.markErasedGlyphs(runs,{canvas:canvas,ctx:ctx,pdfW:vp.width,pdfH:vp.height,T:T});
+  },
+
+  /* Aide au débogage visuel, dans le même esprit que
+     TextGeometry.debugDrawOnPreview() : dessine la bbox de chaque glyphe,
+     en ROUGE (rempli) s'il est détecté sous la gomme, en bleu (contour) sinon
+     — pour vérifier "à l'œil" la détection de chevauchement avant de passer
+     à la suppression réelle dans le flux de contenu (étape 3). Utilisation
+     depuis la console, après avoir tracé un coup de gomme sur la page
+     affichée : RedactionZone.debugDrawOnPreview()
+  */
+  debugDrawOnPreview:async function(){
+    document.querySelectorAll('.redactzone-debug-box').forEach(function(el){el.remove();});
+    var runs=await this.computeForCurrentPage();
+    if(!runs){console.log('RedactionZone.debugDrawOnPreview: rien n\'est effacé sur cette page.');return null;}
+    var pg=Preview.pages[Preview.idx];
+    var f=Pages.find(pg.id);
+    var pdfPage=await f.doc.pdfDoc.getPage(pg.pi+1);
+    var canvas=document.getElementById('preview-canvas');
+    var layer=document.getElementById('sign-overlay-layer');
+    var canvasRect=canvas.getBoundingClientRect(),layerRect=layer.getBoundingClientRect();
+    var offX=canvasRect.left-layerRect.left,offY=canvasRect.top-layerRect.top;
+    var pdfW=pdfPage.getViewport({scale:1}).width,pdfH=pdfPage.getViewport({scale:1}).height;
+    var scaleX=canvasRect.width/pdfW,scaleY=canvasRect.height/pdfH;
+    var nErased=0,nTotal=0;
+    runs.forEach(function(r){
+      r.glyphs.forEach(function(g){
+        nTotal++;if(g.erased)nErased++;
+        var box=document.createElement('div');
+        box.className='redactzone-debug-box';
+        box.style.cssText='position:absolute;pointer-events:none;z-index:501;'+
+          'left:'+(offX+g.x*scaleX)+'px;top:'+(offY+(pdfH-g.y-g.h)*scaleY)+'px;'+
+          'width:'+(g.w*scaleX)+'px;height:'+(g.h*scaleY)+'px;'+
+          (g.erased?'background:rgba(220,38,38,0.45);border:1px solid #dc2626;':'border:1px solid rgba(37,99,235,0.5);');
+        layer.appendChild(box);
+      });
+    });
+    console.log('RedactionZone.debugDrawOnPreview: '+nErased+'/'+nTotal+' glyphes marqués sous la gomme',runs);
+    return runs;
+  }
+};
+
+/* ══════════════════════════════════════════════════════════════════════
+   ContentStreamCodec — support bas niveau pour l'ÉTAPE 4 de la vraie
+   rédaction de texte sous la gomme.
+   ══════════════════════════════════════════════════════════════════════
+   Tokenize un flux de contenu PDF brut (Uint8Array, déjà décompressé —
+   l'extraction/décompression depuis la page pdf-lib et la réinjection sont
+   la responsabilité de l'étape 5) en une liste d'opérations :
+
+     {op:'Tj', operands:[...], start, end}
+
+   où [start,end) couvre EXACTEMENT les octets de cette opération (ses
+   opérandes + son mot-clé), de sorte que concaténer les tranches [start,end)
+   de TOUTES les opérations, dans l'ordre, reconstitue octet pour octet le
+   flux d'origine. C'est ce qui permet à RedactionSerializer de ne réécrire
+   QUE les opérations Tj/TJ/'/" concernées par la gomme et de recopier tout
+   le reste (cm, gs, Do, re, tracés, couleurs, q/Q, Tf, Tm…) tel quel, sans
+   avoir à interpréter la sémantique de ces opérateurs — donc sans risque de
+   les corrompre, quels qu'ils soient.
+
+   Opérandes reconnus : nombres, noms (/Foo, avec échappements #XX), chaînes
+   littérales "(...)" (avec échappements \n \t \(  \)  \\ et octaux \ddd) et
+   chaînes hexadécimales "<...>", tableaux [...] (utilisé par TJ), et un
+   passthrough opaque pour les dictionnaires inline "<<...>>" (BDC/DP...) et
+   les images inline BI...ID...EI (recherchées par une heuristique standard :
+   séquence d'octets "EI" entourée de blancs — imparfaite en théorie, très
+   fiable en pratique). On ne cherche PAS à décoder finement tous les types
+   d'opérandes : seules les opérations Tj/TJ/'/" ont besoin d'être comprises
+   en détail (RedactionSerializer s'en charge) ; pour tout le reste, seule la
+   position exacte du début/fin de l'opération compte.
+   ══════════════════════════════════════════════════════════════════════ */
+var ContentStreamCodec={
+  tokenize:function(bytes){
+    var n=bytes.length,i=0,prevEnd=0;
+    var ops=[],operands=[];
+
+    function isWS(c){return c===0||c===9||c===10||c===12||c===13||c===32;}
+    function isDelim(c){return c===40||c===41||c===60||c===62||c===91||c===93||c===123||c===125||c===47||c===37;}
+    function hexVal(c){
+      if(c>=48&&c<=57)return c-48;
+      if(c>=65&&c<=70)return c-55;
+      if(c>=97&&c<=102)return c-87;
+      return 0;
+    }
+    function skipWS(){
+      while(i<n){
+        var c=bytes[i];
+        if(isWS(c)){i++;continue;}
+        if(c===37){while(i<n&&bytes[i]!==10&&bytes[i]!==13)i++;continue;} // commentaire %...
+        break;
+      }
+    }
+    // Chaîne littérale "(...)" : gère l'imbrication de parenthèses non échappées,
+    // les échappements standards et les octaux \ddd (spec PDF §7.3.4.2).
+    function readLiteralString(){
+      i++; // consomme '('
+      var depth=1,out=[];
+      while(i<n&&depth>0){
+        var c=bytes[i];
+        if(c===92){ // '\'
+          i++;
+          if(i>=n)break;
+          var e=bytes[i];
+          if(e===110){out.push(10);i++;}
+          else if(e===114){out.push(13);i++;}
+          else if(e===116){out.push(9);i++;}
+          else if(e===98){out.push(8);i++;}
+          else if(e===102){out.push(12);i++;}
+          else if(e===40){out.push(40);i++;}
+          else if(e===41){out.push(41);i++;}
+          else if(e===92){out.push(92);i++;}
+          else if(e===13){i++;if(i<n&&bytes[i]===10)i++;} // continuation de ligne
+          else if(e===10){i++;}
+          else if(e>=48&&e<=55){
+            var val=0,cnt=0;
+            while(i<n&&cnt<3&&bytes[i]>=48&&bytes[i]<=55){val=val*8+(bytes[i]-48);i++;cnt++;}
+            out.push(val&0xFF);
+          }else{out.push(e);i++;} // échappement inconnu : caractère pris littéralement
+        }else if(c===40){depth++;out.push(c);i++;}
+        else if(c===41){depth--;i++;if(depth>0)out.push(c);}
+        else{out.push(c);i++;}
+      }
+      return new Uint8Array(out);
+    }
+    // Chaîne hexadécimale "<...>" : les blancs internes sont ignorés, un nombre
+    // impair de chiffres est complété par un 0 final (spec PDF §7.3.4.3).
+    function readHexString(){
+      i++; // consomme '<'
+      var digits=[];
+      while(i<n&&bytes[i]!==62){var c=bytes[i];if(!isWS(c))digits.push(c);i++;}
+      if(i<n)i++; // consomme '>'
+      if(digits.length%2===1)digits.push(48);
+      var out=new Uint8Array(digits.length/2);
+      for(var k=0;k<out.length;k++)out[k]=(hexVal(digits[k*2])<<4)|hexVal(digits[k*2+1]);
+      return out;
+    }
+    function readName(){
+      i++; // consomme '/'
+      var out=[];
+      while(i<n){
+        var c=bytes[i];
+        if(isWS(c)||isDelim(c))break;
+        if(c===35&&i+2<n){var h=(hexVal(bytes[i+1])<<4)|hexVal(bytes[i+2]);out.push(h);i+=3;}
+        else{out.push(c);i++;}
+      }
+      return{type:'name',bytes:new Uint8Array(out)};
+    }
+    function readNumber(){
+      var s=i;
+      if(bytes[i]===43||bytes[i]===45)i++;
+      while(i<n&&((bytes[i]>=48&&bytes[i]<=57)||bytes[i]===46))i++;
+      var str='';
+      for(var k=s;k<i;k++)str+=String.fromCharCode(bytes[k]);
+      return parseFloat(str)||0;
+    }
+    function readArray(){
+      i++; // consomme '['
+      var items=[];
+      while(i<n){
+        skipWS();
+        if(i>=n)break;
+        if(bytes[i]===93){i++;break;} // ']'
+        items.push(readOperand());
+      }
+      return{type:'array',items:items};
+    }
+    // Dictionnaire inline "<<...>>" (BDC/DP, images inline...) : on ne s'en sert
+    // jamais dans RedactionSerializer, passthrough opaque en comptant la
+    // profondeur d'imbrication (une chaîne littérale peut contenir des ">>" non
+    // significatifs, d'où l'appel à readLiteralString() pour les sauter).
+    function skipDict(){
+      i+=2; // consomme '<<'
+      var depth=1;
+      while(i<n&&depth>0){
+        if(bytes[i]===60&&bytes[i+1]===60){depth++;i+=2;}
+        else if(bytes[i]===62&&bytes[i+1]===62){depth--;i+=2;}
+        else if(bytes[i]===40){readLiteralString();}
+        else i++;
+      }
+      return{type:'dict'};
+    }
+    function readOperand(){
+      var c=bytes[i];
+      if(c===40)return{type:'string',bytes:readLiteralString()};
+      if(c===60){if(bytes[i+1]===60)return skipDict();return{type:'string',bytes:readHexString()};}
+      if(c===91)return readArray();
+      if(c===47)return readName();
+      if(c===43||c===45||c===46||(c>=48&&c<=57))return readNumber();
+      return readKeyword();
+    }
+    function readKeyword(){
+      var s=i;
+      while(i<n&&!isWS(bytes[i])&&!isDelim(bytes[i]))i++;
+      if(i===s)i++; // garde-fou anti-boucle infinie sur un octet non géré
+      var str='';
+      for(var k=s;k<i;k++)str+=String.fromCharCode(bytes[k]);
+      return{type:'keyword',value:str};
+    }
+    // Image inline BI...ID...EI : les données binaires entre ID et EI peuvent
+    // contenir n'importe quel octet — on ne les tokenize surtout PAS comme du
+    // contenu normal (risque de faux positifs). Heuristique standard : "EI"
+    // entouré de blancs (ou fin de flux).
+    function findInlineImageEnd(from){
+      var j=from;
+      while(j<n-1){
+        if(bytes[j]===69&&bytes[j+1]===73){ // 'E','I'
+          var before=j>0?bytes[j-1]:32,after=j+2<n?bytes[j+2]:32;
+          if(isWS(before)&&(j+2>=n||isWS(after)))return j+2;
+        }
+        j++;
+      }
+      return n;
+    }
+
+    while(i<n){
+      skipWS();
+      if(i>=n)break;
+      var c=bytes[i];
+      if(c===40||c===60||c===91||c===47||c===43||c===45||c===46||(c>=48&&c<=57)){
+        operands.push(readOperand());
+        continue;
+      }
+      var kw=readKeyword().value;
+      if(kw==='true'||kw==='false'||kw==='null'){operands.push({type:'keyword',value:kw});continue;}
+      if(kw==='BI'){
+        var end=findInlineImageEnd(i);
+        ops.push({op:'BI',operands:[],start:prevEnd,end:end});
+        operands=[];i=end;prevEnd=end;continue;
+      }
+      ops.push({op:kw,operands:operands,start:prevEnd,end:i});
+      operands=[];
+      prevEnd=i;
+    }
+    if(prevEnd<n)ops.push({op:null,operands:[],start:prevEnd,end:n}); // reliquat final (passthrough)
+    return ops;
+  }
+};
+
+/* ══════════════════════════════════════════════════════════════════════
+   RedactionSerializer — ÉTAPE 4 de la vraie rédaction de texte sous la gomme.
+   ══════════════════════════════════════════════════════════════════════
+   Objectif : transformer les runs de TextGeometry (étape 1, marqués par
+   l'étape 2) en un NOUVEAU flux de contenu PDF brut, en ne touchant QUE les
+   opérations Tj/TJ/'/" qui contiennent au moins un glyphe effacé — tout le
+   reste du flux (cm, gs, Do, re, couleurs, q/Q, Tf, Tm...) est recopié OCTET
+   POUR OCTET depuis l'original, sans être interprété.
+
+   Pourquoi retokenizer les octets d'origine plutôt que réémettre depuis la
+   liste d'opérateurs pdf.js (page.getOperatorList()) : cette dernière ne
+   conserve pas les noms de ressources (le nom de police passé à Tf devient un
+   identifiant interne à pdf.js, pas le nom "/F1" de la Resources dict) ni
+   l'encodage bas niveau des chaînes (pdf.js décode déjà les codes de
+   caractères en Unicode/glyphes pour l'affichage). Reconstruire un flux
+   valide à partir de là demanderait de redériver toute cette information.
+   En repartant des OCTETS BRUTS du flux d'origine, on n'a JAMAIS besoin de
+   comprendre l'encodage de la police pour le texte CONSERVÉ : on découpe
+   directement la chaîne d'origine en tranches d'octets, une par glyphe (cf.
+   _splitIntoGlyphItems), et on les ré-émet telles quelles en hexadécimal —
+   fidélité octet pour octet garantie, quelle que soit la police.
+
+   Hypothèse centrale (déjà documentée comme limite à l'étape 1) : les
+   opérations Tj/TJ/'/" du flux de contenu de PREMIER NIVEAU apparaissent
+   dans le MÊME ORDRE que les runs renvoyés par TextGeometry pour cette page.
+   Ce n'est plus garanti si la page utilise des Form XObjects contenant eux-
+   mêmes du texte. On le détecte par un simple contrôle de comptage (nombre
+   d'opérations Tj/TJ/'/" trouvées ici vs runs.length) et on ABANDONNE
+   proprement (renvoie null) en cas de désaccord, plutôt que de risquer une
+   réécriture au mauvais endroit — c'est le filet de sécurité prévu par le
+   plan (repli sur rasterisation de la page entière si le flux est trop
+   complexe pour être traité en confiance ; câblage de ce repli à prévoir
+   avec l'étape 6).
+   ══════════════════════════════════════════════════════════════════════ */
+var RedactionSerializer={
+  TEXT_SHOW_OPS:{'Tj':1,'TJ':1,"'":1,'"':1},
+
+  // Même formule que RedactionZone.buildEditPlan (étape 3), dupliquée ici en
+  // toute petite fonction pure pour ne pas coupler ce module bas niveau à
+  // l'objet RedactionZone : un ajustement numérique dans un tableau TJ
+  // déplace la matrice de texte de -(nombre/1000)*fontSize*hScale — la même
+  // avance qu'un glyphe normalement dessiné, mais sans rien afficher.
+  _advToTjGap:function(adv,fontSize,hScale){
+    if(!fontSize||!hScale)return 0;
+    return -(adv*1000)/(fontSize*hScale);
+  },
+  // Formatage numérique compact pour le flux de sortie (évite la notation
+  // scientifique et le bruit de précision flottante superflu).
+  _fmtNum:function(n){
+    if(Math.abs(n)<1e-6)n=0;
+    return String(Math.round(n*1000)/1000);
+  },
+  _bytesToHex:function(bytes){
+    var s='';
+    for(var i=0;i<bytes.length;i++){var h=bytes[i].toString(16);s+=h.length<2?'0'+h:h;}
+    return s;
+  },
+
+  /* Découpe l'opérande texte d'UNE opération Tj/TJ/'/" en une liste plate
+     d'"items" dans l'ordre d'apparition :
+       {type:'glyph', bytes:Uint8Array}  — les octets bruts D'UN SEUL glyphe
+       {type:'kern',  value:Number}      — un ajustement TJ déjà présent dans
+                                            le PDF d'origine, à préserver tel quel
+
+     La largeur d'encodage par glyphe (1 octet pour une police simple, 2 pour
+     une police composite Identity-H typique, etc.) n'est JAMAIS supposée à
+     l'avance : elle est déduite en divisant le nombre total d'octets de
+     chaîne de l'opération par le nombre de glyphes attendu (`expectedGlyphCount`,
+     fourni par TextGeometry/pdf.js). Si cette division ne tombe pas juste, ou
+     qu'un segment de chaîne individuel n'est pas un multiple de cette largeur,
+     on renvoie null : la correspondance octets↔glyphes n'est pas fiable pour
+     cette opération, on préfère abandonner (cf. filet de sécurité ci-dessus)
+     plutôt que de risquer de couper un code de caractère en deux. */
+  _splitIntoGlyphItems:function(op,expectedGlyphCount){
+    if(!expectedGlyphCount)return null;
+    var flat=[];
+    if(op.op==='Tj'||op.op==="'"){
+      var s0=op.operands[0];
+      if(!s0||s0.type!=='string')return null;
+      flat.push({type:'str',bytes:s0.bytes});
+    }else if(op.op==='"'){
+      var s2=op.operands[2]; // " prend (aw, ac, string)
+      if(!s2||s2.type!=='string')return null;
+      flat.push({type:'str',bytes:s2.bytes});
+    }else if(op.op==='TJ'){
+      var arr=op.operands[0];
+      if(!arr||arr.type!=='array')return null;
+      arr.items.forEach(function(it){
+        if(typeof it==='number')flat.push({type:'kern',value:it});
+        else if(it&&it.type==='string')flat.push({type:'str',bytes:it.bytes});
+        // tout autre type dans un TJ serait un flux malformé : ignoré, n'affecte
+        // pas le comptage d'octets (aucune chaîne perdue)
+      });
+    }else return null;
+
+    var totalBytes=0;
+    flat.forEach(function(f){if(f.type==='str')totalBytes+=f.bytes.length;});
+    if(totalBytes===0||totalBytes%expectedGlyphCount!==0)return null;
+    var bytesPerGlyph=totalBytes/expectedGlyphCount;
+    // Bornes défensives : une largeur de code caractère PDF usuelle est 1 ou 2
+    // octets ; au-delà de 4, ce n'est presque certainement pas une simple
+    // correspondance glyphe↔octets et on préfère abandonner.
+    if(bytesPerGlyph<1||bytesPerGlyph>4||Math.floor(bytesPerGlyph)!==bytesPerGlyph)return null;
+
+    var items=[],bad=false;
+    flat.forEach(function(f){
+      if(f.type==='kern'){items.push({type:'kern',value:f.value});return;}
+      if(f.bytes.length%bytesPerGlyph!==0){bad=true;return;}
+      for(var p=0;p<f.bytes.length;p+=bytesPerGlyph)items.push({type:'glyph',bytes:f.bytes.subarray(p,p+bytesPerGlyph)});
+    });
+    if(bad)return null;
+    var glyphCount=items.filter(function(it){return it.type==='glyph';}).length;
+    if(glyphCount!==expectedGlyphCount)return null; // garde-fou final
+    return items;
+  },
+
+  /* Reconstruit le tableau TJ de sortie pour UNE opération, en combinant les
+     items bruts (glyphes + kerning d'origine, dans l'ordre) avec les flags
+     `erased` du run correspondant (étape 2) :
+       - glyphe gardé   → ses octets d'origine, regroupés avec les glyphes
+                           gardés voisins en une seule chaîne hexadécimale
+                           (compact, et fidèle octet pour octet).
+       - glyphe effacé  → remplacé par un nombre reproduisant son avance
+                           (formule de l'étape 3), pour que tout ce qui suit
+                           reste exactement à sa position d'origine.
+       - kern d'origine → recopié tel quel, à sa position d'origine (le
+                           crénelage entre glyphes CONSERVÉS reste inchangé).
+     Renvoie une chaîne "[<4142> -1666.667 <4344>] TJ" (sans saut de ligne). */
+  _buildTJOutput:function(items,run){
+    var self=this;
+    var parts=[],pending=[],gi=0;
+    function flush(){
+      if(pending.length){
+        var len=pending.reduce(function(s,b){return s+b.length;},0);
+        var buf=new Uint8Array(len),off=0;
+        pending.forEach(function(b){buf.set(b,off);off+=b.length;});
+        parts.push('<'+self._bytesToHex(buf)+'>');
+        pending=[];
+      }
+    }
+    items.forEach(function(it){
+      if(it.type==='kern'){flush();parts.push(self._fmtNum(it.value));return;}
+      var g=run.glyphs[gi++];
+      if(g&&g.erased){flush();parts.push(self._fmtNum(self._advToTjGap(g.adv||0,run.fontSize,run.hScale)));}
+      else pending.push(it.bytes);
+    });
+    flush();
+    return '['+parts.join(' ')+'] TJ';
+  },
+
+  /* Point d'entrée principal de l'étape 4. `originalBytes` = octets bruts
+     (décompressés) du flux de contenu de la page ; `runs` = résultat de
+     RedactionZone.markErasedGlyphs (étape 2), DANS L'ORDRE d'apparition sur
+     la page. Renvoie un Uint8Array (nouveau flux de contenu, prêt pour la
+     réinjection de l'étape 5) ou null si la page ne peut pas être traitée en
+     confiance (cf. hypothèse centrale ci-dessus). Ne modifie ni n'écrit
+     encore rien dans le PDF lui-même — ça reste le rôle de l'étape 5. */
+  rewriteContentStream:function(originalBytes,runs){
+    var self=this;
+    var ops=ContentStreamCodec.tokenize(originalBytes);
+    var textOps=ops.filter(function(o){return self.TEXT_SHOW_OPS[o.op];});
+    if(textOps.length!==runs.length){
+      console.warn('RedactionSerializer: décompte Tj/TJ/\'/" ('+textOps.length+
+        ') != nombre de runs ('+runs.length+') — abandon (page non traitée en confiance, cf. Form XObjects).');
+      return null;
+    }
+
+    var pieces=[],runIdx=0;
+    for(var oi=0;oi<ops.length;oi++){
+      var op=ops[oi];
+      if(!self.TEXT_SHOW_OPS[op.op]){
+        pieces.push(originalBytes.subarray(op.start,op.end)); // passthrough octet pour octet
+        continue;
+      }
+      var run=runs[runIdx++];
+      if(!run.anyErased){
+        pieces.push(originalBytes.subarray(op.start,op.end)); // rien à changer, passthrough
+        continue;
+      }
+      var items=self._splitIntoGlyphItems(op,run.glyphs.length);
+      if(!items){
+        console.warn('RedactionSerializer: correspondance octets/glyphes incertaine pour un run effacé — abandon (page non traitée en confiance).');
+        return null;
+      }
+      var out;
+      if(op.op==="'"){
+        // ' = déplacement à la ligne suivante (T*) PUIS affichage du texte :
+        // on préserve le déplacement, on remplace juste l'affichage par un TJ filtré.
+        out='T*\n'+self._buildTJOutput(items,run);
+      }else if(op.op==='"'){
+        // " = fixe Tw/Tc (persistants dans le graphics state — donc à repropager
+        // pour la suite du flux), déplace à la ligne suivante, PUIS affiche le texte.
+        var aw=op.operands[0],ac=op.operands[1];
+        out=self._fmtNum(typeof aw==='number'?aw:0)+' Tw\n'+
+            self._fmtNum(typeof ac==='number'?ac:0)+' Tc\n'+
+            'T*\n'+self._buildTJOutput(items,run);
+      }else{
+        out=self._buildTJOutput(items,run); // Tj ou TJ d'origine → TJ filtré
+      }
+      pieces.push(new TextEncoder().encode(out));
+    }
+
+    // Pas de séparateur ajouté entre les pièces : chaque tranche passthrough contient
+    // déjà, par construction (op.start = fin de l'op précédente, cf. ContentStreamCodec),
+    // tout octet blanc d'origine qui la précède — y compris celui qui suivait l'opération
+    // qu'on vient éventuellement de réécrire juste avant. Insérer un octet en plus ici
+    // ferait doublon partout où rien n'a changé, sans jamais être nécessaire là où on a
+    // réécrit : par grammaire PDF, deux tokens adjacents SANS espace ne sont ambigus que
+    // s'il s'agit de deux tokens "réguliers" (ex. mot-clé suivi d'un nombre) — un document
+    // valide contient donc toujours l'espace nécessaire à cet endroit dans les octets
+    // d'origine, et cet espace est justement celui déjà porté par la tranche suivante (les
+    // délimiteurs ( < [ / , eux, terminent un mot-clé sans avoir besoin d'espace).
+    var totalLen=0;
+    pieces.forEach(function(p){totalLen+=p.length;});
+    var result=new Uint8Array(totalLen),off=0;
+    pieces.forEach(function(p){result.set(p,off);off+=p.length;});
+    return result;
+  }
+};
+
+/* ══════════════════════════════════════════════════════════════════════
+   RedactionInjector — ÉTAPE 5 de la vraie rédaction de texte sous la gomme.
+   ══════════════════════════════════════════════════════════════════════
+   Objectif : prendre le nouveau flux de contenu produit par
+   RedactionSerializer (étape 4) et le réinjecter réellement dans la page
+   pdf-lib, en remplaçant l'entrée /Contents de la page. pdf-lib (1.17.1,
+   cf. prompt-redaction-gomme.md) n'expose aucune API publique haut niveau
+   pour ça : on utilise les objets bas niveau du "core" (PDFName, PDFArray,
+   PDFRawStream, decodePDFRawStream), qui SONT exportés à la racine du
+   package depuis plusieurs versions (contrairement à ce qu'indiquait la
+   doc pdf-lib très ancienne) et donc disponibles via le global UMD
+   `window.PDFLib` chargé dans le <head>.
+
+   Repli de sécurité (dans l'esprit du point 6 du plan) : toute étape qui
+   échoue ou dont l'API attendue est absente fait abandonner proprement
+   (return false), SANS jamais lever d'exception vers l'appelant — la page
+   garde alors son texte intact dans le flux de contenu, mais conserve le
+   masquage visuel existant (image blanche posée par-dessus, cf.
+   AnnotStore.burnToPage), donc aucune régression visible pour l'utilisateur
+   en cas d'échec : uniquement la vraie rédaction qui ne s'applique pas.
+   ══════════════════════════════════════════════════════════════════════ */
+var RedactionInjector={
+  /* Lit le(s) flux de contenu ACTUEL(S) de `page` (page pdf-lib déjà copiée
+     dans le document de sortie), les décompresse et les concatène dans
+     l'ordre en un seul Uint8Array — exactement le format attendu par
+     RedactionSerializer.rewriteContentStream (originalBytes). D'après la
+     spec PDF, quand /Contents est un tableau de plusieurs flux, ceux-ci sont
+     traités comme un seul flux logique une fois concaténés avec un espace
+     blanc entre chacun (aucun opérateur ne peut être scindé entre deux
+     éléments du tableau) : la concaténation ci-dessous est donc fidèle.
+     Renvoie null si /Contents est absent, ou si un des flux n'est pas une
+     PDFRawStream "simple" qu'on sait décompresser en confiance (cas d'un
+     PDFContentStream pdf-lib non encore aplati, etc. — filet de sécurité). */
+  _readOriginalContentBytes:function(page,PDFLib){
+    try{
+      var node=page.node;
+      if(!node||typeof node.Contents!=='function')return null;
+      var contents=node.Contents();
+      if(!contents)return null;
+      var items=[];
+      if(contents instanceof PDFLib.PDFArray){
+        for(var i=0;i<contents.size();i++)items.push(contents.lookup(i));
+      }else{
+        items=[contents];
+      }
+      var chunks=[];
+      for(var j=0;j<items.length;j++){
+        var it=items[j];
+        if(!(it instanceof PDFLib.PDFRawStream))return null; // pas de confiance : abandon
+        chunks.push(PDFLib.decodePDFRawStream(it).decode());
+      }
+      if(!chunks.length)return null;
+      var totalLen=0;
+      chunks.forEach(function(c){totalLen+=c.length+1;});
+      var out=new Uint8Array(totalLen),off=0;
+      for(var k=0;k<chunks.length;k++){
+        out.set(chunks[k],off);off+=chunks[k].length;
+        if(k<chunks.length-1){out[off]=10;off+=1;} // séparateur blanc entre flux concaténés
+      }
+      return out.subarray(0,off);
+    }catch(e){console.warn('RedactionInjector: lecture du flux de contenu impossible — rédaction réelle ignorée.',e);return null;}
+  },
+
+  /* Remplace l'entrée /Contents de `page` par `newBytes`, compressés
+     (FlateDecode, via context.flateStream — même helper interne que celui
+     utilisé par pdf-lib pour ses propres flux de dessin/images) et
+     enregistrés comme nouvel objet indirect dans le PDFContext du document
+     de sortie. Ne touche à rien d'autre (Resources, MediaBox, Annots...). */
+  _replaceContentBytes:function(page,newBytes,PDFLib){
+    try{
+      var context=page.doc.context;
+      if(!context||typeof context.flateStream!=='function'||typeof context.register!=='function')return false;
+      var stream=context.flateStream(newBytes);
+      var ref=context.register(stream);
+      page.node.set(PDFLib.PDFName.of('Contents'),ref);
+      return true;
+    }catch(e){console.warn('RedactionInjector: réinjection du flux de contenu impossible — rédaction réelle ignorée.',e);return false;}
+  },
+
+  /* Point d'entrée principal de l'étape 5. `page` = page pdf-lib DÉJÀ copiée
+     dans le document de sortie, mais PAS ENCORE modifiée par un quelconque
+     dessin pour cette page (ordre important : /Contents doit encore
+     correspondre exactement au contenu original au moment de l'appel — cf.
+     l'endroit où ceci est invoqué dans AnnotStore.burnToPage, avant le
+     drawImage de la gomme). `runs` = résultat de
+     RedactionZone.markErasedGlyphs/computeForSavedEraser/computeForCurrentPage
+     pour cette page. Renvoie true si le texte a réellement été retiré du
+     flux de contenu, false sinon (rien à faire, ou abandon pour cause de
+     page trop complexe / API indisponible — jamais d'exception propagée). */
+  redactPage:function(page,runs,PDFLib){
+    if(!runs||!runs.length)return false;
+    if(!runs.some(function(r){return r.anyErased;}))return false; // rien à rédiger
+    if(!PDFLib||!PDFLib.PDFArray||!PDFLib.PDFRawStream||!PDFLib.PDFName||typeof PDFLib.decodePDFRawStream!=='function'){
+      console.warn('RedactionInjector: API pdf-lib bas niveau indisponible sur cette version — masquage visuel conservé, texte non retiré.');
+      return false;
+    }
+    var originalBytes=this._readOriginalContentBytes(page,PDFLib);
+    if(!originalBytes)return false;
+    var newBytes=RedactionSerializer.rewriteContentStream(originalBytes,runs);
+    if(!newBytes)return false; // page jugée trop complexe pour être traitée en confiance (cf. étape 4)
+    return this._replaceContentBytes(page,newBytes,PDFLib);
+  }
+};
 
 // HIGHLIGHT TOOL — surligner des zones du document
 // SHAPE TOOL — dessiner des formes sur le document
@@ -7079,17 +9089,252 @@ var SelectTool={
   }
 };
 
+// TIPS - "le saviez-vous" discret sur l'ecran d'accueil, un tip different a chaque chargement
+var TIPS=[
+  "Glissez-déposez vos fichiers directement sur la zone de travail pour les importer.",
+  "PDF, images, Word, Excel, PowerPoint, TXT ou RTF : tout devient des pages PDF.",
+  "Ctrl+Z annule, Ctrl+Y rétablit — n'ayez pas peur d'expérimenter.",
+  "Glissez une page pour la réordonner, même entre deux documents différents.",
+  "Sélectionnez plusieurs pages avec Ctrl/Cmd ou Maj pour les manipuler ensemble.",
+  "Cliquez sur le nom d'un document pour le renommer.",
+  "Le bouton Télécharger (en haut à droite) permet aussi de compresser votre PDF : réglez la qualité et téléchargez une version plus légère à joindre à un email.",
+  "Exportez vos pages en images PNG ou JPEG depuis le menu Outils PDF.",
+  "Insérez une page blanche juste après votre sélection avec l'outil dédié.",
+  "Signez vos documents en quelques clics : plus besoin de les imprimer, signer à la main puis les rescanner.",
+  "Les flèches du clavier permettent de naviguer entre les pages en aperçu.",
+  "L'icône horloge en haut de l'écran garde en mémoire vos derniers PDF exportés, pour les retrouver facilement.",
+  "Clic droit sur une page puis « Dupliquer » : elle est copiée juste à côté, pratique pour repartir d'un modèle.",
+  "Faites pivoter une page de 90° si elle a été scannée à l'envers.",
+  "Dans la fenêtre du bouton Télécharger, activez « Préparer pour l'impression » pour insérer des pages blanches et faire commencer chaque document sur une page impaire — utile pour le recto-verso ou la reliure.",
+  "Cliquez sur « Extraire », indiquez une plage de pages (ex: 3 à 7), et téléchargez-la comme nouveau PDF sans toucher à l'original.",
+  "Fusionnez tous vos documents ouverts en un seul PDF en un clic.",
+  "Les photos HEIC de votre iPhone et les fichiers TIFF s'importent directement comme PDF.",
+  "Zoomez avec + et - pour mieux voir les détails de vos pages.",
+  "Surlignage, texte ou tampon : annotez vos PDF avant de les partager."
+];
+var currentTipIdx=-1;
+function showRandomTip(){
+  var el=document.getElementById('tip-text');
+  if(!el||!TIPS.length)return;
+  var lastIdx=-1;
+  try{lastIdx=parseInt(localStorage.getItem('pdftips_last'),10);}catch(e){}
+  var idx;
+  do{idx=Math.floor(Math.random()*TIPS.length);}while(TIPS.length>1&&idx===lastIdx);
+  try{localStorage.setItem('pdftips_last',idx);}catch(e){}
+  el.textContent=TIPS[idx];
+  currentTipIdx=idx;
+}
+(function(){
+  var tl=document.getElementById('tip-line');
+  if(tl)tl.addEventListener('click',showRandomTip);
+})();
+
+// GUIDED TOUR
+var TIP_STEP_MAP=[1,1,undefined,2,3,13,14,undefined,undefined,7,10,undefined,3,4,undefined,12,11,1,10,9];
+var Tour={
+  steps:[
+    {dt:'#tip-line',mb:'#tip-line',title:'C\'est parti !',desc:'Suivez le guide pour decouvrir les fonctionnalites cles, etape par etape.'},
+    {dt:'#btn-add',mb:'#btn-add-m',title:'Importez vos fichiers',desc:'PDF, images, Word, Excel, PowerPoint... Glissez-déposez ou cliquez ici pour commencer.',onLeave:function(){if(!S.docs.length)return Tour.loadSample();}},
+    {dt:'#canvas-wrap',mb:'#canvas-wrap',illus:'move',title:'Déplacez une page',desc:'Glissez une page pour la réordonner, même entre deux documents différents.'},
+    {dt:'#btn-sel-dup',mb:'#canvas-wrap',illus:'dup',title:'Dupliquez une page',desc:'Sélectionnez une page puis dupliquez-la pour repartir d\'un modèle existant.'},
+    {dt:'#btn-sel-rot',mb:'#canvas-wrap',illus:'rotate',title:'Faites pivoter une page',desc:'Redressez une page scannée à l\'envers en un clic.'},
+    {dt:'#btn-sel-del',mb:'#canvas-wrap',illus:'delete',title:'Supprimez une page',desc:'Retirez une page inutile de votre document.'},
+    {dt:'.merge-strip-btn',mb:'#canvas-wrap',illus:'merge',title:'Fusionnez deux documents',desc:'Un lien apparaît entre deux documents adjacents pour les combiner directement.'},
+    {dt:'#preview-canvas',mb:'#preview-canvas',onEnter:function(){var pid=(S.docs[0]&&S.docs[0].pages[0])?S.docs[0].pages[0].id:null;if(pid)Preview.open(pid);},title:'Ouvrez le plein écran',desc:'Double-cliquez sur une page pour l\'ouvrir en grand, avec zoom et navigation entre les pages.'},
+    {dt:'#prev-edit-btn',mb:'#prev-edit-btn',title:'Cliquez sur « Modifier »',desc:'Ce bouton, en bas de l\'écran, active le mode édition pour ajouter des annotations.'},
+    {dt:'#edit-tools-bar',mb:'#edit-tools-bar',onEnter:function(){if(window._toggleEditMode)window._toggleEditMode(true);},title:'Signez et annotez',desc:'Une fois « Modifier » activé, ces outils apparaissent à gauche : signature, texte, tampon, date, surligneur, formes, image, gomme.'},
+    {dt:'#prev-num',mb:'#prev-num',title:'Naviguez et zoomez',desc:'Passez d\'une page à l\'autre et ajustez le zoom directement depuis la barre du bas.',onLeave:function(){Preview.close();}},
+    {dt:'#btn-merge-all',mb:'#fm-merge-all',fab:true,illus:'merge',title:'Fusionnez tout',desc:'Combinez tous vos documents ouverts en un seul PDF, en un clic.'},
+    {dt:'#btn-extract',mb:'#fm-extract',fab:true,illus:'split',title:'Extrayez une plage',desc:'Récupérez certaines pages dans un nouveau PDF, sans toucher à l\'original.'},
+    {dt:'#sidebar',mb:'#btn-docs-m',title:'Vos documents',desc:'Glissez pour réordonner, cliquez sur un nom pour le renommer.'},
+    {dt:'#btn-merge',mb:'#btn-merge',title:'Téléchargez',desc:'Une fois prêt, cliquez ici : vous pourrez aussi compresser le PDF ou le préparer pour l\'impression avant de le télécharger.'}
+  ],
+  illusHtml:{
+    move:'<div class="tt-page a"></div><div class="tt-page b"></div>',
+    dup:'<div class="tt-page a"></div><div class="tt-page clone accent"></div>',
+    rotate:'<div class="tt-page a"><i class="fa-solid fa-arrow-up" style="font-size:10px;color:var(--text3)"></i></div>',
+    delete:'<div class="tt-page a"></div><i class="fa-solid fa-trash" style="color:var(--coral);font-size:14px"></i>',
+    merge:'<div class="tt-page a"></div><i class="fa-solid fa-link" style="color:var(--text3);font-size:12px"></i><div class="tt-page b"></div>',
+    split:'<div class="tt-page a"></div><i class="fa-solid fa-scissors" style="color:var(--coral);font-size:12px"></i><div class="tt-page b"></div>'
+  },
+  idx:0,sampleLoaded:false,sampleDocIds:[],
+  resolveEl:function(step){
+    var d=document.querySelector(step.dt);
+    if(d&&d.offsetParent!==null)return d;
+    if(step.mb){
+      if(step.fab){
+        var fabMenu=document.getElementById('fab-menu');
+        if(fabMenu&&!fabMenu.classList.contains('open')){
+          var fb=document.getElementById('fab-btn');
+          if(fb)fb.click();
+        }
+      }else{this.closeFab();}
+      var m=document.querySelector(step.mb);
+      if(m&&m.offsetParent!==null)return m;
+    }else{this.closeFab();}
+    return null;
+  },
+  closeFab:function(){
+    var fb=document.getElementById('fab-btn'),fm=document.getElementById('fab-menu');
+    if(fb)fb.classList.remove('open');
+    if(fm)fm.classList.remove('open');
+  },
+  loadSample:async function(){
+    try{
+      if(!window.PDFLib)return;
+      var PDFDocument=window.PDFLib.PDFDocument,StandardFonts=window.PDFLib.StandardFonts,rgb=window.PDFLib.rgb;
+      var sets=[{name:'Facture-exemple.pdf',label:'Facture'},{name:'Devis-exemple.pdf',label:'Devis'}];
+      var files=[];
+      for(var s=0;s<sets.length;s++){
+        var doc=await PDFDocument.create();
+        var fontB=await doc.embedFont(StandardFonts.HelveticaBold);
+        var fontR=await doc.embedFont(StandardFonts.Helvetica);
+        for(var i=0;i<2;i++){
+          var page=doc.addPage([595,842]);
+          page.drawText(sets[s].label,{x:50,y:770,size:28,font:fontB,color:rgb(0.04,0.14,0.45)});
+          page.drawText('Document exemple pour la demo - page '+(i+1),{x:50,y:730,size:13,font:fontR,color:rgb(0.48,0.53,0.69)});
+          page.drawRectangle({x:50,y:150,width:495,height:500,borderColor:rgb(0.78,0.81,0.87),borderWidth:1});
+        }
+        var bytes=await doc.save();
+        files.push(new File([bytes],sets[s].name,{type:'application/pdf'}));
+      }
+      var beforeLen=S.docs.length;
+      await Files.importFiles(files);
+      this.sampleDocIds=S.docs.slice(beforeLen).map(function(d){return d.id;});
+      this.sampleLoaded=true;
+    }catch(e){console.error(e);}
+  },
+  removeSample:function(){
+    if(!this.sampleLoaded)return;
+    var ids=this.sampleDocIds||[];
+    for(var i=0;i<ids.length;i++)Files.remove(ids[i]);
+    this.sampleDocIds=[];
+    this.sampleLoaded=false;
+    Toast.show('Documents d\'exemple retires');
+  },
+  start:async function(){
+    if(this._starting)return;
+    this._starting=true;
+    var target=(currentTipIdx>=0&&TIP_STEP_MAP[currentTipIdx]!==undefined)?TIP_STEP_MAP[currentTipIdx]:0;
+    document.getElementById('tour-backdrop').style.display='block';
+    try{
+      if(target>0){
+        UI.setStatus('Preparation de la demo...');
+        await this.fastForwardTo(target);
+        UI.setStatus('Pret');
+      }else{
+        this.idx=0;
+      }
+    }catch(e){
+      console.error('Tour start error:',e);
+      this.idx=0;
+    }
+    this._starting=false;
+    this.show();
+  },
+  fastForwardTo:async function(target){
+    for(var i=0;i<target;i++){
+      var s=this.steps[i];
+      try{
+        if(s.onEnter)s.onEnter();
+        if(s.onLeave){var r=s.onLeave();if(r&&r.then)await r;}
+      }catch(e){console.error('Tour fast-forward step',i,'error:',e);}
+    }
+    this.idx=target;
+  },
+  show:function(){
+    if(this.idx>=this.steps.length){this.end();return;}
+    var step=this.steps[this.idx];
+    if(step.onEnter)step.onEnter();
+    var el=this.resolveEl(step);
+    if(!el){this.idx++;this.show();return;}
+    var r=el.getBoundingClientRect();
+    var pad=6;
+    var sp=document.getElementById('tour-spotlight');
+    sp.style.display='block';
+    sp.style.left=(r.left-pad)+'px';
+    sp.style.top=(r.top-pad)+'px';
+    sp.style.width=(r.width+pad*2)+'px';
+    sp.style.height=(r.height+pad*2)+'px';
+    var tt=document.getElementById('tour-tooltip');
+    tt.style.display='block';
+    var illusEl=document.getElementById('tt-illus');
+    if(step.illus&&this.illusHtml[step.illus]){
+      illusEl.className='tt-illus show illus-'+step.illus;
+      illusEl.innerHTML=this.illusHtml[step.illus];
+    }else{
+      illusEl.className='tt-illus';
+      illusEl.innerHTML='';
+    }
+    document.getElementById('tt-title').textContent=step.title;
+    document.getElementById('tt-desc').textContent=step.desc;
+    var ttWidth=Math.min(260,window.innerWidth-20);
+    tt.style.width=ttWidth+'px';
+    var estHeight=tt.offsetHeight||160;
+    var spaceBelow=window.innerHeight-10-(r.bottom+14);
+    var spaceAbove=r.top-14-10;
+    var placeBelow=spaceBelow>=estHeight||spaceBelow>=spaceAbove;
+    var top;
+    if(placeBelow){
+      top=Math.min(r.bottom+14,window.innerHeight-estHeight-10);
+      top=Math.max(top,10);
+    }else{
+      top=Math.max(r.top-14-estHeight,10);
+    }
+    var left=Math.min(Math.max(r.left+r.width/2-ttWidth/2,10),window.innerWidth-ttWidth-10);
+    tt.style.top=top+'px';
+    tt.style.left=left+'px';
+    var arrow=document.getElementById('tt-arrow');
+    var targetCenterX=r.left+r.width/2;
+    var arrowLeft=Math.min(Math.max(targetCenterX-left-7,14),ttWidth-14-14);
+    arrow.style.left=arrowLeft+'px';
+    if(placeBelow){arrow.style.top='-7px';arrow.style.bottom='';}
+    else{arrow.style.bottom='-7px';arrow.style.top='';}
+    var pr=document.getElementById('tt-progress');
+    pr.innerHTML='';
+    for(var i=0;i<this.steps.length;i++){
+      var d=document.createElement('div');
+      d.className='tt-dot'+(i===this.idx?' active':'');
+      pr.appendChild(d);
+    }
+    document.getElementById('tt-next').textContent=(this.idx===this.steps.length-1)?'Terminer':'Suivant';
+  },
+  next:async function(){
+    var cur=this.steps[this.idx];
+    if(cur&&cur.onLeave){
+      var r=cur.onLeave();
+      if(r&&r.then){UI.setStatus('Preparation de la demo...');await r;UI.setStatus('Pret');}
+    }
+    this.idx++;
+    this.show();
+  },
+  end:function(){
+    var cur=this.steps[this.idx];
+    if(cur&&cur.onLeave)cur.onLeave();
+    Preview.close();
+    this.closeFab();
+    document.getElementById('tour-backdrop').style.display='none';
+    document.getElementById('tour-spotlight').style.display='none';
+    document.getElementById('tour-tooltip').style.display='none';
+    if(this.sampleLoaded)this.removeSample();
+  }
+};
+(function(){
+  document.getElementById('btn-demo').addEventListener('click',function(e){e.stopPropagation();Tour.start();});
+  document.getElementById('tt-next').addEventListener('click',function(){Tour.next();});
+  document.getElementById('tt-skip').addEventListener('click',function(){Tour.end();});
+  document.getElementById('tour-backdrop').addEventListener('click',function(){Tour.end();});
+})();
+
 // INIT
 (function(){
   var fi=document.getElementById('file-input');
-  var ii=document.getElementById('img-input');
+  showRandomTip();
   document.getElementById('btn-add').addEventListener('click',function(){fi.click();});
   document.getElementById('btn-add2').addEventListener('click',function(){fi.click();});
-  document.getElementById('btn-add-img').addEventListener('click',function(){ii.click();});
-  fi.addEventListener('change',function(){if(fi.files.length)Files.load(fi.files);fi.value='';});
-  ii.addEventListener('change',function(){if(ii.files.length)Files.loadImages(ii.files);ii.value='';}); 
+  fi.addEventListener('change',function(){if(fi.files.length)Files.importFiles(fi.files);fi.value='';});
 
-  document.getElementById('btn-merge').addEventListener('click',function(){Merge.start();});
+  document.getElementById('btn-merge').addEventListener('click',function(){Export.open();});
 
   document.getElementById('btn-zoom-in').addEventListener('click',function(){UI.setZoom(S.zoom+.1);});
   document.getElementById('btn-zoom-out').addEventListener('click',function(){UI.setZoom(S.zoom-.1);});
@@ -7195,26 +9440,22 @@ var SelectTool={
   // Blank page
   document.getElementById('btn-add-blank').addEventListener('click',function(){BlankPage.insert();});
 
-  // Print prep
-  document.getElementById('btn-print-prep').addEventListener('click',function(){PrintPrep.open();});
-  document.getElementById('print-cancel').addEventListener('click',function(){hideModal('print-modal');});
-  document.getElementById('print-ok').addEventListener('click',function(){PrintPrep.confirm();});
-  document.getElementById('print-odd').addEventListener('change',function(){PrintPrep.updateInfo();});
-  document.getElementById('print-end').addEventListener('change',function(){PrintPrep.updateInfo();});
-  document.getElementById('print-modal').addEventListener('click',function(e){if(e.target===document.getElementById('print-modal'))hideModal('print-modal');});
-
   // History
   document.getElementById('btn-history').addEventListener('click',function(){History.open();});
   document.getElementById('history-close').addEventListener('click',function(){History.close();});
   document.getElementById('history-clear').addEventListener('click',function(){History.clear();});
 
-  // Compress
-  document.getElementById('btn-compress').addEventListener('click',function(){Compress.open();});
-  document.getElementById('compress-cancel').addEventListener('click',function(){hideModal('compress-modal');});
-  document.getElementById('compress-ok').addEventListener('click',function(){Compress.confirm();});
-  document.getElementById('compress-quality').addEventListener('input',function(){document.getElementById('compress-quality-val').textContent=this.value+'%';});
-  document.getElementById('compress-dpi').addEventListener('input',function(){document.getElementById('compress-dpi-val').textContent=this.value+' dpi';});
-  document.getElementById('compress-modal').addEventListener('click',function(e){if(e.target===document.getElementById('compress-modal'))hideModal('compress-modal');});
+  // Export (telechargement + impression + compression, regroupes dans une seule modale)
+  document.getElementById('export-cancel').addEventListener('click',function(){hideModal('export-modal');});
+  document.getElementById('export-ok').addEventListener('click',function(){Export.confirm();});
+  document.getElementById('export-print-toggle').addEventListener('change',function(){Export._sync();});
+  document.getElementById('export-compress-toggle').addEventListener('change',function(){Export._sync();});
+  document.getElementById('export-select-all').addEventListener('click',function(){Export.toggleAll();});
+  document.getElementById('print-odd').addEventListener('change',function(){PrintPrep.updateInfo(Export._selectedDocs());Export._savePrefs();});
+  document.getElementById('print-end').addEventListener('change',function(){PrintPrep.updateInfo(Export._selectedDocs());Export._savePrefs();});
+  document.getElementById('compress-quality').addEventListener('input',function(){document.getElementById('compress-quality-val').textContent=this.value+'%';Export.onCompressInputChanged();});
+  document.getElementById('compress-dpi').addEventListener('input',function(){document.getElementById('compress-dpi-val').textContent=this.value+' dpi';Export.onCompressInputChanged();});
+  document.getElementById('compress-grayscale').addEventListener('change',function(){Export.onCompressInputChanged();});
 
   // Export images
   document.getElementById('btn-export-img').addEventListener('click',function(){ExportImg.open();});
@@ -7226,10 +9467,8 @@ var SelectTool={
   document.querySelectorAll('.format-pill').forEach(function(pill){pill.addEventListener('click',function(){ExportImg.setFmt(pill.dataset.fmt);});});
 
   // Mobile toolbar
-  var fileInputM=document.createElement('input');fileInputM.type='file';fileInputM.accept='.pdf';fileInputM.multiple=true;fileInputM.style.display='none';document.body.appendChild(fileInputM);
-  var imgInputM=document.createElement('input');imgInputM.type='file';imgInputM.accept='.jpg,.jpeg,.jfif,.png';imgInputM.multiple=true;imgInputM.style.display='none';document.body.appendChild(imgInputM);
-  fileInputM.addEventListener('change',function(e){Files.load(e.target.files);fileInputM.value='';});
-  imgInputM.addEventListener('change',function(e){Files.loadImages(e.target.files);imgInputM.value='';});
+  var fileInputM=document.createElement('input');fileInputM.type='file';fileInputM.accept='.pdf,.jpg,.jpeg,.jfif,.png,.gif,.webp,.bmp,.svg,.heic,.heif,.tif,.tiff,.txt,.md,.markdown,.rtf,.docx,.xlsx,.xls,.pptx';fileInputM.multiple=true;fileInputM.style.display='none';document.body.appendChild(fileInputM);
+  fileInputM.addEventListener('change',function(e){Files.importFiles(e.target.files);fileInputM.value='';});
   document.getElementById('btn-add-m').addEventListener('click',function(){fileInputM.click();});
   document.getElementById('btn-docs-m').addEventListener('click',function(){BottomSheet.open();});
 
@@ -7245,7 +9484,6 @@ var SelectTool={
   document.addEventListener('click',function(e){if(!e.target.closest('#fab-btn')&&!e.target.closest('#fab-menu'))closeFab();});
   document.getElementById('fm-merge-all').addEventListener('click',function(){closeFab();Split.mergeAll();});
   document.getElementById('fm-extract').addEventListener('click',function(){closeFab();Extract.open();});
-  document.getElementById('fm-compress').addEventListener('click',function(){closeFab();Compress.open();});
   document.getElementById('fm-export-img').addEventListener('click',function(){closeFab();ExportImg.open();});
 
   // Bottom sheet
@@ -7263,7 +9501,8 @@ var SelectTool={
   document.getElementById('btn-save').addEventListener('click',function(){Project.save();});
   document.getElementById('btn-load-proj').addEventListener('click',function(){document.getElementById('proj-input').click();});
   document.getElementById('proj-input').addEventListener('change',function(e){if(e.target.files[0])Project.load(e.target.files[0]);e.target.value='';});
-
+  var btnRestoreSession=document.getElementById('btn-restore-session');
+  if(btnRestoreSession)btnRestoreSession.addEventListener('click',function(){Project.restoreAuto();});
   /* ── BOUTON MODIFIER ── */
   // Toggle barre gauche + panneau droit
   (function(){
@@ -7777,13 +10016,7 @@ var SelectTool={
   function isFileDrag(e){return e.dataTransfer&&e.dataTransfer.types&&Array.from(e.dataTransfer.types).indexOf('Files')>=0;}
   wrap.addEventListener('dragover',function(e){e.preventDefault();if(isFileDrag(e))dz.classList.add('visible');});
   wrap.addEventListener('dragleave',function(e){if(!wrap.contains(e.relatedTarget))dz.classList.remove('visible');});
-  function handleDrop(files){
-    var pdfs=Array.from(files).filter(function(f){return f.name.toLowerCase().endsWith('.pdf');});
-    var imgs=Array.from(files).filter(function(f){return /\.(jpe?g|jfif|png)$/i.test(f.name);});
-    if(pdfs.length)Files.load(pdfs);
-    if(imgs.length)Files.loadImages(imgs);
-    if(!pdfs.length&&!imgs.length)Toast.show('PDF, JPG, JFIF ou PNG uniquement','error');
-  }
+  function handleDrop(files){Files.importFiles(files);}
   // stopPropagation évite la remontée vers window → plus de doublon sur certains OS
   wrap.addEventListener('drop',function(e){e.preventDefault();e.stopPropagation();dz.classList.remove('visible');if(e.dataTransfer.files.length)handleDrop(e.dataTransfer.files);});
   window.addEventListener('dragover',function(e){if(isFileDrag(e))e.preventDefault();});
@@ -7824,7 +10057,7 @@ var SelectTool={
     else if((e.key==='Delete'||e.key==='Backspace')&&S.sel.size)Pages.delSel();
   });
 
-  ['range-modal','split-modal','compress-modal','exportimg-modal','print-modal'].forEach(function(id){document.getElementById(id).addEventListener('click',function(e){if(e.target===document.getElementById(id))hideModal(id);});});
+  ['range-modal','split-modal','export-modal','exportimg-modal'].forEach(function(id){document.getElementById(id).addEventListener('click',function(e){if(e.target===document.getElementById(id))hideModal(id);});});
 
   UI.renderAll();
   History.render();
