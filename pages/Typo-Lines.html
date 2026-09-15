@@ -474,32 +474,53 @@ let CATALOG_SOURCE = 'static'; // 'static' ou 'remote'
 let REMOTE_CATALOG = null;     // { sans:[...], serif:[...], ... }
 let REMOTE_ALL = null;         // liste à plat, triée par popularité
 
-async function loadRemoteCatalog(){
+async function fetchWithTimeout(url, ms){
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
   try{
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 4000);
-    const res = await fetch(REMOTE_FONTS_URL, { signal: controller.signal });
+    const res = await fetch(url, { signal: controller.signal });
+    if(!res.ok) throw new Error('réponse non-OK ('+res.status+')');
+    return await res.json();
+  } finally {
     clearTimeout(timer);
-    if(!res.ok) throw new Error('réponse non-OK');
-    const data = await res.json();
-
-    const byCat = { sans:[], serif:[], display:[], script:[], mono:[] };
-    const flat = [];
-    data.forEach(f => {
-      if(!f.subsets || !f.subsets.includes('latin')) return; // on garde seulement les polices lisibles en français/latin
-      flat.push(f.family);
-      const key = REMOTE_CATEGORY_MAP[f.category];
-      if(key) byCat[key].push(f.family);
-    });
-
-    REMOTE_CATALOG = byCat;
-    REMOTE_ALL = flat; // déjà trié par popularité par l'API
-    CATALOG_SOURCE = 'remote';
-    catalogSourceNote.textContent = `Catalogue complet chargé : ${flat.length} polices (source externe). Par analyse, seule une sélection pertinente est comparée pour rester rapide.`;
-  }catch(e){
-    CATALOG_SOURCE = 'static';
-    catalogSourceNote.textContent = `Service externe injoignable — recherche sur la liste intégrée (${FONT_CATALOG.all.length} polices).`;
   }
+}
+
+async function loadRemoteCatalog(){
+  // Deux tentatives : l'appel direct, puis via un proxy CORS public si le
+  // premier est bloqué (typiquement quand le fichier est ouvert en file://,
+  // ou qu'une extension de navigateur bloque le domaine tiers).
+  const attempts = [
+    { url: REMOTE_FONTS_URL, label: 'direct' },
+    { url: 'https://api.allorigins.win/raw?url=' + encodeURIComponent(REMOTE_FONTS_URL), label: 'via proxy CORS' }
+  ];
+
+  for(const attempt of attempts){
+    try{
+      const data = await fetchWithTimeout(attempt.url, 6000);
+
+      const byCat = { sans:[], serif:[], display:[], script:[], mono:[] };
+      const flat = [];
+      data.forEach(f => {
+        if(!f.subsets || !f.subsets.includes('latin')) return; // on garde seulement les polices lisibles en français/latin
+        flat.push(f.family);
+        const key = REMOTE_CATEGORY_MAP[f.category];
+        if(key) byCat[key].push(f.family);
+      });
+
+      REMOTE_CATALOG = byCat;
+      REMOTE_ALL = flat; // déjà trié par popularité par l'API
+      CATALOG_SOURCE = 'remote';
+      const viaNote = attempt.label === 'direct' ? '' : ' (via proxy CORS)';
+      catalogSourceNote.textContent = `Catalogue complet chargé${viaNote} : ${flat.length} polices (source externe). Par analyse, seule une sélection pertinente est comparée pour rester rapide.`;
+      return;
+    }catch(e){
+      continue; // on tente la source suivante
+    }
+  }
+
+  CATALOG_SOURCE = 'static';
+  catalogSourceNote.textContent = `Service externe injoignable (même via proxy) — recherche sur la liste intégrée (${FONT_CATALOG.all.length} polices).`;
 }
 const catalogReady = loadRemoteCatalog();
 
