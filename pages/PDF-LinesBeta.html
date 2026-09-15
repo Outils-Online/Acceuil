@@ -46,8 +46,18 @@ header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;ba
 .zoom-wrap{display:flex;align-items:center;gap:4px;margin-left:auto}
 .zoom-val{font-size:12px;color:var(--text2);font-family:'DM Mono',monospace;min-width:36px;text-align:center}
 input[type=file]{display:none}
-/* undo-bar hidden — now in toolbar */
-#undo-bar{display:none}
+.svgi{width:1em;height:1em;vertical-align:-.125em;fill:currentColor;display:inline-block}
+/* ── Actions déplacées dans la sidebar (ex-toolbar) ───── */
+.sb-actions{display:flex;flex-direction:column;gap:5px;padding:10px 10px 6px}
+.sb-actions .btn{width:100%;justify-content:flex-start}
+/* ── Zoom flottant sur le canvas (ex-toolbar) ─────────── */
+#zoom-float{
+  position:absolute;bottom:16px;right:16px;z-index:60;
+  display:flex;align-items:center;gap:6px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:100px;padding:5px 6px;box-shadow:var(--shadow-sm);
+}
+#zoom-float .zoom-val{min-width:34px}
 
 /* Mobile bottom toolbar */
 #mobile-toolbar{
@@ -127,6 +137,8 @@ input[type=file]{display:none}
 .tip-line i{display:none}
 .tip-eyebrow{font-size:9.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:#C9962B}
 #tip-text{font-weight:500}
+#tip-text.typing::after{content:'|';margin-left:1px;animation:tipBlink .9s step-start infinite;color:var(--coral)}
+@keyframes tipBlink{50%{opacity:0}}
 .tip-refresh{display:flex !important;position:absolute;top:50%;right:12px;transform:translateY(-50%);font-size:11px;color:var(--text3);opacity:.8;transition:transform .3s ease}
 .tip-line:active .tip-refresh{transform:translateY(-50%) rotate(180deg)}
 .tip-demo-btn{background:none;color:var(--coral);border:none;padding:0;font-size:11px;font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
@@ -802,6 +814,39 @@ input[type=file]{display:none}
 
 /* Curseur en mode texte actif */
 #sign-overlay-layer.text-mode-active{cursor:text !important;pointer-events:all !important;}
+
+/* ── Outil « Modifier texte » : édition du texte existant du PDF ── */
+#sign-overlay-layer.edittext-mode-active{pointer-events:all !important;cursor:default;}
+.pdfedit-line{
+  position:absolute;z-index:160;pointer-events:auto;cursor:text;box-sizing:border-box;
+  border:1px dashed rgba(0,180,130,.5);border-radius:3px;background:rgba(0,180,130,.06);
+  transition:background .12s,border-color .12s,box-shadow .12s;
+}
+.pdfedit-line:hover{background:rgba(0,180,130,.2);border-color:rgba(0,180,130,.95);box-shadow:0 0 0 1px rgba(0,180,130,.4);}
+.pdfedit-line.editing{opacity:0;pointer-events:none;}
+.pdfedit-input{
+  position:absolute;z-index:400;pointer-events:auto;box-sizing:content-box;
+  margin:0;padding:2px 3px;border:1.5px solid var(--coral);border-radius:3px;
+  background:#fff;outline:none;resize:none;overflow:hidden;white-space:pre;
+  box-shadow:0 4px 18px rgba(0,0,0,.3);
+}
+/* Texte issu de l'outil « Modifier texte » : aucune marge interne, pour
+   rester calé au pixel sur la ligne de base d'origine (cf. syncMetrics). */
+.pdfedit-text{min-height:0 !important;}
+.pdfedit-text .text-placed-content,
+.pdfedit-text .text-placed-input{padding:0 !important;min-height:0 !important;}
+#pdfedit-detected{
+  display:flex;flex-direction:column;gap:2px;margin-top:4px;padding:8px 10px;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;
+}
+#pdfedit-detected b{font-size:12px;color:rgba(255,255,255,.9);font-weight:600;word-break:break-all;}
+#pdfedit-detected span{font-size:10px;color:rgba(255,255,255,.45);}
+#pdfedit-detected .pdfedit-sub{color:rgba(255,217,114,.8);}
+#pdfedit-state{
+  font-size:11px;color:rgba(255,255,255,.45);line-height:1.5;display:flex;gap:8px;
+  align-items:flex-start;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);
+  border-radius:8px;padding:9px 11px;
+}
 #sign-overlay-layer.date-mode-active{cursor:crosshair !important;pointer-events:all !important;}
 #sign-overlay-layer.stamp-mode-active{cursor:crosshair !important;pointer-events:all !important;}
 #edit-tools-bar{
@@ -829,6 +874,8 @@ input[type=file]{display:none}
 .etb-btn:disabled{opacity:.25;cursor:not-allowed;}
 .etb-btn span{font-size:8px;font-weight:500;letter-spacing:.3px;text-transform:uppercase;line-height:1;color:inherit;font-family:'DM Sans',sans-serif;}
 .etb-sep{width:28px;height:1px;background:rgba(255,255,255,.08);margin:4px 0;flex-shrink:0;}
+.etb-btn.etb-beta-btn{height:54px;gap:2px;}
+.etb-btn span.etb-beta{font-size:7px;font-weight:800;letter-spacing:.2px;text-transform:uppercase;background:var(--gold);color:#4a3200 !important;padding:1.5px 5px;border-radius:5px;line-height:1.4;font-family:'DM Sans',sans-serif;margin-top:1px;}
 
 /* Bouton Modifier dans la barre preview */
 .prev-ctrl-btn.modifier-btn{
@@ -1076,12 +1123,17 @@ input[type=file]{display:none}
   transform:scale(1.05);
 }
 /* ── RESPONSIVE ──────────────────────────────────────── */
-@media(max-width:900px){#sidebar{display:none}}
+@media(max-width:768px){#sidebar{display:none}}
 
-/* Tablet: hide some toolbar labels */
+/* Compact header: hide button labels & subtitle before things get tight */
+@media(max-width:1040px){
+  header>span:not(.logo *){display:none}
+  .hactions .btn-lbl{display:none}
+  #btn-add,#btn-merge-all{padding-left:9px;padding-right:9px}
+}
+
+/* Tablet: hide some sidebar labels */
 @media(max-width:860px){
-  .toolbar{gap:4px;padding:6px 12px}
-  .btn-ghost.btn-sm .btn-lbl{display:none}
   .card-actions .card-btn[data-dir]{display:none}
 }
 
@@ -1090,11 +1142,10 @@ input[type=file]{display:none}
   header{padding:0 12px;height:50px;gap:8px}
   header>span:not(.logo *){display:none}
   /* keep Download button, hide Save/Load */
-  .hactions #btn-save,.hactions #btn-load-proj{display:none}
-  .hactions .hsep:first-of-type{display:none}
-  .toolbar{display:none}
+    .hactions .hsep:first-of-type{display:none}
   #mobile-toolbar{display:flex}
   #fab-btn{display:flex}
+  #zoom-float{display:none}
   #bottom-sheet{display:flex}
   #canvas-area{padding:10px;gap:12px;padding-bottom:60px}
   .modal-box{min-width:unset;width:calc(100vw - 20px);padding:18px 14px}
@@ -1121,47 +1172,15 @@ input[type=file]{display:none}
   <div class="hsep"></div>
   <span style="font-size:12px;color:var(--emerald)">Organiser &amp; Fusionner</span>
   <div class="hactions">
-    <button class="btn btn-ghost btn-sm" id="btn-save"><i class="fa-solid fa-floppy-disk"></i> Projet</button>
-    <button class="btn btn-ghost btn-sm" id="btn-load-proj"><i class="fa-solid fa-folder-open"></i> Charger</button>
+    <button class="btn btn-ghost btn-sm" id="btn-add" title="Importer des fichiers : PDF, images, HEIC, TIFF, Word, Excel, PowerPoint, TXT, MD, RTF"><i class="fa-solid fa-file-import"></i> <span class="btn-lbl">Importer</span></button>
+    <button class="btn btn-ghost btn-sm" id="btn-merge-all" title="Fusionner tous les documents en un seul PDF" style="color:var(--emerald);border-color:var(--emerald)"><i class="fa-solid fa-layer-group"></i> <span class="btn-lbl">Tout fusionner</span></button>
     <div class="hsep"></div>
     <button class="btn btn-icon" id="btn-history" title="Historique des exports"><i class="fa-solid fa-clock-rotate-left"></i></button>
     <div class="hsep"></div>
     <button class="btn btn-primary" id="btn-merge" disabled><i class="fa-solid fa-download"></i> Télécharger</button>
   </div>
 </header>
-<!-- Desktop toolbar -->
-<div class="toolbar">
-  <div class="tgroup">
-    <button class="btn btn-ghost btn-sm" id="btn-add" title="Importer des fichiers : PDF, images, HEIC, TIFF, Word, Excel, PowerPoint, TXT, MD, RTF"><i class="fa-solid fa-file-import"></i> Importer</button>
-    <input type="file" id="file-input" accept=".pdf,.jpg,.jpeg,.jfif,.png,.gif,.webp,.bmp,.svg,.heic,.heif,.tif,.tiff,.txt,.md,.markdown,.rtf,.docx,.xlsx,.xls,.pptx" multiple>
-  </div>
-  <div class="tsep"></div>
-  <div class="tgroup">
-    <button class="btn btn-ghost btn-sm" id="btn-extract" title="Extraire les pages selectionnees (ou plage si rien de selectionne)"><i class="fa-solid fa-scissors"></i> Extraire</button>
-    <button class="btn btn-ghost btn-sm" id="btn-merge-all" title="Fusionner tous les documents en un seul PDF" style="color:var(--emerald);border-color:var(--emerald)"><i class="fa-solid fa-layer-group"></i> <span class="btn-lbl">Tout fusionner</span></button>
-    <button class="btn btn-ghost btn-sm" id="btn-export-img" title="Exporter les pages en images PNG/JPEG"><i class="fa-solid fa-images"></i> Images</button>
-  </div>
-  <div class="tsep"></div>
-  <div class="tgroup" id="sel-tools" style="opacity:.4;pointer-events:none">
-    <span class="tlabel">Selection :</span>
-    <button class="btn btn-icon" id="btn-sel-rot" title="Rotation 90 degres"><i class="fa-solid fa-rotate-right"></i></button>
-    <button class="btn btn-icon" id="btn-sel-dup" title="Dupliquer la selection"><i class="fa-solid fa-copy"></i></button>
-    <button class="btn btn-icon" id="btn-add-blank" title="Inserer une page blanche apres la selection"><i class="fa-solid fa-file-circle-plus"></i></button>
-    <button class="btn btn-icon" style="color:var(--coral)" id="btn-sel-del" title="Supprimer la selection"><i class="fa-solid fa-trash"></i></button>
-    <button class="btn btn-icon" id="btn-sel-clear" title="Deselectionner tout"><i class="fa-solid fa-xmark"></i></button>
-  </div>
-  <div class="tsep"></div>
-  <div class="tgroup">
-    <button class="btn btn-icon" id="btn-undo" disabled title="Annuler (Ctrl+Z)"><i class="fa-solid fa-rotate-left"></i></button>
-    <button class="btn btn-icon" id="btn-redo" disabled title="Retablir (Ctrl+Y)"><i class="fa-solid fa-rotate-right"></i></button>
-  </div>
-  <div class="zoom-wrap">
-    <span class="tlabel">Zoom</span>
-    <button class="btn btn-icon" id="btn-zoom-out" title="Reduire le zoom"><i class="fa-solid fa-minus"></i></button>
-    <span class="zoom-val" id="zoom-val">100%</span>
-    <button class="btn btn-icon" id="btn-zoom-in" title="Augmenter le zoom"><i class="fa-solid fa-plus"></i></button>
-  </div>
-</div>
+<input type="file" id="file-input" accept=".pdf,.jpg,.jpeg,.jfif,.png,.gif,.webp,.bmp,.svg,.heic,.heif,.tif,.tiff,.txt,.md,.markdown,.rtf,.docx,.xlsx,.xls,.pptx" multiple style="display:none">
 
 <!-- Mobile toolbar: row 1 = main actions, row 2 = selection tools -->
 <div id="mobile-toolbar">
@@ -1170,8 +1189,8 @@ input[type=file]{display:none}
     <button class="mbt" id="btn-add-m" title="Importer"><i class="fa-solid fa-plus"></i></button>
     <button class="mbt" id="btn-docs-m" title="Documents"><i class="fa-solid fa-layer-group"></i></button>
     <div class="mbt-sep"></div>
-    <button class="mbt" id="btn-undo-m" disabled title="Annuler"><i class="fa-solid fa-rotate-left"></i></button>
-    <button class="mbt" id="btn-redo-m" disabled title="Retablir"><i class="fa-solid fa-rotate-right"></i></button>
+    <button class="mbt" id="btn-undo-m" disabled title="Annuler"><svg class="svgi" viewBox="0 0 24 24"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg></button>
+    <button class="mbt" id="btn-redo-m" disabled title="Retablir"><svg class="svgi" viewBox="0 0 24 24"><path d="M18.4 10.6C16.55 8.99 14.15 8 11.5 8c-4.65 0-8.58 3.03-9.96 7.22L3.9 16c1.05-3.19 4.05-5.5 7.6-5.5 1.95 0 3.73.72 5.12 1.88L13 16h9V7l-3.6 3.6z"/></svg></button>
   </div>
 
 </div>
@@ -1183,10 +1202,6 @@ input[type=file]{display:none}
   <div class="fab-item" id="fm-extract"><i class="fa-solid fa-scissors"></i><span>Extraire plage</span></div>
   <div class="fab-item" id="fm-export-img"><i class="fa-solid fa-images"></i><span>Export images</span></div>
 </div>
-<div id="undo-bar">
-  <button class="undo-btn" id="btn-undo" disabled><i class="fa-solid fa-rotate-left"></i> Annuler</button>
-  <button class="undo-btn" id="btn-redo" disabled><i class="fa-solid fa-rotate-right"></i> Retablir</button>
-</div>
 <div id="main">
   <aside id="sidebar">
     <div class="sb-head">
@@ -1197,6 +1212,11 @@ input[type=file]{display:none}
     <div class="sb-foot"><div class="status-dot"></div><span id="status-text">Pret</span></div>
   </aside>
   <div id="canvas-wrap">
+    <div id="zoom-float">
+      <button class="btn btn-icon" id="btn-zoom-out" title="Reduire le zoom"><i class="fa-solid fa-minus"></i></button>
+      <span class="zoom-val" id="zoom-val">100%</span>
+      <button class="btn btn-icon" id="btn-zoom-in" title="Augmenter le zoom"><i class="fa-solid fa-plus"></i></button>
+    </div>
     <div id="canvas-area">
       <div id="empty-state">
         <div class="empty-dropzone-hint">
@@ -1241,11 +1261,14 @@ input[type=file]{display:none}
 
 <div id="sel-bar">
   <span class="sel-count" id="sel-count">0</span> page(s)
-  <button class="btn btn-sm btn-ghost" id="sb-rot"><i class="fa-solid fa-rotate-right"></i></button>
+  <button class="btn btn-sm btn-ghost" id="sb-rot" title="Pivoter les pages sélectionnées"><i class="fa-solid fa-rotate"></i> <span class="btn-lbl">Pivoter</span></button>
   <button class="btn btn-sm btn-ghost" id="sb-dup"><i class="fa-solid fa-copy"></i></button>
   <button class="btn btn-sm" style="background:var(--emerald);color:#fff" id="sb-extract" title="Extraire les pages selectionnees en PDF"><i class="fa-solid fa-scissors"></i> Extraire</button>
   <button class="btn btn-sm btn-danger" id="sb-del"><i class="fa-solid fa-trash"></i></button>
   <button class="btn btn-sm btn-ghost" id="sb-clear"><i class="fa-solid fa-xmark"></i></button>
+  <div class="tsep"></div>
+  <button class="btn btn-sm btn-ghost" id="sb-undo" disabled title="Annuler (Ctrl+Z)"><svg class="svgi" viewBox="0 0 24 24"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg></button>
+  <button class="btn btn-sm btn-ghost" id="sb-redo" disabled title="Retablir (Ctrl+Y)"><svg class="svgi" viewBox="0 0 24 24"><path d="M18.4 10.6C16.55 8.99 14.15 8 11.5 8c-4.65 0-8.58 3.03-9.96 7.22L3.9 16c1.05-3.19 4.05-5.5 7.6-5.5 1.95 0 3.73.72 5.12 1.88L13 16h9V7l-3.6 3.6z"/></svg></button>
 </div>
 <div id="progress-overlay">
   <div class="progress-box">
@@ -1277,7 +1300,8 @@ input[type=file]{display:none}
       <div class="etb-sep"></div>
       <button class="etb-btn" id="etb-image" title="Image"><i class="fa-solid fa-image"></i><span>Image</span></button>
       <div class="etb-sep"></div>
-      <button class="etb-btn" id="etb-eraser" title="Gomme"><i class="fa-solid fa-eraser"></i><span>Gomme</span></button>
+      <button class="etb-btn etb-beta-btn" id="etb-edittext" title="Modifier le texte existant du PDF — reconnaissance de la police, de la taille et de la couleur (Bêta)"><i class="fa-solid fa-i-cursor"></i><span>Éditer</span><span class="etb-beta">Beta</span></button>
+      <button class="etb-btn etb-beta-btn" id="etb-eraser" title="Gomme (Bêta)"><i class="fa-solid fa-eraser"></i><span>Gomme</span><span class="etb-beta">Beta</span></button>
     </div>
     <div id="prev-canvas-row">
       <button class="prev-doc-arrow" id="prev-doc-prev" title="PDF précédent (Ctrl+←)"><i class="fa-solid fa-angles-left"></i><span class="prev-doc-arrow-label">PDF préc.</span></button>
@@ -1385,6 +1409,54 @@ input[type=file]{display:none}
         </div>
       </div>
 
+      <!-- Panneau Modifier texte -->
+      <div id="esp-panel-edittext" class="esp-tool-panel" style="display:none;flex-direction:column;gap:0;flex:1;overflow:hidden;">
+        <div style="display:flex;flex-direction:column;gap:10px;padding:12px;flex:1;overflow-y:auto;min-height:0;">
+          <div id="pdfedit-state"><i class="fa-solid fa-circle-info"></i> Analyse…</div>
+
+          <div id="pdfedit-editor" style="display:none;flex-direction:column;gap:10px;">
+            <div class="esp-opt-group">
+              <div class="esp-opt-label">Police reconnue</div>
+              <div id="pdfedit-detected"></div>
+            </div>
+            <div class="esp-opt-group">
+              <div class="esp-opt-label">Police de remplacement</div>
+              <select id="pdfedit-font" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:#fff;border-radius:5px;font-size:12px;padding:5px 7px;outline:none;cursor:pointer;width:100%;margin-top:4px;">
+                <option value="sans-serif">Helvetica / Arial (sans-serif)</option>
+                <option value="serif">Times (serif)</option>
+                <option value="monospace">Courier (chasse fixe)</option>
+              </select>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <div class="esp-opt-group" style="flex:1;">
+                <div class="esp-opt-label">Taille (pt)</div>
+                <input id="pdfedit-size" type="number" step="0.5" min="1" max="200" style="width:100%;margin-top:4px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:#fff;border-radius:5px;font-size:12px;padding:5px 7px;outline:none;text-align:center;">
+              </div>
+              <div class="esp-opt-group" style="flex:1;">
+                <div class="esp-opt-label">Couleur</div>
+                <input id="pdfedit-color" type="color" value="#1a1a1a" style="width:100%;height:30px;margin-top:4px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:5px;padding:2px;cursor:pointer;">
+              </div>
+            </div>
+            <div class="esp-opt-group">
+              <div class="esp-opt-label">Style</div>
+              <div style="display:flex;gap:6px;margin-top:4px;">
+                <button class="tt-btn" id="pdfedit-bold" title="Gras" style="flex:1;height:32px;border-radius:6px;border:1px solid rgba(255,255,255,.12);"><i class="fa-solid fa-bold"></i></button>
+                <button class="tt-btn" id="pdfedit-italic" title="Italique" style="flex:1;height:32px;border-radius:6px;border:1px solid rgba(255,255,255,.12);"><i class="fa-solid fa-italic"></i></button>
+              </div>
+            </div>
+            <div style="display:flex;gap:6px;">
+              <button id="pdfedit-apply" style="flex:2;padding:8px;background:rgba(0,180,130,.28);border:1px solid rgba(0,180,130,.55);border-radius:7px;color:#fff;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;"><i class="fa-solid fa-check"></i> Appliquer</button>
+              <button id="pdfedit-cancel" style="flex:1;padding:8px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:7px;color:rgba(255,255,255,.6);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;">Annuler</button>
+            </div>
+            <button id="pdfedit-delete" style="padding:6px;background:rgba(244,96,96,.14);border:1px solid rgba(244,96,96,.3);border-radius:7px;color:rgba(255,160,160,.85);font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;"><i class="fa-solid fa-trash"></i> Supprimer ce texte du PDF</button>
+          </div>
+
+          <div class="esp-hint" style="font-size:11px;color:rgba(255,255,255,.35);line-height:1.5;display:flex;gap:8px;align-items:flex-start;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:9px 11px;">
+            <i class="fa-solid fa-circle-info" style="color:rgba(0,180,130,.65);flex-shrink:0;margin-top:2px;"></i>
+            Le texte d'origine est réellement retiré du PDF à l'export (même moteur de rédaction que la gomme), puis réécrit dans la police reconnue. Les polices non standard sont substituées par leur équivalent le plus proche.
+          </div>
+        </div>
+      </div>
       <!-- Panneau Tampon -->
       <div id="esp-panel-stamp" class="esp-tool-panel" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
         <div id="stamp-picker" style="display:flex;flex-direction:column;flex:1;overflow-y:auto;padding:12px 14px;">
@@ -1448,7 +1520,7 @@ input[type=file]{display:none}
           </div>
           <div style="display:flex;gap:6px;margin-top:4px;">
             <button onclick="HighlightTool.undoLast()" style="flex:1;padding:7px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:7px;color:rgba(255,255,255,.6);font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;">
-              <i class="fa-solid fa-rotate-left"></i> Annuler
+              <svg class="svgi" viewBox="0 0 24 24"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg> Annuler
             </button>
             <button onclick="HighlightTool.clearAll()" style="flex:1;padding:7px;background:rgba(244,96,96,.12);border:1px solid rgba(244,96,96,.25);border-radius:7px;color:rgba(255,160,160,.8);font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;">
               <i class="fa-solid fa-xmark"></i> Effacer tout
@@ -1538,7 +1610,7 @@ input[type=file]{display:none}
           </div>
           <div style="display:flex;gap:5px;">
             <button onclick="ShapeTool.undoLast()" style="flex:1;padding:6px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:7px;color:rgba(255,255,255,.6);font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;">
-              <i class="fa-solid fa-rotate-left"></i> Annuler
+              <svg class="svgi" viewBox="0 0 24 24"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg> Annuler
             </button>
             <button onclick="ShapeTool.clearAll()" style="flex:1;padding:6px;background:rgba(244,96,96,.12);border:1px solid rgba(244,96,96,.25);border-radius:7px;color:rgba(255,160,160,.8);font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;">
               <i class="fa-solid fa-xmark"></i> Tout effacer
@@ -1617,8 +1689,8 @@ input[type=file]{display:none}
     </div>
     <div class="prev-ctrl-sep"></div>
     <div class="prev-ctrl-group">
-      <button class="prev-ctrl-btn icon-only" id="prev-undo-btn" title="Annuler (Ctrl+Z)" disabled><i class="fa-solid fa-rotate-left"></i></button>
-      <button class="prev-ctrl-btn icon-only" id="prev-redo-btn" title="Rétablir (Ctrl+Y)" disabled><i class="fa-solid fa-rotate-right"></i></button>
+      <button class="prev-ctrl-btn icon-only" id="prev-undo-btn" title="Annuler (Ctrl+Z)" disabled><svg class="svgi" viewBox="0 0 24 24"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg></button>
+      <button class="prev-ctrl-btn icon-only" id="prev-redo-btn" title="Rétablir (Ctrl+Y)" disabled><svg class="svgi" viewBox="0 0 24 24"><path d="M18.4 10.6C16.55 8.99 14.15 8 11.5 8c-4.65 0-8.58 3.03-9.96 7.22L3.9 16c1.05-3.19 4.05-5.5 7.6-5.5 1.95 0 3.73.72 5.12 1.88L13 16h9V7l-3.6 3.6z"/></svg></button>
     </div>
     <div class="prev-ctrl-sep"></div>
     <div class="prev-ctrl-group">
@@ -1637,8 +1709,12 @@ input[type=file]{display:none}
 <div id="ctx-menu">
   <div class="ctx-item" data-a="preview"><span class="ctx-icon"><i class="fa-solid fa-expand"></i></span>Apercu plein ecran</div>
   <div class="ctx-item" data-a="dup"><span class="ctx-icon"><i class="fa-solid fa-copy"></i></span>Dupliquer</div>
-  <div class="ctx-item" data-a="rot-cw"><span class="ctx-icon"><i class="fa-solid fa-rotate-right"></i></span>Rotation 90 horaire</div>
-  <div class="ctx-item" data-a="rot-ccw"><span class="ctx-icon"><i class="fa-solid fa-rotate-left"></i></span>Rotation 90 anti</div>
+  <div class="ctx-item" data-a="rot-cw"><span class="ctx-icon"><i class="fa-solid fa-rotate"></i></span>Rotation 90 horaire</div>
+  <div class="ctx-item" data-a="rot-ccw"><span class="ctx-icon"><i class="fa-solid fa-rotate" style="transform:scaleX(-1);display:inline-block"></i></span>Rotation 90 anti</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" data-a="export-img"><span class="ctx-icon"><i class="fa-solid fa-images"></i></span>Exporter en image</div>
+  <div class="ctx-item" data-a="extract"><span class="ctx-icon"><i class="fa-solid fa-scissors"></i></span>Extraire</div>
+  <div class="ctx-item" data-a="add-blank"><span class="ctx-icon"><i class="fa-solid fa-file-circle-plus"></i></span>Inserer une page blanche</div>
   <div class="ctx-sep"></div>
   <div class="ctx-item" data-a="first"><span class="ctx-icon"><i class="fa-solid fa-angles-up"></i></span>Deplacer au debut</div>
   <div class="ctx-item" data-a="last"><span class="ctx-icon"><i class="fa-solid fa-angles-down"></i></span>Deplacer a la fin</div>
@@ -1752,6 +1828,35 @@ input[type=file]{display:none}
     <div class="modal-actions">
       <button class="btn btn-ghost btn-sm" id="exportimg-cancel"><i class="fa-solid fa-xmark"></i> Annuler</button>
       <button class="btn btn-primary btn-sm" id="exportimg-ok" style="background:var(--emerald)"><i class="fa-solid fa-download"></i> Exporter</button>
+    </div>
+  </div>
+</div>
+<!-- Modal de choix : suppression réelle du texte sous la gomme impossible sur
+     une ou plusieurs pages. Affiché uniquement quand la vraie rédaction a
+     échoué (page complexe, API indisponible...) — jamais quand elle a réussi. -->
+<div class="modal-overlay" id="redact-choice-modal">
+  <div class="modal-box t-coral" style="max-width:480px">
+    <div class="modal-title"><i class="fa-solid fa-triangle-exclamation"></i> Texte non supprimable sur <span id="redact-choice-count">1 page</span></div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.5">
+      La suppression réelle du texte sous la gomme n'a pas pu être effectuée sur <span id="redact-choice-count2">cette page</span> (mise en page trop complexe). Choisis comment continuer :
+    </div>
+    <label class="split-opt sel" id="redact-opt-raster" style="cursor:pointer">
+      <input type="radio" name="redactmode" value="raster" checked>
+      <div>
+        <div class="split-opt-title">Garantir la suppression du texte</div>
+        <div class="split-opt-desc">La page est convertie en image. Le texte est vraiment retiré du fichier, mais cette page perd sa sélection/recherche de texte.</div>
+      </div>
+    </label>
+    <label class="split-opt" id="redact-opt-visual" style="cursor:pointer">
+      <input type="radio" name="redactmode" value="visual">
+      <div>
+        <div class="split-opt-title">Garder le masquage visuel</div>
+        <div class="split-opt-desc" style="color:var(--coral2)">⚠️ Le texte reste techniquement présent dans le fichier (sélectionnable/extractible), seulement caché visuellement sous la gomme.</div>
+      </div>
+    </label>
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-sm" id="redact-choice-cancel"><i class="fa-solid fa-xmark"></i> Annuler l'export</button>
+      <button class="btn btn-primary btn-sm" id="redact-choice-ok"><i class="fa-solid fa-check"></i> Continuer</button>
     </div>
   </div>
 </div>
@@ -1950,8 +2055,8 @@ var Undo={stack:[],future:[],MAX:25,
   },
   upd:function(){
     var dis_u=!this.stack.length,dis_r=!this.future.length;
-    ['btn-undo','btn-undo-m'].forEach(function(id){var el=document.getElementById(id);if(el)el.disabled=dis_u;});
-    ['btn-redo','btn-redo-m'].forEach(function(id){var el=document.getElementById(id);if(el)el.disabled=dis_r;});
+    ['sb-undo','btn-undo-m'].forEach(function(id){var el=document.getElementById(id);if(el)el.disabled=dis_u;});
+    ['sb-redo','btn-redo-m'].forEach(function(id){var el=document.getElementById(id);if(el)el.disabled=dis_r;});
   },
   clear:function(){this.stack=[];this.future=[];this.upd();}
 };
@@ -2583,9 +2688,38 @@ var DD={
         if(!self._dragging)return;
         self._dragging=false;
         Undo.push();
-        var fid=parseInt(evt.from.dataset.did),tid=parseInt(evt.to.dataset.did),pid=parseInt(evt.item.dataset.pid);
-        var fd=S.docs.find(function(d){return d.id===fid;}),td=S.docs.find(function(d){return d.id===tid;});
-        if(!fd||!td)return;
+        var fid=parseInt(evt.from.dataset.did),pid=parseInt(evt.item.dataset.pid);
+        var fd=S.docs.find(function(d){return d.id===fid;});
+        if(!fd)return;
+        // Page lâchée dans le vide du canvas (hors de tout pages-container) → créer un nouveau document
+        if(evt.to.id==='canvas-area'){
+          var fi0=fd.pages.findIndex(function(p){return p.id===pid;});
+          if(fi0<0){if(evt.item.parentNode===evt.to)evt.item.remove();return;}
+          // Repérer la carte voisine (avant le point de lâcher) pour insérer le nouveau doc au bon endroit
+          var prevCard=evt.item.previousElementSibling;
+          while(prevCard&&!prevCard.classList.contains('doc-card'))prevCard=prevCard.previousElementSibling;
+          if(evt.item.parentNode===evt.to)evt.item.remove(); // retirer le noeud brut inséré par SortableJS, on re-render depuis S.docs
+          var pg=fd.pages.splice(fi0,1)[0];
+          if(!pg._srcDocId)pg._srcDocId=pg.docId;
+          var newId=S.ndi++;
+          pg.docId=newId;
+          var newDoc={id:newId,name:'page_'+newId+'.pdf',cnt:1,pdfDoc:fd.pdfDoc,pages:[pg]};
+          S.bytes[newId]=S.bytes[pg._srcDocId]||S.bytes[fid];
+          S.pdfDocs[newId]=S.pdfDocs[pg._srcDocId]||S.pdfDocs[fid]||fd.pdfDoc;
+          var insertAt=0;
+          if(prevCard){
+            var prevId=parseInt(prevCard.dataset.did);
+            var prevIdx=S.docs.findIndex(function(d){return d.id===prevId;});
+            insertAt=prevIdx>=0?prevIdx+1:S.docs.length;
+          }
+          S.docs.splice(insertAt,0,newDoc);
+          if(!fd.pages.length){Files.remove(fid);}else{UI.renderAll();}
+          Toast.show('Nouveau document créé','success');
+          return;
+        }
+        var tid=parseInt(evt.to.dataset.did);
+        var td=S.docs.find(function(d){return d.id===tid;});
+        if(!td)return;
         var fi=fd.pages.findIndex(function(p){return p.id===pid;});if(fi<0)return;
         // Calculer le vrai index dans le tableau pages via le DOM (ignore cut-zones et add-img)
         var allThumbs=Array.from(evt.to.querySelectorAll('.page-thumb'));
@@ -2645,7 +2779,7 @@ var Merge={
 
 // EXTRACT
 var Extract={
-  open:function(){
+  open:function(docId,pageNum){
     // Si des pages sont selectionnees, on extrait directement
     if(S.sel.size>0){
       this.fromSel();return;
@@ -2653,8 +2787,24 @@ var Extract={
     if(!S.docs.length){Toast.show('Chargez un PDF','error');return;}
     var sel=document.getElementById('range-doc');
     sel.innerHTML=S.docs.map(function(d){return '<option value="'+d.id+'">'+esc(d.name.replace(/\.pdf$/i,''))+' ('+d.pages.length+' p.)</option>';}).join('');
-    this.updateInfo();showModal('range-modal');
+    if(docId!=null)sel.value=docId;
+    this.updateInfo();
+    if(pageNum!=null){
+      document.getElementById('range-from').value=pageNum;
+      document.getElementById('range-to').value=pageNum;
+      this.updatePreview();
+    }
+    showModal('range-modal');
     setTimeout(function(){document.getElementById('range-from').focus();},50);
+  },
+  // Ouvre depuis le clic droit sur une page : extrait direct si une selection est active,
+  // sinon présélectionne le document et la page cliquée comme plage par défaut.
+  openForPage:function(pid){
+    if(S.sel.size>0){this.fromSel();return;}
+    var f=Pages.find(pid);
+    if(!f){this.open();return;}
+    var pageNum=f.ownerDoc.pages.indexOf(f.page)+1;
+    this.open(f.ownerDoc.id,pageNum);
   },
   fromSel:async function(){
     if(!checkLibs())return;
@@ -2849,11 +2999,42 @@ var Split={
   // Export direct d'un doc (depuis le bouton dans le card header)
   exportDoc:async function(docId){
     if(!checkLibs())return;
+    // Si l'aperçu de CE document est actuellement ouvert avec des annotations
+    // (gomme, texte, tampons...) pas encore enregistrées (bouton "Enregistrer"
+    // pas cliqué), il faut les graver avant l'export — sinon elles sont
+    // silencieusement ignorées et le fichier téléchargé ne les contient pas.
+    // C'est déjà géré par le bouton rouge "Télécharger" principal (Merge.start)
+    // mais pas par ce bouton individuel : on applique ici la même logique.
+    var previewOpenExp=document.getElementById('preview-modal').classList.contains('visible');
+    var previewDocExp=previewOpenExp?Preview.getDoc():null;
+    if(previewOpenExp&&previewDocExp&&previewDocExp.id===docId){
+      var hasLiveAnnotExp=document.querySelectorAll('.sign-placed,.text-placed,.date-placed,.stamp-placed,.image-placed').length>0
+        ||(ShapeTool._shapes&&ShapeTool._shapes.length>0)
+        ||(HighlightTool._strokes&&HighlightTool._strokes.length>0)
+        ||EraserTool.hasContent();
+      if(hasLiveAnnotExp){
+        var burnResultExp=await Signature._burnToBytes();
+        if(burnResultExp){
+          S.bytes[burnResultExp.doc.id]=new Uint8Array(burnResultExp.bytes);
+          try{
+            var newPdfDocExp=await pdfjsLib.getDocument({data:burnResultExp.bytes.slice(0)}).promise;
+            S.pdfDocs[burnResultExp.doc.id]=newPdfDocExp;
+            burnResultExp.doc.pdfDoc=newPdfDocExp;
+            burnResultExp.doc.pages.forEach(function(p){delete S.cache[p.id];});
+          }catch(e){console.warn(e);}
+          Signature._resetAllAnnotations();
+        }
+      }
+    }
     var doc=S.docs.find(function(d){return d.id===docId;});
     if(!doc)return;
     var pages=doc.pages.filter(function(p){return !p.blank;});
     if(!pages.length){Toast.show('Aucune page exportable','error');return;}
     UI.showProgress(true);UI.setProgress(0,'Export...');
+    // Repart d'un état propre : purge toute décision en attente d'un export
+    // précédent (annulé, ou interrompu par une erreur) pour ne jamais
+    // réutiliser par erreur des pages qui n'ont rien à voir avec cet export.
+    RedactionChoice.reset();
     try{
       var PDFDocument=window.PDFLib.PDFDocument,PDFLib=window.PDFLib,degrees=window.PDFLib.degrees;
       function resolveIdExport(p){return (p._srcDocId&&S.bytes[p._srcDocId]?p._srcDocId:(S.bytes[p.docId]?p.docId:p.docId));}
@@ -2900,13 +3081,27 @@ var Split={
           await AnnotStore.burnToPage(entry.outPage,annotData,PDFLib,burnOpts);
         }
       }
+      // ── Décision utilisateur si la rédaction réelle a échoué quelque part ──
+      // RedactionChoice.pending contient maintenant toutes les pages où le texte
+      // sous la gomme n'a pas pu être réellement supprimé (page complexe, API
+      // pdf-lib indisponible...). On ne décide plus silencieusement à sa place :
+      // s'il y a au moins une page concernée, la modale de choix s'affiche ici,
+      // AVANT l'enregistrement du fichier. Si la liste est vide (rédaction
+      // réussie partout, ou aucune gomme sur ce document), resolvePending()
+      // renvoie true immédiatement sans rien afficher.
+      var redactOk=await RedactionChoice.resolvePending(PDFLib);
+      if(!redactOk){
+        UI.showProgress(false);
+        Toast.show('Export annulé','error');
+        return;
+      }
       UI.setProgress(98,'Enregistrement...');await tick();
       var bytes=await out.save();
       var fn=doc.name.replace(/\.pdf$/i,'')+'.pdf';
       download(bytes,fn,'application/pdf');
       History.add({name:fn,date:formatDate(),pages:out.getPageCount(),size:formatSize(bytes.length)});
       Toast.show('"'+fn+'" téléchargé','success');
-    }catch(e){Toast.show('Erreur: '+e.message,'error');console.error(e);}
+    }catch(e){RedactionChoice.reset();Toast.show('Erreur: '+e.message,'error');console.error(e);}
     finally{UI.showProgress(false);}
   }
 };
@@ -2991,6 +3186,9 @@ var Preview={pages:[],idx:0,scale:1,_openedAt:0,_lastRenderedPage:null,
     if(pg.uuid)AnnotStore.restore(pg.uuid,pg.rot||0);
     // Mémoriser la page qu'on vient d'afficher, pour le prochain changement de page.
     Preview._lastRenderedPage=pg;
+    // L'overlay vient d'être vidé/re-rendu : si l'outil « Modifier texte » est
+    // actif, on relance la détection sur la page désormais affichée.
+    if(window.TextEditTool&&TextEditTool.active)setTimeout(function(){TextEditTool.rescan();},60);
   },
   prev:function(){if(this.idx>0){this.idx--;this.render();}},
   next:function(){if(this.idx<this.pages.length-1){this.idx++;this.render();}},
@@ -3064,7 +3262,68 @@ var Preview={pages:[],idx:0,scale:1,_openedAt:0,_lastRenderedPage:null,
 var Ctx={pid:null,
   show:function(x,y,pid){this.pid=pid;var m=document.getElementById('ctx-menu');m.style.display='block';m.style.left=x+'px';m.style.top=y+'px';var r=m.getBoundingClientRect();if(r.right>innerWidth)m.style.left=(x-r.width)+'px';if(r.bottom>innerHeight)m.style.top=(y-r.height)+'px';},
   hide:function(){document.getElementById('ctx-menu').style.display='none';},
-  handle:function(a){var id=this.pid;this.hide();if(!id)return;if(a==='preview')Preview.open(id);else if(a==='dup'){Pages.dup(id);UI.renderAll();}else if(a==='rot-cw')Pages.rot(id,90);else if(a==='rot-ccw')Pages.rot(id,-90);else if(a==='del'){Pages.delOrSel(id);}else if(a==='first')Pages.first(id);else if(a==='last')Pages.last(id);}
+  handle:function(a){var id=this.pid;this.hide();if(!id)return;if(a==='preview')Preview.open(id);else if(a==='dup'){Pages.dup(id);UI.renderAll();}else if(a==='rot-cw')Pages.rot(id,90);else if(a==='rot-ccw')Pages.rot(id,-90);else if(a==='del'){Pages.delOrSel(id);}else if(a==='first')Pages.first(id);else if(a==='last')Pages.last(id);else if(a==='export-img')ExportImg.openForPage(id);else if(a==='extract')Extract.openForPage(id);else if(a==='add-blank')BlankPage.insertAfter(id);}
+};
+
+// STOCKAGE LOURD (IndexedDB) — utilisé pour la sauvegarde automatique de session.
+// -----------------------------------------------------------------------------
+// Pourquoi : la sauvegarde auto de session (Project._autoSaveNow) encode les PDF
+// entiers en base64 et les écrivait jusqu'ici dans localStorage. Or localStorage
+// est plafonné à ~5-10 Mo PARTAGÉS avec le reste de l'appli (dont AnnotStore, qui
+// stocke notamment les traits de la GOMME sous forme de PNG). Un seul PDF de
+// quelques Mo suffit à saturer ce quota : toute écriture localStorage ultérieure
+// (typiquement AnnotStore.save() lors d'un changement de page) échoue alors
+// silencieusement — c'est la cause du bug "la gomme ne s'enregistre pas / disparaît
+// au changement de page". IndexedDB n'a pas cette limite (des centaines de Mo en
+// pratique), donc on y déplace ce gros payload, ce qui libère tout le quota
+// localStorage pour les annotations (gomme comprise).
+var IDBBlob={
+  DB:'pdfstudio_blobs',STORE:'kv',_dbp:null,
+  _open:function(){
+    if(this._dbp)return this._dbp;
+    var self=this;
+    this._dbp=new Promise(function(resolve,reject){
+      if(typeof indexedDB==='undefined'){reject(new Error('indexedDB indisponible'));return;}
+      var req=indexedDB.open(self.DB,1);
+      req.onupgradeneeded=function(){req.result.createObjectStore(self.STORE);};
+      req.onsuccess=function(){resolve(req.result);};
+      req.onerror=function(){reject(req.error);};
+    });
+    return this._dbp;
+  },
+  set:function(key,value){
+    var self=this;
+    return this._open().then(function(db){
+      return new Promise(function(resolve,reject){
+        var tx=db.transaction(self.STORE,'readwrite');
+        var r=tx.objectStore(self.STORE).put(value,key);
+        r.onsuccess=function(){resolve(true);};
+        r.onerror=function(){reject(r.error);};
+      });
+    });
+  },
+  get:function(key){
+    var self=this;
+    return this._open().then(function(db){
+      return new Promise(function(resolve,reject){
+        var tx=db.transaction(self.STORE,'readonly');
+        var r=tx.objectStore(self.STORE).get(key);
+        r.onsuccess=function(){resolve(r.result===undefined?null:r.result);};
+        r.onerror=function(){reject(r.error);};
+      });
+    });
+  },
+  remove:function(key){
+    var self=this;
+    return this._open().then(function(db){
+      return new Promise(function(resolve,reject){
+        var tx=db.transaction(self.STORE,'readwrite');
+        var r=tx.objectStore(self.STORE).delete(key);
+        r.onsuccess=function(){resolve(true);};
+        r.onerror=function(){reject(r.error);};
+      });
+    });
+  }
 };
 
 // PROJECT
@@ -3102,8 +3361,14 @@ var Project={
       S.ndi=data.ndi;S.npi=data.npi;UI.renderAll();Toast.show('Projet charge','success');
     }catch(e){Toast.show('Erreur: '+e.message,'error');}
   },
-  /* ── Sauvegarde automatique de session (silencieuse, dans le stockage local) ── */
+  /* ── Sauvegarde automatique de session (silencieuse) ──
+     Le payload lourd (PDF en base64) part dans IndexedDB (AUTOKEY), qui n'a pas
+     la limite de taille de localStorage. Seul un petit drapeau (METAKEY, quelques
+     octets) reste dans localStorage pour pouvoir savoir de façon SYNCHRONE si une
+     session existe (ex: affichage du bouton "Reprendre la dernière session"),
+     sans devoir attendre une lecture IndexedDB à chaque rendu de l'UI. */
   AUTOKEY:'pdfstudio_autosession',
+  METAKEY:'pdfstudio_autosession_meta',
   _autoTimer:null,
   autoSaveDebounced:function(){
     clearTimeout(Project._autoTimer);
@@ -3118,24 +3383,61 @@ var Project={
           b64:self.toB64(S.bytes[d.id]),
           pages:d.pages.map(function(p){return{id:p.id,docId:p.docId,pi:p.pi,rot:p.rot,uuid:p.uuid};})};
       }),ndi:S.ndi,npi:S.npi};
-      localStorage.setItem(Project.AUTOKEY,JSON.stringify(data));
-    }catch(e){/* quota depassee ou autre : on echoue silencieusement */}
+      IDBBlob.set(Project.AUTOKEY,data).then(function(){
+        try{localStorage.setItem(Project.METAKEY,JSON.stringify({ts:data.ts,n:data.docs.length}));}catch(e){}
+      }).catch(function(){/* IndexedDB indisponible/plein : on echoue silencieusement */});
+    }catch(e){/* erreur de construction du payload : on echoue silencieusement */}
   },
+  /* Version SYNCHRONE et légère : ne dit que "il existe une session" (via le
+     petit drapeau localStorage), sans charger les PDF. Utilisée uniquement pour
+     afficher/masquer le bouton de reprise de session. */
   hasAutoSave:function(){
     try{
-      var raw=localStorage.getItem(Project.AUTOKEY);
+      var raw=localStorage.getItem(Project.METAKEY);
       if(!raw)return null;
-      var data=JSON.parse(raw);
-      if(!data||!data.docs||!data.docs.length)return null;
-      return data;
+      var meta=JSON.parse(raw);
+      if(!meta||!meta.n)return null;
+      return meta;
     }catch(e){return null;}
   },
-  clearAutoSave:function(){try{localStorage.removeItem(Project.AUTOKEY);}catch(e){}},
+  /* Version ASYNCHRONE : charge le vrai payload (PDF inclus) depuis IndexedDB,
+     pour la restauration effective de la session. */
+  getAutoSaveData:function(){
+    return IDBBlob.get(Project.AUTOKEY).then(function(data){
+      if(!data||!data.docs||!data.docs.length)return null;
+      return data;
+    }).catch(function(){return null;});
+  },
+  clearAutoSave:function(){
+    try{localStorage.removeItem(Project.METAKEY);}catch(e){}
+    IDBBlob.remove(Project.AUTOKEY).catch(function(){});
+  },
+  /* Migration ponctuelle : avant ce correctif, la sauvegarde auto (PDF en base64,
+     potentiellement plusieurs Mo) était écrite directement dans localStorage sous
+     la clé AUTOKEY. C'est précisément ce qui saturait le quota et empêchait la
+     gomme de s'enregistrer. On déplace ici cette éventuelle sauvegarde existante
+     vers IndexedDB puis on la retire de localStorage, ce qui libère immédiatement
+     la place pour les futures annotations — sans quoi le quota resterait bloqué
+     même après ce correctif tant que l'ancienne entrée traîne dans localStorage. */
+  _migrateLegacyAutosave:function(){
+    try{
+      var raw=localStorage.getItem(Project.AUTOKEY);
+      if(!raw)return;
+      var data=JSON.parse(raw);
+      localStorage.removeItem(Project.AUTOKEY); // libère le quota tout de suite, même si la migration échoue
+      if(data&&data.docs&&data.docs.length){
+        IDBBlob.set(Project.AUTOKEY,data).then(function(){
+          try{localStorage.setItem(Project.METAKEY,JSON.stringify({ts:data.ts||Date.now(),n:data.docs.length}));}catch(e){}
+        }).catch(function(){});
+      }
+    }catch(e){try{localStorage.removeItem(Project.AUTOKEY);}catch(e2){}}
+  },
   restoreAuto:async function(){
-    var data=Project.hasAutoSave();
+    var data=await Project.getAutoSaveData();
     if(!data){Toast.show('Aucune session a restaurer','error');return;}
     try{
       S.docs=[];S.sel.clear();S.bytes={};S.pdfDocs={};S.cache={};DD.destroyAll();Undo.clear();
+      var allUuids=[];
       for(var i=0;i<data.docs.length;i++){
         var d=data.docs[i];
         var bytes=Uint8Array.from(atob(d.b64),function(c){return c.charCodeAt(0);});
@@ -3143,12 +3445,21 @@ var Project={
         S.bytes[d.id]=bytes;
         S.pdfDocs[d.id]=pdfDoc;
         S.docs.push({id:d.id,name:d.name,cnt:d.cnt,pdfDoc:pdfDoc,pages:d.pages});
+        d.pages.forEach(function(p){if(p.uuid)allUuids.push(p.uuid);});
       }
+      // IMPORTANT : précharger en mémoire les annotations (gomme comprise) de
+      // toutes les pages restaurées, AVANT tout rendu — AnnotStore.load()/
+      // restore() sont synchrones et lisent uniquement le cache mémoire (voir
+      // AnnotStore.hydrate()), alors que la persistance réelle est dans
+      // IndexedDB (asynchrone).
+      await AnnotStore.hydrate(allUuids);
       S.ndi=data.ndi;S.npi=data.npi;UI.renderAll();
       Toast.show('Session precedente restauree','success');
     }catch(e){console.error(e);Toast.show('Erreur restauration: '+e.message,'error');}
   }
 };
+
+Project._migrateLegacyAutosave();
 
 // TOAST
 var Toast={t:null,show:function(msg,type){var el=document.getElementById('toast');el.textContent=msg;el.className='show'+(type?' '+type:'');clearTimeout(this.t);this.t=setTimeout(function(){el.className='';},3000);}};
@@ -3156,7 +3467,7 @@ var Toast={t:null,show:function(msg,type){var el=document.getElementById('toast'
 // UI
 var UI={
   renderAll:function(){
-    var area=document.getElementById('canvas-area'),empty=document.getElementById('empty-state');
+    var area=document.getElementById('canvas-area'),empty=UI._emptyEl||(UI._emptyEl=document.getElementById('empty-state'));
     var visCount=S.docs.filter(function(d){return !d._ghost;}).length;
     if(!visCount){
       area.innerHTML='';area.appendChild(empty);document.getElementById('btn-merge').disabled=true;this.updateSidebar();
@@ -3345,7 +3656,7 @@ var UI={
           '<button class="thumb-btn" title="Apercu (double-clic)" data-a="preview" data-pid="'+pg.id+'"><i class="fa-solid fa-expand"></i></button>'+
           '<button class="thumb-btn" title="Exporter en PNG" data-a="png" data-pid="'+pg.id+'"><i class="fa-solid fa-image"></i></button>'+
           '<button class="thumb-btn" title="Dupliquer" data-a="dup" data-pid="'+pg.id+'"><i class="fa-solid fa-copy"></i></button>'+
-          '<button class="thumb-btn" title="Rotation" data-a="rot" data-pid="'+pg.id+'"><i class="fa-solid fa-rotate-right"></i></button>'+
+          '<button class="thumb-btn" title="Pivoter" data-a="rot" data-pid="'+pg.id+'"><i class="fa-solid fa-rotate"></i></button>'+
           '<button class="thumb-btn del" title="Supprimer" data-a="del" data-pid="'+pg.id+'"><i class="fa-solid fa-trash"></i></button>'+
         '</div></div>';
     el.addEventListener('dblclick',function(e){if(e.target.closest('.thumb-btn'))return;Preview.open(pg.id);});
@@ -3467,9 +3778,11 @@ var UI={
     S.docCardsSort=Sortable.create(area,{
       animation:200,handle:'.card-dh',ghostClass:'sortable-ghost',
       draggable:'.doc-card',
+      group:{name:'canvas-area',pull:false,put:['pages']},
       filter:'.pages-container,.thumb-btn,.card-actions,.merge-strip',
       preventOnFilter:false,
       onEnd:function(evt){
+        if(evt.item.classList.contains('page-thumb'))return; // géré par DD.onEnd (création de nouveau document)
         if(evt.item.classList.contains('merge-strip'))return;
         // Calculer le vrai index en ne comptant que les .doc-card (pas les .merge-strip)
         var allCards=Array.from(area.querySelectorAll('.doc-card'));
@@ -3494,9 +3807,6 @@ var UI={
     var n=S.sel.size;
     document.getElementById('sel-count').textContent=n;
     document.getElementById('sel-bar').classList.toggle('visible',n>0);
-    var tools=document.getElementById('sel-tools');
-    tools.style.opacity=n?'1':'.4';
-    tools.style.pointerEvents=n?'auto':'none';
   },
   showProgress:function(show){document.getElementById('progress-overlay').classList.toggle('visible',show);},
   setProgress:function(pct,text){document.getElementById('progress-fill').style.width=pct+'%';document.getElementById('progress-pct').textContent=pct+'%';document.getElementById('progress-sub').textContent=text;},
@@ -3567,6 +3877,18 @@ var BlankPage={
     insertDoc.pages.splice(insertIdx,0,blank);
     UI.renderAll();
     Toast.show('Feuille blanche inseree apres page '+(insertIdx));
+  },
+  // Depuis le clic droit sur une page : insere juste apres cette page precise
+  insertAfter:function(pid){
+    if(!S.docs.length){Toast.show('Chargez un PDF','error');return;}
+    var f=Pages.find(pid);
+    if(!f){this.insert();return;}
+    Undo.push();
+    var insertDoc=f.ownerDoc,insertIdx=insertDoc.pages.indexOf(f.page)+1;
+    var blank={id:S.npi++,docId:insertDoc.id,pi:-1,rot:0,blank:true};
+    insertDoc.pages.splice(insertIdx,0,blank);
+    UI.renderAll();
+    Toast.show('Feuille blanche inseree apres page '+insertIdx);
   }
 };
 
@@ -3923,6 +4245,16 @@ var ExportImg={
     this.updateQualityRow();
     showModal('exportimg-modal');
   },
+  // Ouvre le modal depuis le clic droit sur une page : présélectionne son document,
+  // et "Selection seulement" si cette page fait partie de la selection active.
+  openForPage:function(pid){
+    if(!S.docs.length){Toast.show('Chargez un PDF','error');return;}
+    var f=Pages.find(pid);if(!f)return;
+    this.open();
+    document.getElementById('exportimg-doc').value=f.ownerDoc.id;
+    var useSel=S.sel.size>0&&S.sel.has(pid);
+    document.querySelector('input[name="imgpages"][value="'+(useSel?'sel':'all')+'"]').checked=true;
+  },
   setFmt:function(fmt){
     this.fmt=fmt;
     document.querySelectorAll('.format-pill').forEach(function(p){p.classList.toggle('active',p.dataset.fmt===fmt);});
@@ -4016,9 +4348,23 @@ var BottomSheet={
   }
 };
 
-// ANNOT STORE — sauvegarde/restauration des annotations par page (UUID) dans localStorage
+// ANNOT STORE — sauvegarde/restauration des annotations par page (UUID).
+// Persistance dans IndexedDB (voir _mem/hydrate() ci-dessous), avec un cache
+// mémoire pour une lecture synchrone. localStorage n'est plus utilisé ici.
 var AnnotStore={
   PREFIX:'pdfstudio_annot_',
+
+  // Cache mémoire des annotations par page (uuid -> data), lu/écrit de façon
+  // SYNCHRONE par tout le reste du code (restore(), load(), rendu des
+  // miniatures...). La persistance réelle se fait de façon asynchrone dans
+  // IndexedDB (voir save()/hydrate() ci-dessous) : localStorage est plafonné à
+  // ~5-10 Mo partagés avec tout le reste de l'appli, et c'était précisément la
+  // cause du bug "la gomme ne s'enregistre pas / disparaît au changement de
+  // page" (écriture localStorage qui échoue silencieusement une fois le quota
+  // saturé). IndexedDB n'a pas cette limite, donc on y stocke les annotations
+  // (gomme comprise) tout en gardant une API de lecture synchrone via ce cache.
+  _mem:{},
+  _hydrated:{},
 
   newUuid:function(){
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,function(c){
@@ -4115,27 +4461,95 @@ var AnnotStore={
     return data;
   },
 
-  /* Sauvegarde dans localStorage */
+  /* Sauvegarde : mise à jour immédiate (synchrone) du cache mémoire — dont
+     dépend tout le reste du code via load()/restore() — puis persistance
+     asynchrone dans IndexedDB (voir _mem plus haut pour le pourquoi). */
   save:function(uuid,rot){
     if(!uuid)return;
     var data=this.serialize(rot);
     var isEmpty=!data.signs.length&&!data.texts.length&&!data.dates.length&&
       !data.stamps.length&&!data.images.length&&!data.shapes.length&&!data.highlights.length&&!data.eraser;
+    this._hydrated[uuid]=true; // évite qu'une hydratation tardive n'écrase ce qu'on vient d'écrire
     if(isEmpty){
-      localStorage.removeItem(this._key(uuid));
+      delete this._mem[uuid];
+      IDBBlob.remove(this._key(uuid)).catch(function(){});
     } else {
-      try{localStorage.setItem(this._key(uuid),JSON.stringify(data));}
-      catch(e){Toast.show('Stockage plein — annotations non sauvegardées','error');}
+      this._mem[uuid]=data;
+      IDBBlob.set(this._key(uuid),data).catch(function(){
+        // IndexedDB indisponible/plein : très improbable (quota bien plus large
+        // que localStorage) mais on prévient quand même — les annotations restent
+        // au moins visibles pour la session en cours via le cache mémoire.
+        Toast.show('Stockage plein — annotations non sauvegardées de façon permanente','error');
+      });
     }
   },
 
-  /* Charge les données d'une page depuis localStorage */
+  /* Mémorise, SANS re-sérialiser toute la page (donc sans perdre quoi que ce
+     soit), la décision prise par l'utilisateur pour la gomme de cette page
+     via la modale de choix affichée à la sauvegarde (cf.
+     RedactionChoice.checkOnSave) : 'raster' (garantir la suppression, page
+     convertie en image à l'export) ou 'visual' (garder le masquage visuel).
+     Ne fait rien si la page n'a pas encore été sauvegardée au moins une fois
+     (pas d'entrée en cache) — ne devrait normalement pas arriver puisque
+     checkOnSave() est appelé juste après un save(). */
+  setRedactChoice:function(uuid,choice){
+    if(!uuid||!this._mem.hasOwnProperty(uuid))return;
+    this._mem[uuid].redactChoice=choice;
+    IDBBlob.set(this._key(uuid),this._mem[uuid]).catch(function(){});
+  },
+
+  /* Lecture SYNCHRONE depuis le cache mémoire (jamais depuis IndexedDB
+     directement, puisque IndexedDB est asynchrone). Le cache est peuplé soit
+     par save() pendant la session en cours, soit par hydrate() au chargement
+     d'une session existante (autosave) — voir plus bas. */
   load:function(uuid){
     if(!uuid)return null;
-    var raw;
-    try{raw=localStorage.getItem(this._key(uuid));}catch(e){return null;}
-    if(!raw)return null;
-    try{return JSON.parse(raw);}catch(e){return null;}
+    return this._mem.hasOwnProperty(uuid)?this._mem[uuid]:null;
+  },
+
+  /* Précharge en mémoire les annotations de plusieurs pages depuis IndexedDB.
+     À appeler après restauration d'une session (autosave) — avant tout appel
+     synchrone à load()/restore() sur ces pages — puisque ces uuid peuvent déjà
+     avoir des annotations persistées lors d'une session précédente. */
+  hydrate:async function(uuids){
+    var self=this;
+    var list=(uuids||[]).filter(function(u){return u&&!self._hydrated[u];});
+    await Promise.all(list.map(function(u){
+      self._hydrated[u]=true;
+      return IDBBlob.get(self._key(u)).then(function(data){
+        if(data)self._mem[u]=data;
+      }).catch(function(){/* rien de stocké pour cet uuid, ou IndexedDB indisponible */});
+    }));
+  },
+
+  /* Migration ponctuelle : avant ce correctif, les annotations (dont la gomme,
+     sérialisée en PNG) étaient écrites directement dans localStorage, plafonné
+     à ~5-10 Mo partagés avec le reste de l'appli — un seul PDF ou quelques
+     zones de gomme suffisaient à saturer ce quota et à faire échouer save()
+     silencieusement (bug "la gomme ne s'enregistre pas / disparaît au
+     changement de page"). On déplace ici toute annotation déjà présente en
+     localStorage vers IndexedDB, puis on la retire de localStorage pour
+     libérer immédiatement le quota. */
+  _migrateLegacyToIDB:function(){
+    try{
+      var keys=[];
+      for(var i=0;i<localStorage.length;i++){
+        var k=localStorage.key(i);
+        if(k&&k.indexOf(this.PREFIX)===0)keys.push(k);
+      }
+      keys.forEach(function(k){
+        try{
+          var raw=localStorage.getItem(k);
+          localStorage.removeItem(k); // libère le quota tout de suite, même si la migration échoue
+          if(!raw)return;
+          var data=JSON.parse(raw);
+          var uuid=k.slice(AnnotStore.PREFIX.length);
+          AnnotStore._mem[uuid]=data;
+          AnnotStore._hydrated[uuid]=true;
+          IDBBlob.set(k,data).catch(function(){});
+        }catch(e){try{localStorage.removeItem(k);}catch(e2){}}
+      });
+    }catch(e){/* localStorage indisponible : rien à migrer */}
   },
 
   /* Grave les annotations d'une page directement dans une page pdf-lib (sans DOM).
@@ -4205,15 +4619,45 @@ var AnnotStore={
     // ── Rédaction réelle du texte sous la gomme (étapes 4/5) ──
     // DOIT s'exécuter avant tout drawImage/drawText sur cette page : au-delà de ce
     // point, /Contents ne correspond plus exactement au contenu original attendu par
-    // RedactionInjector._readOriginalContentBytes(). Best-effort et silencieux : si
-    // ça échoue (page trop complexe, API pdf-lib indisponible, image de gomme
-    // illisible...), on continue normalement — le masquage visuel ci-dessous
-    // (drawImage blanc) reste la seule protection, exactement comme avant.
+    // RedactionInjector._readOriginalContentBytes(). Si la vraie rédaction échoue sur
+    // une page où l'on sait qu'il y avait effectivement du texte sous la gomme, on ne
+    // décide plus silencieusement à la place de l'utilisateur (masquage visuel
+    // conservé par défaut) : on l'enregistre dans RedactionChoice pour lui demander
+    // explicitement, une fois toutes les pages traitées, comment il veut continuer
+    // (cf. RedactionChoice.resolvePending(), appelé par l'appelant de burnToPage()).
     if(data.eraser&&data.eraser.src&&opts&&opts.pdfJsPage){
-      try{
-        var redactRuns=await RedactionZone.computeForSavedEraser(opts.pdfJsPage,T,data);
-        if(redactRuns)RedactionInjector.redactPage(outPage,redactRuns,PDFLib);
-      }catch(e){console.warn('Rédaction réelle du texte sous la gomme : échec, masquage visuel conservé.',e);}
+      if(data.redactChoice==='raster'){
+        // Décision déjà prise par l'utilisateur au moment de la SAUVEGARDE de
+        // cette page (cf. RedactionChoice.checkOnSave) : appliquée automatiquement
+        // à l'export, sans repasser par la modale de choix.
+        RedactionChoice.addAutoRaster(outPage,opts.pdfJsPage,data);
+      }else if(data.redactChoice==='visual'){
+        // Idem : l'utilisateur a déjà choisi de garder le masquage visuel pour
+        // cette page. On ne retente rien et on ne redemande rien à l'export.
+      }else{
+        try{
+          var redactRuns=await RedactionZone.computeForSavedEraser(opts.pdfJsPage,T,data);
+          if(redactRuns&&redactRuns.length&&redactRuns.some(function(r){return r.anyErased;})){
+            if(redactRuns.hasFormXObjects){
+              // Page trop complexe (Form XObjects imbriqués) pour rédiger le texte en
+              // confiance dans son flux de contenu (cf. RedactionInjector.redactPage) :
+              // laissé à l'utilisateur de choisir, pas de conversion en image automatique.
+              RedactionChoice.add(outPage,opts.pdfJsPage,data);
+            }else{
+              var _redacted=RedactionInjector.redactPage(outPage,redactRuns,PDFLib);
+              if(!_redacted)RedactionChoice.add(outPage,opts.pdfJsPage,data);
+            }
+          }
+          // Si redactRuns est vide/absent ou qu'aucun glyphe n'est réellement sous la
+          // gomme (!anyErased) : rien à rédiger, aucune décision à demander.
+        }catch(e){
+          console.warn('Rédaction réelle du texte sous la gomme : échec.',e);
+          // On ne sait pas avec certitude si du texte était concerné : par prudence,
+          // on laisse l'utilisateur décider plutôt que de conserver silencieusement
+          // le masquage visuel seul.
+          RedactionChoice.add(outPage,opts.pdfJsPage,data);
+        }
+      }
     }
 
     // ── Gomme ──
@@ -4328,14 +4772,28 @@ var AnnotStore={
 
     // ── Textes ──
     if((data.texts||[]).length){
-      var font=await out.embedFont(PDFLib.StandardFonts.Helvetica);
-      var fontBold=await out.embedFont(PDFLib.StandardFonts.HelveticaBold);
-      var fontOblique=await out.embedFont(PDFLib.StandardFonts.HelveticaOblique);
-      var fontBI=await out.embedFont(PDFLib.StandardFonts.HelveticaBoldOblique);
+      // La famille de police demandée (sans-serif / serif / mono) est désormais
+      // respectée : indispensable pour l'outil « Modifier texte », qui reconnaît
+      // la police d'origine et attend la substitution standard la plus proche.
+      // pdf-lib ne sait embarquer que les 14 polices standard sans fontkit, donc
+      // la correspondance s'arrête là.
+      var _stdFam={
+        'sans-serif':['Helvetica','HelveticaBold','HelveticaOblique','HelveticaBoldOblique'],
+        'serif':['TimesRoman','TimesRomanBold','TimesRomanItalic','TimesRomanBoldItalic'],
+        'monospace':['Courier','CourierBold','CourierOblique','CourierBoldOblique'],
+        'cursive':['TimesRomanItalic','TimesRomanBoldItalic','TimesRomanItalic','TimesRomanBoldItalic']
+      };
+      var _fontCache={};
+      var _pickFont=async function(fam,bold,italic){
+        var set=_stdFam[fam]||_stdFam['sans-serif'];
+        var nm=set[(bold&&italic)?3:(bold?1:(italic?2:0))];
+        if(!_fontCache[nm])_fontCache[nm]=await out.embedFont(PDFLib.StandardFonts[nm]);
+        return _fontCache[nm];
+      };
       for(var j=0;j<data.texts.length;j++){
         var t=data.texts[j];if(!t.text)continue;
         var ts=t.style||{size:16,bold:false,italic:false,color:'#1a1a1a'};
-        var cf=(ts.bold&&ts.italic)?fontBI:(ts.bold?fontBold:(ts.italic?fontOblique:font));
+        var cf=await _pickFont(ts.font,ts.bold,ts.italic);
         var rgb=hexToRgb(ts.color||'#1a1a1a');
         var ptSz=Math.max(4,(ts.size||16)/displayH*pdfH);
         var ptX=(cssPx(t.left)-offsetX)/displayW*pdfW;
@@ -4343,8 +4801,17 @@ var AnnotStore={
         var lines=t.text.split('\n');
         for(var li=0;li<lines.length;li++){
           if(!lines[li])continue;
-          outPage.drawText(lines[li],{x:ptX,y:ptY-(li*ptSz*1.4),size:ptSz,font:cf,
-            color:PDFLib.rgb(rgb.r,rgb.g,rgb.b),maxWidth:(cssPx(t.width)/displayW*pdfW)});
+          var opts={x:ptX,y:ptY-(li*ptSz*1.4),size:ptSz,font:cf,
+            color:PDFLib.rgb(rgb.r,rgb.g,rgb.b),maxWidth:(cssPx(t.width)/displayW*pdfW)};
+          try{
+            outPage.drawText(lines[li],opts);
+          }catch(txErr){
+            // Les polices standard sont limitées à WinAnsi : un caractère hors
+            // jeu (emoji, alphabet non latin…) faisait échouer TOUT l'export.
+            // On remplace uniquement les caractères fautifs.
+            try{outPage.drawText(lines[li].replace(/[^\x00-\xFF]/g,'?'),opts);}
+            catch(txErr2){console.warn('Texte non gravable ignoré:',txErr2);}
+          }
         }
       }
     }
@@ -4376,7 +4843,8 @@ var AnnotStore={
 
   },
 
-  /* Restaure les annotations depuis localStorage dans l'overlay */
+  /* Restaure les annotations (depuis le cache mémoire, alimenté par
+     IndexedDB — voir hydrate()) dans l'overlay */
   restore:function(uuid,curRot){
     if(!uuid)return;
     var data=this.load(uuid);
@@ -4489,6 +4957,10 @@ var AnnotStore={
       el.className='text-placed';
       el.style.cssText='left:'+tb.left+';top:'+tb.top+';width:'+tb.width+';min-height:32px;'+tb.rotateCss;
       el._textStyle=s.style||{font:'sans-serif',size:16,bold:false,italic:false,color:'#1a1a1a'};
+      // Texte issu de l'outil « Modifier texte » : pas de marge interne, calage
+      // vertical recalculé (cf. TextEditTool.syncMetrics) pour rester sur la
+      // ligne de base d'origine.
+      if(el._textStyle.pdfedit){el.classList.add('pdfedit-text');el.style.minHeight='0';}
       var st=el._textStyle;
       var content=document.createElement('div');content.className='text-placed-content';
       content.textContent=s.text;
@@ -4502,6 +4974,7 @@ var AnnotStore={
       el.addEventListener('dblclick',function(e){e.stopPropagation();TextTool._startEdit(el);});
       TextTool._makeDraggable(el);TextTool._makeResizable(el);
       layer.appendChild(el);
+      if(el._textStyle&&el._textStyle.pdfedit&&window.TextEditTool)TextEditTool.syncMetrics(el);
     });
 
     // Dates
@@ -4678,17 +5151,32 @@ var AnnotStore={
       canvas.width=vp.width;canvas.height=vp.height;
       var ctx=canvas.getContext('2d');
       await pdfPage.render({canvasContext:ctx,viewport:vp}).promise;
+      if(data)await this._composeAnnots(ctx,canvas.width,canvas.height,data,pg.rot);
 
-      // Composer les annotations par-dessus si elles existent
-      if(data){
-        var cW=canvas.width,cH=canvas.height;
+      S.cache[pg.id]=canvas;
+      wrap.innerHTML='';wrap.appendChild(canvas);
+    }catch(e){console.warn('renderThumbWithAnnots:',e);}
+  },
+
+  /* Dessine par-dessus `ctx` (de dimensions cW×cH) toutes les annotations
+     sauvegardées dans `data` (gomme, surlignages, formes, signatures,
+     images, textes, dates, tampons) — factorisé depuis renderThumbWithAnnots()
+     ci-dessus pour être réutilisé par le repli "conversion en image"
+     (rasterizeFullPage plus bas) à n'importe quelle résolution d'export. */
+  _composeAnnots:async function(ctx,cW,cH,data,curRot){
+    if(!data)return;
+    {
         var dW=data.displayW||1,dH=data.displayH||1;
         var offX=data.offsetX||0,offY=data.offsetY||0;
 
         // Si la page a été pivotée depuis l'enregistrement des annotations,
         // on doit faire pivoter les coordonnées sauvegardées pour qu'elles
         // restent au bon endroit / dans le bon sens sur la miniature.
-        var savedRot=data.pageRot||0,curRot=pg.rot||0;
+        // NB: curRot est désormais passé explicitement par l'appelant (bug fix —
+        // avant, "pg" n'existait pas dans ce scope, ce qui provoquait une
+        // ReferenceError silencieuse à CHAQUE appel et empêchait tout rendu
+        // (gomme comprise) sur la miniature / le repli image plein page).
+        var savedRot=data.pageRot||0;curRot=curRot||0;
         var rdiff=((curRot-savedRot)%360+360)%360;
         var frameW=dW,frameH=dH;
         if(rdiff===90||rdiff===270){frameW=dH;frameH=dW;}
@@ -4893,19 +5381,67 @@ var AnnotStore={
             ctx.fillText(s.text,x,y+fontSize);ctx.restore();
           });
         }
-      }
+    }
+  },
 
-      S.cache[pg.id]=canvas;
-      wrap.innerHTML='';wrap.appendChild(canvas);
-    }catch(e){console.warn('renderThumbWithAnnots:',e);}
+  /* Rend la page ENTIÈRE (PDF d'origine + gomme + toutes les annotations,
+     aplatis en pixels) dans un canvas haute résolution — utilisé par
+     rasterizeFullPage() ci-dessous pour le repli "conversion en image"
+     quand la vraie rédaction du texte sous la gomme n'est pas tentée en
+     confiance sur cette page (Form XObjects imbriqués détectés). */
+  renderFullPageWithAnnots:async function(pdfPage,rot,targetWidthPx,data){
+    var visVp=pdfPage.getViewport({scale:1,rotation:rot});
+    var scale=Math.max(0.1,targetWidthPx/visVp.width);
+    var vp=pdfPage.getViewport({scale:scale,rotation:rot});
+    var canvas=document.createElement('canvas');
+    canvas.width=vp.width;canvas.height=vp.height;
+    var ctx=canvas.getContext('2d');
+    await pdfPage.render({canvasContext:ctx,viewport:vp}).promise;
+    if(data)await this._composeAnnots(ctx,canvas.width,canvas.height,data,rot);
+    return canvas;
+  },
+
+  /* Remplace la page `outPage` (déjà copiée dans le PDFDocument de sortie)
+     par une page 100% image (PDF + gomme + annotations aplatis en pixels).
+     Contrairement à RedactionInjector.redactPage (réécriture bas niveau du
+     flux de contenu), cette méthode ne touche JAMAIS au contenu original :
+     elle se contente de re-rendre la page telle qu'affichée puis de créer
+     une page toute neuve ne contenant que cette image. Le texte caché sous
+     la gomme n'existe alors plus du tout dans le fichier de sortie — sans
+     aucun risque de corruption, au prix de perdre la sélection/recherche de
+     texte sur CETTE page précise (les autres pages du document restent du
+     texte vectoriel normal). Renvoie true si le remplacement a réussi. */
+  rasterizeFullPage:async function(outPage,pdfPage,data,PDFLib){
+    try{
+      var out=outPage.doc;
+      var pages=out.getPages();
+      var pageIndex=pages.indexOf(outPage);
+      if(pageIndex<0)return false;
+      var rot=(pdfPage.rotate+((data&&data.pageRot)||0))%360;
+      var visVp=pdfPage.getViewport({scale:1,rotation:rot});
+      var targetW=Math.min(2600,visVp.width*3);
+      var canvas=await this.renderFullPageWithAnnots(pdfPage,rot,targetW,data);
+      var du=canvas.toDataURL('image/jpeg',0.92);
+      var b64=du.split(',')[1];
+      var imgBytes=Uint8Array.from(atob(b64),function(c){return c.charCodeAt(0);});
+      var img=await out.embedJpg(imgBytes);
+      var newPage=out.insertPage(pageIndex,[visVp.width,visVp.height]);
+      newPage.drawImage(img,{x:0,y:0,width:visVp.width,height:visVp.height});
+      out.removePage(pageIndex+1); // l'ancienne page, décalée d'un cran par l'insertion
+      return true;
+    }catch(e){console.warn('rasterizeFullPage: échec, repli sur le masquage visuel standard (texte non retiré du flux).',e);return false;}
   },
 
   /* Supprime les annotations d'une page */
   clear:function(uuid){
     if(!uuid)return;
-    localStorage.removeItem(this._key(uuid));
+    delete this._mem[uuid];
+    this._hydrated[uuid]=true;
+    IDBBlob.remove(this._key(uuid)).catch(function(){});
   }
 };
+
+AnnotStore._migrateLegacyToIDB();
 
 // SIGNATURE MODULE
 var Signature={
@@ -5468,6 +6004,16 @@ var Signature={
 
     Toast.show('Annotations enregistrées ✓','success');
     UnsavedBadge.hide();
+
+    // Si cette page contient de la gomme, on vérifie tout de suite (dry run,
+    // sans toucher au PDF réel) si la vraie suppression du texte en dessous
+    // réussirait à l'export — et si non, on propose IMMÉDIATEMENT le choix
+    // (garantir/masquage visuel) plutôt que d'attendre l'export final. Cf.
+    // RedactionChoice.checkOnSave(). Ignoré silencieusement si pdf-lib n'est
+    // pas chargé (best-effort, comme le reste de la rédaction réelle).
+    if(EraserTool.hasContent()&&window.PDFLib){
+      await RedactionChoice.checkOnSave(pg,window.PDFLib);
+    }
   },
 
   /* ── Réinitialiser toutes les annotations overlay ── */
@@ -5492,6 +6038,8 @@ var Signature={
     EraserTool._canvas=null;EraserTool._ctx=null;EraserTool._drawing=false;
     // ImageTool
     ImageTool._selectedEl=null;ImageTool._updateSelectedPanel(false);
+    // TextEditTool (les boîtes de détection vivent dans l'overlay qu'on vient de vider)
+    if(window.TextEditTool){TextEditTool._boxes=[];TextEditTool._editing=null;}
     // EditUndo + badge
     EditUndo.clear();
     UnsavedBadge.hide();
@@ -6259,6 +6807,7 @@ var EspPanel={
   _titles:{
     none:{title:'Options',sub:'Selectionnez un outil'},
     text:{title:'Outil Texte',sub:'Mise en forme'},
+    edittext:{title:'Modifier texte',sub:'Éditer le texte du PDF'},
     stamp:{title:'Outil Tampon',sub:'Choisir un tampon'},
     sign:{title:'Outil Signature',sub:'Apposer une signature'},
     date:{title:'Outil Date',sub:'Poser la date'},
@@ -6269,6 +6818,9 @@ var EspPanel={
     image:{title:'Outil Image',sub:'Placer une image'}
   },
   show:function(name){
+    // Changer d'outil sort automatiquement du mode « Modifier texte » (sinon
+    // ses boîtes de détection resteraient actives par-dessus les autres outils).
+    if(name!=='edittext'&&window.TextEditTool&&TextEditTool.active)TextEditTool.deactivate();
     if(this._current===name)return;
     this._current=name;
     var sidePanel=document.getElementById('edit-side-panel');
@@ -6303,9 +6855,14 @@ var EspPanel={
    le texte, sans avoir à écrire un parseur de flux de contenu brut.
 
    Limites connues de cette étape 1 (à traiter plus tard si besoin) :
-   - Le texte à l'intérieur de Form XObjects imbriqués (paintFormXObjectBegin/
-     End) n'est PAS descendu récursivement : seul le contenu "de premier
-     niveau" de la page est analysé pour l'instant.
+   - pdfPage.getOperatorList() APLATIT en réalité le contenu des Form XObjects
+     imbriqués (paintFormXObjectBegin/End) dans le même fnArray — donc le texte
+     qui vit dans un Form XObject séparé EST bien retrouvé ici. C'est justement
+     ce qui pose problème plus loin (étape 5, RedactionInjector) : ce texte n'est
+     PAS dans /Contents de la page, donc pas modifiable par la rédaction réelle.
+     Un drapeau `runs.hasFormXObjects` est positionné pour que RedactionInjector
+     s'abstienne explicitement sur ces pages plutôt que de risquer une
+     correspondance fausse avec les opérateurs Tj/TJ du seul /Contents.
    - Le crénelage (TJ) et les espacements (Tc/Tw/Tz) sont pris en compte,
      mais pas testés sur un cas réel avec ajustements TJ (seulement Tj simple
      dans les PDF de test utilisés). La formule appliquée suit néanmoins
@@ -6343,6 +6900,28 @@ var TextGeometry={
     var textMatrix=[1,0,0,1,0,0],lineMatrix=[1,0,0,1,0,0];
     var fontSize=1,charSpacing=0,wordSpacing=0,hScale=1,leading=0;
     var runs=[];
+    // ATTENTION (cf. limite documentée plus haut, désormais VÉRIFIÉE à l'exécution
+    // au lieu d'être une simple note) : contrairement à ce qu'on pensait à l'étape 1,
+    // pdfPage.getOperatorList() APLATIT réellement le contenu des Form XObjects
+    // imbriqués (paintFormXObjectBegin/End) dans ce même fnArray — donc `runs` PEUT
+    // très bien contenir du texte qui vit en réalité dans le flux de contenu PROPRE
+    // au Form XObject, pas dans /Contents de la page. RedactionInjector n'a aucun
+    // moyen de retrouver/modifier ce flux séparé : sur une page qui en contient, la
+    // correspondance runs<->opérateurs Tj/TJ (comptée au niveau octets sur le seul
+    // /Contents de la page) devient fausse, avec un risque réel de corruption
+    // silencieuse (le décompte peut coïncider par hasard). D'où le drapeau ci-dessous,
+    // vérifié explicitement par RedactionInjector.redactPage AVANT toute tentative.
+    var hasFormXObjects=false;
+    var curFontRef=null;
+    // Table des largeurs de glyphe (1/1000 d'em, non mises à l'échelle) OBSERVÉES sur
+    // la page, indexées par référence de police puis par code de caractère :
+    // codeWidths[fontRef][code] = w0. Alimentée pour CHAQUE glyphe rencontré (effacé ou
+    // non), afin que l'étape 4 (RedactionSerializer) puisse, pour un glyphe effacé,
+    // choisir un AUTRE code de la MÊME police dont on connaît la largeur réelle — et
+    // ainsi le remplacer par un caractère illisible plutôt que de le faire disparaître
+    // en pur espacement, tout en préservant l'avance exacte via un ajustement calculé
+    // à partir de nos propres mesures (aucune lecture de métriques de police requise).
+    var codeWidths={};
 
     function collect(items,isNextLine){
       if(isNextLine){
@@ -6359,6 +6938,10 @@ var TextGeometry={
           continue;
         }
         var w0=(item.width||0)/1000; // largeur du glyphe, 1/1000 d'em
+        if(curFontRef!=null&&typeof item.originalCharCode==='number'){
+          if(!codeWidths[curFontRef])codeWidths[curFontRef]={};
+          codeWidths[curFontRef][item.originalCharCode]=w0;
+        }
         var full=self._mul(textMatrix,ctm);
         var advance=(w0*fontSize+charSpacing+(item.isSpace?wordSpacing:0))*hScale;
         var p0=self._pt(full,0,0),p1=self._pt(full,0,fontSize);
@@ -6372,7 +6955,11 @@ var TextGeometry={
           // glyphe fait parcourir à la matrice de texte. Nécessaire à l'étape 3 pour
           // calculer, quand ce glyphe est effacé, l'ajustement TJ qui reproduit la
           // même avance sans dessiner le caractère (cf. RedactionZone.buildEditPlan).
-          adv:advance
+          adv:advance,
+          // Largeur brute (1/1000 d'em) de CE glyphe précis dans sa police — nécessaire
+          // à l'étape 4 pour calculer l'avance EXACTE d'un éventuel glyphe de
+          // remplacement illisible (cf. codeWidths ci-dessus).
+          w0:w0
         });
         str+=(item.fontChar||item.unicode||'');
         textMatrix=self._mul([1,0,0,1,advance,0],textMatrix);
@@ -6387,7 +6974,9 @@ var TextGeometry={
           // fontSize/hScale en vigueur pour CE run (constants pour tous ses glyphes :
           // Tf/Tz ne peuvent pas apparaître au milieu d'un même Tj/TJ). Nécessaires à
           // l'étape 3 pour convertir une avance en unité TJ (1/1000 d'em non mis à l'échelle).
-          fontSize:fontSize,hScale:hScale
+          // charSpacing/fontRef : nécessaires à l'étape 4 pour calculer l'avance d'un
+          // glyphe de remplacement dans la même police (cf. codeWidths).
+          fontSize:fontSize,hScale:hScale,charSpacing:charSpacing,fontRef:curFontRef
         });
       }else{
         // Run VIDE (ex: "() Tj", ou un TJ qui ne contient que des ajustements
@@ -6412,7 +7001,7 @@ var TextGeometry={
         case OPS.save:ctmStack.push(ctm.slice());break;
         case OPS.restore:ctm=ctmStack.pop()||ctm;break;
         case OPS.transform:ctm=this._mul(args,ctm);break;
-        case OPS.setFont:fontSize=args[1];break;
+        case OPS.setFont:fontSize=args[1];curFontRef=args[0];break;
         case OPS.setCharSpacing:charSpacing=args[0];break;
         case OPS.setWordSpacing:wordSpacing=args[0];break;
         case OPS.setHScale:hScale=(args[0]||100)/100;break;
@@ -6442,8 +7031,13 @@ var TextGeometry={
           wordSpacing=args[0];charSpacing=args[1];
           collect(args[2],true);
           break;
+        case OPS.paintFormXObjectBegin:
+          hasFormXObjects=true;
+          break;
       }
     }
+    runs.hasFormXObjects=hasFormXObjects;
+    runs.codeWidths=codeWidths;
     return runs;
   },
 
@@ -6587,6 +7181,12 @@ var EraserTool={
     if(!this.active)return false;
     this._drawing=true;
     this._ensureCanvas();
+    UnsavedBadge.show();
+    // Prévenir l'utilisateur, dès le premier coup de gomme sur une page, si
+    // cette page est trop complexe pour la vraie suppression de texte et sera
+    // donc convertie en image à l'export (cf. AnnotStore.rasterizeFullPage /
+    // burnToPage). Best-effort, asynchrone, ne bloque jamais le tracé.
+    this._checkComplexityWarning();
     // Snapshot du canvas AVANT le trait, pour pouvoir l'annuler (Ctrl+Z)
     if(this._ctx&&this._canvas){
       try{this._strokeBefore=this._ctx.getImageData(0,0,this._canvas.width,this._canvas.height);}
@@ -6598,6 +7198,26 @@ var EraserTool={
     this._erase(pos);
     this._lastPos=pos;
     return true;
+  },
+
+  // Avertit (une seule fois par page affichée) si la page en cours d'édition
+  // contient des Form XObjects imbriqués : dans ce cas, AnnotStore.burnToPage
+  // bascule automatiquement cette page sur une conversion en image à l'export
+  // (repli sûr) plutôt que de tenter la vraie suppression de texte. Silencieux
+  // en cas d'échec (simple avertissement, jamais bloquant pour la gomme).
+  _warnedPageId:null,
+  _checkComplexityWarning:async function(){
+    try{
+      var pg=Preview.pages[Preview.idx];if(!pg)return;
+      if(this._warnedPageId===pg.id)return; // déjà prévenu pour cette page
+      this._warnedPageId=pg.id;
+      var f=Pages.find(pg.id);if(!f||!f.doc||!f.doc.pdfDoc)return;
+      var pdfPage=await f.doc.pdfDoc.getPage(pg.pi+1);
+      var runs=await TextGeometry.extractPageTextRuns(pdfPage);
+      if(runs&&runs.hasFormXObjects){
+        Toast.show('Page complexe : à l\'enregistrement, un choix te sera proposé pour garantir la suppression du texte.');
+      }
+    }catch(e){/* avertissement best-effort : on ignore silencieusement */}
   },
 
   onMouseMove:function(e){
@@ -6711,14 +7331,14 @@ var EraserTool={
     return tmp.toDataURL('image/png');
   },
 
-  // Variante de getOpaqueDataURL() destinée à la PERSISTANCE (localStorage) uniquement.
-  // getOpaqueDataURL() encode toujours la page ENTIÈRE, même pour un tout petit coup de
-  // gomme (le canvas est rendu à scale*2 pour la netteté, donc potentiellement 1500x2000px
-  // et plus) — un seul petit trait pèse déjà des dizaines de Ko en base64. Multiplié par
-  // plusieurs pages/documents, ça sature vite le quota localStorage (5-10 Mo, partagé avec
-  // le reste de l'appli), et AnnotStore.save() échoue alors silencieusement à chaque fois
-  // ("Stockage plein — annotations non sauvegardées") : la gomme semble ne plus s'enregistrer
-  // du tout. On ne sauvegarde donc que le rectangle englobant (bounding box) des pixels
+  // Variante de getOpaqueDataURL() destinée à la PERSISTANCE (IndexedDB, via
+  // AnnotStore) uniquement. getOpaqueDataURL() encode toujours la page ENTIÈRE,
+  // même pour un tout petit coup de gomme (le canvas est rendu à scale*2 pour
+  // la netteté, donc potentiellement 1500x2000px et plus) — un seul petit trait
+  // pèse déjà des dizaines de Ko en base64. Même si IndexedDB n'a pas la limite
+  // stricte de localStorage, autant éviter de gonfler inutilement chaque
+  // enregistrement (poids stocké, temps de sérialisation) pour un seul petit
+  // trait de gomme. On ne sauvegarde donc que le rectangle englobant (bounding box) des pixels
   // effacés, avec sa position/taille, plutôt que l'image pleine page. Le rendu live à
   // l'écran et le graving direct pendant l'édition (_burnToBytes) continuent d'utiliser
   // getOpaqueDataURL() tel quel : seul le chemin de sauvegarde est concerné.
@@ -7186,47 +7806,62 @@ var ContentStreamCodec={
     }
     // Chaîne littérale "(...)" : gère l'imbrication de parenthèses non échappées,
     // les échappements standards et les octaux \ddd (spec PDF §7.3.4.2).
+    // Renvoie AUSSI, pour CHAQUE octet décodé, l'intervalle [start,end) des octets
+    // SOURCE qui l'ont produit (1 octet pour un caractère brut, 2 à 4 pour un
+    // échappement) — indispensable pour substituer un glyphe EN PLACE, à la même
+    // position, sans jamais changer la longueur du flux (cf. RedactionSerializer).
     function readLiteralString(){
       i++; // consomme '('
-      var depth=1,out=[];
+      var depth=1,out=[],spans=[];
       while(i<n&&depth>0){
         var c=bytes[i];
+        var spanStart=i;
         if(c===92){ // '\'
           i++;
           if(i>=n)break;
           var e=bytes[i];
-          if(e===110){out.push(10);i++;}
-          else if(e===114){out.push(13);i++;}
-          else if(e===116){out.push(9);i++;}
-          else if(e===98){out.push(8);i++;}
-          else if(e===102){out.push(12);i++;}
-          else if(e===40){out.push(40);i++;}
-          else if(e===41){out.push(41);i++;}
-          else if(e===92){out.push(92);i++;}
-          else if(e===13){i++;if(i<n&&bytes[i]===10)i++;} // continuation de ligne
-          else if(e===10){i++;}
+          if(e===110){out.push(10);i++;spans.push([spanStart,i]);}
+          else if(e===114){out.push(13);i++;spans.push([spanStart,i]);}
+          else if(e===116){out.push(9);i++;spans.push([spanStart,i]);}
+          else if(e===98){out.push(8);i++;spans.push([spanStart,i]);}
+          else if(e===102){out.push(12);i++;spans.push([spanStart,i]);}
+          else if(e===40){out.push(40);i++;spans.push([spanStart,i]);}
+          else if(e===41){out.push(41);i++;spans.push([spanStart,i]);}
+          else if(e===92){out.push(92);i++;spans.push([spanStart,i]);}
+          else if(e===13){i++;if(i<n&&bytes[i]===10)i++;} // continuation de ligne : aucun octet décodé produit
+          else if(e===10){i++;} // idem
           else if(e>=48&&e<=55){
             var val=0,cnt=0;
             while(i<n&&cnt<3&&bytes[i]>=48&&bytes[i]<=55){val=val*8+(bytes[i]-48);i++;cnt++;}
-            out.push(val&0xFF);
-          }else{out.push(e);i++;} // échappement inconnu : caractère pris littéralement
-        }else if(c===40){depth++;out.push(c);i++;}
-        else if(c===41){depth--;i++;if(depth>0)out.push(c);}
-        else{out.push(c);i++;}
+            out.push(val&0xFF);spans.push([spanStart,i]);
+          }else{out.push(e);i++;spans.push([spanStart,i]);} // échappement inconnu : caractère pris littéralement
+        }else if(c===40){depth++;out.push(c);i++;spans.push([spanStart,i]);}
+        else if(c===41){depth--;i++;if(depth>0){out.push(c);spans.push([spanStart,i]);}}
+        else{out.push(c);i++;spans.push([spanStart,i]);}
       }
-      return new Uint8Array(out);
+      return{bytes:new Uint8Array(out),spans:spans};
     }
     // Chaîne hexadécimale "<...>" : les blancs internes sont ignorés, un nombre
     // impair de chiffres est complété par un 0 final (spec PDF §7.3.4.3).
+    // Renvoie AUSSI, pour CHAQUE octet décodé, la position des 2 chiffres hex
+    // source qui l'ont produit ([posHaut,posBas] ; posBas=-1 si ce chiffre est le
+    // "0" de complétion final, sans octet source réel — cf. commentaire ci-dessus).
     function readHexString(){
       i++; // consomme '<'
-      var digits=[];
-      while(i<n&&bytes[i]!==62){var c=bytes[i];if(!isWS(c))digits.push(c);i++;}
+      var digits=[],digitPos=[];
+      while(i<n&&bytes[i]!==62){
+        var c=bytes[i];
+        if(!isWS(c)){digits.push(c);digitPos.push(i);}
+        i++;
+      }
       if(i<n)i++; // consomme '>'
-      if(digits.length%2===1)digits.push(48);
-      var out=new Uint8Array(digits.length/2);
-      for(var k=0;k<out.length;k++)out[k]=(hexVal(digits[k*2])<<4)|hexVal(digits[k*2+1]);
-      return out;
+      if(digits.length%2===1){digits.push(48);digitPos.push(-1);}
+      var out=new Uint8Array(digits.length/2),spans=[];
+      for(var k=0;k<out.length;k++){
+        out[k]=(hexVal(digits[k*2])<<4)|hexVal(digits[k*2+1]);
+        spans.push([digitPos[k*2],digitPos[k*2+1]]);
+      }
+      return{bytes:out,spans:spans};
     }
     function readName(){
       i++; // consomme '/'
@@ -7376,6 +8011,45 @@ var RedactionSerializer={
     if(!fontSize||!hScale)return 0;
     return -(adv*1000)/(fontSize*hScale);
   },
+
+  /* Choisit, pour un glyphe effacé, un AUTRE code de caractère de la MÊME police
+     (`fontRef`) dont on connaît la largeur réelle (`codeWidths`, mesurée par
+     TextGeometry en observant tous les glyphes réellement dessinés sur la page) —
+     afin de le remplacer par un caractère illisible plutôt que par un simple "trou"
+     invisible dans le flux, tout en gardant la possibilité de corriger l'avance
+     exactement (cf. _buildTJOutput). `bytesPerGlyph` contraint le candidat à une
+     valeur de code représentable sur ce nombre d'octets (celui de l'opération en
+     cours). On exclut délibérément le code 32 (espace) : son avance dépend en plus
+     de Tw (espacement des mots), un cas particulier qu'on préfère ne jamais avoir à
+     reproduire pour un glyphe de substitution. On exclut aussi le code d'origine lui-
+     même (remplacer par un code identique ne serait pas "illisible"). Renvoie
+     {code,w0} du meilleur candidat (largeur la plus proche de l'original, pour un
+     ajustement de correction le plus petit possible — un simple bonus esthétique,
+     PAS une condition de correction, qui reste exacte quel que soit l'écart), ou
+     null si aucun candidat utilisable n'a été observé sur cette page (repli sur le
+     pur espacement invisible, comme avant).*/
+  _pickSubstitute:function(fontRef,originalCode,originalW0,bytesPerGlyph,codeWidths){
+    if(fontRef==null||!codeWidths||!codeWidths[fontRef])return null;
+    var table=codeWidths[fontRef],maxCode=Math.pow(256,bytesPerGlyph);
+    var best=null,bestDiff=Infinity;
+    for(var codeStr in table){
+      if(!Object.prototype.hasOwnProperty.call(table,codeStr))continue;
+      var code=Number(codeStr);
+      if(code===originalCode||code===32||code>=maxCode||code<0)continue;
+      var w0=table[codeStr];
+      var diff=Math.abs(w0-originalW0);
+      if(diff<bestDiff){bestDiff=diff;best={code:code,w0:w0};}
+    }
+    return best;
+  },
+  /* Encode un entier `code` sur EXACTEMENT `n` octets, poids fort en tête — même
+     convention que les codes de caractère multi-octets d'origine (Identity-H etc.). */
+  _encodeCodeBytes:function(code,n){
+    var out=new Uint8Array(n);
+    for(var i=n-1;i>=0;i--){out[i]=code&0xFF;code=Math.floor(code/256);}
+    return out;
+  },
+
   // Formatage numérique compact pour le flux de sortie (évite la notation
   // scientifique et le bruit de précision flottante superflu).
   _fmtNum:function(n){
@@ -7452,13 +8126,19 @@ var RedactionSerializer={
        - glyphe gardé   → ses octets d'origine, regroupés avec les glyphes
                            gardés voisins en une seule chaîne hexadécimale
                            (compact, et fidèle octet pour octet).
-       - glyphe effacé  → remplacé par un nombre reproduisant son avance
-                           (formule de l'étape 3), pour que tout ce qui suit
-                           reste exactement à sa position d'origine.
+       - glyphe effacé  → si un AUTRE code de la même police, de largeur connue,
+                           est disponible (`codeWidths`), il le remplace (caractère
+                           illisible plutôt que trou invisible), suivi si besoin
+                           d'un petit ajustement numérique qui corrige l'écart de
+                           largeur — calculé à partir de nos propres mesures
+                           (_pickSubstitute), donc EXACT quel que soit cet écart.
+                           Sinon (aucun candidat connu), repli sur l'ancien
+                           comportement : un nombre reproduisant son avance
+                           (formule de l'étape 3), sans rien afficher.
        - kern d'origine → recopié tel quel, à sa position d'origine (le
                            crénelage entre glyphes CONSERVÉS reste inchangé).
      Renvoie une chaîne "[<4142> -1666.667 <4344>] TJ" (sans saut de ligne). */
-  _buildTJOutput:function(items,run){
+  _buildTJOutput:function(items,run,codeWidths){
     var self=this;
     var parts=[],pending=[],gi=0;
     function flush(){
@@ -7473,7 +8153,23 @@ var RedactionSerializer={
     items.forEach(function(it){
       if(it.type==='kern'){flush();parts.push(self._fmtNum(it.value));return;}
       var g=run.glyphs[gi++];
-      if(g&&g.erased){flush();parts.push(self._fmtNum(self._advToTjGap(g.adv||0,run.fontSize,run.hScale)));}
+      if(g&&g.erased){
+        var bytesPerGlyph=it.bytes.length;
+        var sub=self._pickSubstitute(run.fontRef,g.code,g.w0||0,bytesPerGlyph,codeWidths);
+        if(sub){
+          // Glyphe illisible : mêmes octets de LARGEUR IDENTIQUE, code différent, du
+          // coup regroupable avec les glyphes gardés voisins comme n'importe quel
+          // glyphe normal — puis correction exacte de l'avance si nécessaire.
+          pending.push(self._encodeCodeBytes(sub.code,bytesPerGlyph));
+          var subAdv=(sub.w0*run.fontSize+(run.charSpacing||0))*run.hScale;
+          var corr=self._advToTjGap(g.adv-subAdv,run.fontSize,run.hScale);
+          if(Math.abs(corr)>0.01){flush();parts.push(self._fmtNum(corr));}
+        }else{
+          // Aucun code de substitution connu sur cette page pour cette police :
+          // repli sur l'ancien comportement (pur espacement invisible).
+          flush();parts.push(self._fmtNum(self._advToTjGap(g.adv||0,run.fontSize,run.hScale)));
+        }
+      }
       else pending.push(it.bytes);
     });
     flush();
@@ -7489,6 +8185,7 @@ var RedactionSerializer={
      encore rien dans le PDF lui-même — ça reste le rôle de l'étape 5. */
   rewriteContentStream:function(originalBytes,runs){
     var self=this;
+    var codeWidths=runs.codeWidths||{};
     var ops=ContentStreamCodec.tokenize(originalBytes);
     var textOps=ops.filter(function(o){return self.TEXT_SHOW_OPS[o.op];});
     if(textOps.length!==runs.length){
@@ -7518,16 +8215,16 @@ var RedactionSerializer={
       if(op.op==="'"){
         // ' = déplacement à la ligne suivante (T*) PUIS affichage du texte :
         // on préserve le déplacement, on remplace juste l'affichage par un TJ filtré.
-        out='T*\n'+self._buildTJOutput(items,run);
+        out='T*\n'+self._buildTJOutput(items,run,codeWidths);
       }else if(op.op==='"'){
         // " = fixe Tw/Tc (persistants dans le graphics state — donc à repropager
         // pour la suite du flux), déplace à la ligne suivante, PUIS affiche le texte.
         var aw=op.operands[0],ac=op.operands[1];
         out=self._fmtNum(typeof aw==='number'?aw:0)+' Tw\n'+
             self._fmtNum(typeof ac==='number'?ac:0)+' Tc\n'+
-            'T*\n'+self._buildTJOutput(items,run);
+            'T*\n'+self._buildTJOutput(items,run,codeWidths);
       }else{
-        out=self._buildTJOutput(items,run); // Tj ou TJ d'origine → TJ filtré
+        out=self._buildTJOutput(items,run,codeWidths); // Tj ou TJ d'origine → TJ filtré
       }
       pieces.push(new TextEncoder().encode(out));
     }
@@ -7640,7 +8337,29 @@ var RedactionInjector={
      flux de contenu, false sinon (rien à faire, ou abandon pour cause de
      page trop complexe / API indisponible — jamais d'exception propagée). */
   redactPage:function(page,runs,PDFLib){
+    // Repli sûr : les pages contenant des Form XObjects imbriqués (cf. le
+    // garde-fou juste en dessous) ne passent plus du tout par ici — voir
+    // AnnotStore.burnToPage, qui bascule ces pages sur une conversion en
+    // image AVANT même d'appeler redactPage. Les autres pages continuent de
+    // bénéficier de la vraie suppression de texte ci-dessous, protégée par
+    // les mêmes multiples garde-fous qu'auparavant (jamais d'exception
+    // propagée, jamais de modification si le moindre doute subsiste).
     if(!runs||!runs.length)return false;
+    if(runs.hasFormXObjects){
+      // Repli de sécurité explicite (point 6 du plan) : le texte de cette page peut
+      // provenir en partie d'un Form XObject imbriqué, dont le flux de contenu est
+      // SÉPARÉ de /Contents et donc invisible à _readOriginalContentBytes/
+      // RedactionSerializer. Le seul garde-fou par comptage (textOps.length===
+      // runs.length) peut coïncider par hasard dans ce cas et laisser passer une
+      // correspondance fausse -> corruption silencieuse (page vidée/blanche à
+      // l'affichage). On préfère systématiquement s'abstenir ici : masquage visuel
+      // (image blanche) conservé, texte non retiré, mais AUCUN risque de corrompre
+      // le document. C'est le cas typique des documents "complexes" (mise en page
+      // avancée, formulaires, PDF d'impression professionnelle) par opposition aux
+      // exports Word simples, qui utilisent rarement des Form XObjects.
+      console.warn('RedactionInjector: page contenant des Form XObjects imbriqués — rédaction réelle du texte non tentée par prudence (masquage visuel conservé).');
+      return false;
+    }
     if(!runs.some(function(r){return r.anyErased;}))return false; // rien à rédiger
     if(!PDFLib||!PDFLib.PDFArray||!PDFLib.PDFRawStream||!PDFLib.PDFName||typeof PDFLib.decodePDFRawStream!=='function'){
       console.warn('RedactionInjector: API pdf-lib bas niveau indisponible sur cette version — masquage visuel conservé, texte non retiré.');
@@ -7651,6 +8370,167 @@ var RedactionInjector={
     var newBytes=RedactionSerializer.rewriteContentStream(originalBytes,runs);
     if(!newBytes)return false; // page jugée trop complexe pour être traitée en confiance (cf. étape 4)
     return this._replaceContentBytes(page,newBytes,PDFLib);
+  }
+};
+
+/* REDACTION CHOICE — quand la vraie suppression du texte sous la gomme échoue
+   sur une ou plusieurs pages (page complexe, API pdf-lib indisponible...), on
+   ne décide plus JAMAIS silencieusement à la place de l'utilisateur : on lui
+   demande explicitement de choisir entre (a) convertir ces pages en image
+   pour garantir la suppression du texte, ou (b) garder le masquage visuel en
+   sachant que le texte reste techniquement présent dans le fichier. Si la
+   vraie rédaction réussit sur toutes les pages concernées, cette modale n'est
+   jamais affichée. */
+var RedactionChoice={
+  pending:[], // {outPage,pdfJsPage,data} — pages où la vraie rédaction a échoué SANS décision préalable, en attente de décision groupée à l'export
+  autoRaster:[], // {outPage,pdfJsPage,data} — pages où l'utilisateur a déjà choisi "garantir" au moment de la sauvegarde (cf. checkOnSave) : appliqué automatiquement à l'export, sans redemander
+
+  reset:function(){this.pending=[];this.autoRaster=[];},
+
+  /* Enregistre une page dont la vraie rédaction du texte a échoué, pour
+     décision groupée en fin d'export (voir resolvePending()). */
+  add:function(outPage,pdfJsPage,data){
+    if(!outPage||!pdfJsPage||!data)return;
+    this.pending.push({outPage:outPage,pdfJsPage:pdfJsPage,data:data});
+  },
+
+  /* Enregistre une page dont la décision ("garantir la suppression", donc
+     rasterisation) a déjà été prise par l'utilisateur au moment de la
+     sauvegarde de cette page (data.redactChoice==='raster', cf. checkOnSave).
+     Appliquée automatiquement par resolvePending(), sans repasser par la
+     modale — l'utilisateur a déjà tranché. */
+  addAutoRaster:function(outPage,pdfJsPage,data){
+    if(!outPage||!pdfJsPage||!data)return;
+    this.autoRaster.push({outPage:outPage,pdfJsPage:pdfJsPage,data:data});
+  },
+
+  /* Affiche la modale de choix et renvoie 'raster' | 'visual' | null (annulé
+     par l'utilisateur). `n` = nombre de pages concernées, pour le texte
+     affiché ("cette page" / "ces N pages"). Factorisé pour être réutilisé à
+     la fois par resolvePending() (décision groupée à l'export) et par
+     checkOnSave() (décision immédiate à la sauvegarde d'une page). */
+  _askMode:async function(n){
+    var countLabel=n+(n>1?' pages':' page');
+    document.getElementById('redact-choice-count').textContent=countLabel;
+    document.getElementById('redact-choice-count2').textContent=n>1?'ces pages':'cette page';
+    // Réinitialise la sélection visuelle sur l'option par défaut (garantie)
+    document.getElementById('redact-opt-raster').classList.add('sel');
+    document.getElementById('redact-opt-visual').classList.remove('sel');
+    var radioRaster=document.querySelector('#redact-opt-raster input');
+    if(radioRaster)radioRaster.checked=true;
+
+    return new Promise(function(resolve){
+      var okBtn=document.getElementById('redact-choice-ok');
+      var cancelBtn=document.getElementById('redact-choice-cancel');
+      function cleanup(){
+        okBtn.removeEventListener('click',onOk);
+        cancelBtn.removeEventListener('click',onCancel);
+        hideModal('redact-choice-modal');
+      }
+      function onOk(){
+        var checked=document.querySelector('input[name="redactmode"]:checked');
+        var mode=checked?checked.value:'raster';
+        cleanup();resolve(mode);
+      }
+      function onCancel(){cleanup();resolve(null);}
+      okBtn.addEventListener('click',onOk);
+      cancelBtn.addEventListener('click',onCancel);
+      showModal('redact-choice-modal');
+    });
+  },
+
+  /* Affiche la modale de choix si besoin, applique la décision de
+     l'utilisateur (rasterisation ou conservation du masquage visuel), puis
+     vide la liste d'attente. Renvoie true si l'export doit continuer, false
+     si l'utilisateur a annulé. Ne fait rien (renvoie true immédiatement) si
+     aucune page n'est concernée. */
+  resolvePending:async function(PDFLib){
+    // D'abord, sans rien demander : les pages où la décision "garantir la
+    // suppression" a déjà été prise à la sauvegarde (checkOnSave). L'utilisateur
+    // a déjà tranché, inutile de le solliciter à nouveau à l'export.
+    for(var a=0;a<this.autoRaster.length;a++){
+      var itemA=this.autoRaster[a];
+      try{await AnnotStore.rasterizeFullPage(itemA.outPage,itemA.pdfJsPage,itemA.data,PDFLib);}
+      catch(e){console.warn('RedactionChoice: rasterisation (décision prise à la sauvegarde) impossible pour une page.',e);}
+    }
+    this.autoRaster=[];
+
+    if(!this.pending.length)return true;
+    var n=this.pending.length;
+    var choice=await this._askMode(n);
+
+    if(!choice){this.reset();return false;} // export annulé par l'utilisateur
+
+    if(choice==='raster'){
+      for(var i=0;i<this.pending.length;i++){
+        var item=this.pending[i];
+        try{await AnnotStore.rasterizeFullPage(item.outPage,item.pdfJsPage,item.data,PDFLib);}
+        catch(e){console.warn('RedactionChoice: rasterisation de secours impossible pour une page.',e);}
+      }
+    }
+    // choice==='visual' : rien à faire, le masquage visuel est déjà en place
+    // depuis le déroulement normal de burnToPage()/_burnToBytes().
+
+    this.reset();
+    return true;
+  },
+
+  /* Analyse "à blanc" (dry run), déclenchée au moment où l'utilisateur
+     enregistre explicitement une page contenant de la gomme (cf.
+     Signature.saveToMemory) — plutôt que d'attendre l'export. Détermine si la
+     vraie suppression du texte sous la gomme réussirait ou échouerait sur
+     CETTE page, et si elle échouerait, propose IMMÉDIATEMENT la même modale
+     de choix qu'à l'export. La décision de l'utilisateur est alors mémorisée
+     dans les données sauvegardées de la page (AnnotStore.setRedactChoice) :
+     à l'export, AnnotStore.burnToPage() la retrouve et l'applique sans
+     reposer la question. Si l'utilisateur annule ici, rien n'est mémorisé —
+     la question sera simplement reposée à l'export (filet de sécurité
+     inchangé). Ce test ne modifie jamais le PDF réel : il travaille sur un
+     document pdf-lib jetable, immédiatement jeté après le test. */
+  checkOnSave:async function(pg,PDFLib){
+    try{
+      if(!pg||!pg.uuid||!PDFLib)return;
+      var data=AnnotStore.load(pg.uuid);
+      if(!data||!data.eraser||!data.eraser.src)return; // pas de gomme sur cette page
+      var f=Pages.find(pg.id);
+      if(!f||!f.doc||!f.doc.pdfDoc)return;
+      var pdfJsPage=await f.doc.pdfDoc.getPage(pg.pi+1);
+      var T=RedactionZone.computeRotation(pdfJsPage,pg);
+      var redactRuns=await RedactionZone.computeForSavedEraser(pdfJsPage,T,data);
+      if(!redactRuns||!redactRuns.length||!redactRuns.some(function(r){return r.anyErased;}))return; // rien de réellement sous la gomme
+
+      var wouldFail=false;
+      if(redactRuns.hasFormXObjects){
+        wouldFail=true;
+      }else{
+        // Tentative à blanc, sur une copie jetable de la SEULE page concernée —
+        // jamais conservée ni exportée. Sert uniquement à savoir si la
+        // réécriture bas niveau réussirait ; la page de sortie réelle sera
+        // reconstruite à l'identique à l'export (cf. AnnotStore.burnToPage).
+        try{
+          function resolveIdCheck(p){return(p._srcDocId&&S.bytes[p._srcDocId]?p._srcDocId:(S.bytes[p.docId]?p.docId:p.docId));}
+          var srcId=resolveIdCheck(pg);
+          if(!S.bytes[srcId])return;
+          var tmpSrc=await PDFLib.PDFDocument.load(S.bytes[srcId].slice(0),{ignoreEncryption:true});
+          var tmpOut=await PDFLib.PDFDocument.create();
+          var tmpPage=(await tmpOut.copyPages(tmpSrc,[pg.pi]))[0];
+          tmpOut.addPage(tmpPage);
+          var okDry=RedactionInjector.redactPage(tmpPage,redactRuns,PDFLib);
+          if(!okDry)wouldFail=true;
+        }catch(e){wouldFail=true;}
+      }
+
+      if(!wouldFail)return; // la vraie suppression réussirait : rien à demander
+
+      var choice=await this._askMode(1);
+      if(!choice)return; // annulé : la question sera reposée à l'export, aucun choix mémorisé
+
+      AnnotStore.setRedactChoice(pg.uuid,choice);
+      Toast.show(choice==='raster'
+        ?'Cette page sera convertie en image à l\'export pour garantir la suppression du texte.'
+        :'Masquage visuel conservé — le texte reste techniquement présent dans le fichier sur cette page.',
+        choice==='raster'?'success':'error');
+    }catch(e){console.warn('RedactionChoice.checkOnSave: analyse impossible, décision reportée à l\'export.',e);}
   }
 };
 
@@ -8610,10 +9490,804 @@ var EditUndo={
     var r=document.getElementById('prev-redo-btn');
     if(u)u.disabled=!this._stack.length;
     if(r)r.disabled=!this._redo.length;
-    // Sync boutons desktop aussi
-    var bu=document.getElementById('btn-undo');
-    var br=document.getElementById('btn-redo');
     // (on ne touche pas au système Undo global pour les pages)
+  }
+};
+
+/* ══════════════════════════════════════════════════════════════════════
+   TEXT EDIT TOOL — « Modifier texte » (façon Adobe Acrobat)
+   ══════════════════════════════════════════════════════════════════════
+   POURQUOI CE MOTEUR PLUTÔT QUE getTextContent()
+   ----------------------------------------------
+   La première version s'appuyait sur pdfPage.getTextContent(), qui ne
+   renvoie qu'une position approximative par « chunk » : la largeur est
+   exprimée dans une unité ambiguë, la hauteur d'œil doit être devinée à
+   partir de métriques optionnelles (ascent/descent), et les chunks sont
+   découpés selon une heuristique interne. Résultat : des cadres décalés
+   ou qui ne correspondent pas au texte réellement dessiné.
+
+   Ici on reconstruit la géométrie EXACTE, comme le ferait un moteur de
+   rendu, en rejouant la liste d'opérateurs de la page
+   (page.getOperatorList() — la même que pdf.js utilise pour peindre le
+   canvas). On suit donc réellement :
+     • la CTM (cm / q / Q),
+     • les Form XObjects imbriqués (leur matrice propre, que la version
+       précédente ignorait — c'est une cause classique de décalage),
+     • la matrice de texte (Tm / Td / TD / T* / ' / "),
+     • Tf, Tc, Tw, Tz, TL, Ts (déplacement vertical des exposants),
+     • Tr (mode de rendu : le texte INVISIBLE des PDF océrisés est ignoré,
+       au lieu d'être surligné alors qu'il ne correspond à rien de visible),
+     • la couleur de remplissage courante (la couleur du texte est donc
+       LUE dans le PDF, plus devinée à partir des pixels),
+     • le contenu des annotations, explicitement exclu.
+   Chaque glyphe donne sa boîte exacte, en POINTS PDF (repère natif,
+   origine en bas à gauche) : les cadres collent au texte quel que soit le
+   zoom, et les mêmes coordonnées servent ensuite au masquage et à la
+   repose du texte.
+
+   DÉROULÉ
+   -------
+   1) RECONNAISSANCE — police (vrai nom PostScript via page.commonObjs,
+      famille, gras, italique, ascendante/descendante réelles), corps en
+      points, couleur, position, à partir des opérateurs ci-dessus.
+   2) ÉDITION — un champ posé exactement sur la ligne, dans la police
+      reconnue.
+   3) APPLICATION — la zone d'origine est peinte dans le canvas de la
+      GOMME, ce qui déclenche la vraie rédaction (RedactionZone /
+      RedactionInjector) : le texte remplacé est réellement retiré du PDF
+      exporté. Le fond est restitué s'il n'est pas blanc, et le nouveau
+      texte est posé comme une annotation .text-placed normale, calée pour
+      que sa ligne de base retombe sur celle d'origine.
+
+   Limite assumée : pdf-lib ne sait embarquer que les 14 polices standard,
+   la police d'origine est donc SUBSTITUÉE par son équivalent le plus
+   proche (Helvetica / Times / Courier + gras/italique). Le panneau
+   affiche toujours la police reconnue ET la substitution.
+   ══════════════════════════════════════════════════════════════════════ */
+var TextEditTool={
+  active:false,
+  _lines:[],        // lignes détectées (coordonnées en POINTS PDF)
+  _boxes:[],        // cadres de survol correspondants
+  _editing:null,    // {line,idx,box,input}
+  _style:null,      // style en cours {family,bold,italic,sizePt,color}
+  _token:0,         // anti-concurrence entre deux analyses
+  _pdfW:1,_pdfH:1,  // dimensions natives de la page analysée
+
+  /* ── Activation / désactivation ───────────────────────────────── */
+  toggle:function(){ if(this.active)this.deactivate(); else this.activate(); },
+
+  activate:function(){
+    if(this.active)return;
+    try{
+      SelectTool.deactivate();TextTool.deactivate();DateTool.deactivate();
+      StampTool.deactivate();EraserTool.deactivate();HighlightTool.deactivate();
+      ShapeTool.deactivate();ImageTool.deactivate();
+    }catch(e){}
+    this.active=true;
+    var btn=document.getElementById('etb-edittext');if(btn)btn.classList.add('active');
+    var layer=document.getElementById('sign-overlay-layer');if(layer)layer.classList.add('edittext-mode-active');
+    EspPanel.show('edittext');
+    this.rescan();
+  },
+
+  deactivate:function(){
+    if(!this.active)return;
+    this._closeEditor(false);
+    this.active=false;
+    var btn=document.getElementById('etb-edittext');if(btn)btn.classList.remove('active');
+    var layer=document.getElementById('sign-overlay-layer');if(layer)layer.classList.remove('edittext-mode-active');
+    this._clearBoxes();
+    this._lines=[];
+    this._setState('idle');
+  },
+
+  /* ════════════════════════════════════════════════════════════════
+     1. GÉOMÉTRIE — algèbre des matrices PDF
+     ════════════════════════════════════════════════════════════════ */
+  // m appliquée AVANT base (équivalent de l'opérateur « cm »)
+  _mul:function(m,base){
+    return[
+      m[0]*base[0]+m[1]*base[2],
+      m[0]*base[1]+m[1]*base[3],
+      m[2]*base[0]+m[3]*base[2],
+      m[2]*base[1]+m[3]*base[3],
+      m[4]*base[0]+m[5]*base[2]+base[4],
+      m[4]*base[1]+m[5]*base[3]+base[5]
+    ];
+  },
+  _pt:function(m,x,y){return{x:m[0]*x+m[2]*y+m[4],y:m[1]*x+m[3]*y+m[5]};},
+
+  /* Rejoue la liste d'opérateurs et renvoie les « runs » de texte
+     (un run = une opération Tj/TJ/'/" visible), en points PDF. */
+  _extractRuns:async function(pdfPage){
+    var opList=await pdfPage.getOperatorList();
+    var OPS=pdfjsLib.OPS,fnA=opList.fnArray,agA=opList.argsArray;
+    var self=this,mul=this._mul.bind(this),pt=this._pt.bind(this);
+
+    var ctm=[1,0,0,1,0,0],stack=[];
+    var tm=[1,0,0,1,0,0],lm=[1,0,0,1,0,0];
+    var fontSize=0,charSp=0,wordSp=0,hScale=1,leading=0,rise=0,render=0;
+    var fontRef=null,fillCol='#000000',strokeCol='#000000';
+    var inAnnot=0;                 // >0 : on est dans une annotation → on ignore
+    var runs=[],hiddenGlyphs=0;
+
+    function hex(r,g,b){
+      function c(v){v=Math.max(0,Math.min(255,Math.round(v)));return(v<16?'0':'')+v.toString(16);}
+      return'#'+c(r)+c(g)+c(b);
+    }
+
+    function collect(items,nextLine){
+      if(nextLine){lm=mul([1,0,0,1,0,-leading],lm);tm=lm.slice();}
+      if(!items||!items.length)return;
+      var glyphs=[],str='',first=null;
+      for(var i=0;i<items.length;i++){
+        var it=items[i];
+        if(it===null||it===undefined){
+          // Convention pdf.js : un « trou » dans la liste de glyphes signale
+          // une coupure de mot — aucun glyphe n'est dessiné, seule l'espace-mot
+          // fait avancer la matrice de texte. Sans ce cas, tout ce qui suit sur
+          // la ligne serait décalé (et it.width lèverait une exception).
+          tm=mul([1,0,0,1,wordSp*hScale,0],tm);
+          continue;
+        }
+        if(typeof it==='number'){
+          // Ajustement TJ : décale la position, ne dessine rien.
+          tm=mul([1,0,0,1,(-it/1000)*fontSize*hScale,0],tm);
+          continue;
+        }
+        var w0=(it.width||0)/1000;
+        var full=mul(tm,ctm);
+        if(!first)first=full;
+        var adv=(w0*fontSize+charSp+(it.isSpace?wordSp:0))*hScale;
+        // Boîte du glyphe : de la ligne de base (y = Ts) au sommet du
+        // cadratin (y = Ts + corps), sur toute son avance.
+        var p0=pt(full,0,rise),p1=pt(full,0,rise+fontSize);
+        var p2=pt(full,adv,rise),p3=pt(full,adv,rise+fontSize);
+        var xs=[p0.x,p1.x,p2.x,p3.x],ys=[p0.y,p1.y,p2.y,p3.y];
+        var gx=Math.min.apply(null,xs),gy=Math.min.apply(null,ys);
+        glyphs.push({
+          x:gx,y:gy,
+          w:Math.max.apply(null,xs)-gx,
+          h:Math.max.apply(null,ys)-gy,
+          baseline:p0.y,
+          space:!!it.isSpace,
+          adv:adv
+        });
+        var ch=it.unicode;
+        if(ch===undefined||ch===null||ch==='')ch=it.fontChar||'';
+        str+=ch;
+        tm=mul([1,0,0,1,adv,0],tm);
+      }
+      if(!glyphs.length)return;
+      // Texte invisible (mode 3) ou purement de découpe (mode 7) : typique
+      // d'une couche OCR posée sous l'image d'un scan — rien de visible à
+      // cet endroit, donc rien à surligner ni à modifier.
+      if(render===3||render===7){hiddenGlyphs+=glyphs.length;return;}
+      if(inAnnot)return;
+
+      // Corps réellement appliqué (le corps Tf est modifié par Tm et la CTM).
+      var vx=pt(first,0,rise+1).x-pt(first,0,rise).x;
+      var vy=pt(first,0,rise+1).y-pt(first,0,rise).y;
+      var sizeEff=Math.hypot(vx,vy)*Math.abs(fontSize);
+      var angle=Math.atan2(first[1],first[0]);
+      // Texte pivoté, incliné ou retourné : non éditable ici (on ne saurait
+      // pas le regraver dans la bonne orientation) — on l'écarte plutôt que
+      // d'afficher un cadre faux.
+      var upright=(Math.abs(angle)<0.02&&vy>0&&Math.abs(vx)<1e-6*Math.max(1,Math.abs(vy))+0.02);
+      if(!upright||!isFinite(sizeEff)||sizeEff<=0.4)return;
+
+      var ink=glyphs.filter(function(g){return !g.space;});
+      if(!ink.length)return;
+      var x0=Math.min.apply(null,ink.map(function(g){return g.x;}));
+      var x1=Math.max.apply(null,ink.map(function(g){return g.x+g.w;}));
+      runs.push({
+        str:str,x0:x0,x1:x1,
+        baseline:glyphs[0].baseline,
+        size:sizeEff,
+        fontRef:fontRef,
+        color:(render===1||render===5)?strokeCol:fillCol,
+        glyphs:glyphs
+      });
+    }
+
+    for(var i=0;i<fnA.length;i++){
+      var fn=fnA[i],a=agA[i];
+      switch(fn){
+        case OPS.save:stack.push(ctm.slice());break;
+        case OPS.restore:ctm=stack.pop()||ctm;break;
+        case OPS.transform:ctm=mul(a,ctm);break;
+
+        // Form XObject : pdf.js applique sa matrice au moment du tracé
+        // (canvas.paintFormXObjectBegin fait save() puis transform(matrix)).
+        // Sans la reproduire, tout le texte contenu dans le XObject est
+        // décalé — c'est ce qui rendait les cadres faux sur beaucoup de PDF.
+        case OPS.paintFormXObjectBegin:
+          stack.push(ctm.slice());
+          if(Array.isArray(a[0])&&a[0].length===6)ctm=mul(a[0],ctm);
+          break;
+        case OPS.paintFormXObjectEnd:ctm=stack.pop()||ctm;break;
+
+        // Apparences d'annotations : hors flux de contenu de la page, donc
+        // ni masquables ni modifiables de façon fiable.
+        case OPS.beginAnnotation:inAnnot++;break;
+        case OPS.endAnnotation:if(inAnnot)inAnnot--;break;
+
+        case OPS.setFont:fontRef=a[0];fontSize=a[1];break;
+        case OPS.setCharSpacing:charSp=a[0];break;
+        case OPS.setWordSpacing:wordSp=a[0];break;
+        case OPS.setHScale:hScale=(a[0]||100)/100;break;
+        case OPS.setLeading:leading=a[0];break;
+        case OPS.setTextRise:rise=a[0]||0;break;
+        case OPS.setTextRenderingMode:render=a[0]||0;break;
+        case OPS.setFillRGBColor:fillCol=hex(a[0],a[1],a[2]);break;
+        case OPS.setStrokeRGBColor:strokeCol=hex(a[0],a[1],a[2]);break;
+
+        case OPS.beginText:tm=[1,0,0,1,0,0];lm=[1,0,0,1,0,0];break;
+        case OPS.setTextMatrix:tm=a.slice();lm=a.slice();break;
+        case OPS.moveText:
+          lm=mul([1,0,0,1,a[0],a[1]],lm);tm=lm.slice();break;
+        case OPS.setLeadingMoveText:
+          leading=-a[1];lm=mul([1,0,0,1,a[0],a[1]],lm);tm=lm.slice();break;
+        case OPS.nextLine:
+          lm=mul([1,0,0,1,0,-leading],lm);tm=lm.slice();break;
+
+        case OPS.showText:case OPS.showSpacedText:collect(a[0],false);break;
+        case OPS.nextLineShowText:collect(a[0],true);break;
+        case OPS.nextLineSetSpacingShowText:
+          wordSp=a[0];charSp=a[1];collect(a[2],true);break;
+      }
+    }
+    runs.hiddenGlyphs=hiddenGlyphs;
+    return runs;
+  },
+
+  /* ════════════════════════════════════════════════════════════════
+     2. ANALYSE DE LA PAGE AFFICHÉE
+     ════════════════════════════════════════════════════════════════ */
+  rescan:function(){
+    if(!this.active)return;
+    this._closeEditor(false);
+    this._clearBoxes();
+    var token=++this._token,self=this;
+    this._scan(token).catch(function(e){
+      console.error('TextEditTool:',e);
+      self._setState('error');
+    });
+  },
+
+  _scan:async function(token){
+    var pg=Preview.pages[Preview.idx];
+    if(!pg){this._setState('empty');return;}
+    var f=Pages.find(pg.id);
+    if(!f||!f.doc||!f.doc.pdfDoc){this._setState('empty');return;}
+    this._setState('scan');
+    var pdfPage=await f.doc.pdfDoc.getPage(pg.pi+1);
+    if(token!==this._token||!this.active)return;
+
+    // La gravure des textes (AnnotStore.burnToPage) ne gère pas la rotation :
+    // on refuse explicitement plutôt que de poser le texte au mauvais endroit.
+    var rot=(((pdfPage.rotate||0)+(pg.rot||0))%360+360)%360;
+    if(rot!==0){this._setState('rot');return;}
+
+    var vp1=pdfPage.getViewport({scale:1,rotation:0});
+    this._pdfW=vp1.width;this._pdfH=vp1.height;
+
+    var runs=await this._extractRuns(pdfPage);
+    if(token!==this._token||!this.active)return;
+
+    var lines=this._mergeRuns(runs);
+    this._attachFonts(pdfPage,lines);
+    this._sampleBackground(lines);
+    this._lines=lines;
+    this._drawBoxes();
+
+    if(lines.length)this._setState('ready',lines.length);
+    else this._setState(runs.hiddenGlyphs>0?'ocr':'notext');
+  },
+
+  /* Fusionne les runs contigus en lignes éditables (même ligne de base,
+     même corps, écart horizontal raisonnable). */
+  _mergeRuns:function(runs){
+    var out=[],cur=null;
+    for(var i=0;i<runs.length;i++){
+      var r=runs[i];
+      if(!r.str.trim()){ // run purement blanc : ne coupe pas la ligne
+        if(cur&&Math.abs(r.baseline-cur.baseline)<=0.3*cur.size&&r.x0>=cur.x1-0.3*cur.size&&r.x0<=cur.x1+1.6*cur.size){
+          cur.x1=Math.max(cur.x1,r.x1);cur.str+=r.str;
+        }
+        continue;
+      }
+      var gap=cur?(r.x0-cur.x1):0;
+      if(cur
+         &&Math.abs(r.baseline-cur.baseline)<=0.3*Math.max(cur.size,r.size)
+         &&Math.abs(r.size-cur.size)<=0.3*Math.max(cur.size,r.size)
+         &&gap>=-0.8*cur.size&&gap<=1.4*cur.size
+         &&r.fontRef===cur.fontRef){
+        if(gap>0.22*cur.size&&!/\s$/.test(cur.str)&&!/^\s/.test(r.str))cur.str+=' ';
+        cur.str+=r.str;
+        cur.x0=Math.min(cur.x0,r.x0);
+        cur.x1=Math.max(cur.x1,r.x1);
+        cur.size=Math.max(cur.size,r.size);
+        cur.n+=r.glyphs.length;
+      }else{
+        if(cur)out.push(cur);
+        cur={str:r.str,x0:r.x0,x1:r.x1,baseline:r.baseline,size:r.size,
+             fontRef:r.fontRef,color:r.color,n:r.glyphs.length};
+      }
+    }
+    if(cur)out.push(cur);
+    return out.filter(function(l){return l.str.trim().length>0&&(l.x1-l.x0)>0.4;})
+              .map(function(l){
+                l.str=l.str.replace(/\s+$/,'').replace(/^\s+/,'');
+                l.width=l.x1-l.x0;
+                return l;
+              });
+  },
+
+  /* Métadonnées de police : vrai nom, famille, gras/italique, métriques.
+     page.commonObjs est déjà peuplé puisque la page vient d'être rendue. */
+  _attachFonts:function(pdfPage,lines){
+    var cache={},self=this;
+    lines.forEach(function(l){
+      if(!cache[l.fontRef])cache[l.fontRef]=self._fontMeta(pdfPage,l.fontRef);
+      l.font=cache[l.fontRef];
+    });
+  },
+
+  _fontMeta:function(pdfPage,fontRef){
+    var fo=null;
+    try{
+      if(fontRef&&pdfPage.commonObjs&&pdfPage.commonObjs.has&&pdfPage.commonObjs.has(fontRef))
+        fo=pdfPage.commonObjs.get(fontRef);
+    }catch(e){}
+    fo=fo||{};
+    var nm=String(fo.name||fo.loadedName||'').replace(/^[A-Z]{6}\+/,'').replace(/_/g,'-');
+    var bold=!!(fo.bold||fo.black)||/(bold|black|heavy|semib|demib|extrab|-bd\b)/i.test(nm);
+    var italic=!!fo.italic||/(italic|oblique|-it\b)/i.test(nm);
+
+    var fam=fo.fallbackName||'sans-serif';
+    if(!/^(serif|sans-serif|monospace|cursive|fantasy)$/.test(fam))fam='sans-serif';
+    if(/mono|courier|consol|menlo/i.test(nm))fam='monospace';
+    else if(/times|georgia|garamond|cambria|palatino|book|roman|minion|serif|caslon|baskerv/i.test(nm))fam='serif';
+    else if(/arial|helvetica|calibri|verdana|tahoma|segoe|roboto|lato|futura|gothic|grotesk|sans/i.test(nm))fam='sans-serif';
+    else if(/script|brush|hand/i.test(nm))fam='cursive';
+
+    // Ascendante / descendante réelles de la police (fractions de cadratin),
+    // utilisées pour que le cadre épouse la hauteur d'œil visible.
+    var asc=Math.abs(parseFloat(fo.ascent));
+    var desc=Math.abs(parseFloat(fo.descent));
+    if(!isFinite(asc)||asc<0.45||asc>1.25)asc=0.83;
+    if(!isFinite(desc)||desc<0.02||desc>0.6)desc=0.22;
+
+    return{family:fam,bold:bold,italic:italic,ascent:asc,descent:desc,
+           name:nm||'police intégrée (nom masqué)'};
+  },
+
+  /* ════════════════════════════════════════════════════════════════
+     3. CONVERSIONS POINTS PDF ⇄ ÉCRAN
+     ════════════════════════════════════════════════════════════════ */
+  _geom:function(){
+    var canvas=document.getElementById('preview-canvas');
+    var layer=document.getElementById('sign-overlay-layer');
+    if(!canvas||!layer||!canvas.width||!canvas.height)return null;
+    var cr=canvas.getBoundingClientRect(),lr=layer.getBoundingClientRect();
+    if(!cr.width||!cr.height)return null;
+    return{
+      canvas:canvas,layer:layer,
+      offX:cr.left-lr.left,offY:cr.top-lr.top,
+      dx:cr.width/this._pdfW,  dy:cr.height/this._pdfH,   // pt → px CSS
+      cx:canvas.width/this._pdfW,cy:canvas.height/this._pdfH // pt → px canvas
+    };
+  },
+  // Rectangle visible d'une ligne, en points PDF (origine bas-gauche)
+  _rect:function(l){
+    var a=l.font?l.font.ascent:0.83,d=l.font?l.font.descent:0.22;
+    return{x:l.x0,y:l.baseline-d*l.size,w:l.width,h:(a+d)*l.size,top:l.baseline+a*l.size};
+  },
+
+  /* Couleur de fond sous la ligne (pour restituer un fond non blanc). */
+  _sampleBackground:function(lines){
+    var canvas=document.getElementById('preview-canvas');
+    if(!canvas)return;
+    var ctx=canvas.getContext('2d');
+    var cx=canvas.width/this._pdfW,cy=canvas.height/this._pdfH,self=this;
+    lines.forEach(function(l){
+      var r=self._rect(l);
+      var x=Math.max(0,Math.floor((r.x-r.h*0.2)*cx));
+      var yTop=Math.max(0,Math.floor((self._pdfH-r.top-r.h*0.2)*cy));
+      var w=Math.min(canvas.width-x,Math.ceil((r.w+r.h*0.4)*cx));
+      var h=Math.min(canvas.height-yTop,Math.ceil(r.h*1.4*cy));
+      l.bg={r:255,g:255,b:255};
+      if(w<2||h<2)return;
+      var d;
+      try{d=ctx.getImageData(x,yTop,w,h).data;}catch(e){return;}
+      // Couleur la plus fréquente de la zone = fond.
+      var buckets={},best=null,bestN=0,n=d.length/4,step=Math.max(1,Math.floor(n/3000));
+      for(var p=0;p<n;p+=step){
+        var o=p*4;
+        if(d[o+3]<8)continue;
+        var k=((d[o]>>4)<<8)|((d[o+1]>>4)<<4)|(d[o+2]>>4);
+        var b=buckets[k]||(buckets[k]={r:0,g:0,b:0,n:0});
+        b.r+=d[o];b.g+=d[o+1];b.b+=d[o+2];b.n++;
+        if(b.n>bestN){bestN=b.n;best=b;}
+      }
+      if(best)l.bg={r:best.r/best.n,g:best.g/best.n,b:best.b/best.n};
+    });
+  },
+
+  _hexRgb:function(h){
+    h=this._normHex(h).slice(1);
+    return{r:parseInt(h.slice(0,2),16),g:parseInt(h.slice(2,4),16),b:parseInt(h.slice(4,6),16)};
+  },
+  _toHex:function(r,g,b){
+    function c(v){v=Math.max(0,Math.min(255,Math.round(v)));return(v<16?'0':'')+v.toString(16);}
+    return'#'+c(r)+c(g)+c(b);
+  },
+
+  /* ════════════════════════════════════════════════════════════════
+     4. CADRES DE SURVOL
+     ════════════════════════════════════════════════════════════════ */
+  _clearBoxes:function(){
+    this._boxes.forEach(function(b){if(b&&b.parentNode)b.remove();});
+    this._boxes=[];
+  },
+
+  _drawBoxes:function(){
+    this._clearBoxes();
+    var g=this._geom();if(!g)return;
+    var self=this;
+    this._lines.forEach(function(l,idx){
+      if(l._done)return;
+      var r=self._rect(l);
+      var box=document.createElement('div');
+      box.className='pdfedit-line';
+      box.style.left=(g.offX+r.x*g.dx-1)+'px';
+      box.style.top=(g.offY+(self._pdfH-r.top)*g.dy-1)+'px';
+      box.style.width=(r.w*g.dx+2)+'px';
+      box.style.height=(r.h*g.dy+2)+'px';
+      box.title=l.str.slice(0,70)+(l.str.length>70?'…':'');
+      box.addEventListener('mousedown',function(e){e.stopPropagation();});
+      box.addEventListener('click',function(e){
+        e.stopPropagation();e.preventDefault();self._openEditor(idx);
+      });
+      g.layer.appendChild(box);
+      self._boxes[idx]=box;
+    });
+  },
+
+  _remaining:function(){
+    return this._lines.filter(function(l){return !l._done;}).length;
+  },
+
+  /* ════════════════════════════════════════════════════════════════
+     5. ÉDITEUR EN PLACE
+     ════════════════════════════════════════════════════════════════ */
+  _openEditor:function(idx){
+    // Passer d'une ligne à l'autre valide la modification en cours (Acrobat).
+    this._closeEditor(true);
+    var l=this._lines[idx];if(!l||l._done)return;
+    var g=this._geom();if(!g)return;
+
+    // Taille conservée en POINTS : indépendante du zoom de l'aperçu.
+    this._style={
+      family:l.font.family,bold:l.font.bold,italic:l.font.italic,
+      sizePt:l.size,color:l.color||'#1a1a1a'
+    };
+
+    var box=this._boxes[idx];
+    if(box)box.classList.add('editing');
+
+    var r=this._rect(l);
+    var input=document.createElement('textarea');
+    input.className='pdfedit-input';
+    input.value=l.str;
+    input.rows=1;input.spellcheck=false;
+    input.style.left=(g.offX+r.x*g.dx-4)+'px';
+    input.style.top=(g.offY+(this._pdfH-r.top)*g.dy-3)+'px';
+    input.style.width=Math.max(60,r.w*g.dx+24)+'px';
+    input.style.height=(r.h*g.dy+6)+'px';
+    g.layer.appendChild(input);
+
+    this._editing={line:l,idx:idx,box:box,input:input};
+    this._applyStyleToInput();
+    this._fillPanel(l);
+    this._setState('edit');
+
+    var self=this;
+    input.addEventListener('keydown',function(e){
+      e.stopPropagation();
+      if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();self._closeEditor(true);}
+      else if(e.key==='Escape'){e.preventDefault();self._closeEditor(false);}
+    });
+    input.addEventListener('input',function(){self._autoSize();});
+    input.addEventListener('mousedown',function(e){e.stopPropagation();});
+    input.addEventListener('click',function(e){e.stopPropagation();});
+    setTimeout(function(){input.focus();input.select();self._autoSize();},10);
+  },
+
+  _cssSize:function(g){
+    g=g||this._geom();
+    if(!g||!this._style)return 12;
+    return this._style.sizePt*g.dy;
+  },
+
+  _autoSize:function(){
+    var ed=this._editing;if(!ed)return;
+    var g=this._geom();if(!g)return;
+    var cs=this._cssSize(g);
+    var w=this._measure(ed.input.value,this._style,cs)+24;
+    var maxW=g.canvas.getBoundingClientRect().width-(parseFloat(ed.input.style.left)-g.offX)-4;
+    ed.input.style.width=Math.max(60,Math.min(w,Math.max(60,maxW)))+'px';
+    ed.input.style.height='auto';
+    ed.input.style.height=Math.max(ed.input.scrollHeight,cs*1.35)+'px';
+  },
+
+  _measure:function(txt,s,cssSize){
+    var c=this._mc||(this._mc=document.createElement('canvas').getContext('2d'));
+    c.font=(s.italic?'italic ':'')+(s.bold?'700 ':'')+cssSize+'px '+(s.family||s.font||'sans-serif');
+    var lines=String(txt||'').split('\n'),max=0;
+    for(var i=0;i<lines.length;i++)max=Math.max(max,c.measureText(lines[i]).width);
+    return max;
+  },
+
+  _applyStyleToInput:function(){
+    var ed=this._editing;if(!ed)return;
+    var s=this._style;
+    ed.input.style.fontFamily=s.family;
+    ed.input.style.fontSize=this._cssSize()+'px';
+    ed.input.style.fontWeight=s.bold?'700':'400';
+    ed.input.style.fontStyle=s.italic?'italic':'normal';
+    ed.input.style.color=s.color;
+    ed.input.style.lineHeight='1.15';
+    this._autoSize();
+  },
+
+  _closeEditor:function(apply){
+    var ed=this._editing;
+    if(!ed)return;
+    if(apply){
+      try{this._apply();}catch(e){console.error(e);Toast.show('Erreur : '+e.message,'error');}
+    }
+    if(ed.input&&ed.input.parentNode)ed.input.remove();
+    if(ed.box)ed.box.classList.remove('editing');
+    this._editing=null;
+    if(this.active)this._setState(this._lines.length?'ready':'notext',this._remaining());
+  },
+
+  /* ════════════════════════════════════════════════════════════════
+     6. APPLICATION DE LA MODIFICATION
+     ════════════════════════════════════════════════════════════════ */
+  _apply:function(){
+    var ed=this._editing;if(!ed)return;
+    var l=ed.line,s=this._style;
+    var newText=String(ed.input.value||'');
+    if(newText===l.str)return;
+    var g=this._geom();if(!g)return;
+    var r=this._rect(l);
+
+    // 1) Masquage + vraie suppression : on peint la zone d'origine dans le
+    //    canvas de la gomme (coordonnées canvas), ce qui déclenche la
+    //    rédaction réelle du texte sous-jacent à l'export.
+    var padPt=Math.max(0.6,l.size*0.14);
+    var mx=Math.max(0,(r.x-padPt)*g.cx);
+    var my=Math.max(0,(this._pdfH-r.top-padPt)*g.cy);
+    var mw=(r.w+padPt*2)*g.cx;
+    var mh=(r.h+padPt*2)*g.cy;
+    EraserTool._ensureCanvas();
+    if(EraserTool._ctx&&EraserTool._canvas){
+      var ec=EraserTool._canvas,ex=EraserTool._ctx,before=null;
+      try{before=ex.getImageData(0,0,ec.width,ec.height);}catch(e){}
+      ex.save();
+      ex.globalCompositeOperation='source-over';
+      ex.fillStyle='#ffffff';
+      ex.fillRect(mx,my,mw,mh);
+      ex.restore();
+      try{if(before)EditUndo.pushEraseStroke(EraserTool,before,ex.getImageData(0,0,ec.width,ec.height));}catch(e){}
+    }
+
+    // 2) Fond non blanc : on le restitue par un rectangle plein.
+    //    Garde-fou : sur une ligne très grasse/très grande, la couleur
+    //    dominante de la zone peut être celle de l'encre et non du fond —
+    //    dans ce cas on s'abstient plutôt que de peindre un pavé de la
+    //    couleur du texte.
+    var inkRgb=this._hexRgb(l.color||'#1a1a1a');
+    var bgVsInk=l.bg?Math.abs(l.bg.r-inkRgb.r)+Math.abs(l.bg.g-inkRgb.g)+Math.abs(l.bg.b-inkRgb.b):999;
+    if(l.bg&&bgVsInk>60&&(255-l.bg.r)+(255-l.bg.g)+(255-l.bg.b)>36){
+      var bgHex=this._toHex(l.bg.r,l.bg.g,l.bg.b);
+      var sh={shape:'rect',x1:mx,y1:my,x2:mx+mw,y2:my+mh,
+              stroke:bgHex,fill:bgHex,strokeSize:1,fillOpacity:1};
+      ShapeTool._ensureCanvas();
+      ShapeTool._shapes.push(sh);
+      ShapeTool._redrawAll();
+      EditUndo.pushShapeAdd(sh);
+    }
+
+    // 3) Nouveau texte : posé pour que sa ligne de base retombe exactement
+    //    sur celle d'origine (burnToPage place la base à top + 1,1 × corps).
+    if(newText.trim()){
+      var sizeCss=s.sizePt*g.dy;
+      var leftCss=g.offX+l.x0*g.dx;
+      var topCss=g.offY+(this._pdfH-l.baseline)*g.dy-1.1*sizeCss;
+      var wCss=Math.max(l.width*g.dx,this._measure(newText,s,sizeCss))*1.12+8;
+      this._createTextEl(leftCss,topCss,wCss,newText,{
+        font:s.family,size:sizeCss,bold:s.bold,italic:s.italic,color:s.color,pdfedit:1
+      });
+    }
+
+    // La ligne d'origine n'existe plus : on neutralise son cadre SANS toucher
+    // aux index (les gestionnaires de clic posés par _drawBoxes capturent un
+    // index fixe, qu'un splice décalerait).
+    l._done=true;
+    if(ed.box&&ed.box.parentNode)ed.box.remove();
+
+    UnsavedBadge.show();
+    Signature.updateBurnBtn();
+    Toast.show(newText.trim()
+      ?'Texte remplacé ✓ ('+this._famLabel(s.family)+' '+(Math.round(s.sizePt*10)/10)+' pt)'
+      :'Texte supprimé ✓','success');
+  },
+
+  /* Annotation texte identique à celles de l'outil Texte (donc sérialisée
+     et gravée par la tuyauterie existante), mais sans marge interne pour
+     rester calée au pixel sur l'original. */
+  _createTextEl:function(left,top,width,text,style){
+    var layer=document.getElementById('sign-overlay-layer');
+    var el=document.createElement('div');
+    el.className='text-placed pdfedit-text';
+    el.style.cssText='left:'+left+'px;top:'+top+'px;width:'+width+'px;'+
+      'min-height:0;height:'+(style.size*1.45)+'px;';
+    el._textStyle=style;
+
+    var content=document.createElement('div');
+    content.className='text-placed-content';
+    content.textContent=text;
+
+    var input=document.createElement('textarea');
+    input.className='text-placed-input';
+    input.value=text;input.rows=1;
+
+    [content,input].forEach(function(n){
+      n.style.fontFamily=style.font;
+      n.style.fontSize=style.size+'px';
+      n.style.fontWeight=style.bold?'700':'400';
+      n.style.fontStyle=style.italic?'italic':'normal';
+      n.style.color=style.color;
+    });
+
+    var del=document.createElement('button');
+    del.className='text-placed-del';
+    del.innerHTML='<i class="fa-solid fa-xmark"></i>';
+    var resize=document.createElement('div');
+    resize.className='text-placed-resize';
+
+    el.appendChild(content);el.appendChild(input);el.appendChild(del);el.appendChild(resize);
+    del.addEventListener('click',function(e){e.stopPropagation();el.remove();TextTool._updateCount();});
+    el.addEventListener('click',function(e){
+      if(e.target.closest('.text-placed-del')||e.target.closest('.text-placed-resize')||e.target.tagName==='TEXTAREA')return;
+      e.stopPropagation();TextTool._selectEl(el);
+    });
+    el.addEventListener('dblclick',function(e){e.stopPropagation();TextTool._startEdit(el);});
+    TextTool._makeDraggable(el);TextTool._makeResizable(el);
+    layer.appendChild(el);
+    this.syncMetrics(el);
+    EditUndo.pushAdd(el);
+    TextTool._updateCount();
+    return el;
+  },
+
+  /* Cale verticalement l'aperçu écran sur la ligne de base que produira la
+     gravure (top + 1,1 × corps), en mesurant l'ascendante réelle de la
+     police du navigateur. */
+  syncMetrics:function(el){
+    if(!el||!el.classList.contains('pdfedit-text'))return;
+    var s=el._textStyle||{};
+    var size=parseFloat(s.size)||12;
+    var c=this._mc||(this._mc=document.createElement('canvas').getContext('2d'));
+    c.font=(s.italic?'italic ':'')+(s.bold?'700 ':'')+size+'px '+(s.font||'sans-serif');
+    var m=c.measureText('Hxg'),A,D;
+    try{A=m.fontBoundingBoxAscent;D=m.fontBoundingBoxDescent;}catch(e){}
+    if(!A||!isFinite(A)){A=size*0.8;D=size*0.2;}
+    if(!D||!isFinite(D))D=size*0.2;
+    var baselineFromTop=(size-(A+D))/2+A;   // line-height:1
+    var shift=1.1*size-baselineFromTop;
+    ['.text-placed-content','.text-placed-input'].forEach(function(sel){
+      var n=el.querySelector(sel);
+      if(n){n.style.marginTop=shift+'px';n.style.lineHeight='1';}
+    });
+  },
+
+  _famLabel:function(f){
+    return f==='serif'?'Times':(f==='monospace'?'Courier':(f==='cursive'?'Times italique':'Helvetica'));
+  },
+
+  /* ════════════════════════════════════════════════════════════════
+     7. PANNEAU LATÉRAL
+     ════════════════════════════════════════════════════════════════ */
+  _setState:function(state,n){
+    var box=document.getElementById('pdfedit-state');
+    var editor=document.getElementById('pdfedit-editor');
+    if(!box||!editor)return;
+    var msg={
+      idle:'<i class="fa-solid fa-circle-info"></i> Outil inactif.',
+      empty:'<i class="fa-solid fa-circle-info"></i> Ouvrez une page PDF pour modifier son texte.',
+      scan:'<i class="fa-solid fa-spinner fa-spin"></i> Analyse du texte de la page…',
+      ready:'<i class="fa-solid fa-hand-pointer"></i> '+(n||0)+' bloc(s) de texte détecté(s). Cliquez sur un bloc pour le modifier.',
+      notext:'<i class="fa-solid fa-triangle-exclamation"></i> Aucun texte modifiable sur cette page.',
+      ocr:'<i class="fa-solid fa-image"></i> Cette page est une image scannée : son texte est une couche OCR invisible, il n\'y a rien de modifiable.',
+      rot:'<i class="fa-solid fa-rotate"></i> Page pivotée : remettez-la à 0° pour modifier son texte.',
+      error:'<i class="fa-solid fa-triangle-exclamation"></i> Analyse impossible sur cette page.',
+      edit:'<i class="fa-solid fa-keyboard"></i> Entrée = appliquer · Échap = annuler'
+    }[state]||'';
+    box.innerHTML=msg;
+    editor.style.display=(state==='edit')?'flex':'none';
+  },
+
+  _fillPanel:function(l){
+    var s=this._style;
+    var det=document.getElementById('pdfedit-detected');
+    if(det){
+      det.innerHTML='<b>'+this._esc(l.font.name)+'</b>'+
+        '<span>'+(Math.round(l.size*10)/10)+' pt · '+
+        (l.font.bold?'gras · ':'')+(l.font.italic?'italique · ':'')+
+        this._famLabel(l.font.family)+' · '+this._esc(l.color||'#1a1a1a')+'</span>'+
+        '<span class="pdfedit-sub">substituée par '+this._famLabel(s.family)+
+        (s.bold?' gras':'')+(s.italic?' italique':'')+'</span>';
+    }
+    var fs=document.getElementById('pdfedit-font');if(fs)fs.value=s.family;
+    var sz=document.getElementById('pdfedit-size');if(sz)sz.value=Math.round(s.sizePt*10)/10;
+    var co=document.getElementById('pdfedit-color');if(co)co.value=this._normHex(s.color);
+    var b=document.getElementById('pdfedit-bold');if(b)b.classList.toggle('active',!!s.bold);
+    var i=document.getElementById('pdfedit-italic');if(i)i.classList.toggle('active',!!s.italic);
+  },
+  _esc:function(t){return String(t).replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c];});},
+  _normHex:function(h){
+    h=String(h||'#1a1a1a');
+    if(/^#[0-9a-f]{6}$/i.test(h))return h.toLowerCase();
+    if(/^#[0-9a-f]{3}$/i.test(h))return'#'+h[1]+h[1]+h[2]+h[2]+h[3]+h[3];
+    return'#1a1a1a';
+  },
+
+  setStyle:function(prop,val){
+    if(!this._editing||!this._style)return;
+    this._style[prop]=val;
+    this._applyStyleToInput();
+    var det=document.getElementById('pdfedit-detected');
+    var sub=det&&det.querySelector('.pdfedit-sub');
+    if(sub)sub.textContent='substituée par '+this._famLabel(this._style.family)+
+      (this._style.bold?' gras':'')+(this._style.italic?' italique':'');
+  },
+
+  deleteCurrent:function(){
+    if(!this._editing)return;
+    this._editing.input.value='';
+    this._closeEditor(true);
+  },
+
+  /* Aide au diagnostic (console) : superpose en rouge les cadres calculés,
+     pour vérifier « à l'œil » qu'ils collent au texte réellement dessiné.
+     Usage : TextEditTool.debug() */
+  debug:async function(){
+    var pg=Preview.pages[Preview.idx];if(!pg)return;
+    var f=Pages.find(pg.id);if(!f)return;
+    var pdfPage=await f.doc.pdfDoc.getPage(pg.pi+1);
+    var vp1=pdfPage.getViewport({scale:1,rotation:0});
+    this._pdfW=vp1.width;this._pdfH=vp1.height;
+    var runs=await this._extractRuns(pdfPage);
+    var lines=this._mergeRuns(runs);
+    this._attachFonts(pdfPage,lines);
+    var g=this._geom(),self=this;
+    document.querySelectorAll('.pdfedit-dbg').forEach(function(e){e.remove();});
+    lines.forEach(function(l){
+      var r=self._rect(l);
+      var d=document.createElement('div');
+      d.className='pdfedit-dbg';
+      d.style.cssText='position:absolute;pointer-events:none;border:1px solid red;z-index:500;'+
+        'left:'+(g.offX+r.x*g.dx)+'px;top:'+(g.offY+(self._pdfH-r.top)*g.dy)+'px;'+
+        'width:'+(r.w*g.dx)+'px;height:'+(r.h*g.dy)+'px;';
+      g.layer.appendChild(d);
+    });
+    console.log(lines.length+' lignes',lines);
+    return lines;
   }
 };
 
@@ -9113,6 +10787,26 @@ var TIPS=[
   "Surlignage, texte ou tampon : annotez vos PDF avant de les partager."
 ];
 var currentTipIdx=-1;
+var tipTypeTimer=null;
+function typeTip(text){
+  var el=document.getElementById('tip-text');
+  if(!el)return;
+  if(tipTypeTimer){clearInterval(tipTypeTimer);tipTypeTimer=null;}
+  // Réserve déjà la taille finale du texte pour éviter que la bulle ne grandisse pendant la frappe
+  el.style.minWidth='';
+  el.style.minHeight='';
+  el.textContent=text;
+  el.style.minWidth=el.offsetWidth+'px';
+  el.style.minHeight=el.offsetHeight+'px';
+  el.textContent='';
+  el.classList.add('typing');
+  var i=0;
+  tipTypeTimer=setInterval(function(){
+    i++;
+    el.textContent=text.slice(0,i);
+    if(i>=text.length){clearInterval(tipTypeTimer);tipTypeTimer=null;el.classList.remove('typing');}
+  },18);
+}
 function showRandomTip(){
   var el=document.getElementById('tip-text');
   if(!el||!TIPS.length)return;
@@ -9121,7 +10815,7 @@ function showRandomTip(){
   var idx;
   do{idx=Math.floor(Math.random()*TIPS.length);}while(TIPS.length>1&&idx===lastIdx);
   try{localStorage.setItem('pdftips_last',idx);}catch(e){}
-  el.textContent=TIPS[idx];
+  typeTip(TIPS[idx]);
   currentTipIdx=idx;
 }
 (function(){
@@ -9136,9 +10830,9 @@ var Tour={
     {dt:'#tip-line',mb:'#tip-line',title:'C\'est parti !',desc:'Suivez le guide pour decouvrir les fonctionnalites cles, etape par etape.'},
     {dt:'#btn-add',mb:'#btn-add-m',title:'Importez vos fichiers',desc:'PDF, images, Word, Excel, PowerPoint... Glissez-déposez ou cliquez ici pour commencer.',onLeave:function(){if(!S.docs.length)return Tour.loadSample();}},
     {dt:'#canvas-wrap',mb:'#canvas-wrap',illus:'move',title:'Déplacez une page',desc:'Glissez une page pour la réordonner, même entre deux documents différents.'},
-    {dt:'#btn-sel-dup',mb:'#canvas-wrap',illus:'dup',title:'Dupliquez une page',desc:'Sélectionnez une page puis dupliquez-la pour repartir d\'un modèle existant.'},
-    {dt:'#btn-sel-rot',mb:'#canvas-wrap',illus:'rotate',title:'Faites pivoter une page',desc:'Redressez une page scannée à l\'envers en un clic.'},
-    {dt:'#btn-sel-del',mb:'#canvas-wrap',illus:'delete',title:'Supprimez une page',desc:'Retirez une page inutile de votre document.'},
+    {dt:'#sb-dup',mb:'#canvas-wrap',illus:'dup',title:'Dupliquez une page',desc:'Sélectionnez une page puis dupliquez-la pour repartir d\'un modèle existant.'},
+    {dt:'#sb-rot',mb:'#canvas-wrap',illus:'rotate',title:'Faites pivoter une page',desc:'Redressez une page scannée à l\'envers en un clic.'},
+    {dt:'#sb-del',mb:'#canvas-wrap',illus:'delete',title:'Supprimez une page',desc:'Retirez une page inutile de votre document.'},
     {dt:'.merge-strip-btn',mb:'#canvas-wrap',illus:'merge',title:'Fusionnez deux documents',desc:'Un lien apparaît entre deux documents adjacents pour les combiner directement.'},
     {dt:'#preview-canvas',mb:'#preview-canvas',onEnter:function(){var pid=(S.docs[0]&&S.docs[0].pages[0])?S.docs[0].pages[0].id:null;if(pid)Preview.open(pid);},title:'Ouvrez le plein écran',desc:'Double-cliquez sur une page pour l\'ouvrir en grand, avec zoom et navigation entre les pages.'},
     {dt:'#prev-edit-btn',mb:'#prev-edit-btn',title:'Cliquez sur « Modifier »',desc:'Ce bouton, en bas de l\'écran, active le mode édition pour ajouter des annotations.'},
@@ -9339,27 +11033,21 @@ var Tour={
   document.getElementById('btn-zoom-in').addEventListener('click',function(){UI.setZoom(S.zoom+.1);});
   document.getElementById('btn-zoom-out').addEventListener('click',function(){UI.setZoom(S.zoom-.1);});
 
-  document.getElementById('btn-sel-rot').addEventListener('click',function(){Pages.rotSel(90);});
-  document.getElementById('btn-sel-dup').addEventListener('click',function(){Pages.dupSel();});
-  document.getElementById('btn-sel-del').addEventListener('click',function(){Pages.delSel();});
-  document.getElementById('btn-sel-clear').addEventListener('click',function(){Pages.clearSel();});
-
   document.getElementById('sb-rot').addEventListener('click',function(){Pages.rotSel(90);});
   document.getElementById('sb-dup').addEventListener('click',function(){Pages.dupSel();});
   document.getElementById('sb-extract').addEventListener('click',function(){Extract.fromSel();});
   document.getElementById('sb-del').addEventListener('click',function(){Pages.delSel();});
   document.getElementById('sb-clear').addEventListener('click',function(){Pages.clearSel();});
 
-  // Undo/redo - desktop toolbar
-  document.getElementById('btn-undo').addEventListener('click',function(){Undo.undo();});
-  document.getElementById('btn-redo').addEventListener('click',function(){Undo.redo();});
+  // Undo/redo - barre du bas (sel-bar)
+  document.getElementById('sb-undo').addEventListener('click',function(){Undo.undo();});
+  document.getElementById('sb-redo').addEventListener('click',function(){Undo.redo();});
   // Undo/redo - mobile toolbar
   document.getElementById('btn-undo-m').addEventListener('click',function(){Undo.undo();});
   document.getElementById('btn-redo-m').addEventListener('click',function(){Undo.redo();});
   // Mobile selection actions
 
   document.getElementById('btn-merge-all').addEventListener('click',function(){Split.mergeAll();});
-  document.getElementById('btn-extract').addEventListener('click',function(){Extract.open();});
   document.getElementById('range-cancel').addEventListener('click',function(){hideModal('range-modal');});
   document.getElementById('range-ok').addEventListener('click',function(){Extract.confirm();});
   document.getElementById('range-doc').addEventListener('change',function(){Extract.updateInfo();});
@@ -9437,9 +11125,6 @@ var Tour={
     });
   })();
 
-  // Blank page
-  document.getElementById('btn-add-blank').addEventListener('click',function(){BlankPage.insert();});
-
   // History
   document.getElementById('btn-history').addEventListener('click',function(){History.open();});
   document.getElementById('history-close').addEventListener('click',function(){History.close();});
@@ -9458,7 +11143,6 @@ var Tour={
   document.getElementById('compress-grayscale').addEventListener('change',function(){Export.onCompressInputChanged();});
 
   // Export images
-  document.getElementById('btn-export-img').addEventListener('click',function(){ExportImg.open();});
   document.getElementById('exportimg-cancel').addEventListener('click',function(){hideModal('exportimg-modal');});
   document.getElementById('exportimg-ok').addEventListener('click',function(){ExportImg.confirm();});
   document.getElementById('exportimg-scale').addEventListener('input',function(){document.getElementById('exportimg-scale-val').textContent='x'+this.value;});
@@ -9498,8 +11182,6 @@ var Tour={
     sheet.addEventListener('touchend',function(e){var dy=e.changedTouches[0].clientY-startY;if(dy>60)BottomSheet.close();},{passive:true});
   })();
 
-  document.getElementById('btn-save').addEventListener('click',function(){Project.save();});
-  document.getElementById('btn-load-proj').addEventListener('click',function(){document.getElementById('proj-input').click();});
   document.getElementById('proj-input').addEventListener('change',function(e){if(e.target.files[0])Project.load(e.target.files[0]);e.target.value='';});
   var btnRestoreSession=document.getElementById('btn-restore-session');
   if(btnRestoreSession)btnRestoreSession.addEventListener('click',function(){Project.restoreAuto();});
@@ -9615,6 +11297,46 @@ var Tour={
       else EspPanel.show('none');
     });
 
+    // ── Bouton Modifier texte (édition du texte existant du PDF) ──
+    document.getElementById('etb-edittext').addEventListener('click',function(){
+      TextEditTool.toggle();
+      if(!TextEditTool.active)EspPanel.show('none');
+    });
+    (function(){
+      var fontSel=document.getElementById('pdfedit-font');
+      if(fontSel)fontSel.addEventListener('change',function(){TextEditTool.setStyle('family',this.value);});
+      var szInp=document.getElementById('pdfedit-size');
+      if(szInp)szInp.addEventListener('input',function(){
+        var v=parseFloat(this.value);if(!isFinite(v)||v<=0)return;
+        TextEditTool.setStyle('sizePt',v);
+      });
+      var colInp=document.getElementById('pdfedit-color');
+      if(colInp)colInp.addEventListener('input',function(){TextEditTool.setStyle('color',this.value);});
+      var bBtn=document.getElementById('pdfedit-bold');
+      if(bBtn)bBtn.addEventListener('click',function(){
+        if(!TextEditTool._style)return;
+        TextEditTool.setStyle('bold',!TextEditTool._style.bold);
+        this.classList.toggle('active',!!TextEditTool._style.bold);
+      });
+      var iBtn=document.getElementById('pdfedit-italic');
+      if(iBtn)iBtn.addEventListener('click',function(){
+        if(!TextEditTool._style)return;
+        TextEditTool.setStyle('italic',!TextEditTool._style.italic);
+        this.classList.toggle('active',!!TextEditTool._style.italic);
+      });
+      var apBtn=document.getElementById('pdfedit-apply');
+      if(apBtn)apBtn.addEventListener('click',function(){TextEditTool._closeEditor(true);});
+      var caBtn=document.getElementById('pdfedit-cancel');
+      if(caBtn)caBtn.addEventListener('click',function(){TextEditTool._closeEditor(false);});
+      var delBtn=document.getElementById('pdfedit-delete');
+      if(delBtn)delBtn.addEventListener('click',function(){TextEditTool.deleteCurrent();});
+      // Clic ailleurs = valider la modification en cours (comportement Acrobat).
+      document.addEventListener('mousedown',function(e){
+        if(!TextEditTool._editing)return;
+        if(e.target.closest('.pdfedit-input')||e.target.closest('#esp-panel-edittext')||e.target.closest('.pdfedit-line'))return;
+        TextEditTool._closeEditor(true);
+      });
+    })();
     // ── Bouton Sélection ──
     document.getElementById('etb-select').addEventListener('click',function(){
       if(SelectTool.active){SelectTool.deactivate();EspPanel.show('none');}
