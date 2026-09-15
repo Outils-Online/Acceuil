@@ -59,6 +59,29 @@
   .upload-zone .hint{font-size:.85rem; color:#8a8577; margin-top:.5rem;}
   .upload-zone strong{font-size:1.02rem;}
 
+  .select-zone{margin-bottom:1.1rem;}
+  .select-zone .hint{font-size:.82rem; color:#5a564c; margin-bottom:.6rem;}
+  .crop-wrap{
+    position:relative;
+    display:inline-block;
+    max-width:100%;
+    cursor:crosshair;
+    user-select:none;
+    -webkit-user-select:none;
+    touch-action:none;
+    border-radius:6px;
+    overflow:hidden;
+    border:1px solid var(--line);
+  }
+  .crop-wrap img{display:block; max-width:100%; max-height:420px;}
+  .selection-box{
+    position:absolute;
+    border:2px dashed var(--accent);
+    background:rgba(138,90,59,0.15);
+    pointer-events:none;
+  }
+  .select-zone button.ghost{margin:.7rem 0 0; margin-left:0;}
+
   .field{margin-bottom:1.1rem;}
   label{
     display:block;
@@ -293,6 +316,15 @@
   </div>
   <input type="file" id="file-input" accept="image/*" style="display:none;">
 
+  <div class="select-zone" id="select-zone" style="display:none;">
+    <div class="hint">S'il y a plusieurs typographies dans l'image (un titre et un corps de texte, par exemple), dessinez un cadre sur la zone à analyser.</div>
+    <div class="crop-wrap" id="crop-wrap">
+      <img id="select-img">
+      <div class="selection-box" id="selection-box" style="display:none;"></div>
+    </div>
+    <button class="ghost" id="reset-selection-btn" type="button" style="display:none;">← Revenir à l'image entière</button>
+  </div>
+
   <div class="field">
     <label for="category-select">Famille stylistique</label>
     <select id="category-select">
@@ -498,6 +530,11 @@ const sctx = scratch.getContext('2d', { willReadFrequently: true });
 const categorySelect = document.getElementById('category-select');
 const serifNote = document.getElementById('serif-note');
 const catalogSourceNote = document.getElementById('catalog-source-note');
+const selectZone = document.getElementById('select-zone');
+const cropWrap = document.getElementById('crop-wrap');
+const selectImg = document.getElementById('select-img');
+const selectionBox = document.getElementById('selection-box');
+const resetSelectionBtn = document.getElementById('reset-selection-btn');
 
 const CATEGORY_LABELS = {
   sans:"sans-serif (bâton)", serif:"serif (avec empattements)",
@@ -506,6 +543,8 @@ const CATEGORY_LABELS = {
 };
 
 let uploadedImage = null;
+let originalImage = null;   // image complète, jamais recadrée — sert de base à chaque nouvelle sélection
+let originalDataUrl = null;
 
 uploadZone.addEventListener('click', () => fileInput.click());
 uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
@@ -524,9 +563,17 @@ function handleFile(file){
     const img = new Image();
     img.onload = async () => {
       uploadedImage = img;
+      originalImage = img;
+      originalDataUrl = e.target.result;
       previewImg.src = e.target.result;
       previewImg.style.display = 'block';
       placeholder.style.display = 'none';
+
+      selectImg.src = e.target.result;
+      selectZone.style.display = 'block';
+      selectionBox.style.display = 'none';
+      resetSelectionBtn.style.display = 'none';
+
       await runPipeline(e.target.result);
     };
     img.src = e.target.result;
@@ -541,6 +588,92 @@ function resetResults(){
   ocrCorrection.style.display = 'none';
   statusLine.innerHTML = '';
 }
+
+/* ============================================================
+   Sélection d'une zone de l'image (utile quand le visuel
+   contient plusieurs typographies — titre + corps, par ex.)
+   ============================================================ */
+let dragging = false, dragStartX = 0, dragStartY = 0;
+
+function pointerPos(e, rect){
+  const isTouch = e.touches && e.touches.length;
+  const clientX = isTouch ? e.touches[0].clientX : e.clientX;
+  const clientY = isTouch ? e.touches[0].clientY : e.clientY;
+  return {
+    x: Math.max(0, Math.min(clientX - rect.left, rect.width)),
+    y: Math.max(0, Math.min(clientY - rect.top, rect.height))
+  };
+}
+
+function startDrag(e){
+  e.preventDefault();
+  const rect = cropWrap.getBoundingClientRect();
+  const p = pointerPos(e, rect);
+  dragging = true;
+  dragStartX = p.x; dragStartY = p.y;
+  Object.assign(selectionBox.style, { left: p.x+'px', top: p.y+'px', width:'0px', height:'0px', display:'block' });
+}
+function moveDrag(e){
+  if(!dragging) return;
+  e.preventDefault();
+  const rect = cropWrap.getBoundingClientRect();
+  const p = pointerPos(e, rect);
+  const x = Math.min(dragStartX, p.x), y = Math.min(dragStartY, p.y);
+  const w = Math.abs(p.x - dragStartX), h = Math.abs(p.y - dragStartY);
+  Object.assign(selectionBox.style, { left:x+'px', top:y+'px', width:w+'px', height:h+'px' });
+}
+function endDrag(){
+  if(!dragging) return;
+  dragging = false;
+  const w = parseFloat(selectionBox.style.width) || 0;
+  const h = parseFloat(selectionBox.style.height) || 0;
+  if(w < 14 || h < 14){ selectionBox.style.display = 'none'; return; } // sélection trop petite, ignorée
+  finalizeSelection();
+}
+
+cropWrap.addEventListener('mousedown', startDrag);
+document.addEventListener('mousemove', moveDrag);
+document.addEventListener('mouseup', endDrag);
+cropWrap.addEventListener('touchstart', startDrag, { passive:false });
+document.addEventListener('touchmove', moveDrag, { passive:false });
+document.addEventListener('touchend', endDrag);
+
+function cropToDataUrl(img, sx, sy, sw, sh){
+  const c = document.createElement('canvas');
+  c.width = Math.max(1, Math.round(sw));
+  c.height = Math.max(1, Math.round(sh));
+  const cx = c.getContext('2d');
+  cx.drawImage(img, sx, sy, sw, sh, 0, 0, c.width, c.height);
+  return c.toDataURL('image/png');
+}
+
+async function finalizeSelection(){
+  const displayedW = selectImg.clientWidth, displayedH = selectImg.clientHeight;
+  const scaleX = originalImage.naturalWidth / displayedW;
+  const scaleY = originalImage.naturalHeight / displayedH;
+  const x = parseFloat(selectionBox.style.left) * scaleX;
+  const y = parseFloat(selectionBox.style.top) * scaleY;
+  const w = parseFloat(selectionBox.style.width) * scaleX;
+  const h = parseFloat(selectionBox.style.height) * scaleY;
+
+  const dataUrl = cropToDataUrl(originalImage, x, y, w, h);
+  resetResults();
+  const img = new Image();
+  img.onload = async () => {
+    uploadedImage = img;
+    resetSelectionBtn.style.display = 'inline-block';
+    await runPipeline(dataUrl);
+  };
+  img.src = dataUrl;
+}
+
+resetSelectionBtn.addEventListener('click', async () => {
+  selectionBox.style.display = 'none';
+  resetSelectionBtn.style.display = 'none';
+  uploadedImage = originalImage;
+  resetResults();
+  await runPipeline(originalDataUrl);
+});
 
 function setStatus(text, spinning){
   statusLine.innerHTML = (spinning ? '<span class="spinner"></span>' : '') + text;
