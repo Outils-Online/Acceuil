@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trouveur de typo — par image</title>
+<style>
+  :root{
+    --ink:#1b1b18;
+    --paper:#faf8f4;
+    --line:#d8d3c8;
+    --accent:#8a5a3b;
+    --accent-soft:#f0e4d8;
+    --mono: 'IBM Plex Mono', monospace;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family: 'IBM Plex Sans', Arial, sans-serif;
+    line-height:1.5;
+  }
+  header{
+    padding:2.2rem 1.5rem 1rem;
+    max-width:760px;
+    margin:0 auto;
+  }
+  h1{
+    font-family: 'Fraunces', Georgia, serif;
+    font-size:2.1rem;
+    font-weight:600;
+    margin:0 0 .35rem;
+    letter-spacing:-0.01em;
+  }
+  header p{
+    margin:0;
+    color:#5a564c;
+    max-width:58ch;
+  }
+  main{
+    max-width:760px;
+    margin:0 auto;
+    padding:1.4rem 1.5rem 4rem;
+  }
+
+  .upload-zone{
+    border:1.5px dashed var(--line);
+    border-radius:8px;
+    padding:1.8rem;
+    text-align:center;
+    background:#fff;
+    cursor:pointer;
+    margin-bottom:1.1rem;
+    transition:border-color .15s, background .15s;
+  }
+  .upload-zone.dragover{border-color:var(--accent); background:var(--accent-soft);}
+  .upload-zone img{max-width:100%; max-height:200px; border-radius:4px;}
+  .upload-zone .hint{font-size:.85rem; color:#8a8577; margin-top:.5rem;}
+  .upload-zone strong{font-size:1.02rem;}
+
+  .field{margin-bottom:1.1rem;}
+  label{
+    display:block;
+    font-size:.8rem;
+    color:#5a564c;
+    margin-bottom:.4rem;
+  }
+  input[type="text"]{
+    width:100%;
+    padding:.7rem .85rem;
+    border:1px solid var(--line);
+    border-radius:6px;
+    background:#fff;
+    font-size:1rem;
+    color:var(--ink);
+    font-family:inherit;
+  }
+  input[type="text"]:focus{ outline:none; border-color:var(--accent); }
+  .field .helper{font-size:.76rem; color:#8a8577; margin-top:.35rem;}
+
+  button.run{
+    background:var(--ink);
+    color:var(--paper);
+    border:none;
+    padding:.7rem 1.2rem;
+    border-radius:6px;
+    font-size:.9rem;
+    cursor:pointer;
+  }
+  button.run:disabled{opacity:.4; cursor:not-allowed;}
+  button.ghost{
+    background:none;
+    border:1px solid var(--line);
+    color:var(--ink);
+    padding:.7rem 1.1rem;
+    border-radius:6px;
+    font-size:.85rem;
+    cursor:pointer;
+    margin-left:.5rem;
+  }
+
+  .status-line{
+    font-family:var(--mono);
+    font-size:.8rem;
+    color:#8a8577;
+    margin:1rem 0;
+    min-height:1.2rem;
+    display:flex;
+    align-items:center;
+    gap:.5rem;
+  }
+  .spinner{
+    width:.7rem; height:.7rem;
+    border:2px solid var(--line);
+    border-top-color:var(--accent);
+    border-radius:50%;
+    animation:spin .8s linear infinite;
+    display:inline-block;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .best-match{
+    border:1px solid var(--ink);
+    border-radius:10px;
+    padding:1.3rem 1.4rem;
+    margin:1.6rem 0 1.2rem;
+    background:#fff;
+  }
+  .best-match .tag{
+    font-family:var(--mono);
+    font-size:.72rem;
+    color:var(--accent);
+    text-transform:uppercase;
+    letter-spacing:.04em;
+  }
+  .best-match .found-name{
+    font-size:1.4rem;
+    font-weight:600;
+    margin:.35rem 0 .6rem;
+  }
+  .best-match .preview{
+    font-size:2rem;
+    padding:.6rem 0;
+    border-top:1px dashed var(--line);
+    border-bottom:1px dashed var(--line);
+    overflow-wrap:anywhere;
+  }
+  .best-match .substitutes{
+    font-size:.85rem;
+    color:#5a564c;
+    margin-top:.7rem;
+  }
+  .best-match .substitutes b{color:var(--ink);}
+  .best-match a.gfonts-link{
+    display:inline-block;
+    margin-top:.7rem;
+    font-family:var(--mono);
+    font-size:.75rem;
+    color:var(--accent);
+    text-decoration:none;
+  }
+
+  .rank-list{margin-top:1.2rem;}
+  .rank-list h2{
+    font-size:.9rem;
+    font-weight:600;
+    color:#5a564c;
+    margin:0 0 .6rem;
+  }
+  .rank-item{
+    display:grid;
+    grid-template-columns:2rem 1fr;
+    gap:.9rem;
+    align-items:center;
+    padding:.8rem 0;
+    border-bottom:1px solid var(--line);
+  }
+  .rank-item .rank-num{
+    font-family:var(--mono);
+    color:#8a8577;
+    font-size:.85rem;
+  }
+  .rank-item .rank-font-name{
+    font-family:var(--mono);
+    font-size:.72rem;
+    color:#8a8577;
+    margin-bottom:.15rem;
+  }
+  .rank-item .rank-preview{
+    font-size:1.35rem;
+    overflow-wrap:anywhere;
+  }
+  .rank-item .rank-score{
+    font-family:var(--mono);
+    font-size:.68rem;
+    color:var(--accent);
+  }
+
+  select#category-select{
+    width:100%;
+    padding:.65rem .8rem;
+    border:1px solid var(--line);
+    border-radius:6px;
+    background:#fff;
+    font-size:.92rem;
+    color:var(--ink);
+    font-family:inherit;
+  }
+  .serif-note{font-size:.76rem; color:#8a8577; margin-top:.35rem;}
+
+  .write-area{
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:1.2rem 1.3rem;
+    margin:1.2rem 0;
+    background:#fff;
+  }
+  .write-area .tag{
+    font-family:var(--mono);
+    font-size:.72rem;
+    color:var(--accent);
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    margin-bottom:.6rem;
+  }
+  .write-area textarea{
+    width:100%;
+    min-height:110px;
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:.8rem .9rem;
+    resize:vertical;
+    color:var(--ink);
+    background:#fffefb;
+  }
+  .write-area .controls{
+    display:flex;
+    align-items:center;
+    gap:.7rem;
+    margin-top:.7rem;
+    flex-wrap:wrap;
+  }
+  .write-area .controls label{
+    margin:0;
+    font-size:.76rem;
+    white-space:nowrap;
+  }
+  .write-area input[type="range"]{ flex:1; min-width:120px; }
+  .write-area .copy-feedback{
+    font-family:var(--mono);
+    font-size:.72rem;
+    color:var(--accent);
+    margin-left:.3rem;
+  }
+
+  .disclaimer{
+    font-size:.78rem;
+    color:#8a8577;
+    border-left:2px solid var(--line);
+    padding-left:.8rem;
+    margin-top:1.8rem;
+  }
+  .error-box{
+    background:#fdf0ea;
+    border:1px solid #e0b39a;
+    color:#7a3b1f;
+    padding:.9rem 1rem;
+    border-radius:6px;
+    font-size:.85rem;
+    margin-top:1rem;
+  }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.4/dist/tesseract.min.js"></script>
+</head>
+<body>
+
+<header>
+  <h1>Trouveur de typo</h1>
+  <p>Déposez une image contenant du texte. Le texte est lu automatiquement par OCR, la présence d'empattements (serifs) est estimée, puis le texte est comparé aux polices web les plus proches dans la bonne famille stylistique — et, si l'original est une police payante connue, son alternative gratuite la plus proche.</p>
+</header>
+
+<main>
+  <div class="upload-zone" id="upload-zone">
+    <div id="upload-placeholder">
+      <strong>Cliquez ou déposez une image</strong>
+      <div class="hint">Un cadrage net sur le texte, sans trop de bruit visuel autour, donne les meilleurs résultats.</div>
+    </div>
+    <img id="preview-img" style="display:none;">
+  </div>
+  <input type="file" id="file-input" accept="image/*" style="display:none;">
+
+  <div class="field">
+    <label for="category-select">Famille stylistique</label>
+    <select id="category-select">
+      <option value="auto">Automatique (détection des empattements)</option>
+      <option value="sans">Sans-serif (bâton)</option>
+      <option value="serif">Serif (avec empattements)</option>
+      <option value="slab">Slab-serif (empattements épais)</option>
+      <option value="display">Display / décorative</option>
+      <option value="script">Script / manuscrite</option>
+      <option value="mono">Monospace</option>
+      <option value="all">Toutes les catégories (recherche large, plus lent)</option>
+    </select>
+    <div class="serif-note" id="serif-note"></div>
+    <div class="serif-note" id="catalog-source-note"></div>
+  </div>
+
+  <div class="status-line" id="status-line"></div>
+
+  <div id="ocr-correction" style="display:none;">
+    <div class="field">
+      <label for="visible-text-input">Texte lu automatiquement (corrigez si l'OCR s'est trompé)</label>
+      <input type="text" id="visible-text-input">
+      <div class="helper">La comparaison utilise ce texte — corrigez-le puis relancez si besoin.</div>
+    </div>
+    <button class="run" id="rerun-btn">Relancer l'analyse</button>
+  </div>
+
+  <div id="error-area"></div>
+  <div id="best-match-area"></div>
+  <div class="rank-list" id="rank-list-area"></div>
+
+  <p class="disclaimer">L'identification se fait par ressemblance de proportions (ratio largeur/hauteur, densité d'encre par zones) entre le texte détecté et son rendu dans chaque police candidate — pas par reconnaissance du dessin exact des lettres. C'est une présélection fiable pour réduire les candidats, à confirmer visuellement.</p>
+</main>
+
+<canvas id="canvas-scratch" width="900" height="300" style="display:none;"></canvas>
+
+<script>
+/* ============================================================
+   Base de correspondance : police payante connue -> alternative
+   (utilisée pour annoter le résultat final, en complément
+   de la comparaison visuelle)
+   ============================================================ */
+const FONT_DB = [
+  { name:"Helvetica", alt:"Roboto" }, { name:"Helvetica Neue", alt:"Roboto" },
+  { name:"Arial", alt:"Arimo" }, { name:"Futura", alt:"Poppins" },
+  { name:"Gotham", alt:"Montserrat" }, { name:"Proxima Nova", alt:"Montserrat" },
+  { name:"Century Gothic", alt:"Poppins" }, { name:"Avenir", alt:"Nunito Sans" },
+  { name:"Brandon Grotesque", alt:"Poppins" }, { name:"Circular", alt:"Comfortaa" },
+  { name:"Din", alt:"Fjalla One" }, { name:"Din Next", alt:"Fjalla One" },
+  { name:"Garamond", alt:"EB Garamond" }, { name:"Baskerville", alt:"Libre Baskerville" },
+  { name:"Bodoni", alt:"Playfair Display" }, { name:"Didot", alt:"Playfair Display" },
+  { name:"Museo", alt:"Merriweather" }, { name:"Trade Gothic", alt:"Oswald" },
+  { name:"Franklin Gothic", alt:"Archivo" }, { name:"Neutraface", alt:"Poppins" },
+  { name:"Rockwell", alt:"Roboto Slab" }, { name:"Clarendon", alt:"Bitter" },
+  { name:"Optima", alt:"Josefin Sans" }, { name:"Frutiger", alt:"Mukta" },
+  { name:"Univers", alt:"Roboto" }, { name:"Myriad Pro", alt:"Nunito Sans" },
+  { name:"Segoe UI", alt:"Open Sans" }, { name:"Verdana", alt:"PT Sans" },
+  { name:"Georgia", alt:"PT Serif" }, { name:"Times New Roman", alt:"Noto Serif" },
+  { name:"Comic Sans MS", alt:"Comic Neue" }, { name:"Impact", alt:"Anton" },
+  { name:"Brush Script", alt:"Pacifico" }, { name:"Trajan", alt:"Cinzel" },
+  { name:"Copperplate", alt:"Cinzel" }, { name:"Bank Gothic", alt:"Oswald" },
+  { name:"Eurostile", alt:"Exo 2" }, { name:"ITC Avant Garde", alt:"Poppins" },
+  { name:"Bickham Script", alt:"Alex Brush" }, { name:"Gill Sans", alt:"Nunito Sans" },
+  { name:"Calibri", alt:"Open Sans" },
+];
+// annuaire inversé : pour une police candidate, quelles polices payantes remplace-t-elle ?
+const REVERSE_DB = {};
+FONT_DB.forEach(({name, alt}) => {
+  if(name.toLowerCase() === alt.toLowerCase()) return;
+  if(!REVERSE_DB[alt]) REVERSE_DB[alt] = [];
+  REVERSE_DB[alt].push(name);
+});
+
+/* ============================================================
+   Catalogue de polices, classé par famille stylistique.
+   ~190 polices Google Fonts réelles (au lieu d'une quarantaine) :
+   on ne charge/compare que la famille pertinente (auto-détectée
+   ou choisie à la main), pas les 190 à chaque fois — ça reste
+   rapide tout en couvrant beaucoup plus de terrain.
+   (Un vrai catalogue de 1000+ polices existe chez Google Fonts,
+   mais les télécharger et les rendre toutes à chaque recherche
+   serait très lent côté navigateur ; ce découpage par famille
+   est le compromis qui gagne le plus en précision sans ça.)
+   ============================================================ */
+const FONT_CATALOG = {
+  sans: [
+    "Roboto","Open Sans","Lato","Montserrat","Poppins","Nunito Sans","Source Sans 3",
+    "Inter","Work Sans","Mukta","Arimo","Rubik","Karla","Fira Sans","Barlow",
+    "Raleway","Nunito","Ubuntu","PT Sans","Noto Sans","Mulish","Manrope","DM Sans",
+    "Jost","Outfit","Sora","Plus Jakarta Sans","Figtree","Public Sans",
+    "Red Hat Display","Urbanist","Epilogue","Hind","Assistant","Heebo",
+    "Titillium Web","Cabin","Overpass","Signika","Questrial","Krub","Kanit",
+    "Prompt","Chivo","IBM Plex Sans","Archivo","Barlow Condensed","Saira","Exo 2",
+    "Maven Pro","Varela Round","Catamaran","Asap","Lexend","Be Vietnam Pro",
+    "Sarabun","Quicksand","Comfortaa","Josefin Sans","Space Grotesk","Tajawal"
+  ],
+  serif: [
+    "PT Serif","Noto Serif","EB Garamond","Libre Baskerville","Playfair Display",
+    "Merriweather","Bitter","Lora","Crimson Text","Cormorant Garamond","Cormorant",
+    "Source Serif 4","IBM Plex Serif","Spectral","Vollkorn","Alegreya","Domine",
+    "Frank Ruhl Libre","Cardo","Neuton","Old Standard TT","Marcellus","Petrona",
+    "Literata","Newsreader","Faustina","Gelasio","Noto Serif Display","Prata",
+    "Rasa","Andada Pro","Piazzolla","Fraunces","DM Serif Display","DM Serif Text",
+    "Abhaya Libre","Gilda Display","Yrsa","Bree Serif","Vidaloka"
+  ],
+  slab: [
+    "Roboto Slab","Zilla Slab","Arvo","Rokkitt","Aleo","Sanchez","Crete Round",
+    "Bevan","Alfa Slab One","Ultra","Trirong","Slabo 27px","Josefin Sans"
+  ],
+  display: [
+    "Anton","Bebas Neue","Oswald","Fjalla One","Archivo Black","Bungee",
+    "Righteous","Passion One","Fredoka","Baloo 2","Lobster","Pathway Gothic One",
+    "Staatliches","Abril Fatface","Poiret One","Julius Sans One","Cinzel",
+    "Cinzel Decorative","Unica One","Monoton","Bangers","Big Shoulders Display",
+    "Chewy","Sigmar One","Shrikhand","Titan One","Squada One","Bowlby One",
+    "Luckiest Guy","Boogaloo"
+  ],
+  script: [
+    "Pacifico","Caveat","Dancing Script","Sacramento","Alex Brush","Great Vibes",
+    "Satisfy","Kaushan Script","Shadows Into Light","Indie Flower","Amatic SC",
+    "Permanent Marker","Homemade Apple","Courgette","Allura","Parisienne",
+    "Tangerine","Yellowtail","Cookie","Pinyon Script","Sriracha","Patrick Hand",
+    "Architects Daughter","Reenie Beanie","Handlee","Gochi Hand","Kalam","Neucha",
+    "Marck Script","Playball"
+  ],
+  mono: [
+    "IBM Plex Mono","Space Mono","Roboto Mono","Source Code Pro","JetBrains Mono",
+    "Fira Code","Inconsolata","PT Mono","Courier Prime","Ubuntu Mono",
+    "Overpass Mono","Cousine","Anonymous Pro"
+  ]
+};
+FONT_CATALOG.all = Array.from(new Set(Object.values(FONT_CATALOG).flat()));
+
+let CANDIDATE_FONTS = FONT_CATALOG.sans; // remplacé dynamiquement à chaque analyse
+
+/* ============================================================
+   Catalogue distant (facultatif) : liste quasi-complète des
+   polices Google Fonts (~1800), avec la vraie catégorie
+   officielle (pas une estimation) — via un service tiers public.
+   Si indisponible (hors-ligne, pare-feu, service en panne),
+   on retombe silencieusement sur FONT_CATALOG ci-dessus.
+   ============================================================ */
+const REMOTE_FONTS_URL = 'https://gwfh.mranftl.com/api/fonts';
+const REMOTE_CATEGORY_MAP = { 'sans-serif':'sans', 'serif':'serif', 'display':'display', 'handwriting':'script', 'monospace':'mono' };
+const POOL_CAP = { single: 150, all: 260 };
+let CATALOG_SOURCE = 'static'; // 'static' ou 'remote'
+let REMOTE_CATALOG = null;     // { sans:[...], serif:[...], ... }
+let REMOTE_ALL = null;         // liste à plat, triée par popularité
+
+async function loadRemoteCatalog(){
+  try{
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 4000);
+    const res = await fetch(REMOTE_FONTS_URL, { signal: controller.signal });
+    clearTimeout(timer);
+    if(!res.ok) throw new Error('réponse non-OK');
+    const data = await res.json();
+
+    const byCat = { sans:[], serif:[], display:[], script:[], mono:[] };
+    const flat = [];
+    data.forEach(f => {
+      if(!f.subsets || !f.subsets.includes('latin')) return; // on garde seulement les polices lisibles en français/latin
+      flat.push(f.family);
+      const key = REMOTE_CATEGORY_MAP[f.category];
+      if(key) byCat[key].push(f.family);
+    });
+
+    REMOTE_CATALOG = byCat;
+    REMOTE_ALL = flat; // déjà trié par popularité par l'API
+    CATALOG_SOURCE = 'remote';
+    catalogSourceNote.textContent = `Catalogue complet chargé : ${flat.length} polices (source externe). Par analyse, seule une sélection pertinente est comparée pour rester rapide.`;
+  }catch(e){
+    CATALOG_SOURCE = 'static';
+    catalogSourceNote.textContent = `Service externe injoignable — recherche sur la liste intégrée (${FONT_CATALOG.all.length} polices).`;
+  }
+}
+const catalogReady = loadRemoteCatalog();
+
+// Renvoie la liste de polices à comparer pour une catégorie donnée,
+// en piochant dans le catalogue distant si dispo, sinon dans la liste statique.
+function getPool(poolKey){
+  const cap = poolKey === 'all' ? POOL_CAP.all : POOL_CAP.single;
+  if(CATALOG_SOURCE === 'remote' && poolKey !== 'slab'){
+    const arr = poolKey === 'all' ? REMOTE_ALL : REMOTE_CATALOG[poolKey];
+    if(arr && arr.length) return arr.slice(0, cap);
+  }
+  return FONT_CATALOG[poolKey] || FONT_CATALOG.sans;
+}
+
+const uploadZone = document.getElementById('upload-zone');
+const fileInput = document.getElementById('file-input');
+const previewImg = document.getElementById('preview-img');
+const placeholder = document.getElementById('upload-placeholder');
+const statusLine = document.getElementById('status-line');
+const ocrCorrection = document.getElementById('ocr-correction');
+const visibleTextInput = document.getElementById('visible-text-input');
+const rerunBtn = document.getElementById('rerun-btn');
+const errorArea = document.getElementById('error-area');
+const bestMatchArea = document.getElementById('best-match-area');
+const rankListArea = document.getElementById('rank-list-area');
+const scratch = document.getElementById('canvas-scratch');
+const sctx = scratch.getContext('2d', { willReadFrequently: true });
+const categorySelect = document.getElementById('category-select');
+const serifNote = document.getElementById('serif-note');
+const catalogSourceNote = document.getElementById('catalog-source-note');
+
+const CATEGORY_LABELS = {
+  sans:"sans-serif (bâton)", serif:"serif (avec empattements)",
+  slab:"slab-serif", display:"display / décorative",
+  script:"script / manuscrite", mono:"monospace", all:"toutes catégories"
+};
+
+let uploadedImage = null;
+
+uploadZone.addEventListener('click', () => fileInput.click());
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadZone.classList.remove('dragover');
+  if(e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', e => { if(e.target.files[0]) handleFile(e.target.files[0]); });
+
+function handleFile(file){
+  resetResults();
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = async () => {
+      uploadedImage = img;
+      previewImg.src = e.target.result;
+      previewImg.style.display = 'block';
+      placeholder.style.display = 'none';
+      await runPipeline(e.target.result);
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function resetResults(){
+  errorArea.innerHTML = '';
+  bestMatchArea.innerHTML = '';
+  rankListArea.innerHTML = '';
+  ocrCorrection.style.display = 'none';
+  statusLine.innerHTML = '';
+}
+
+function setStatus(text, spinning){
+  statusLine.innerHTML = (spinning ? '<span class="spinner"></span>' : '') + text;
+}
+
+async function runPipeline(dataUrl){
+  errorArea.innerHTML = '';
+  bestMatchArea.innerHTML = '';
+  rankListArea.innerHTML = '';
+
+  if(typeof Tesseract === 'undefined'){
+    errorArea.innerHTML = `<div class="error-box">Le moteur OCR n'a pas pu se charger (connexion bloquée ?). Vérifiez votre accès réseau puis rechargez la page.</div>`;
+    return;
+  }
+
+  setStatus('Lecture du texte dans l\'image…', true);
+  let recognizedText = '';
+  try{
+    const result = await Tesseract.recognize(dataUrl, 'fra+eng', {
+      logger: m => {
+        if(m.status === 'recognizing text'){
+          setStatus(`Lecture du texte… ${Math.round(m.progress*100)}%`, true);
+        } else if(m.status){
+          setStatus(m.status + '…', true);
+        }
+      }
+    });
+    recognizedText = (result.data.text || '').trim();
+  }catch(err){
+    errorArea.innerHTML = `<div class="error-box">La lecture automatique a échoué (${err.message || err}). Réessayez avec une image plus nette.</div>`;
+    setStatus('', false);
+    return;
+  }
+
+  const firstLine = recognizedText.split('\n').map(s=>s.trim()).find(s => s.length >= 2);
+  if(!firstLine){
+    setStatus('', false);
+    errorArea.innerHTML = `<div class="error-box">Aucun texte lisible n'a été détecté dans cette image. Essayez un cadrage plus net ou plus contrasté.</div>`;
+    ocrCorrection.style.display = 'block';
+    visibleTextInput.value = '';
+    visibleTextInput.focus();
+    return;
+  }
+
+  // on limite la longueur utilisée pour la comparaison, le rendu canvas restant lisible
+  const usableText = firstLine.slice(0, 28);
+  visibleTextInput.value = usableText;
+  ocrCorrection.style.display = 'block';
+
+  await analyzeText(usableText);
+}
+
+rerunBtn.addEventListener('click', () => {
+  const text = visibleTextInput.value.trim();
+  if(text) analyzeText(text);
+});
+
+// Estime si le texte a des empattements à partir du profil vertical d'encre :
+// les serifs ajoutent de la masse près du sommet (hauteur de casse) et de la
+// base (ligne de pied), donc un ratio bords/milieu élevé suggère un serif.
+// C'est une approximation géométrique, pas une reconnaissance de dessin —
+// à corriger à la main via le sélecteur si le résultat ne convient pas.
+function classifySerifCategory(sig){
+  const row = sig.row;
+  const n = row.length;
+  const edge = Math.max(2, Math.round(n*0.12));
+  const top = row.slice(0, edge);
+  const bottom = row.slice(n-edge);
+  const midStart = Math.round(n*0.35), midEnd = Math.round(n*0.65);
+  const mid = row.slice(midStart, midEnd);
+  const avg = arr => arr.reduce((a,b)=>a+b,0) / (arr.length||1);
+  const edgeAvg = (avg(top) + avg(bottom)) / 2;
+  const midAvg = Math.max(avg(mid), 0.05);
+  const serifScore = edgeAvg / midAvg;
+  return { category: serifScore >= 0.85 ? 'serif' : 'sans', serifScore };
+}
+
+async function analyzeText(text){
+  errorArea.innerHTML = '';
+  bestMatchArea.innerHTML = '';
+  rankListArea.innerHTML = '';
+  serifNote.textContent = '';
+
+  setStatus('Analyse des proportions du texte détecté…', true);
+  const targetSig = signatureFromImage(uploadedImage);
+  if(!targetSig){
+    setStatus('', false);
+    errorArea.innerHTML = `<div class="error-box">Impossible d'isoler la forme du texte sur cette image.</div>`;
+    return;
+  }
+
+  const chosen = categorySelect.value;
+  let poolKey = chosen;
+  if(chosen === 'auto'){
+    const guess = classifySerifCategory(targetSig);
+    poolKey = guess.category === 'serif' ? 'serif' : 'sans';
+    serifNote.textContent = `Empattements détectés : ${guess.category === 'serif' ? 'probable (serif)' : 'peu probables (sans-serif)'} — score de forme ${guess.serifScore.toFixed(2)}. Changez la famille ci-dessus si ce n'est pas le bon type.`;
+  } else {
+    serifNote.textContent = `Recherche restreinte à : ${CATEGORY_LABELS[chosen] || chosen}.`;
+  }
+
+  await catalogReady; // attend le catalogue distant (ou son échec) une seule fois
+  CANDIDATE_FONTS = getPool(poolKey);
+
+  setStatus(`Chargement des polices candidates (${CANDIDATE_FONTS.length})…`, true);
+  await loadAllCandidateFonts();
+
+  setStatus('Comparaison avec les polices candidates…', true);
+  const results = CANDIDATE_FONTS.map(family => {
+    const sig = signatureFromFont(family, text);
+    const dist = sig ? compareSignatures(targetSig, sig) : Infinity;
+    return { family, dist };
+  }).sort((a,b) => a.dist - b.dist);
+
+  setStatus(`Texte détecté : « ${text} »`, false);
+  renderResults(results, text);
+}
+
+categorySelect.addEventListener('change', () => {
+  const text = visibleTextInput.value.trim();
+  if(text) analyzeText(text);
+});
+
+function renderResults(results, text){
+  const top = results.slice(0, 8);
+  const best = top[0];
+  const maxDist = Math.max(...top.map(r=>r.dist));
+  const bestScore = Math.round((1 - best.dist/(maxDist||1)) * 100);
+  const substitutes = REVERSE_DB[best.family];
+
+  bestMatchArea.innerHTML = `
+    <div class="best-match">
+      <div class="tag">Meilleure correspondance</div>
+      <div class="found-name">${best.family}</div>
+      <div class="preview" style="font-family:'${best.family}', sans-serif;">${text}</div>
+      ${substitutes ? `<div class="substitutes">Alternative gratuite habituelle pour : <b>${substitutes.join(', ')}</b></div>` : ''}
+      <a class="gfonts-link" target="_blank" rel="noopener"
+         href="https://fonts.google.com/specimen/${encodeURIComponent(best.family.replace(/\s+/g,'+'))}">
+         Voir « ${best.family} » sur Google Fonts →
+      </a>
+    </div>
+  `;
+
+  renderWriteArea(best.family);
+
+  const list = document.createElement('div');
+  list.innerHTML = '<h2>Autres candidats proches</h2>';
+  top.slice(1).forEach((r, i) => {
+    const scorePct = Math.round((1 - r.dist/(maxDist||1)) * 100);
+    const item = document.createElement('div');
+    item.className = 'rank-item';
+    item.innerHTML = `
+      <div class="rank-num">#${i+2}</div>
+      <div>
+        <div class="rank-font-name">${r.family} <span class="rank-score">· ${scorePct}% de ressemblance de forme</span></div>
+        <div class="rank-preview" style="font-family:'${r.family}', sans-serif;">${text}</div>
+      </div>
+    `;
+    list.appendChild(item);
+  });
+  rankListArea.innerHTML = '';
+  rankListArea.appendChild(list);
+}
+
+function renderWriteArea(family){
+  const wrap = document.createElement('div');
+  wrap.className = 'write-area';
+  const cssSnippet = `@import url('https://fonts.googleapis.com/css2?family=${family.replace(/\s+/g,'+')}:wght@400;600&display=swap');\n\nfont-family: '${family}', sans-serif;`;
+  wrap.innerHTML = `
+    <div class="tag">Écrire avec « ${family} »</div>
+    <textarea id="write-textarea" style="font-family:'${family}', sans-serif; font-size:24px;">Tapez votre propre texte ici pour voir à quoi il ressemble.</textarea>
+    <div class="controls">
+      <label for="write-size">Taille</label>
+      <input type="range" id="write-size" min="14" max="72" value="24">
+      <button class="ghost" id="copy-css-btn" type="button">Copier le CSS</button>
+      <span class="copy-feedback" id="copy-feedback"></span>
+    </div>
+  `;
+  bestMatchArea.appendChild(wrap);
+
+  const ta = wrap.querySelector('#write-textarea');
+  const sizeInput = wrap.querySelector('#write-size');
+  sizeInput.addEventListener('input', () => { ta.style.fontSize = sizeInput.value + 'px'; });
+
+  wrap.querySelector('#copy-css-btn').addEventListener('click', async () => {
+    const feedback = wrap.querySelector('#copy-feedback');
+    try{
+      await navigator.clipboard.writeText(cssSnippet);
+      feedback.textContent = 'Copié ✓';
+    }catch(e){
+      feedback.textContent = 'Copie impossible — sélectionnez le texte manuellement.';
+    }
+    setTimeout(() => { feedback.textContent = ''; }, 2500);
+  });
+}
+
+const loadedGoogleFonts = new Set();
+async function loadAllCandidateFonts(){
+  const toLoad = CANDIDATE_FONTS.filter(f => !loadedGoogleFonts.has(f));
+  if(toLoad.length){
+    const families = toLoad.map(f => f.replace(/\s+/g,'+')).join('&family=');
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = `https://fonts.googleapis.com/css2?family=${families}&display=swap`;
+    document.head.appendChild(link);
+    toLoad.forEach(f => loadedGoogleFonts.add(f));
+  }
+  await document.fonts.ready;
+  await Promise.all(CANDIDATE_FONTS.map(f => document.fonts.load(`72px "${f}"`).catch(()=>{})));
+}
+
+function computeSignatureFromCanvas(ctx, w, h){
+  const data = ctx.getImageData(0,0,w,h).data;
+  let sum = 0;
+  for(let i=0;i<data.length;i+=4) sum += (data[i]+data[i+1]+data[i+2])/3;
+  const avg = sum / (w*h);
+  const isDarkTextOnLight = avg > 127;
+
+  const ink = new Uint8Array(w*h);
+  for(let i=0, p=0; i<data.length; i+=4, p++){
+    const lum = (data[i]+data[i+1]+data[i+2])/3;
+    ink[p] = (isDarkTextOnLight ? lum < avg*0.75 : lum > avg*1.25) ? 1 : 0;
+  }
+
+  let minX=w, maxX=0, minY=h, maxY=0, found=false;
+  for(let y=0;y<h;y++){
+    for(let x=0;x<w;x++){
+      if(ink[y*w+x]){
+        found = true;
+        if(x<minX) minX=x; if(x>maxX) maxX=x;
+        if(y<minY) minY=y; if(y>maxY) maxY=y;
+      }
+    }
+  }
+  if(!found) return null;
+  const bw = maxX-minX+1, bh = maxY-minY+1;
+
+  const BUCKETS = 24;
+  const colProfile = new Array(BUCKETS).fill(0);
+  const rowProfile = new Array(BUCKETS).fill(0);
+  for(let y=minY;y<=maxY;y++){
+    for(let x=minX;x<=maxX;x++){
+      if(ink[y*w+x]){
+        const cb = Math.min(BUCKETS-1, Math.floor((x-minX)/bw*BUCKETS));
+        const rb = Math.min(BUCKETS-1, Math.floor((y-minY)/bh*BUCKETS));
+        colProfile[cb]++;
+        rowProfile[rb]++;
+      }
+    }
+  }
+  const normalize = arr => { const max = Math.max(...arr, 1); return arr.map(v => v/max); };
+  return { aspect: bw/bh, col: normalize(colProfile), row: normalize(rowProfile) };
+}
+
+function signatureFromImage(img){
+  scratch.width = 900; scratch.height = 300;
+  sctx.fillStyle = '#ffffff';
+  sctx.fillRect(0,0,scratch.width,scratch.height);
+  const scale = Math.min(scratch.width/img.width, scratch.height/img.height);
+  const dw = img.width*scale, dh = img.height*scale;
+  sctx.drawImage(img, (scratch.width-dw)/2, (scratch.height-dh)/2, dw, dh);
+  return computeSignatureFromCanvas(sctx, scratch.width, scratch.height);
+}
+
+function signatureFromFont(family, text){
+  scratch.width = 900; scratch.height = 300;
+  sctx.fillStyle = '#ffffff';
+  sctx.fillRect(0,0,scratch.width,scratch.height);
+  sctx.fillStyle = '#000000';
+  sctx.textBaseline = 'alphabetic';
+  sctx.font = `72px "${family}"`;
+  sctx.fillText(text, 20, 200);
+  return computeSignatureFromCanvas(sctx, scratch.width, scratch.height);
+}
+
+function vectorDistance(a, b){
+  let sum = 0;
+  for(let i=0;i<a.length;i++) sum += (a[i]-b[i])**2;
+  return Math.sqrt(sum);
+}
+function compareSignatures(target, candidate){
+  const aspectDiff = Math.abs(target.aspect - candidate.aspect);
+  const colDist = vectorDistance(target.col, candidate.col) / Math.sqrt(target.col.length);
+  const rowDist = vectorDistance(target.row, candidate.row) / Math.sqrt(target.row.length);
+  return aspectDiff*1.2 + colDist*1.0 + rowDist*1.0;
+}
+</script>
+</body>
+</html>
